@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, Language } from 'lucide-react';
+import { Check, Languages } from 'lucide-react';
 
 type LanguageOption = {
   code: string;
@@ -29,7 +29,7 @@ const LanguageSwitcher: React.FC = () => {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="nav-link flex items-center">
-          <Language size={20} className="mr-1" />
+          <Languages size={20} className="mr-1" />
           <span className="hidden sm:inline">{currentLanguage.name}</span>
         </Button>
       </PopoverTrigger>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Users, Brain, Robot } from 'lucide-react';
+import { Users, Brain, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -44,7 +44,7 @@ const Index = () => {
             <FeatureCard 
               title="AI Participants"
               description="Never wait for players again! Our AI Players and AI Judge allow you to start a game immediately, even with fewer human participants."
-              icon={Robot}
+              icon={Bot}
             />
           </div>
         </div>
