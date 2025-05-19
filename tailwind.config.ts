@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				werewolf: {
+					dark: '#1A1F2C',
+					purple: '#8B5CF6',
+					light: '#9b87f5',
+					text: '#F1F0FB',
+					card: '#212635'
 				}
 			},
 			borderRadius: {
@@ -84,11 +92,19 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				shake: {
+					'0%': { transform: 'translateX(0)' },
+					'25%': { transform: 'translateX(-5px)' },
+					'50%': { transform: 'translateX(5px)' },
+					'75%': { transform: 'translateX(-5px)' },
+					'100%': { transform: 'translateX(0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'shake': 'shake 0.5s ease-in-out infinite'
 			}
 		}
 	},
