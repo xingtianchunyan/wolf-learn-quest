@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -133,9 +131,8 @@ const GamePage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div className="flex-grow container mx-auto py-6 px-4">
+    <PageLayout>
+      <div className="container mx-auto py-6 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Quiz System */}
           <div className="lg:col-span-3">
@@ -385,8 +382,7 @@ const GamePage = () => {
           </div>
         </div>
       </div>
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 
