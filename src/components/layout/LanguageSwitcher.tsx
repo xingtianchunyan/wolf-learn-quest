@@ -11,7 +11,7 @@ type LanguageOption = {
 
 const languages: LanguageOption[] = [
   { code: 'en', name: 'English' },
-  { code: 'zh', name: '中文' },
+  { code: 'zh', name: '简体中文' },
   { code: 'es', name: 'Español' },
   { code: 'fr', name: 'Français' },
 ];

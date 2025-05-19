@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Gamepad, Home, LogIn, Menu, X } from 'lucide-react';
+import { Gamepad, Home, Menu, X, ExternalLink } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import LanguageSwitcher from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
@@ -12,19 +12,20 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   
   const isHomePage = location.pathname === '/';
-  const isGameLobby = location.pathname === '/lobby';
 
   return (
-    <nav className="bg-werewolf-dark/80 backdrop-blur-md p-4 shadow-md">
+    <nav className="bg-werewolf-dark/80 backdrop-blur-md p-4 shadow-md fixed top-0 w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Gamepad className="text-werewolf-purple" />
-          <Link to="/" className="font-bold text-xl text-white">
-            Old With New Werewolf
-          </Link>
-          <span className="text-sm text-gray-400 hidden md:inline-block">
-            A social game that makes learning no longer boring.
-          </span>
+          <div className="flex flex-col">
+            <Link to="/" className="font-bold text-xl text-white">
+              Old With New Werewolf
+            </Link>
+            <span className="text-sm text-gray-400 hidden md:block">
+              A social game that makes learning no longer boring.
+            </span>
+          </div>
         </div>
 
         {/* Desktop navigation */}
@@ -39,6 +40,14 @@ const Navbar: React.FC = () => {
               Home
             </Link>
           )}
+          <Button 
+            variant="ghost" 
+            className="nav-link flex items-center"
+            onClick={() => window.open("https://seedao.xyz/", "_blank")}
+          >
+            <ExternalLink size={20} className="mr-1" />
+            <span className="hidden sm:inline">SeeDAO</span>
+          </Button>
           <GameRulesDialog />
           <LanguageSwitcher />
           <LoginDialog />
@@ -78,6 +87,17 @@ const Navbar: React.FC = () => {
                 Home
               </Link>
             )}
+            <Button 
+              variant="ghost" 
+              className="nav-link justify-start"
+              onClick={() => {
+                window.open("https://seedao.xyz/", "_blank");
+                setIsMenuOpen(false);
+              }}
+            >
+              <ExternalLink size={20} className="mr-1" />
+              SeeDAO
+            </Button>
             <GameRulesDialog />
             <LanguageSwitcher />
             <LoginDialog />

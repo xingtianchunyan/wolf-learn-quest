@@ -27,36 +27,25 @@ const GameRulesDialog: React.FC = () => {
             Learn how to play Werewolf Social Learning
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="w-full bg-werewolf-dark/60">
-            <TabsTrigger value="basic" className="flex-1">Basic Rules</TabsTrigger>
-            <TabsTrigger value="roles" className="flex-1">Character Roles</TabsTrigger>
-            <TabsTrigger value="quiz" className="flex-1">Quiz System</TabsTrigger>
+        <Tabs defaultValue="win-conditions" className="w-full">
+          <TabsList className="w-full bg-werewolf-dark/60 grid grid-cols-3">
+            <TabsTrigger value="win-conditions">Win Conditions</TabsTrigger>
+            <TabsTrigger value="factions">Factions</TabsTrigger>
+            <TabsTrigger value="phases">Game Phases</TabsTrigger>
           </TabsList>
           <ScrollArea className="h-[400px] mt-4 pr-4">
-            <TabsContent value="basic" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">Game Overview</h3>
-                <p>Werewolf Social Learning combines the classic social deduction game "Werewolf" with an interactive quiz system.</p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">Game Flow</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>The game alternates between day and night phases</li>
-                  <li>During the night, werewolves secretly choose a victim</li>
-                  <li>During the day, all players discuss and vote to eliminate a suspected werewolf</li>
-                  <li>Players must answer quiz questions to unlock special abilities</li>
-                </ul>
-              </div>
+            <TabsContent value="win-conditions" className="space-y-4">
               <div className="space-y-2">
                 <h3 className="font-bold text-lg text-werewolf-purple">Winning Conditions</h3>
                 <ul className="list-disc pl-6">
                   <li><span className="text-werewolf-light">Villagers win</span> when all werewolves are eliminated</li>
                   <li><span className="text-red-400">Werewolves win</span> when the number of werewolves equals or exceeds the number of villagers</li>
+                  <li><span className="text-yellow-400">Jester wins</span> individually if they get voted out during the day</li>
                 </ul>
               </div>
             </TabsContent>
-            <TabsContent value="roles" className="space-y-4">
+            
+            <TabsContent value="factions" className="space-y-4">
               <div className="space-y-2">
                 <h3 className="font-bold text-lg text-werewolf-purple">Villager Team</h3>
                 <ul className="list-disc pl-6 space-y-2">
@@ -80,32 +69,35 @@ const GameRulesDialog: React.FC = () => {
                 </ul>
               </div>
             </TabsContent>
-            <TabsContent value="quiz" className="space-y-4">
+            
+            <TabsContent value="phases" className="space-y-4">
               <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">Quiz System</h3>
-                <p>The quiz system is integrated into the game to promote learning while playing:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Players must answer questions to activate special abilities</li>
-                  <li>Correct answers provide advantages in the game</li>
-                  <li>Questions are customized by the game host/teacher</li>
-                  <li>AI can generate contextual questions based on the learning material</li>
-                </ul>
+                <h3 className="font-bold text-lg text-werewolf-purple">Night Phase</h3>
+                <p>During the night phase, the following actions occur in order:</p>
+                <ol className="list-decimal pl-6 space-y-2">
+                  <li>Werewolves awaken and choose a victim</li>
+                  <li>Seer awakens and checks one player's identity</li>
+                  <li>Doctor awakens and chooses a player to protect</li>
+                </ol>
               </div>
+              
               <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">Question Types</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Multiple choice questions</li>
-                  <li>True/False questions</li>
-                  <li>Short answer questions</li>
-                  <li>Discussion prompts</li>
-                </ul>
+                <h3 className="font-bold text-lg text-werewolf-purple">Day Phase</h3>
+                <p>During the day phase, the following occurs:</p>
+                <ol className="list-decimal pl-6 space-y-2">
+                  <li>Results from the night are revealed (who was eliminated)</li>
+                  <li>All players discuss and try to identify werewolves</li>
+                  <li>Players answer quiz questions to gain special abilities</li>
+                  <li>All players vote to eliminate one suspected werewolf</li>
+                </ol>
               </div>
+              
               <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">Learning Benefits</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">Character Status</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Encourages active participation in learning</li>
-                  <li>Creates a fun, competitive environment for knowledge retention</li>
-                  <li>Helps new community members integrate by learning alongside gameplay</li>
+                  <li><span className="font-semibold">Alive:</span> Can participate in all game actions</li>
+                  <li><span className="font-semibold">Dead:</span> Cannot vote or use abilities, but can still participate in quiz questions</li>
+                  <li><span className="font-semibold">Silenced:</span> Temporarily unable to speak during discussions</li>
                 </ul>
               </div>
             </TabsContent>
