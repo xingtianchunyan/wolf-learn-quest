@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Gamepad, Home, Menu, X, ExternalLink } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import LanguageSwitcher from './LanguageSwitcher';
+import LanguageSwitcher, { useLanguage } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
 import GameRulesDialog from '../dialogs/GameRulesDialog';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
   
   const isHomePage = location.pathname === '/';
 
@@ -32,12 +33,12 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center space-x-4">
           {isHomePage ? (
             <Link to="/lobby" className="nav-link">
-              Game Lobby
+              {t('lobby')}
             </Link>
           ) : (
             <Link to="/" className="nav-link">
               <Home size={20} className="inline mr-1" />
-              Home
+              {t('home')}
             </Link>
           )}
           <Button 
@@ -46,7 +47,7 @@ const Navbar: React.FC = () => {
             onClick={() => window.open("https://seedao.xyz/", "_blank")}
           >
             <ExternalLink size={20} className="mr-1" />
-            <span className="hidden sm:inline">SeeDAO</span>
+            <span className="hidden sm:inline">{t('seedao')}</span>
           </Button>
           <GameRulesDialog />
           <LanguageSwitcher />
@@ -75,7 +76,7 @@ const Navbar: React.FC = () => {
                 className="nav-link"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Game Lobby
+                {t('lobby')}
               </Link>
             ) : (
               <Link 
@@ -84,7 +85,7 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Home size={20} className="inline mr-1" />
-                Home
+                {t('home')}
               </Link>
             )}
             <Button 
@@ -96,7 +97,7 @@ const Navbar: React.FC = () => {
               }}
             >
               <ExternalLink size={20} className="mr-1" />
-              SeeDAO
+              {t('seedao')}
             </Button>
             <GameRulesDialog />
             <LanguageSwitcher />

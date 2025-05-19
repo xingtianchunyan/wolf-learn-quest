@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +12,7 @@ import { Brain, Plus, User, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 // Mock player data
 const currentPlayer = {
@@ -35,6 +34,7 @@ const rooms = [
 const GameLobby = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [roomName, setRoomName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(10);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -65,15 +65,14 @@ const GameLobby = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div className="flex-grow container mx-auto py-6 px-4">
+    <PageLayout>
+      <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Player Info - Left Side */}
           <div className="w-full lg:w-1/4">
             <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
               <CardHeader>
-                <CardTitle className="text-werewolf-purple">Player Profile</CardTitle>
+                <CardTitle className="text-werewolf-purple">{t('player_profile')}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <Avatar className="h-24 w-24 mb-4">
@@ -85,15 +84,15 @@ const GameLobby = () => {
                 <h3 className="text-xl font-bold mb-2">{currentPlayer.name}</h3>
                 <div className="grid grid-cols-3 gap-4 w-full text-center mt-4">
                   <div className="p-2 bg-werewolf-dark/50 rounded-md">
-                    <p className="text-sm text-gray-400">Level</p>
+                    <p className="text-sm text-gray-400">{t('level')}</p>
                     <p className="font-bold text-werewolf-purple">{currentPlayer.level}</p>
                   </div>
                   <div className="p-2 bg-werewolf-dark/50 rounded-md">
-                    <p className="text-sm text-gray-400">Games</p>
+                    <p className="text-sm text-gray-400">{t('games')}</p>
                     <p className="font-bold">{currentPlayer.games}</p>
                   </div>
                   <div className="p-2 bg-werewolf-dark/50 rounded-md">
-                    <p className="text-sm text-gray-400">Wins</p>
+                    <p className="text-sm text-gray-400">{t('wins')}</p>
                     <p className="font-bold">{currentPlayer.wins}</p>
                   </div>
                 </div>
@@ -107,15 +106,15 @@ const GameLobby = () => {
               <TabsList className="w-full bg-werewolf-card mb-4">
                 <TabsTrigger value="rooms" className="flex-1">
                   <Users className="mr-2 h-4 w-4" />
-                  Game Rooms
+                  {t('game_rooms')}
                 </TabsTrigger>
                 <TabsTrigger value="create" className="flex-1">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Room
+                  {t('create_room')}
                 </TabsTrigger>
                 <TabsTrigger value="ai" className="flex-1">
                   <Brain className="mr-2 h-4 w-4" />
-                  AI Settings
+                  {t('ai_settings')}
                 </TabsTrigger>
               </TabsList>
 
@@ -123,9 +122,9 @@ const GameLobby = () => {
               <TabsContent value="rooms">
                 <Card className="bg-werewolf-card border-werewolf-purple/30">
                   <CardHeader>
-                    <CardTitle>Available Game Rooms</CardTitle>
+                    <CardTitle>{t('available_rooms')}</CardTitle>
                     <CardDescription>
-                      Join an existing room to start playing
+                      {t('join_existing')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -140,13 +139,13 @@ const GameLobby = () => {
                               <div className="flex items-center gap-2">
                                 <h3 className="font-bold">{room.name}</h3>
                                 {room.isPrivate && (
-                                  <span className="text-xs bg-amber-800/60 text-amber-200 px-2 py-0.5 rounded">Private</span>
+                                  <span className="text-xs bg-amber-800/60 text-amber-200 px-2 py-0.5 rounded">{t('private')}</span>
                                 )}
                                 {room.hasAI && (
                                   <span className="text-xs bg-blue-800/60 text-blue-200 px-2 py-0.5 rounded">AI</span>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-400">Host: {room.host}</p>
+                              <p className="text-sm text-gray-400">{t('host')}: {room.host}</p>
                             </div>
                             <div className="flex items-center gap-4 w-full sm:w-auto">
                               <span className="text-sm">
@@ -158,7 +157,7 @@ const GameLobby = () => {
                                 className="bg-werewolf-purple hover:bg-werewolf-light ml-auto"
                                 onClick={() => joinRoom(room.id)}
                               >
-                                Join
+                                {t('join')}
                               </Button>
                             </div>
                           </div>
@@ -173,7 +172,7 @@ const GameLobby = () => {
               <TabsContent value="create">
                 <Card className="bg-werewolf-card border-werewolf-purple/30">
                   <CardHeader>
-                    <CardTitle>Create a New Game Room</CardTitle>
+                    <CardTitle>{t('create_room')}</CardTitle>
                     <CardDescription>
                       Set up your own game with custom settings
                     </CardDescription>
@@ -181,7 +180,7 @@ const GameLobby = () => {
                   <CardContent>
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="roomName">Room Name</Label>
+                        <Label htmlFor="roomName">{t('room_name')}</Label>
                         <Input 
                           id="roomName" 
                           placeholder="Enter a name for your game room"
@@ -193,7 +192,7 @@ const GameLobby = () => {
                       
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <Label htmlFor="maxPlayers">Maximum Players: {maxPlayers}</Label>
+                          <Label htmlFor="maxPlayers">{t('max_players')}: {maxPlayers}</Label>
                         </div>
                         <Slider 
                           id="maxPlayers"
@@ -212,7 +211,7 @@ const GameLobby = () => {
                           checked={isPrivate} 
                           onCheckedChange={setIsPrivate}
                         />
-                        <Label htmlFor="isPrivate">Private Room (Invitation Only)</Label>
+                        <Label htmlFor="isPrivate">{t('private_room')}</Label>
                       </div>
                       
                       <div className="flex items-center space-x-2">
@@ -221,13 +220,13 @@ const GameLobby = () => {
                           checked={useAI} 
                           onCheckedChange={setUseAI}
                         />
-                        <Label htmlFor="useAI">Include AI Players</Label>
+                        <Label htmlFor="useAI">{t('include_ai')}</Label>
                       </div>
                       
                       {useAI && (
                         <div className="space-y-2 pl-6 border-l-2 border-werewolf-purple/30">
                           <div className="flex justify-between items-center">
-                            <Label htmlFor="aiCount">Number of AI Players: {aiCount}</Label>
+                            <Label htmlFor="aiCount">{t('ai_count')}: {aiCount}</Label>
                           </div>
                           <Slider 
                             id="aiCount"
@@ -247,7 +246,7 @@ const GameLobby = () => {
                       onClick={handleCreateRoom}
                       className="bg-werewolf-purple hover:bg-werewolf-light"
                     >
-                      Create Room
+                      {t('create')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -335,8 +334,7 @@ const GameLobby = () => {
           </div>
         </div>
       </div>
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 

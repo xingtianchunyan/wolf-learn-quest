@@ -1,29 +1,180 @@
 
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, Languages } from 'lucide-react';
 
+// Define the language options
 type LanguageOption = {
   code: string;
   name: string;
 };
 
+// Only English and Chinese options as requested
 const languages: LanguageOption[] = [
   { code: 'en', name: 'English' },
   { code: 'zh', name: '简体中文' },
-  { code: 'es', name: 'Español' },
-  { code: 'fr', name: 'Français' },
 ];
 
-const LanguageSwitcher: React.FC = () => {
-  const [currentLanguage, setCurrentLanguage] = useState<LanguageOption>(languages[0]);
+// Create a context for language translation
+interface LanguageContextType {
+  language: string;
+  setLanguage: (code: string) => void;
+  t: (key: string) => string;
+}
 
-  const handleLanguageChange = (language: LanguageOption) => {
-    setCurrentLanguage(language);
-    // Here you would implement actual language change logic
-    console.log(`Language changed to ${language.name}`);
+const defaultLanguage = 'en';
+
+// Create translations object with English and Chinese translations
+const translations: Record<string, Record<string, string>> = {
+  en: {
+    // Navigation
+    'home': 'Home',
+    'lobby': 'Game Lobby',
+    'seedao': 'SeeDAO',
+    'rules': 'Game Rules',
+    'signin': 'Sign In',
+    'signout': 'Sign Out',
+    'signup': 'Sign Up',
+    
+    // Home Page
+    'welcome': 'Welcome to the Werewolf Social Learning',
+    'subtitle': 'Join our community where learning becomes a thrilling adventure through the classic game of Werewolf combined with interactive quizzes.',
+    'start_game': 'Start Game',
+    'community_integration': 'Community Integration',
+    'community_desc': 'Combine Werewolf gameplay with quiz Q&A to provide a channel for new community members to quickly integrate and bond with existing members.',
+    'ai_knowledge': 'AI Knowledge System',
+    'ai_knowledge_desc': 'Leverage our AI knowledge base to generate questions and provide contextual within the game environment.',
+    'ai_participants': 'AI Participants',
+    'ai_participants_desc': 'Never wait for players again! Our AI Players and AI Judge allow you to start a game immediately, even with fewer human participants.',
+    
+    // Game Lobby
+    'player_profile': 'Player Profile',
+    'level': 'Level',
+    'games': 'Games',
+    'wins': 'Wins',
+    'game_rooms': 'Game Rooms',
+    'create_room': 'Create Room',
+    'ai_settings': 'AI Settings',
+    'available_rooms': 'Available Game Rooms',
+    'join_existing': 'Join an existing room to start playing',
+    'room_name': 'Room Name',
+    'max_players': 'Maximum Players',
+    'private_room': 'Private Room (Invitation Only)',
+    'include_ai': 'Include AI Players',
+    'ai_count': 'Number of AI Players',
+    
+    // Footer
+    'footer_tagline': 'Gamified Learning for Communities',
+    'footer_copyright': '2025 Old With New Werewolf',
+    
+    // Misc
+    'host': 'Host',
+    'join': 'Join',
+    'create': 'Create',
+    'private': 'Private',
+  },
+  zh: {
+    // Navigation
+    'home': '首页',
+    'lobby': '游戏大厅',
+    'seedao': 'SeeDAO',
+    'rules': '游戏规则',
+    'signin': '登录',
+    'signout': '退出',
+    'signup': '注册',
+    
+    // Home Page
+    'welcome': '欢迎来到新旧狼人杀',
+    'subtitle': '加入我们的社区，通过经典的狼人杀游戏和互动问答，让学习变成一场惊险刺激的冒险。',
+    'start_game': '开始游戏',
+    'community_integration': '社区融合',
+    'community_desc': '将狼人杀游戏与问答相结合，为新社区成员提供快速融入和与现有成员建立联系的渠道。',
+    'ai_knowledge': 'AI知识系统',
+    'ai_knowledge_desc': '利用我们的AI知识库在游戏环境中生成问题并提供背景知识。',
+    'ai_participants': 'AI参与者',
+    'ai_participants_desc': '再也不用等待玩家！我们的AI玩家和AI评委让您即使在人类参与者较少的情况下也能立即开始游戏。',
+    
+    // Game Lobby
+    'player_profile': '玩家档案',
+    'level': '等级',
+    'games': '游戏',
+    'wins': '胜利',
+    'game_rooms': '游戏房间',
+    'create_room': '创建房间',
+    'ai_settings': 'AI设置',
+    'available_rooms': '可用游戏房间',
+    'join_existing': '加入现有房间开始游戏',
+    'room_name': '房间名称',
+    'max_players': '最大玩家数',
+    'private_room': '私人房间（仅限邀请）',
+    'include_ai': '包含AI玩家',
+    'ai_count': 'AI玩家数量',
+    
+    // Footer
+    'footer_tagline': '为社区提供游戏化学习',
+    'footer_copyright': '2025 新旧狼人杀',
+    
+    // Misc
+    'host': '主持人',
+    'join': '加入',
+    'create': '创建',
+    'private': '私人',
+  }
+};
+
+// Create the Language Context
+const LanguageContext = createContext<LanguageContextType>({
+  language: defaultLanguage,
+  setLanguage: () => {},
+  t: (key: string) => key,
+});
+
+// Export the hook for using the language context
+export const useLanguage = () => useContext(LanguageContext);
+
+// Create the Language Provider component
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguageState] = useState<string>(localStorage.getItem('language') || defaultLanguage);
+
+  // Set language and store in localStorage
+  const setLanguage = (code: string) => {
+    setLanguageState(code);
+    localStorage.setItem('language', code);
   };
+
+  // Initialize language from localStorage on component mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage) {
+      setLanguageState(savedLanguage);
+    }
+  }, []);
+
+  // Translate function
+  const t = (key: string): string => {
+    if (!translations[language]) return key;
+    return translations[language][key] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+// The LanguageSwitcher component
+const LanguageSwitcher: React.FC = () => {
+  const { language, setLanguage, t } = useLanguage();
+
+  const handleLanguageChange = (languageCode: string) => {
+    setLanguage(languageCode);
+    console.log(`Language changed to ${languageCode}`);
+  };
+
+  // Get current language object
+  const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
 
   return (
     <Popover>
@@ -35,17 +186,17 @@ const LanguageSwitcher: React.FC = () => {
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2 bg-werewolf-card border-werewolf-purple/30">
         <div className="space-y-1">
-          {languages.map((language) => (
+          {languages.map((lang) => (
             <Button
-              key={language.code}
+              key={lang.code}
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => handleLanguageChange(language)}
+              onClick={() => handleLanguageChange(lang.code)}
             >
-              {language.code === currentLanguage.code && (
+              {lang.code === language && (
                 <Check size={16} className="mr-2 text-werewolf-purple" />
               )}
-              {language.name}
+              {lang.name}
             </Button>
           ))}
         </div>
