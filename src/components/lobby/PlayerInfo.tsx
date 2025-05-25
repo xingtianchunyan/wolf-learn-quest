@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -156,11 +155,12 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
   
   return (
     <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
-      <CardHeader>
-        <CardTitle className="text-werewolf-purple">{t('player_information')}</CardTitle>
+      <CardHeader className="text-center">
+        <CardTitle className="text-werewolf-purple">Player Information</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center">
-        <div className="relative mb-4 group">
+        {/* Avatar Section - Centered */}
+        <div className="relative mb-6 group">
           <Avatar className="h-24 w-24">
             <AvatarImage src={avatarUrl || ''} alt={playerData.name} />
             <AvatarFallback className="bg-werewolf-purple/30 text-xl">
@@ -175,7 +175,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
             onClick={() => document.getElementById('avatar-upload')?.click()}
           >
             <Upload size={16} className="mr-1" />
-            {t('upload_avatar')}
+            Upload Avatar
           </Button>
           <input
             id="avatar-upload"
@@ -186,37 +186,45 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
           />
         </div>
         
-        <h3 className="text-xl font-bold mb-2">{playerData.name}</h3>
+        {/* Player Name - Centered */}
+        <h3 className="text-xl font-bold mb-6 text-center">{playerData.name}</h3>
         
-        <div className="grid grid-cols-2 gap-3 w-full text-center mt-4 mb-2">
-          <div className="p-2 bg-werewolf-dark/50 rounded-md">
-            <div className="flex justify-center items-center">
-              <p className="text-sm text-gray-400 mr-1">{t('level')}</p>
+        {/* Level and Experience Row - Centered */}
+        <div className="grid grid-cols-2 gap-4 w-full max-w-xs text-center mb-4">
+          <div className="p-3 bg-werewolf-dark/50 rounded-md">
+            <div className="flex justify-center items-center mb-1">
+              <p className="text-sm text-gray-400 mr-1">Level</p>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <HelpCircle size={14} className="text-gray-400 cursor-help" />
+                    <HelpCircle size={14} className="text-gray-400 cursor-help hover:text-werewolf-purple transition-colors" />
                   </TooltipTrigger>
-                  <TooltipContent className="bg-werewolf-dark text-white border-werewolf-purple/30 max-w-xs">
-                    <p>{t('level_tooltip')}</p>
-                    <ul className="list-disc list-inside text-sm mt-1">
-                      <li>Level 1: 0-49 XP</li>
-                      <li>Level 2: 50-99 XP</li>
-                      <li>Level 3: 100-199 XP</li>
-                      <li>Level 4: 200+ XP</li>
-                    </ul>
-                    <p className="text-sm mt-1">
-                      Win: +50 XP, Loss: +30 XP
-                    </p>
+                  <TooltipContent className="bg-werewolf-dark text-white border-werewolf-purple/30 max-w-sm p-4">
+                    <div className="space-y-2">
+                      <p className="font-semibold text-werewolf-purple">Experience & Level System</p>
+                      <div className="space-y-1 text-sm">
+                        <p><strong>Level Requirements:</strong></p>
+                        <p>• Level 1: 0-49 XP</p>
+                        <p>• Level 2: 50-99 XP</p>
+                        <p>• Level 3: 100-199 XP</p>
+                        <p>• Level 4: 200+ XP</p>
+                      </div>
+                      <div className="space-y-1 text-sm mt-3">
+                        <p><strong>Experience Rewards:</strong></p>
+                        <p>• Win a game: +50 XP</p>
+                        <p>• Lose a game: +30 XP</p>
+                      </div>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <p className="font-bold text-werewolf-purple">{levelInfo.level}</p>
+            <p className="font-bold text-werewolf-purple text-lg">{levelInfo.level}</p>
           </div>
-          <div className="p-2 bg-werewolf-dark/50 rounded-md">
-            <p className="text-sm text-gray-400">{t('experience')}</p>
-            <p className="font-bold">
+          
+          <div className="p-3 bg-werewolf-dark/50 rounded-md">
+            <p className="text-sm text-gray-400 mb-1">Experience</p>
+            <p className="font-bold text-lg">
               {playerData.experience}
               {levelInfo.nextLevelExp && (
                 <span className="text-xs text-gray-400">/{levelInfo.nextLevelExp}</span>
@@ -225,14 +233,15 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-3 w-full text-center">
-          <div className="p-2 bg-werewolf-dark/50 rounded-md">
-            <p className="text-sm text-gray-400">{t('wins')}</p>
-            <p className="font-bold text-green-500">{playerData.wins}</p>
+        {/* Wins and Losses Row - Centered */}
+        <div className="grid grid-cols-2 gap-4 w-full max-w-xs text-center">
+          <div className="p-3 bg-werewolf-dark/50 rounded-md">
+            <p className="text-sm text-gray-400 mb-1">Wins</p>
+            <p className="font-bold text-green-500 text-lg">{playerData.wins}</p>
           </div>
-          <div className="p-2 bg-werewolf-dark/50 rounded-md">
-            <p className="text-sm text-gray-400">{t('losses')}</p>
-            <p className="font-bold text-red-400">{playerData.losses}</p>
+          <div className="p-3 bg-werewolf-dark/50 rounded-md">
+            <p className="text-sm text-gray-400 mb-1">Losses</p>
+            <p className="font-bold text-red-400 text-lg">{playerData.losses}</p>
           </div>
         </div>
       </CardContent>
