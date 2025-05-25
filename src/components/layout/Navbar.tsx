@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
           <Button 
             variant="ghost" 
             className="nav-link flex items-center"
-            onClick={() => window.open("https://seedao.xyz/", "_blank")}
+            onClick={() => window.open("https://seedao.xyz/", "blank")}
           >
             <ExternalLink size={20} className="mr-1" />
             <span className="hidden sm:inline">{t('seedao')}</span>
@@ -107,7 +107,7 @@ const Navbar: React.FC = () => {
               variant="ghost" 
               className="nav-link justify-start"
               onClick={() => {
-                window.open("https://seedao.xyz/", "_blank");
+                window.open("https://seedao.xyz/", "blank");
                 setIsMenuOpen(false);
               }}
             >

@@ -27,25 +27,25 @@ const Index = () => {
             to="/lobby" 
             className="btn-primary btn-shake inline-block mb-16"
           >
-            {t('start_game')}
+            {t('start game')}
           </Link>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
             <FeatureCard 
-              title={t('community_integration')}
-              description={t('community_desc')}
+              title={t('community integration')}
+              description={t('community desc')}
               icon={Users}
             />
             
             <FeatureCard 
-              title={t('ai_knowledge')}
-              description={t('ai_knowledge_desc')}
+              title={t('ai knowledge')}
+              description={t('ai knowledge desc')}
               icon={Brain}
             />
             
             <FeatureCard 
-              title={t('ai_participants')}
-              description={t('ai_participants_desc')}
+              title={t('ai participants')}
+              description={t('ai participants desc')}
               icon={Bot}
             />
           </div>

@@ -173,7 +173,7 @@ const GameLobby = () => {
                 className="bg-werewolf-purple hover:bg-werewolf-light"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {t('create_ai_judge')}
+                {t('create ai judge')}
               </Button>
               
               <Button 
@@ -181,16 +181,16 @@ const GameLobby = () => {
                 className="bg-werewolf-purple hover:bg-werewolf-light"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {t('create_room')}
+                {t('create room')}
               </Button>
             </div>
             
             {/* Game Room List */}
             <Card className="bg-werewolf-card border-werewolf-purple/30 mb-6">
               <CardHeader>
-                <CardTitle>{t('game_rooms')}</CardTitle>
+                <CardTitle>{t('game rooms')}</CardTitle>
                 <CardDescription>
-                  {t('join_existing')}
+                  {t('join existing')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -198,9 +198,9 @@ const GameLobby = () => {
                   <Table>
                     <TableHeader className="bg-werewolf-dark/60">
                       <TableRow>
-                        <TableHead className="text-werewolf-purple w-[180px]">{t('room_id')}</TableHead>
+                        <TableHead className="text-werewolf-purple w-[180px]">{t('room id')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('players')}</TableHead>
-                        <TableHead className="text-werewolf-purple text-center">{t('max_players')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('max players')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('status')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('judge')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('action')}</TableHead>
@@ -236,7 +236,7 @@ const GameLobby = () => {
                                 onClick={() => playAsJudge(room.id)}
                                 className="bg-werewolf-dark/40 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
                               >
-                                {t('play_judge')}
+                                {t('play judge')}
                               </Button>
                             )}
                           </TableCell>
@@ -266,11 +266,11 @@ const GameLobby = () => {
               <TabsList className="w-full bg-werewolf-card mb-4">
                 <TabsTrigger value="create" className="flex-1">
                   <Plus className="mr-2 h-4 w-4" />
-                  {t('create_room')}
+                  {t('create room')}
                 </TabsTrigger>
                 <TabsTrigger value="ai" className="flex-1">
                   <Brain className="mr-2 h-4 w-4" />
-                  {t('ai_settings')}
+                  {t('ai settings')}
                 </TabsTrigger>
               </TabsList>
 
@@ -278,18 +278,18 @@ const GameLobby = () => {
               <TabsContent value="create">
                 <Card className="bg-werewolf-card border-werewolf-purple/30">
                   <CardHeader>
-                    <CardTitle>{t('create_room')}</CardTitle>
+                    <CardTitle>{t('create room')}</CardTitle>
                     <CardDescription>
-                      {t('setup_game')}
+                      {t('setup game')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="roomName">{t('room_name')}</Label>
+                        <Label htmlFor="roomName">{t('room name')}</Label>
                         <Input 
                           id="roomName" 
-                          placeholder={t('enter_room_name')}
+                          placeholder={t('enter room name')}
                           value={roomName}
                           onChange={(e) => setRoomName(e.target.value)}
                           className="bg-werewolf-dark/40 border-werewolf-purple/30"
@@ -298,7 +298,7 @@ const GameLobby = () => {
                       
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <Label htmlFor="maxPlayers">{t('max_players')}: {maxPlayers}</Label>
+                          <Label htmlFor="maxPlayers">{t('max players')}: {maxPlayers}</Label>
                         </div>
                         <Slider 
                           id="maxPlayers"
@@ -310,7 +310,7 @@ const GameLobby = () => {
                           className="py-4"
                         />
                         <div className="text-xs text-gray-400 mt-1">
-                          {t('player_config')}: {maxPlayers} {t('player_roles')}
+                          {t('player config')}: {maxPlayers} {t('player roles')}
                         </div>
                       </div>
                       
@@ -320,7 +320,7 @@ const GameLobby = () => {
                           checked={isPrivate} 
                           onCheckedChange={setIsPrivate}
                         />
-                        <Label htmlFor="isPrivate">{t('private_room')}</Label>
+                        <Label htmlFor="isPrivate">{t('private room')}</Label>
                       </div>
                       
                       <div className="flex items-center space-x-2">
@@ -329,13 +329,13 @@ const GameLobby = () => {
                           checked={useAI} 
                           onCheckedChange={setUseAI}
                         />
-                        <Label htmlFor="useAI">{t('include_ai')}</Label>
+                        <Label htmlFor="useAI">{t('include ai')}</Label>
                       </div>
                       
                       {useAI && (
                         <div className="space-y-2 pl-6 border-l-2 border-werewolf-purple/30">
                           <div className="flex justify-between items-center">
-                            <Label htmlFor="aiCount">{t('ai_count')}: {aiCount}</Label>
+                            <Label htmlFor="aiCount">{t('ai count')}: {aiCount}</Label>
                           </div>
                           <Slider 
                             id="aiCount"
