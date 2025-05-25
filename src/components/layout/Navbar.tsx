@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Gamepad, Home, Menu, X, ExternalLink } from 'lucide-react';
+import { Gamepad, Home, Menu, X, ExternalLink, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import LanguageSwitcher, { useLanguage } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
@@ -13,6 +13,7 @@ const Navbar: React.FC = () => {
   const { t } = useLanguage();
   
   const isHomePage = location.pathname === '/';
+  const isGameRelatedPage = ['/room', '/game', '/judge'].includes(location.pathname);
 
   return (
     <nav className="bg-werewolf-dark/80 backdrop-blur-md p-4 shadow-md fixed top-0 w-full z-50">
@@ -34,6 +35,11 @@ const Navbar: React.FC = () => {
           {isHomePage ? (
             <Link to="/lobby" className="nav-link">
               {t('lobby')}
+            </Link>
+          ) : isGameRelatedPage ? (
+            <Link to="/lobby" className="nav-link">
+              <Users size={20} className="inline mr-1" />
+              Game Lobby
             </Link>
           ) : (
             <Link to="/" className="nav-link">
@@ -77,6 +83,15 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('lobby')}
+              </Link>
+            ) : isGameRelatedPage ? (
+              <Link 
+                to="/lobby" 
+                className="nav-link"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Users size={20} className="inline mr-1" />
+                Game Lobby
               </Link>
             ) : (
               <Link 
