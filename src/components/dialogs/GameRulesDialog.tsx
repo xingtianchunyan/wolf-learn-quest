@@ -227,7 +227,7 @@ const GameRulesDialog: React.FC = () => {
                 <div className="space-y-3">
                   {[6, 7, 8, 9, 10, 11, 12].map((numPlayers) => (
                     <div key={numPlayers} className="bg-werewolf-dark/40 p-3 rounded-md">
-                      <h4 className="font-semibold">{t('player_setup', { count: numPlayers })}</h4>
+                      <h4 className="font-semibold">{`${numPlayers} Player Setup`}</h4>
                       <p className="text-sm mt-1">{t(`setup_${numPlayers}`)}</p>
                     </div>
                   ))}
