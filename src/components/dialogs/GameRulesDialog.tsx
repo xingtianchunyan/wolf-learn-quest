@@ -11,10 +11,52 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useLanguage } from '../layout/LanguageSwitcher';
 
 const GameRulesDialog: React.FC = () => {
   const { t } = useLanguage();
+  
+  const characterSkills = [
+    { role: 'Villager', skill: 'Sleep', usages: 'Unlimited', type: 'None', effect: 'None' },
+    { role: 'Hunter', skill: 'Dying Shot', usages: '1', type: 'Attack', effect: 'Designate a player to attack before being eliminated' },
+    { role: 'Witch', skill: 'Magic Potion', usages: '2', type: 'Protect or Attack', effect: 'Designate a player to protect or attack' },
+    { role: 'Seer', skill: 'Prophecy', usages: 'Unlimited', type: 'View', effect: 'Specify to view one player\'s camp information' },
+    { role: 'Guard', skill: 'Vigil', usages: 'Unlimited', type: 'Protection', effect: 'Designate a player (including yourself) to be protected from attacks' },
+    { role: 'Werewolf', skill: 'Night Attack', usages: 'Unlimited', type: 'Attack', effect: 'Designated attack on one player' },
+    { role: 'White Wolf', skill: 'Self-Destruct', usages: '1', type: 'Attack', effect: 'Designate an attack on a player, eliminating himself and target simultaneously' },
+    { role: 'Warlock', skill: 'Voodoo', usages: '1', type: 'Protection', effect: 'Designate a player for protection' },
+    { role: 'Demon', skill: 'Demon\'s Eye', usages: 'Unlimited', type: 'View', effect: 'Specify to view one player\'s character information' },
+  ];
+
+  const informationDisclosure = [
+    { role: 'Villager', phases: 'Daytime + Evening + Dawn', scope: 'Public Chat + Quiz Questions and Options' },
+    { role: 'Hunter', phases: 'All', scope: 'Public Chat + Own Attack Status + Quiz Questions and Options' },
+    { role: 'Witch', phases: 'All', scope: 'Public Chat + Specific Night Attack Target + Quiz Questions and Options' },
+    { role: 'Seer', phases: 'All', scope: 'Public Chat + Target Camp Information + Quiz Questions and Options' },
+    { role: 'Guard', phases: 'Daytime + Evening + Dawn', scope: 'Public Chat + Quiz Questions and Options' },
+    { role: 'Werewolf', phases: 'All', scope: 'Public Chat + Team Chat + Werewolf/White Wolf Players + Quiz Questions and Options' },
+    { role: 'White Wolf', phases: 'All', scope: 'Public Chat + Team Chat + Werewolf/White Wolf Players + Quiz Questions and Options' },
+    { role: 'Warlock', phases: 'All', scope: 'Public Chat + Witch Poison Target + Quiz Questions and Options' },
+    { role: 'Demon', phases: 'All', scope: 'Public Chat + Werewolf/White Wolf Players + Target Role Info + Quiz Questions and Options' },
+  ];
+
+  const playerConfigurations = [
+    { players: 6, config: '2 Werewolves, 2 Villagers, 1 Seer, 1 Witch' },
+    { players: 7, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch' },
+    { players: 8, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock' },
+    { players: 9, config: '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock' },
+    { players: 10, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
+    { players: 11, config: '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
+    { players: 12, config: '2 Werewolves, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
+  ];
   
   return (
     <Dialog>
@@ -23,277 +65,239 @@ const GameRulesDialog: React.FC = () => {
           {t('game_rules')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] bg-werewolf-card text-werewolf-text">
+      <DialogContent className="sm:max-w-[900px] md:max-w-[1000px] bg-werewolf-card text-werewolf-text">
         <DialogHeader>
-          <DialogTitle className="text-werewolf-purple">{t('game_rules')}</DialogTitle>
+          <DialogTitle className="text-werewolf-purple">Game Rules</DialogTitle>
           <DialogDescription>
-            {t('learn_game_rules')}
+            Learn the complete game rules and mechanics
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="win-conditions" className="w-full">
           <TabsList className="w-full bg-werewolf-dark/60 grid grid-cols-3 md:grid-cols-6">
-            <TabsTrigger value="win-conditions">{t('win_conditions')}</TabsTrigger>
-            <TabsTrigger value="factions">{t('factions')}</TabsTrigger>
-            <TabsTrigger value="phases">{t('game_phases')}</TabsTrigger>
-            <TabsTrigger value="roles">{t('roles')}</TabsTrigger>
-            <TabsTrigger value="status">{t('status')}</TabsTrigger>
-            <TabsTrigger value="info">{t('info_visibility')}</TabsTrigger>
+            <TabsTrigger value="win-conditions">Win Conditions</TabsTrigger>
+            <TabsTrigger value="factions">Factions</TabsTrigger>
+            <TabsTrigger value="phases">Game Phases</TabsTrigger>
+            <TabsTrigger value="roles">Character Skills</TabsTrigger>
+            <TabsTrigger value="status">Status</TabsTrigger>
+            <TabsTrigger value="info">Information</TabsTrigger>
           </TabsList>
-          <ScrollArea className="h-[400px] mt-4 pr-4">
+          <ScrollArea className="h-[500px] mt-4 pr-4">
             {/* Win Conditions Tab */}
             <TabsContent value="win-conditions" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('winning_conditions')}</h3>
-                <ul className="list-disc pl-6">
-                  <li>{t('win_condition_main')}</li>
-                  <li>{t('win_condition_werewolf')}</li>
-                  <li>{t('win_condition_draw')}</li>
-                </ul>
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-werewolf-purple">Winning Conditions</h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                    <h4 className="font-semibold text-werewolf-light mb-2">Primary Win Condition</h4>
+                    <p>Any character from the same camp survives to the end and eliminates all characters from the opposing camp.</p>
+                  </div>
+                  <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                    <h4 className="font-semibold text-werewolf-light mb-2">Werewolf Auto-Win</h4>
+                    <p>When the sum of surviving Werewolf and White Wolf characters equals the number of surviving Good Guys camp characters, the Werewolf camp automatically wins.</p>
+                  </div>
+                  <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                    <h4 className="font-semibold text-werewolf-light mb-2">Draw Condition</h4>
+                    <p>If there is no winner at the end of the predetermined action phase, both sides are considered to have won.</p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
             
             {/* Factions Tab */}
             <TabsContent value="factions" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('good_faction')}</h3>
-                <p>{t('good_faction_desc')}</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><span className="font-semibold">{t('role_villager')}</span></li>
-                  <li><span className="font-semibold">{t('role_hunter')}</span></li>
-                  <li><span className="font-semibold">{t('role_witch')}</span></li>
-                  <li><span className="font-semibold">{t('role_seer')}</span></li>
-                  <li><span className="font-semibold">{t('role_guard')}</span></li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('werewolf_faction')}</h3>
-                <p>{t('werewolf_faction_desc')}</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><span className="font-semibold">{t('role_werewolf')}</span></li>
-                  <li><span className="font-semibold">{t('role_white_wolf')}</span></li>
-                  <li><span className="font-semibold">{t('role_warlock')}</span></li>
-                  <li><span className="font-semibold">{t('role_demon')}</span></li>
-                </ul>
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-werewolf-purple">Camp Description</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-900/20 border-l-4 border-green-600 rounded-md">
+                    <h4 className="font-semibold text-green-400 mb-2">Good Guys Camp</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li>• Villagers</li>
+                      <li>• Hunter</li>
+                      <li>• Witch</li>
+                      <li>• Seer (Prophet)</li>
+                      <li>• Guard</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-red-900/20 border-l-4 border-red-600 rounded-md">
+                    <h4 className="font-semibold text-red-400 mb-2">Werewolf Camp</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li>• Werewolf</li>
+                      <li>• White Wolf</li>
+                      <li>• Warlock</li>
+                      <li>• Demon</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </TabsContent>
             
             {/* Game Phases Tab */}
             <TabsContent value="phases" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('game_time')}</h3>
-                <p>{t('game_time_desc')}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('action_phases')}</h3>
-                <p>{t('action_phases_desc')}</p>
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-werewolf-purple">Game Time and Action Phases</h3>
                 
-                <ol className="list-decimal pl-6 space-y-4">
-                  <li>
-                    <span className="font-medium text-werewolf-light">{t('phase_day')}</span>
-                    <p className="mt-1">{t('phase_day_desc')}</p>
-                  </li>
-                  <li>
-                    <span className="font-medium text-werewolf-light">{t('phase_evening')}</span>
-                    <p className="mt-1">{t('phase_evening_desc')}</p>
-                  </li>
-                  <li>
-                    <span className="font-medium text-werewolf-light">{t('phase_night')}</span>
-                    <p className="mt-1">{t('phase_night_desc')}</p>
-                  </li>
-                  <li>
-                    <span className="font-medium text-werewolf-light">{t('phase_dawn')}</span>
-                    <p className="mt-1">{t('phase_dawn_desc')}</p>
-                  </li>
-                </ol>
+                <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                  <h4 className="font-semibold text-werewolf-light mb-2">Game Duration</h4>
+                  <p>The game begins with Day 1 Evening Quiz and proceeds up to Day 9 Daytime phase - maximum of 24 phases.</p>
+                </div>
                 
-                <p className="mt-4">{t('game_duration')}</p>
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-werewolf-light">Daily Action Phases</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-blue-900/20 border border-blue-600/30 rounded-md">
+                      <h5 className="font-medium text-blue-400">Phase 1: Daytime</h5>
+                      <p className="text-sm mt-1">Time limit: 5 minutes or all vote completion</p>
+                      <p className="text-sm">Open discussion and voting to eliminate suspected werewolf camp players</p>
+                    </div>
+                    
+                    <div className="p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
+                      <h5 className="font-medium text-yellow-400">Phase 2: Evening Quiz</h5>
+                      <p className="text-sm mt-1">Time limit: 1 minute</p>
+                      <p className="text-sm">All players answer quiz questions to enable night actions</p>
+                    </div>
+                    
+                    <div className="p-3 bg-purple-900/20 border border-purple-600/30 rounded-md">
+                      <h5 className="font-medium text-purple-400">Phase 3: Nighttime</h5>
+                      <p className="text-sm mt-1">Time limit: 3 minutes or all skill decisions</p>
+                      <p className="text-sm">Characters perform night actions in priority order</p>
+                    </div>
+                    
+                    <div className="p-3 bg-orange-900/20 border border-orange-600/30 rounded-md">
+                      <h5 className="font-medium text-orange-400">Phase 4: Dawn Quiz</h5>
+                      <p className="text-sm mt-1">Time limit: 1 minute</p>
+                      <p className="text-sm">Quiz to exit Near-Death state and enter Weakened state</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                  <h4 className="font-semibold text-werewolf-light mb-2">Night Action Priority Order</h4>
+                  <p className="text-sm">Villager → Guard → Werewolf → Seer → Demon → Witch → Warlock → White Wolf → Hunter</p>
+                </div>
               </div>
             </TabsContent>
             
-            {/* Roles Tab */}
+            {/* Character Skills Tab */}
             <TabsContent value="roles" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('roles_order')}</h3>
-                <p className="text-sm italic">{t('roles_order_desc')}</p>
-                <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                  <p className="font-medium">{t('roles_action_order')}</p>
-                </div>
-              </div>
-              
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('roles_abilities')}</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">Character Skills</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light">{t('role_villager')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_villager')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('unlimited')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('none')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_villager')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light">{t('role_hunter')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_hunter')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('once')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_attack')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_hunter')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light">{t('role_witch')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_witch')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('twice')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_protection_attack')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_witch')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light">{t('role_seer')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_seer')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('unlimited')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_inspection')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_seer')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light">{t('role_guard')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_guard')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('unlimited')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_protection')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_guard')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-red-400">{t('role_werewolf')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_werewolf')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('unlimited')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_attack')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_werewolf')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-red-400">{t('role_white_wolf')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_white_wolf')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('once')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_attack')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_white_wolf')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-red-400">{t('role_warlock')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_warlock')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('once')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_protection')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_warlock')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-werewolf-dark/40 p-3 rounded-md">
-                    <h4 className="font-semibold text-red-400">{t('role_demon')}</h4>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="font-medium">{t('ability')}:</span> {t('ability_demon')}</p>
-                      <p><span className="font-medium">{t('usages')}:</span> {t('unlimited')}</p>
-                      <p><span className="font-medium">{t('type')}:</span> {t('type_inspection')}</p>
-                      <p><span className="font-medium">{t('effect')}:</span> {t('effect_demon')}</p>
-                    </div>
+                <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-werewolf-dark/60">
+                        <TableHead className="text-werewolf-purple font-semibold">Role</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Skill</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Usages</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Type</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Effect</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {characterSkills.map((character, index) => (
+                        <TableRow key={index} className="hover:bg-werewolf-dark/20">
+                          <TableCell className={`font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(character.role) ? 'text-red-400' : 'text-green-400'}`}>
+                            {character.role}
+                          </TableCell>
+                          <TableCell>{character.skill}</TableCell>
+                          <TableCell>{character.usages}</TableCell>
+                          <TableCell>{character.type}</TableCell>
+                          <TableCell className="text-sm">{character.effect}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-werewolf-light">Special Rules</h4>
+                  <div className="p-3 bg-werewolf-dark/40 rounded-md text-sm space-y-2">
+                    <p>• When multiple Werewolf characters use skills simultaneously, it counts as a single attack</p>
+                    <p>• A character enters Weakened state when targeted by two different Protection skills</p>
                   </div>
                 </div>
                 
-                <div className="p-3 bg-werewolf-dark/40 rounded-md text-sm">
-                  <p className="mb-2">{t('werewolf_attack_rule')}</p>
-                  <p>{t('double_protection_rule')}</p>
-                </div>
-              </div>
-              
-              <div className="space-y-2 mt-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('player_setups')}</h3>
-                <div className="space-y-3">
-                  {[6, 7, 8, 9, 10, 11, 12].map((numPlayers) => (
-                    <div key={numPlayers} className="bg-werewolf-dark/40 p-3 rounded-md">
-                      <h4 className="font-semibold">{`${numPlayers} Player Setup`}</h4>
-                      <p className="text-sm mt-1">{t(`setup_${numPlayers}`)}</p>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-werewolf-light">Player Configurations</h4>
+                  <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-werewolf-dark/60">
+                          <TableHead className="text-werewolf-purple font-semibold">Players</TableHead>
+                          <TableHead className="text-werewolf-purple font-semibold">Role Configuration</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {playerConfigurations.map((config, index) => (
+                          <TableRow key={index} className="hover:bg-werewolf-dark/20">
+                            <TableCell className="font-medium text-werewolf-light">{config.players}</TableCell>
+                            <TableCell className="text-sm">{config.config}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </div>
             </TabsContent>
             
             {/* Status Tab */}
             <TabsContent value="status" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('character_status')}</h3>
-                <p>{t('status_desc')}</p>
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-werewolf-purple">Character Status</h3>
                 
-                <div className="space-y-3 mt-4">
-                  <div className="p-3 bg-green-900/20 border-l-4 border-green-600 rounded-md">
-                    <h4 className="font-semibold">{t('status_normal')}</h4>
-                    <p className="text-sm mt-1">{t('status_normal_desc')}</p>
+                <div className="space-y-3">
+                  <div className="p-4 bg-green-900/20 border-l-4 border-green-600 rounded-md">
+                    <h4 className="font-semibold text-green-400 mb-2">Normal State</h4>
+                    <p className="text-sm">Can participate in discussions, vote, use skills, be targeted for skills, be targeted for votes, and participate in quizzes. All characters start in Normal state.</p>
                   </div>
                   
-                  <div className="p-3 bg-yellow-900/20 border-l-4 border-yellow-600 rounded-md">
-                    <h4 className="font-semibold">{t('status_dying')}</h4>
-                    <p className="text-sm mt-1">{t('status_dying_desc')}</p>
+                  <div className="p-4 bg-yellow-900/20 border-l-4 border-yellow-600 rounded-md">
+                    <h4 className="font-semibold text-yellow-400 mb-2">Near-Death State</h4>
+                    <p className="text-sm">Can use skills, be targeted for skills, and participate in quizzes. Cannot participate in discussions, vote, or be targeted for votes. Entered when attacked while in Normal state. Returns to Normal when protected.</p>
                   </div>
                   
-                  <div className="p-3 bg-blue-900/20 border-l-4 border-blue-600 rounded-md">
-                    <h4 className="font-semibold">{t('status_weak')}</h4>
-                    <p className="text-sm mt-1">{t('status_weak_desc')}</p>
+                  <div className="p-4 bg-blue-900/20 border-l-4 border-blue-600 rounded-md">
+                    <h4 className="font-semibold text-blue-400 mb-2">Weakened State</h4>
+                    <p className="text-sm">Can participate in discussions, be targeted for skills, be targeted for votes, and answer quizzes. Cannot vote or use skills. Entered from Near-Death by correctly answering Dawn Quiz, or when targeted by two Protection skills. Cannot return to Normal. Eliminated when attacked.</p>
                   </div>
                   
-                  <div className="p-3 bg-red-900/20 border-l-4 border-red-600 rounded-md">
-                    <h4 className="font-semibold">{t('status_eliminated')}</h4>
-                    <p className="text-sm mt-1">{t('status_eliminated_desc')}</p>
+                  <div className="p-4 bg-red-900/20 border-l-4 border-red-600 rounded-md">
+                    <h4 className="font-semibold text-red-400 mb-2">Elimination State</h4>
+                    <p className="text-sm">Can only participate in answering quizzes. Cannot participate in discussions, vote, use skills, or be targeted. Entered when voted out, when failing Dawn Quiz while Near-Death, or when attacked while Weakened.</p>
                   </div>
                 </div>
               </div>
             </TabsContent>
             
-            {/* Information Visibility Tab */}
+            {/* Information Disclosure Tab */}
             <TabsContent value="info" className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-werewolf-purple">{t('info_visibility')}</h3>
-                <p>{t('info_visibility_desc')}</p>
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-werewolf-purple">Information Disclosure</h3>
+                <p className="text-sm text-gray-400">Different roles can see different information at different stages</p>
                 
-                <div className="overflow-x-auto mt-4">
-                  <table className="min-w-full bg-werewolf-dark/40 rounded-md">
-                    <thead>
-                      <tr className="border-b border-werewolf-purple/30">
-                        <th className="py-2 px-4 text-left">{t('role')}</th>
-                        <th className="py-2 px-4 text-left">{t('visible_phases')}</th>
-                        <th className="py-2 px-4 text-left">{t('visible_info')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-werewolf-purple/20">
-                      {['villager', 'hunter', 'witch', 'seer', 'guard', 'werewolf', 'white_wolf', 'warlock', 'demon'].map((role) => (
-                        <tr key={role}>
-                          <td className="py-2 px-4">
-                            <span className={`font-medium ${['werewolf', 'white_wolf', 'warlock', 'demon'].includes(role) ? 'text-red-400' : 'text-werewolf-light'}`}>
-                              {t(`role_${role}`)}
-                            </span>
-                          </td>
-                          <td className="py-2 px-4 text-sm">{t(`phases_${role}`)}</td>
-                          <td className="py-2 px-4 text-sm">{t(`info_${role}`)}</td>
-                        </tr>
+                <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-werewolf-dark/60">
+                        <TableHead className="text-werewolf-purple font-semibold">Role</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Disclosure Phases</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">Information Scope</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {informationDisclosure.map((info, index) => (
+                        <TableRow key={index} className="hover:bg-werewolf-dark/20">
+                          <TableCell className={`font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(info.role) ? 'text-red-400' : 'text-green-400'}`}>
+                            {info.role}
+                          </TableCell>
+                          <TableCell className="text-sm">{info.phases}</TableCell>
+                          <TableCell className="text-sm">{info.scope}</TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             </TabsContent>
