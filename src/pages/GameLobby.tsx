@@ -2,16 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Brain, Plus, User, Users } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import PlayerInfo from '@/components/lobby/PlayerInfo';
@@ -24,8 +17,6 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-
-// Mock player data is now replaced with real data from Supabase in the PlayerInfo component
 
 // Mock room data - will be replaced with data from Supabase
 const rooms = [
@@ -68,11 +59,6 @@ const GameLobby = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [roomName, setRoomName] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState(10);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [useAI, setUseAI] = useState(true);
-  const [aiCount, setAiCount] = useState(2);
   const [gameRooms, setGameRooms] = useState(rooms); // Will be replaced with data from Supabase
 
   // Generate a room ID based on the current date and sequence number
@@ -90,16 +76,10 @@ const GameLobby = () => {
   };
 
   const handleCreateRoom = async () => {
-    if (!roomName.trim()) {
-      toast({
-        title: "Room name required",
-        description: "Please enter a name for your game room",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
+      // Create room with default settings: AI enabled, 10 max players, public room
+      const roomName = `Game Room ${generateRoomId()}`;
+      
       // In a real implementation, we would save this to Supabase
       const newRoom = {
         id: `room${gameRooms.length + 1}`,
@@ -107,21 +87,22 @@ const GameLobby = () => {
         name: roomName,
         host: 'You', // Would be the actual user name
         players: 1,
-        maxPlayers: maxPlayers,
-        hasAI: useAI,
-        isPrivate: isPrivate,
+        maxPlayers: 10,
+        hasAI: true,
+        isPrivate: false,
         status: 'waiting'
       };
       
       setGameRooms([...gameRooms, newRoom]);
       
-      console.log('Creating room:', { roomName, maxPlayers, isPrivate, useAI, aiCount });
+      console.log('Creating room with AI players:', { roomName, maxPlayers: 10, isPrivate: false, useAI: true, aiCount: 2 });
       
       toast({
         title: "Room created!",
-        description: `"${roomName}" has been created successfully`,
+        description: `"${roomName}" has been created with AI players`,
       });
       
+      // Redirect to game room page
       navigate('/room');
     } catch (error) {
       console.error('Error creating room:', error);
@@ -177,7 +158,7 @@ const GameLobby = () => {
               </Button>
               
               <Button 
-                onClick={() => setRoomName('New Game Room')}
+                onClick={handleCreateRoom}
                 className="bg-werewolf-purple hover:bg-werewolf-light"
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -186,7 +167,7 @@ const GameLobby = () => {
             </div>
             
             {/* Game Room List */}
-            <Card className="bg-werewolf-card border-werewolf-purple/30 mb-6">
+            <Card className="bg-werewolf-card border-werewolf-purple/30">
               <CardHeader>
                 <CardTitle>{t('game rooms')}</CardTitle>
                 <CardDescription>
@@ -261,185 +242,6 @@ const GameLobby = () => {
                 </div>
               </CardContent>
             </Card>
-            
-            <Tabs defaultValue="create" className="w-full">
-              <TabsList className="w-full bg-werewolf-card mb-4">
-                <TabsTrigger value="create" className="flex-1">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('create room')}
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="flex-1">
-                  <Brain className="mr-2 h-4 w-4" />
-                  {t('ai settings')}
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Create Room Form */}
-              <TabsContent value="create">
-                <Card className="bg-werewolf-card border-werewolf-purple/30">
-                  <CardHeader>
-                    <CardTitle>{t('create room')}</CardTitle>
-                    <CardDescription>
-                      {t('setup game')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="roomName">{t('room name')}</Label>
-                        <Input 
-                          id="roomName" 
-                          placeholder={t('enter room name')}
-                          value={roomName}
-                          onChange={(e) => setRoomName(e.target.value)}
-                          className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <Label htmlFor="maxPlayers">{t('max players')}: {maxPlayers}</Label>
-                        </div>
-                        <Slider 
-                          id="maxPlayers"
-                          min={6}
-                          max={12}
-                          step={1}
-                          value={[maxPlayers]}
-                          onValueChange={(values) => setMaxPlayers(values[0])}
-                          className="py-4"
-                        />
-                        <div className="text-xs text-gray-400 mt-1">
-                          {t('player config')}: {maxPlayers} {t('player roles')}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id="isPrivate" 
-                          checked={isPrivate} 
-                          onCheckedChange={setIsPrivate}
-                        />
-                        <Label htmlFor="isPrivate">{t('private room')}</Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id="useAI" 
-                          checked={useAI} 
-                          onCheckedChange={setUseAI}
-                        />
-                        <Label htmlFor="useAI">{t('include ai')}</Label>
-                      </div>
-                      
-                      {useAI && (
-                        <div className="space-y-2 pl-6 border-l-2 border-werewolf-purple/30">
-                          <div className="flex justify-between items-center">
-                            <Label htmlFor="aiCount">{t('ai count')}: {aiCount}</Label>
-                          </div>
-                          <Slider 
-                            id="aiCount"
-                            min={1}
-                            max={maxPlayers - 1}
-                            step={1}
-                            value={[aiCount]}
-                            onValueChange={(values) => setAiCount(values[0])}
-                            className="py-4"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-end">
-                    <Button 
-                      onClick={handleCreateRoom}
-                      className="bg-werewolf-purple hover:bg-werewolf-light"
-                    >
-                      {t('create')}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-
-              {/* AI Settings */}
-              <TabsContent value="ai">
-                <Card className="bg-werewolf-card border-werewolf-purple/30">
-                  <CardHeader>
-                    <CardTitle>AI Judge & Player Settings</CardTitle>
-                    <CardDescription>
-                      Configure the AI behavior for your games
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <div className="p-4 bg-werewolf-dark/40 rounded-lg">
-                        <div className="flex items-start gap-4">
-                          <Avatar>
-                            <AvatarFallback className="bg-werewolf-purple">AI</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-bold text-werewolf-purple">AI Judge</h3>
-                            <p className="text-sm mb-4">The AI Judge manages the game, asks questions, and evaluates answers</p>
-                            
-                            <div className="space-y-4">
-                              <div className="flex items-center space-x-2">
-                                <Switch id="aiJudge" defaultChecked />
-                                <Label htmlFor="aiJudge">Enable AI Judge</Label>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="judgePersonality">Judge Personality</Label>
-                                <select 
-                                  id="judgePersonality"
-                                  className="w-full p-2 bg-werewolf-dark rounded border border-werewolf-purple/30"
-                                >
-                                  <option value="friendly">Friendly & Encouraging</option>
-                                  <option value="strict">Strict & Challenging</option>
-                                  <option value="funny">Humorous & Playful</option>
-                                  <option value="mysterious">Mysterious & Cryptic</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 bg-werewolf-dark/40 rounded-lg">
-                        <div className="flex items-start gap-4">
-                          <Avatar>
-                            <AvatarFallback className="bg-blue-700">AI</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-bold text-werewolf-purple">AI Players</h3>
-                            <p className="text-sm mb-4">AI Players can fill in when you don't have enough human participants</p>
-                            
-                            <div className="space-y-4">
-                              <div className="flex items-center space-x-2">
-                                <Switch id="aiPlayers" defaultChecked />
-                                <Label htmlFor="aiPlayers">Enable AI Players</Label>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="aiDifficulty">AI Intelligence Level</Label>
-                                <select 
-                                  id="aiDifficulty"
-                                  className="w-full p-2 bg-werewolf-dark rounded border border-werewolf-purple/30"
-                                >
-                                  <option value="beginner">Beginner - Predictable</option>
-                                  <option value="intermediate">Intermediate - Adaptable</option>
-                                  <option value="advanced">Advanced - Strategic</option>
-                                  <option value="expert">Expert - Human-like</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
           </div>
         </div>
       </div>
