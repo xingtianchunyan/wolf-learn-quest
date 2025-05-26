@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogIn, UserPlus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const LoginDialog: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,45 +24,189 @@ const LoginDialog: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would implement actual login logic with Supabase
-    console.log('Login attempt with:', { email, password });
+  // Check for existing session on component mount
+  React.useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
     
-    toast({
-      title: "Login successful!",
-      description: "Welcome to Werewolf Social Learning",
+    checkSession();
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
     });
     
-    setIsLoggedIn(true);
-    setIsOpen(false);
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Login successful!",
+        description: "Welcome to Werewolf Social Learning",
+      });
+      
+      setIsOpen(false);
+      // Reset form
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would implement actual signup logic with Supabase
-    console.log('Sign up attempt with:', { email, playerId, password, confirmPassword });
     
-    toast({
-      title: "Registration successful!",
-      description: "Please verify your email to complete the registration",
-    });
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Please make sure your passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    setIsOpen(false);
+    if (!playerId.trim()) {
+      toast({
+        title: "Player ID required",
+        description: "Please enter a Player ID",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Check if Player ID already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('player_name')
+        .eq('player_name', playerId.trim())
+        .single();
+        
+      if (existingUser) {
+        toast({
+          title: "Player ID taken",
+          description: "This Player ID is already in use. Please choose a different one.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Sign up the user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            player_name: playerId.trim(),
+          }
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (data.user) {
+        // Create user profile with Player ID
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            user_id: data.user.id,
+            player_name: playerId.trim(),
+            experience: 0,
+            level: 1,
+            games_won: 0,
+            games_lost: 0,
+          });
+          
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          toast({
+            title: "Profile creation failed",
+            description: "Account created but profile setup failed. Please contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
+      toast({
+        title: "Registration successful!",
+        description: "Please check your email to verify your account",
+      });
+      
+      setIsOpen(false);
+      // Reset form
+      setEmail('');
+      setPassword('');
+      setPlayerId('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: "Registration failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    // Here you would implement actual logout logic with Supabase
-    console.log('Logging out');
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
     
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
-    
-    setIsLoggedIn(false);
+    if (error) {
+      toast({
+        title: "Logout failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    }
   };
 
   if (isLoggedIn) {
@@ -123,8 +268,12 @@ const LoginDialog: React.FC = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                  Sign In
+                <Button 
+                  type="submit" 
+                  className="bg-werewolf-purple hover:bg-werewolf-light"
+                  disabled={loading}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </DialogFooter>
             </form>
@@ -150,7 +299,7 @@ const LoginDialog: React.FC = () => {
                   <Input
                     id="playerId"
                     type="text"
-                    placeholder="Choose a player ID"
+                    placeholder="Choose a unique player ID"
                     value={playerId}
                     onChange={(e) => setPlayerId(e.target.value)}
                     required
@@ -181,8 +330,12 @@ const LoginDialog: React.FC = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                  Sign Up
+                <Button 
+                  type="submit" 
+                  className="bg-werewolf-purple hover:bg-werewolf-light"
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Sign Up'}
                 </Button>
               </DialogFooter>
             </form>

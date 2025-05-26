@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
   const [playerData, setPlayerData] = useState({
     id: '',
     name: 'Player',
+    playerId: '', // Added playerId field
     level: 1,
     experience: 0,
     wins: 0,
@@ -40,7 +42,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
           const { data, error } = await supabase
             .from('users')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('user_id', session.user.id)
             .single();
           
           if (error) {
@@ -52,6 +54,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
             setPlayerData({
               id: data.user_id || session.user.id,
               name: data.player_name || session.user.email?.split('@')[0] || 'Player',
+              playerId: data.player_name || '', // Set playerId from database
               level: data.level || 1,
               experience: data.experience || 0,
               wins: data.games_won || 0,
@@ -69,6 +72,27 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
     };
     
     fetchPlayerData();
+    
+    // Listen for auth changes to update player data
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        fetchPlayerData();
+      } else {
+        // Reset player data when logged out
+        setPlayerData({
+          id: '',
+          name: 'Player',
+          playerId: '',
+          level: 1,
+          experience: 0,
+          wins: 0,
+          losses: 0,
+        });
+        setAvatarUrl(null);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
   
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +141,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
       const { error: updateError } = await supabase
         .from('users')
         .update({ avatar_url: publicUrl })
-        .eq('id', session.user.id);
+        .eq('user_id', session.user.id);
         
       if (updateError) {
         console.error("Error updating avatar URL:", updateError);
@@ -160,7 +184,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
       </CardHeader>
       <CardContent className="flex flex-col items-center">
         {/* Avatar Section - Centered */}
-        <div className="relative mb-6 group">
+        <div className="relative mb-4 group">
           <Avatar className="h-24 w-24">
             <AvatarImage src={avatarUrl || ''} alt={playerData.name} />
             <AvatarFallback className="bg-werewolf-purple/30 text-xl">
@@ -187,7 +211,12 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
         </div>
         
         {/* Player Name - Centered */}
-        <h3 className="text-xl font-bold mb-6 text-center">{playerData.name}</h3>
+        <h3 className="text-xl font-bold mb-2 text-center">{playerData.name}</h3>
+        
+        {/* Player ID - Centered below name */}
+        {playerData.playerId && (
+          <p className="text-sm text-gray-400 mb-4 text-center">ID: {playerData.playerId}</p>
+        )}
         
         {/* Level and Experience Row - Centered */}
         <div className="grid grid-cols-2 gap-4 w-full max-w-xs text-center mb-4">
