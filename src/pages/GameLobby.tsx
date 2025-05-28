@@ -37,6 +37,8 @@ const GameLobby = () => {
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [isCreatingAIRoom, setIsCreatingAIRoom] = useState(false);
 
   // Initialize authentication and fetch data
   useEffect(() => {
@@ -113,6 +115,7 @@ const GameLobby = () => {
 
   const fetchRooms = async () => {
     try {
+      console.log('Fetching rooms...');
       const { data, error } = await supabase
         .from('rooms')
         .select(`
@@ -132,6 +135,8 @@ const GameLobby = () => {
         return;
       }
 
+      console.log('Fetched rooms data:', data);
+
       const formattedRooms: GameRoom[] = data?.map(room => ({
         id: room.id,
         roomId: room.room_id,
@@ -144,6 +149,7 @@ const GameLobby = () => {
         status: room.status
       })) || [];
 
+      console.log('Formatted rooms:', formattedRooms);
       setGameRooms(formattedRooms);
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -162,21 +168,20 @@ const GameLobby = () => {
     return `${year}/${month}/${day}-${String(sequence).padStart(2, '0')}`;
   };
 
-  const checkAuthentication = () => {
+  const handleCreateRoom = async () => {
+    console.log('Create room clicked, currentUser:', currentUser);
+    
     if (!currentUser) {
       toast({
         title: "Authentication required",
-        description: "Please sign in to create or join rooms",
+        description: "Please sign in to create rooms",
         variant: "destructive",
       });
-      return false;
+      return;
     }
-    return true;
-  };
 
-  const handleCreateRoom = async () => {
-    if (!checkAuthentication()) return;
-
+    setIsCreatingRoom(true);
+    
     try {
       const roomId = generateRoomId();
       
@@ -240,11 +245,24 @@ const GameLobby = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsCreatingRoom(false);
     }
   };
 
   const handleCreateAIJudge = async () => {
-    if (!checkAuthentication()) return;
+    console.log('Create AI judge clicked, currentUser:', currentUser);
+    
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create rooms",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingAIRoom(true);
 
     try {
       const roomId = generateRoomId();
@@ -288,6 +306,11 @@ const GameLobby = () => {
 
       if (playerError) {
         console.error('Error adding player to room:', playerError);
+        toast({
+          title: "Room created but failed to join",
+          description: "Player addition failed",
+          variant: "destructive",
+        });
       }
 
       toast({
@@ -296,6 +319,7 @@ const GameLobby = () => {
       });
       
       // Navigate to game room
+      console.log('Navigating to /room');
       navigate('/room');
     } catch (error) {
       console.error('Error creating AI judge room:', error);
@@ -304,11 +328,20 @@ const GameLobby = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsCreatingAIRoom(false);
     }
   };
 
   const joinRoom = async (roomId: string) => {
-    if (!checkAuthentication()) return;
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to join rooms",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       console.log('Joining room:', roomId, 'as user:', currentUser.id);
@@ -346,7 +379,14 @@ const GameLobby = () => {
   };
   
   const playAsJudge = async (roomId: string) => {
-    if (!checkAuthentication()) return;
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to play as judge",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       console.log('Playing as judge in room:', roomId);
@@ -392,19 +432,19 @@ const GameLobby = () => {
               <Button 
                 onClick={handleCreateAIJudge}
                 className="bg-werewolf-purple hover:bg-werewolf-light"
-                disabled={!currentUser}
+                disabled={!currentUser || isCreatingAIRoom}
               >
                 <Brain className="mr-2 h-4 w-4" />
-                {t('create ai judge')}
+                {isCreatingAIRoom ? 'Creating...' : t('create ai judge')}
               </Button>
               
               <Button 
                 onClick={handleCreateRoom}
                 className="bg-werewolf-purple hover:bg-werewolf-light"
-                disabled={!currentUser}
+                disabled={!currentUser || isCreatingRoom}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {t('create room')}
+                {isCreatingRoom ? 'Creating...' : t('create room')}
               </Button>
             </div>
 
