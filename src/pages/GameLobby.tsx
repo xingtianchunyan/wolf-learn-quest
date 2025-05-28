@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -55,6 +54,7 @@ const GameLobby = () => {
 
         if (session?.user) {
           console.log('User found:', session.user.id);
+          await ensureUserProfile(session.user);
           setCurrentUser(session.user);
           
           // Get user profile
@@ -88,6 +88,7 @@ const GameLobby = () => {
       console.log('Auth change:', event, session?.user?.id);
       
       if (session?.user) {
+        await ensureUserProfile(session.user);
         setCurrentUser(session.user);
         
         // Get updated user profile
@@ -112,6 +113,51 @@ const GameLobby = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Ensure user profile exists in users table
+  const ensureUserProfile = async (user: any) => {
+    try {
+      // Check if user profile exists
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking user profile:', fetchError);
+        return;
+      }
+
+      // If user doesn't exist, create profile
+      if (!existingUser) {
+        console.log('Creating user profile for:', user.id);
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            user_id: user.id,
+            player_name: user.email?.split('@')[0] || 'Player',
+            level: 1,
+            experience: 0,
+            games_won: 0,
+            games_lost: 0
+          });
+
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          toast({
+            title: "Profile Creation Failed",
+            description: "Failed to create user profile. Please try refreshing the page.",
+            variant: "destructive",
+          });
+        } else {
+          console.log('User profile created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error);
+    }
+  };
 
   const fetchRooms = async () => {
     try {
@@ -183,6 +229,9 @@ const GameLobby = () => {
     setIsCreatingRoom(true);
     
     try {
+      // Ensure user profile exists before creating room
+      await ensureUserProfile(currentUser);
+
       const roomId = generateRoomId();
       
       console.log('Creating room with user ID:', currentUser.id);
@@ -265,6 +314,9 @@ const GameLobby = () => {
     setIsCreatingAIRoom(true);
 
     try {
+      // Ensure user profile exists before creating room
+      await ensureUserProfile(currentUser);
+
       const roomId = generateRoomId();
       
       console.log('Creating AI judge room with user ID:', currentUser.id);
