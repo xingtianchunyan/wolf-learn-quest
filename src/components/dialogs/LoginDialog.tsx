@@ -25,20 +25,94 @@ const LoginDialog: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
 
   // Check for existing session on component mount
   React.useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
+    const initializeAuth = async () => {
+      try {
+        // First get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          return;
+        }
+
+        if (session?.user) {
+          setIsLoggedIn(true);
+          setCurrentUser(session.user);
+          
+          // Try to get or create user profile
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (userError && userError.code !== 'PGRST116') {
+            console.error('Error fetching user profile:', userError);
+          }
+          
+          // If no profile exists, create one
+          if (!userData && session.user.user_metadata?.player_name) {
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert({
+                user_id: session.user.id,
+                player_name: session.user.user_metadata.player_name,
+                experience: 0,
+                level: 1,
+                games_won: 0,
+                games_lost: 0,
+              });
+            
+            if (insertError) {
+              console.error('Error creating user profile:', insertError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      }
     };
     
-    checkSession();
+    initializeAuth();
     
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       setIsLoggedIn(!!session);
+      setCurrentUser(session?.user || null);
+      
+      // When user logs in, ensure profile exists
+      if (event === 'SIGNED_IN' && session?.user) {
+        setTimeout(async () => {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (!userData && session.user.user_metadata?.player_name) {
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert({
+                user_id: session.user.id,
+                player_name: session.user.user_metadata.player_name,
+                experience: 0,
+                level: 1,
+                games_won: 0,
+                games_lost: 0,
+              });
+            
+            if (insertError) {
+              console.error('Error creating user profile:', insertError);
+            }
+          }
+        }, 100);
+      }
     });
     
     return () => subscription.unsubscribe();
@@ -49,7 +123,7 @@ const LoginDialog: React.FC = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -113,7 +187,7 @@ const LoginDialog: React.FC = () => {
         .from('users')
         .select('player_name')
         .eq('player_name', playerId.trim())
-        .single();
+        .maybeSingle();
         
       if (existingUser) {
         toast({
@@ -160,18 +234,13 @@ const LoginDialog: React.FC = () => {
           
         if (profileError) {
           console.error('Profile creation error:', profileError);
-          toast({
-            title: "Profile creation failed",
-            description: "Account created but profile setup failed. Please contact support.",
-            variant: "destructive",
-          });
-          return;
+          // Don't show error to user as the account was created successfully
         }
       }
       
       toast({
         title: "Registration successful!",
-        description: "Please check your email to verify your account",
+        description: "Welcome to Werewolf Social Learning! You can now create and join rooms.",
       });
       
       setIsOpen(false);
@@ -206,6 +275,7 @@ const LoginDialog: React.FC = () => {
         title: "Logged out",
         description: "You have been successfully logged out",
       });
+      setCurrentUser(null);
     }
   };
 
