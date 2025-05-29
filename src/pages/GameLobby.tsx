@@ -132,11 +132,18 @@ const GameLobby = () => {
       // If user doesn't exist, create profile
       if (!existingUser) {
         console.log('Creating user profile for:', user.id);
+        
+        // Get player name from user metadata or display name, fallback to email
+        const playerName = user.user_metadata?.player_name || 
+                          user.user_metadata?.display_name || 
+                          user.email?.split('@')[0] || 
+                          'Player';
+        
         const { error: insertError } = await supabase
           .from('users')
           .insert({
-            user_id: user.id,
-            player_name: user.email?.split('@')[0] || 'Player',
+            user_id: user.id, // This should be a string (UUID as text)
+            player_name: playerName,
             level: 1,
             experience: 0,
             games_won: 0,
@@ -147,7 +154,7 @@ const GameLobby = () => {
           console.error('Error creating user profile:', insertError);
           toast({
             title: "Profile Creation Failed",
-            description: "Failed to create user profile. Please try refreshing the page.",
+            description: `Failed to create user profile: ${insertError.message}. Please try refreshing the page.`,
             variant: "destructive",
           });
         } else {
@@ -156,9 +163,15 @@ const GameLobby = () => {
       }
     } catch (error) {
       console.error('Error ensuring user profile:', error);
+      toast({
+        title: "Profile Creation Failed",
+        description: "An unexpected error occurred while creating your profile.",
+        variant: "destructive",
+      });
     }
   };
 
+  // Fetch rooms from the database
   const fetchRooms = async () => {
     try {
       console.log('Fetching rooms...');

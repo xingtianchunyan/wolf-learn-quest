@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -199,13 +198,14 @@ const LoginDialog: React.FC = () => {
         return;
       }
       
-      // Sign up the user
+      // Sign up the user with player_name in metadata
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             player_name: playerId.trim(),
+            display_name: playerId.trim(), // Set display name for Supabase Auth
           }
         }
       });
@@ -219,7 +219,19 @@ const LoginDialog: React.FC = () => {
         return;
       }
       
+      // Update the user's display name in Supabase Auth
       if (data.user) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { 
+            display_name: playerId.trim(),
+            player_name: playerId.trim()
+          }
+        });
+        
+        if (updateError) {
+          console.error('Error updating display name:', updateError);
+        }
+        
         // Create user profile with Player ID
         const { error: profileError } = await supabase
           .from('users')

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
   const [playerData, setPlayerData] = useState({
     id: '',
     name: 'Player',
-    playerId: '', // Added playerId field
+    playerId: '',
     level: 1,
     experience: 0,
     wins: 0,
@@ -51,10 +50,17 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className }) => {
           }
           
           if (data) {
+            // Get display name from auth user metadata or display_name
+            const displayName = session.user.user_metadata?.display_name || 
+                               session.user.user_metadata?.player_name || 
+                               data.player_name || 
+                               session.user.email?.split('@')[0] || 
+                               'Player';
+                               
             setPlayerData({
               id: data.user_id || session.user.id,
               name: data.player_name || session.user.email?.split('@')[0] || 'Player',
-              playerId: data.player_name || '', // Set playerId from database
+              playerId: displayName, // Use display name as Player ID
               level: data.level || 1,
               experience: data.experience || 0,
               wins: data.games_won || 0,
