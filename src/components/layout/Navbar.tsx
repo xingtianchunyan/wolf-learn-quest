@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Gamepad, Home, Menu, X, ExternalLink, Users } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher, { useLanguage } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
 import GameRulesDialog from '../dialogs/GameRulesDialog';
@@ -10,6 +9,7 @@ import GameRulesDialog from '../dialogs/GameRulesDialog';
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useLanguage();
   
   const isHomePage = location.pathname === '/';
@@ -22,10 +22,10 @@ const Navbar: React.FC = () => {
           <Gamepad className="text-werewolf-purple" />
           <div className="flex flex-col">
             <Link to="/" className="font-bold text-xl text-white">
-              Old With New Werewolf
+              {t('navbar_title')}
             </Link>
             <span className="text-sm text-gray-400 hidden md:block">
-              A social game that makes learning no longer boring.
+              {t('navbar_subtitle')}
             </span>
           </div>
         </div>
@@ -33,19 +33,31 @@ const Navbar: React.FC = () => {
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center space-x-4">
           {isHomePage ? (
-            <Link to="/lobby" className="nav-link">
+            <Button 
+              variant="ghost" 
+              className="nav-link"
+              onClick={() => navigate('/lobby')}
+            >
               {t('lobby')}
-            </Link>
+            </Button>
           ) : isGameRelatedPage ? (
-            <Link to="/lobby" className="nav-link">
+            <Button 
+              variant="ghost" 
+              className="nav-link flex items-center"
+              onClick={() => navigate('/lobby')}
+            >
               <Users size={20} className="inline mr-1" />
-              Game Lobby
-            </Link>
+              {t('lobby')}
+            </Button>
           ) : (
-            <Link to="/" className="nav-link">
+            <Button 
+              variant="ghost" 
+              className="nav-link flex items-center"
+              onClick={() => navigate('/')}
+            >
               <Home size={20} className="inline mr-1" />
               {t('home')}
-            </Link>
+            </Button>
           )}
           <Button 
             variant="ghost" 
@@ -77,31 +89,31 @@ const Navbar: React.FC = () => {
         <div className="md:hidden p-4 bg-werewolf-card mt-2 rounded-md shadow-lg absolute z-10 w-full left-0">
           <div className="flex flex-col space-y-4">
             {isHomePage ? (
-              <Link 
-                to="/lobby" 
+              <Button 
+                variant="ghost" 
                 className="nav-link"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => { navigate('/lobby'); setIsMenuOpen(false); }}
               >
                 {t('lobby')}
-              </Link>
+              </Button>
             ) : isGameRelatedPage ? (
-              <Link 
-                to="/lobby" 
-                className="nav-link"
-                onClick={() => setIsMenuOpen(false)}
+              <Button 
+                variant="ghost" 
+                className="nav-link flex items-center"
+                onClick={() => { navigate('/lobby'); setIsMenuOpen(false); }}
               >
                 <Users size={20} className="inline mr-1" />
-                Game Lobby
-              </Link>
+                {t('lobby')}
+              </Button>
             ) : (
-              <Link 
-                to="/" 
-                className="nav-link"
-                onClick={() => setIsMenuOpen(false)}
+              <Button 
+                variant="ghost" 
+                className="nav-link flex items-center"
+                onClick={() => { navigate('/'); setIsMenuOpen(false); }}
               >
                 <Home size={20} className="inline mr-1" />
                 {t('home')}
-              </Link>
+              </Button>
             )}
             <Button 
               variant="ghost" 

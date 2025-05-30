@@ -1,4 +1,3 @@
-
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,9 +32,12 @@ const translations: Record<string, Record<string, string>> = {
     'lobby': 'Game Lobby',
     'seedao': 'SeeDAO',
     'rules': 'Game Rules',
+    'game_rules': 'Game Rules',
     'signin': 'Sign In',
     'signout': 'Sign Out',
     'signup': 'Sign Up',
+    'navbar_title': 'Old With New Werewolf',
+    'navbar_subtitle': 'A social game that makes learning no longer boring.',
     
     // Home Page
     'welcome': 'Welcome to the Werewolf Social Learning',
@@ -73,6 +75,36 @@ const translations: Record<string, Record<string, string>> = {
     'join': 'Join',
     'create': 'Create',
     'private': 'Private',
+
+    // Auth/Login
+    'auth_title': 'Authentication',
+    'auth_desc': 'Sign in to access your account or create a new one',
+    'email': 'Email',
+    'password': 'Password',
+    'player_id': 'Player ID',
+    'confirm_password': 'Confirm Password',
+    'login_failed': 'Login failed',
+    'login_success': 'Login successful!',
+    'login_success_desc': 'Welcome to Werewolf Social Learning',
+    'registration_failed': 'Registration failed',
+    'registration_success': 'Registration successful!',
+    'registration_success_desc': 'Welcome to Werewolf Social Learning! You can now create and join rooms.',
+    'password_mismatch': 'Password mismatch',
+    'password_mismatch_desc': 'Please make sure your passwords match',
+    'player_id_required': 'Player ID required',
+    'player_id_required_desc': 'Please enter a Player ID',
+    'player_id_taken': 'Player ID taken',
+    'player_id_taken_desc': 'This Player ID is already in use. Please choose a different one.',
+    'logout_failed': 'Logout failed',
+    'logout_success': 'Logged out',
+    'logout_success_desc': 'You have been successfully logged out',
+    'unexpected_error': 'An unexpected error occurred',
+    'creating_account': 'Creating account...',
+    'signing_in': 'Signing in...',
+    'placeholder_email': 'your@email.com',
+    'placeholder_player_id': 'Choose a unique player ID',
+    'placeholder_password': 'Enter your password',
+    'placeholder_confirm_password': 'Confirm your password',
   },
   zh: {
     // Navigation
@@ -80,9 +112,12 @@ const translations: Record<string, Record<string, string>> = {
     'lobby': '游戏大厅',
     'seedao': 'SeeDAO',
     'rules': '游戏规则',
+    'game_rules': '游戏规则',
     'signin': '登录',
     'signout': '退出',
     'signup': '注册',
+    'navbar_title': '新旧狼人杀',
+    'navbar_subtitle': '让学习不再枯燥的社交游戏。',
     
     // Home Page
     'welcome': '欢迎来到新旧狼人杀',
@@ -120,6 +155,36 @@ const translations: Record<string, Record<string, string>> = {
     'join': '加入',
     'create': '创建',
     'private': '私人',
+
+    // Auth/Login
+    'auth_title': '身份验证',
+    'auth_desc': '登录以访问您的账户或创建新账户',
+    'email': '邮箱',
+    'password': '密码',
+    'player_id': '玩家ID',
+    'confirm_password': '确认密码',
+    'login_failed': '登录失败',
+    'login_success': '登录成功！',
+    'login_success_desc': '欢迎来到新旧狼人杀',
+    'registration_failed': '注册失败',
+    'registration_success': '注册成功！',
+    'registration_success_desc': '欢迎来到新旧狼人杀！您现在可以创建和加入房间。',
+    'password_mismatch': '两次密码不一致',
+    'password_mismatch_desc': '请确保两次输入的密码一致',
+    'player_id_required': '需要玩家ID',
+    'player_id_required_desc': '请输入玩家ID',
+    'player_id_taken': '玩家ID已被占用',
+    'player_id_taken_desc': '该玩家ID已被使用，请换一个。',
+    'logout_failed': '退出失败',
+    'logout_success': '已退出登录',
+    'logout_success_desc': '您已成功退出登录',
+    'unexpected_error': '发生未知错误',
+    'creating_account': '正在创建账户...',
+    'signing_in': '正在登录...',
+    'placeholder_email': '请输入邮箱',
+    'placeholder_player_id': '请输入唯一玩家ID',
+    'placeholder_password': '请输入密码',
+    'placeholder_confirm_password': '请再次输入密码',
   }
 };
 

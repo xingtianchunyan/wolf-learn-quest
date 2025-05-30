@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogIn, UserPlus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '../layout/LanguageSwitcher';
 
 const LoginDialog: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -26,6 +27,7 @@ const LoginDialog: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Check for existing session on component mount
   React.useEffect(() => {
@@ -129,7 +131,7 @@ const LoginDialog: React.FC = () => {
       
       if (error) {
         toast({
-          title: "Login failed",
+          title: t('login_failed'),
           description: error.message,
           variant: "destructive",
         });
@@ -137,8 +139,8 @@ const LoginDialog: React.FC = () => {
       }
       
       toast({
-        title: "Login successful!",
-        description: "Welcome to Werewolf Social Learning",
+        title: t('login_success'),
+        description: t('login_success_desc'),
       });
       
       setIsOpen(false);
@@ -148,8 +150,8 @@ const LoginDialog: React.FC = () => {
     } catch (error) {
       console.error('Login error:', error);
       toast({
-        title: "Login failed",
-        description: "An unexpected error occurred",
+        title: t('login_failed'),
+        description: t('unexpected_error'),
         variant: "destructive",
       });
     } finally {
@@ -162,8 +164,8 @@ const LoginDialog: React.FC = () => {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Password mismatch",
-        description: "Please make sure your passwords match",
+        title: t('password_mismatch'),
+        description: t('password_mismatch_desc'),
         variant: "destructive",
       });
       return;
@@ -171,8 +173,8 @@ const LoginDialog: React.FC = () => {
     
     if (!playerId.trim()) {
       toast({
-        title: "Player ID required",
-        description: "Please enter a Player ID",
+        title: t('player_id_required'),
+        description: t('player_id_required_desc'),
         variant: "destructive",
       });
       return;
@@ -190,8 +192,8 @@ const LoginDialog: React.FC = () => {
         
       if (existingUser) {
         toast({
-          title: "Player ID taken",
-          description: "This Player ID is already in use. Please choose a different one.",
+          title: t('player_id_taken'),
+          description: t('player_id_taken_desc'),
           variant: "destructive",
         });
         setLoading(false);
@@ -212,7 +214,7 @@ const LoginDialog: React.FC = () => {
       
       if (error) {
         toast({
-          title: "Registration failed",
+          title: t('registration_failed'),
           description: error.message,
           variant: "destructive",
         });
@@ -251,8 +253,8 @@ const LoginDialog: React.FC = () => {
       }
       
       toast({
-        title: "Registration successful!",
-        description: "Welcome to Werewolf Social Learning! You can now create and join rooms.",
+        title: t('registration_success'),
+        description: t('registration_success_desc'),
       });
       
       setIsOpen(false);
@@ -264,8 +266,8 @@ const LoginDialog: React.FC = () => {
     } catch (error) {
       console.error('Signup error:', error);
       toast({
-        title: "Registration failed",
-        description: "An unexpected error occurred",
+        title: t('registration_failed'),
+        description: t('unexpected_error'),
         variant: "destructive",
       });
     } finally {
@@ -278,14 +280,14 @@ const LoginDialog: React.FC = () => {
     
     if (error) {
       toast({
-        title: "Logout failed",
+        title: t('logout_failed'),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
+        title: t('logout_success'),
+        description: t('logout_success_desc'),
       });
       setCurrentUser(null);
     }
@@ -295,7 +297,7 @@ const LoginDialog: React.FC = () => {
     return (
       <Button variant="ghost" className="nav-link flex items-center" onClick={handleLogout}>
         <LogIn size={20} className="mr-1" />
-        <span className="hidden sm:inline">Sign Out</span>
+        <span className="hidden sm:inline">{t('signout')}</span>
       </Button>
     );
   }
@@ -305,32 +307,32 @@ const LoginDialog: React.FC = () => {
       <DialogTrigger asChild>
         <Button variant="ghost" className="nav-link flex items-center">
           <LogIn size={20} className="mr-1" />
-          <span className="hidden sm:inline">Sign In</span>
+          <span className="hidden sm:inline">{t('signin')}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-werewolf-card text-werewolf-text">
         <DialogHeader>
-          <DialogTitle className="text-werewolf-purple">Authentication</DialogTitle>
+          <DialogTitle className="text-werewolf-purple">{t('auth_title')}</DialogTitle>
           <DialogDescription>
-            Sign in to access your account or create a new one
+            {t('auth_desc')}
           </DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid grid-cols-2 bg-werewolf-dark/60">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin">{t('signin')}</TabsTrigger>
+            <TabsTrigger value="signup">{t('signup')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="signin">
             <form onSubmit={handleLogin}>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email-login">Email</Label>
+                  <Label htmlFor="email-login">{t('email')}</Label>
                   <Input
                     id="email-login"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={t('placeholder_email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -338,10 +340,11 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-login">Password</Label>
+                  <Label htmlFor="password-login">{t('password')}</Label>
                   <Input
                     id="password-login"
                     type="password"
+                    placeholder={t('placeholder_password')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -355,7 +358,7 @@ const LoginDialog: React.FC = () => {
                   className="bg-werewolf-purple hover:bg-werewolf-light"
                   disabled={loading}
                 >
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? t('signing_in') : t('signin')}
                 </Button>
               </DialogFooter>
             </form>
@@ -365,11 +368,11 @@ const LoginDialog: React.FC = () => {
             <form onSubmit={handleSignUp}>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email-signup">Email</Label>
+                  <Label htmlFor="email-signup">{t('email')}</Label>
                   <Input
                     id="email-signup"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={t('placeholder_email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -377,11 +380,11 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="playerId">Player ID</Label>
+                  <Label htmlFor="playerId">{t('player_id')}</Label>
                   <Input
                     id="playerId"
                     type="text"
-                    placeholder="Choose a unique player ID"
+                    placeholder={t('placeholder_player_id')}
                     value={playerId}
                     onChange={(e) => setPlayerId(e.target.value)}
                     required
@@ -389,10 +392,11 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-signup">Password</Label>
+                  <Label htmlFor="password-signup">{t('password')}</Label>
                   <Input
                     id="password-signup"
                     type="password"
+                    placeholder={t('placeholder_password')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -400,10 +404,11 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password">{t('confirm_password')}</Label>
                   <Input
                     id="confirm-password"
                     type="password"
+                    placeholder={t('placeholder_confirm_password')}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -417,7 +422,7 @@ const LoginDialog: React.FC = () => {
                   className="bg-werewolf-purple hover:bg-werewolf-light"
                   disabled={loading}
                 >
-                  {loading ? 'Creating account...' : 'Sign Up'}
+                  {loading ? t('creating_account') : t('signup')}
                 </Button>
               </DialogFooter>
             </form>
