@@ -24,37 +24,37 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
   const { t } = useLanguage();
   
   const characterSkills = [
-    { role: 'Villager', skill: 'Sleep', usages: 'Unlimited', type: 'None', effect: 'None' },
-    { role: 'Hunter', skill: 'Dying Shot', usages: '1', type: 'Attack', effect: 'Designate a player to attack before being eliminated' },
-    { role: 'Witch', skill: 'Magic Potion', usages: '2', type: 'Protect or Attack', effect: 'Designate a player to protect or attack' },
-    { role: 'Seer', skill: 'Prophecy', usages: 'Unlimited', type: 'View', effect: 'Specify to view one player\'s camp information' },
-    { role: 'Guard', skill: 'Vigil', usages: 'Unlimited', type: 'Protection', effect: 'Designate a player (including yourself) to be protected from attacks' },
-    { role: 'Werewolf', skill: 'Night Attack', usages: 'Unlimited', type: 'Attack', effect: 'Designated attack on one player' },
-    { role: 'White Wolf', skill: 'Self-Destruct', usages: '1', type: 'Attack', effect: 'Designate an attack on a player, eliminating himself and target simultaneously' },
-    { role: 'Warlock', skill: 'Voodoo', usages: '1', type: 'Protection', effect: 'Designate a player for protection' },
-    { role: 'Demon', skill: 'Demon\'s Eye', usages: 'Unlimited', type: 'View', effect: 'Specify to view one player\'s character information' },
+    { role: t('villager'), skill: t('skill_sleep'), usages: t('usage_unlimited'), type: t('type_none'), effect: t('effect_none') },
+    { role: t('hunter'), skill: t('skill_dying_shot'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_dying_shot') },
+    { role: t('witch'), skill: t('skill_magic_potion'), usages: t('usage_2'), type: t('type_protect_or_attack'), effect: t('effect_magic_potion') },
+    { role: t('seer'), skill: t('skill_prophecy'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_prophecy') },
+    { role: t('guard'), skill: t('skill_vigil'), usages: t('usage_unlimited'), type: t('type_protect'), effect: t('effect_vigil') },
+    { role: t('werewolf'), skill: t('skill_night_attack'), usages: t('usage_unlimited'), type: t('type_attack'), effect: t('effect_night_attack') },
+    { role: t('white_wolf'), skill: t('skill_self_destruct'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_self_destruct') },
+    { role: t('warlock'), skill: t('skill_voodoo'), usages: t('usage_1'), type: t('type_protect'), effect: t('effect_voodoo') },
+    { role: t('demon'), skill: t('skill_demon_eye'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_demon_eye') },
   ];
 
   const informationDisclosure = [
-    { role: 'Villager', phases: 'Daytime + Evening + Dawn', scope: 'Public Chat + Quiz Questions and Options' },
-    { role: 'Hunter', phases: 'All', scope: 'Public Chat + Own Attack Status + Quiz Questions and Options' },
-    { role: 'Witch', phases: 'All', scope: 'Public Chat + Specific Night Attack Target + Quiz Questions and Options' },
-    { role: 'Seer', phases: 'All', scope: 'Public Chat + Target Camp Information + Quiz Questions and Options' },
-    { role: 'Guard', phases: 'Daytime + Evening + Dawn', scope: 'Public Chat + Quiz Questions and Options' },
-    { role: 'Werewolf', phases: 'All', scope: 'Public Chat + Team Chat + Werewolf/White Wolf Players + Quiz Questions and Options' },
-    { role: 'White Wolf', phases: 'All', scope: 'Public Chat + Team Chat + Werewolf/White Wolf Players + Quiz Questions and Options' },
-    { role: 'Warlock', phases: 'All', scope: 'Public Chat + Witch Poison Target + Quiz Questions and Options' },
-    { role: 'Demon', phases: 'All', scope: 'Public Chat + Werewolf/White Wolf Players + Target Role Info + Quiz Questions and Options' },
+    { role: t('villager'), phases: t('info_phases_villager'), scope: t('info_scope_villager') },
+    { role: t('hunter'), phases: t('info_phases_all'), scope: t('info_scope_hunter') },
+    { role: t('witch'), phases: t('info_phases_all'), scope: t('info_scope_witch') },
+    { role: t('seer'), phases: t('info_phases_all'), scope: t('info_scope_seer') },
+    { role: t('guard'), phases: t('info_phases_villager'), scope: t('info_scope_villager') },
+    { role: t('werewolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf') },
+    { role: t('white_wolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf') },
+    { role: t('warlock'), phases: t('info_phases_all'), scope: t('info_scope_warlock') },
+    { role: t('demon'), phases: t('info_phases_all'), scope: t('info_scope_demon') },
   ];
 
   const playerConfigurations = [
-    { players: 6, config: '2 Werewolves, 2 Villagers, 1 Seer, 1 Witch' },
-    { players: 7, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch' },
-    { players: 8, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock' },
-    { players: 9, config: '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock' },
-    { players: 10, config: '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
-    { players: 11, config: '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
-    { players: 12, config: '2 Werewolves, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard' },
+    { players: 6, config: t('player_config_6') },
+    { players: 7, config: t('player_config_7') },
+    { players: 8, config: t('player_config_8') },
+    { players: 9, config: t('player_config_9') },
+    { players: 10, config: t('player_config_10') },
+    { players: 11, config: t('player_config_11') },
+    { players: 12, config: t('player_config_12') },
   ];
   
   return (
@@ -68,37 +68,37 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] md:max-w-[1000px] bg-werewolf-card text-werewolf-text">
         <DialogHeader>
-          <DialogTitle className="text-werewolf-purple">Game Rules</DialogTitle>
+          <DialogTitle className="text-werewolf-purple">{t('game_rules_title')}</DialogTitle>
           <DialogDescription>
-            Learn the complete game rules and mechanics
+            {t('game_rules_desc')}
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="win-conditions" className="w-full">
           <TabsList className="w-full bg-werewolf-dark/60 grid grid-cols-3 md:grid-cols-6">
-            <TabsTrigger value="win-conditions">Win Conditions</TabsTrigger>
-            <TabsTrigger value="factions">Factions</TabsTrigger>
-            <TabsTrigger value="phases">Game Phases</TabsTrigger>
-            <TabsTrigger value="roles">Character Skills</TabsTrigger>
-            <TabsTrigger value="status">Status</TabsTrigger>
-            <TabsTrigger value="info">Information</TabsTrigger>
+            <TabsTrigger value="win-conditions">{t('tab_win_conditions')}</TabsTrigger>
+            <TabsTrigger value="factions">{t('tab_factions')}</TabsTrigger>
+            <TabsTrigger value="phases">{t('tab_phases')}</TabsTrigger>
+            <TabsTrigger value="roles">{t('tab_roles')}</TabsTrigger>
+            <TabsTrigger value="status">{t('tab_status')}</TabsTrigger>
+            <TabsTrigger value="info">{t('tab_info')}</TabsTrigger>
           </TabsList>
           <ScrollArea className="h-[500px] mt-4 pr-4">
             {/* Win Conditions Tab */}
             <TabsContent value="win-conditions" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Winning Conditions</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('win_conditions_title')}</h3>
                 <div className="space-y-3">
                   <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light mb-2">Primary Win Condition</h4>
-                    <p>Any character from the same camp survives to the end and eliminates all characters from the opposing camp.</p>
+                    <h4 className="font-semibold text-werewolf-light mb-2">{t('primary_win_condition')}</h4>
+                    <p>{t('primary_win_condition_desc')}</p>
                   </div>
                   <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light mb-2">Werewolf Auto-Win</h4>
-                    <p>When the sum of surviving Werewolf and White Wolf characters equals the number of surviving Good Guys camp characters, the Werewolf camp automatically wins.</p>
+                    <h4 className="font-semibold text-werewolf-light mb-2">{t('werewolf_auto_win')}</h4>
+                    <p>{t('werewolf_auto_win_desc')}</p>
                   </div>
                   <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                    <h4 className="font-semibold text-werewolf-light mb-2">Draw Condition</h4>
-                    <p>If there is no winner at the end of the predetermined action phase, both sides are considered to have won.</p>
+                    <h4 className="font-semibold text-werewolf-light mb-2">{t('draw_condition')}</h4>
+                    <p>{t('draw_condition_desc')}</p>
                   </div>
                 </div>
               </div>
@@ -107,25 +107,25 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
             {/* Factions Tab */}
             <TabsContent value="factions" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Camp Description</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('factions_title')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-green-900/20 border-l-4 border-green-600 rounded-md">
-                    <h4 className="font-semibold text-green-400 mb-2">Good Guys Camp</h4>
+                    <h4 className="font-semibold text-green-400 mb-2">{t('good_guys_camp')}</h4>
                     <ul className="space-y-1 text-sm">
-                      <li>• Villagers</li>
-                      <li>• Hunter</li>
-                      <li>• Witch</li>
-                      <li>• Seer (Prophet)</li>
-                      <li>• Guard</li>
+                      <li>• {t('villagers')}</li>
+                      <li>• {t('hunter')}</li>
+                      <li>• {t('witch')}</li>
+                      <li>• {t('seer')}</li>
+                      <li>• {t('guard')}</li>
                     </ul>
                   </div>
                   <div className="p-4 bg-red-900/20 border-l-4 border-red-600 rounded-md">
-                    <h4 className="font-semibold text-red-400 mb-2">Werewolf Camp</h4>
+                    <h4 className="font-semibold text-red-400 mb-2">{t('werewolf_camp')}</h4>
                     <ul className="space-y-1 text-sm">
-                      <li>• Werewolf</li>
-                      <li>• White Wolf</li>
-                      <li>• Warlock</li>
-                      <li>• Demon</li>
+                      <li>• {t('werewolf')}</li>
+                      <li>• {t('white_wolf')}</li>
+                      <li>• {t('warlock')}</li>
+                      <li>• {t('demon')}</li>
                     </ul>
                   </div>
                 </div>
@@ -135,46 +135,46 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
             {/* Game Phases Tab */}
             <TabsContent value="phases" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Game Time and Action Phases</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('game_phases_title')}</h3>
                 
                 <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                  <h4 className="font-semibold text-werewolf-light mb-2">Game Duration</h4>
-                  <p>The game begins with Day 1 Evening Quiz and proceeds up to Day 9 Daytime phase - maximum of 24 phases.</p>
+                  <h4 className="font-semibold text-werewolf-light mb-2">{t('game_duration')}</h4>
+                  <p>{t('game_duration_desc')}</p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-werewolf-light">Daily Action Phases</h4>
+                  <h4 className="font-semibold text-werewolf-light">{t('daily_action_phases')}</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-3 bg-blue-900/20 border border-blue-600/30 rounded-md">
-                      <h5 className="font-medium text-blue-400">Phase 1: Daytime</h5>
-                      <p className="text-sm mt-1">Time limit: 5 minutes or all vote completion</p>
-                      <p className="text-sm">Open discussion and voting to eliminate suspected werewolf camp players</p>
+                      <h5 className="font-medium text-blue-400">{t('phase_daytime')}</h5>
+                      <p className="text-sm mt-1">{t('phase_daytime_time')}</p>
+                      <p className="text-sm">{t('phase_daytime_desc')}</p>
                     </div>
                     
                     <div className="p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
-                      <h5 className="font-medium text-yellow-400">Phase 2: Evening Quiz</h5>
-                      <p className="text-sm mt-1">Time limit: 1 minute</p>
-                      <p className="text-sm">All players answer quiz questions to enable night actions</p>
+                      <h5 className="font-medium text-yellow-400">{t('phase_evening_quiz')}</h5>
+                      <p className="text-sm mt-1">{t('phase_evening_quiz_time')}</p>
+                      <p className="text-sm">{t('phase_evening_quiz_desc')}</p>
                     </div>
                     
                     <div className="p-3 bg-purple-900/20 border border-purple-600/30 rounded-md">
-                      <h5 className="font-medium text-purple-400">Phase 3: Nighttime</h5>
-                      <p className="text-sm mt-1">Time limit: 3 minutes or all skill decisions</p>
-                      <p className="text-sm">Characters perform night actions in priority order</p>
+                      <h5 className="font-medium text-purple-400">{t('phase_nighttime')}</h5>
+                      <p className="text-sm mt-1">{t('phase_nighttime_time')}</p>
+                      <p className="text-sm">{t('phase_nighttime_desc')}</p>
                     </div>
                     
                     <div className="p-3 bg-orange-900/20 border border-orange-600/30 rounded-md">
-                      <h5 className="font-medium text-orange-400">Phase 4: Dawn Quiz</h5>
-                      <p className="text-sm mt-1">Time limit: 1 minute</p>
-                      <p className="text-sm">Quiz to exit Near-Death state and enter Weakened state</p>
+                      <h5 className="font-medium text-orange-400">{t('phase_dawn_quiz')}</h5>
+                      <p className="text-sm mt-1">{t('phase_dawn_quiz_time')}</p>
+                      <p className="text-sm">{t('phase_dawn_quiz_desc')}</p>
                     </div>
                   </div>
                 </div>
                 
                 <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                  <h4 className="font-semibold text-werewolf-light mb-2">Night Action Priority Order</h4>
-                  <p className="text-sm">Villager → Guard → Werewolf → Seer → Demon → Witch → Warlock → White Wolf → Hunter</p>
+                  <h4 className="font-semibold text-werewolf-light mb-2">{t('night_action_priority')}</h4>
+                  <p className="text-sm">{t('night_action_priority_desc')}</p>
                 </div>
               </div>
             </TabsContent>
@@ -182,17 +182,17 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
             {/* Character Skills Tab */}
             <TabsContent value="roles" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Character Skills</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('character_skills_title')}</h3>
                 
                 <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-werewolf-dark/60">
-                        <TableHead className="text-werewolf-purple font-semibold">Role</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Skill</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Usages</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Type</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Effect</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('role')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('skill')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('usages')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('type')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('effect')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -212,21 +212,21 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-werewolf-light">Special Rules</h4>
+                  <h4 className="font-semibold text-werewolf-light">{t('special_rules')}</h4>
                   <div className="p-3 bg-werewolf-dark/40 rounded-md text-sm space-y-2">
-                    <p>• When multiple Werewolf characters use skills simultaneously, it counts as a single attack</p>
-                    <p>• A character enters Weakened state when targeted by two different Protection skills</p>
+                    <p>• {t('special_rules_1')}</p>
+                    <p>• {t('special_rules_2')}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-werewolf-light">Player Configurations</h4>
+                  <h4 className="font-semibold text-werewolf-light">{t('player_configurations')}</h4>
                   <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-werewolf-dark/60">
-                          <TableHead className="text-werewolf-purple font-semibold">Players</TableHead>
-                          <TableHead className="text-werewolf-purple font-semibold">Role Configuration</TableHead>
+                          <TableHead className="text-werewolf-purple font-semibold">{t('players')}</TableHead>
+                          <TableHead className="text-werewolf-purple font-semibold">{t('role_configuration')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -246,27 +246,27 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
             {/* Status Tab */}
             <TabsContent value="status" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Character Status</h3>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('character_status_title')}</h3>
                 
                 <div className="space-y-3">
                   <div className="p-4 bg-green-900/20 border-l-4 border-green-600 rounded-md">
-                    <h4 className="font-semibold text-green-400 mb-2">Normal State</h4>
-                    <p className="text-sm">Can participate in discussions, vote, use skills, be targeted for skills, be targeted for votes, and participate in quizzes. All characters start in Normal state.</p>
+                    <h4 className="font-semibold text-green-400 mb-2">{t('normal_state')}</h4>
+                    <p className="text-sm">{t('normal_state_desc')}</p>
                   </div>
                   
                   <div className="p-4 bg-yellow-900/20 border-l-4 border-yellow-600 rounded-md">
-                    <h4 className="font-semibold text-yellow-400 mb-2">Near-Death State</h4>
-                    <p className="text-sm">Can use skills, be targeted for skills, and participate in quizzes. Cannot participate in discussions, vote, or be targeted for votes. Entered when attacked while in Normal state. Returns to Normal when protected.</p>
+                    <h4 className="font-semibold text-yellow-400 mb-2">{t('near_death_state')}</h4>
+                    <p className="text-sm">{t('near_death_state_desc')}</p>
                   </div>
                   
                   <div className="p-4 bg-blue-900/20 border-l-4 border-blue-600 rounded-md">
-                    <h4 className="font-semibold text-blue-400 mb-2">Weakened State</h4>
-                    <p className="text-sm">Can participate in discussions, be targeted for skills, be targeted for votes, and answer quizzes. Cannot vote or use skills. Entered from Near-Death by correctly answering Dawn Quiz, or when targeted by two Protection skills. Cannot return to Normal. Eliminated when attacked.</p>
+                    <h4 className="font-semibold text-blue-400 mb-2">{t('weakened_state')}</h4>
+                    <p className="text-sm">{t('weakened_state_desc')}</p>
                   </div>
                   
                   <div className="p-4 bg-red-900/20 border-l-4 border-red-600 rounded-md">
-                    <h4 className="font-semibold text-red-400 mb-2">Elimination State</h4>
-                    <p className="text-sm">Can only participate in answering quizzes. Cannot participate in discussions, vote, use skills, or be targeted. Entered when voted out, when failing Dawn Quiz while Near-Death, or when attacked while Weakened.</p>
+                    <h4 className="font-semibold text-red-400 mb-2">{t('elimination_state')}</h4>
+                    <p className="text-sm">{t('elimination_state_desc')}</p>
                   </div>
                 </div>
               </div>
@@ -275,16 +275,16 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
             {/* Information Disclosure Tab */}
             <TabsContent value="info" className="space-y-4">
               <div className="space-y-4">
-                <h3 className="font-bold text-lg text-werewolf-purple">Information Disclosure</h3>
-                <p className="text-sm text-gray-400">Different roles can see different information at different stages</p>
+                <h3 className="font-bold text-lg text-werewolf-purple">{t('info_disclosure_title')}</h3>
+                <p className="text-sm text-gray-400">{t('info_disclosure_desc')}</p>
                 
                 <div className="border border-werewolf-purple/30 rounded-md overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-werewolf-dark/60">
-                        <TableHead className="text-werewolf-purple font-semibold">Role</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Disclosure Phases</TableHead>
-                        <TableHead className="text-werewolf-purple font-semibold">Information Scope</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('role')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('disclosure_phases')}</TableHead>
+                        <TableHead className="text-werewolf-purple font-semibold">{t('information_scope')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
