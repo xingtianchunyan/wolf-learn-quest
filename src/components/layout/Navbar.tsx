@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Gamepad, Home, Menu, X, ExternalLink, Users } from 'lucide-react';
+import { Gamepad, Home, Menu, X, ExternalLink, Users, Book } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher, { useLanguage } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
@@ -38,7 +38,8 @@ const Navbar: React.FC = () => {
               className="nav-link"
               onClick={() => navigate('/lobby')}
             >
-              {t('lobby')}
+              <Users size={20} className="inline mr-1" />
+              <span>{t('lobby')}</span>
             </Button>
           ) : isGameRelatedPage ? (
             <Button 
@@ -47,7 +48,7 @@ const Navbar: React.FC = () => {
               onClick={() => navigate('/lobby')}
             >
               <Users size={20} className="inline mr-1" />
-              {t('lobby')}
+              <span>{t('lobby')}</span>
             </Button>
           ) : (
             <Button 
@@ -56,7 +57,7 @@ const Navbar: React.FC = () => {
               onClick={() => navigate('/')}
             >
               <Home size={20} className="inline mr-1" />
-              {t('home')}
+              <span>{t('home')}</span>
             </Button>
           )}
           <Button 
@@ -65,9 +66,16 @@ const Navbar: React.FC = () => {
             onClick={() => window.open("https://seedao.xyz/", "blank")}
           >
             <ExternalLink size={20} className="mr-1" />
-            <span className="hidden sm:inline">{t('seedao')}</span>
+            <span>{t('seedao')}</span>
           </Button>
-          <GameRulesDialog />
+          <GameRulesDialog
+            trigger={
+              <Button variant="ghost" className="nav-link flex items-center">
+                <Book size={20} className="mr-1" />
+                <span>{t('game_rules')}</span>
+              </Button>
+            }
+          />
           <LanguageSwitcher />
           <LoginDialog />
         </div>
@@ -87,14 +95,15 @@ const Navbar: React.FC = () => {
       {/* Mobile navigation */}
       {isMenuOpen && (
         <div className="md:hidden p-4 bg-werewolf-card mt-2 rounded-md shadow-lg absolute z-10 w-full left-0">
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col items-center space-y-4">
             {isHomePage ? (
               <Button 
                 variant="ghost" 
                 className="nav-link"
                 onClick={() => { navigate('/lobby'); setIsMenuOpen(false); }}
               >
-                {t('lobby')}
+                <Users size={20} className="inline mr-1" />
+                <span>{t('lobby')}</span>
               </Button>
             ) : isGameRelatedPage ? (
               <Button 
@@ -103,7 +112,7 @@ const Navbar: React.FC = () => {
                 onClick={() => { navigate('/lobby'); setIsMenuOpen(false); }}
               >
                 <Users size={20} className="inline mr-1" />
-                {t('lobby')}
+                <span>{t('lobby')}</span>
               </Button>
             ) : (
               <Button 
@@ -112,21 +121,28 @@ const Navbar: React.FC = () => {
                 onClick={() => { navigate('/'); setIsMenuOpen(false); }}
               >
                 <Home size={20} className="inline mr-1" />
-                {t('home')}
+                <span>{t('home')}</span>
               </Button>
             )}
             <Button 
               variant="ghost" 
-              className="nav-link justify-start"
+              className="nav-link justify-start flex items-center"
               onClick={() => {
                 window.open("https://seedao.xyz/", "blank");
                 setIsMenuOpen(false);
               }}
             >
               <ExternalLink size={20} className="mr-1" />
-              {t('seedao')}
+              <span>{t('seedao')}</span>
             </Button>
-            <GameRulesDialog />
+            <GameRulesDialog
+              trigger={
+                <Button variant="ghost" className="nav-link flex items-center">
+                  <Book size={20} className="mr-1" />
+                  <span>{t('game_rules')}</span>
+                </Button>
+              }
+            />
             <LanguageSwitcher />
             <LoginDialog />
           </div>

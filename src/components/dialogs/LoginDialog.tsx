@@ -297,7 +297,7 @@ const LoginDialog: React.FC = () => {
     return (
       <Button variant="ghost" className="nav-link flex items-center" onClick={handleLogout}>
         <LogIn size={20} className="mr-1" />
-        <span className="hidden sm:inline">{t('signout')}</span>
+        <span>{t('signout')}</span>
       </Button>
     );
   }
@@ -307,7 +307,7 @@ const LoginDialog: React.FC = () => {
       <DialogTrigger asChild>
         <Button variant="ghost" className="nav-link flex items-center">
           <LogIn size={20} className="mr-1" />
-          <span className="hidden sm:inline">{t('signin')}</span>
+          <span>{t('signin')}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-werewolf-card text-werewolf-text">

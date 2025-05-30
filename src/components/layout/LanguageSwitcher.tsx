@@ -246,7 +246,7 @@ const LanguageSwitcher: React.FC = () => {
       <PopoverTrigger asChild>
         <Button variant="ghost" className="nav-link flex items-center">
           <Languages size={20} className="mr-1" />
-          <span className="hidden sm:inline">{currentLanguage.name}</span>
+          <span>{currentLanguage.name}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2 bg-werewolf-card border-werewolf-purple/30">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { useLanguage } from '../layout/LanguageSwitcher';
 
-const GameRulesDialog: React.FC = () => {
+const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) => {
   const { t } = useLanguage();
   
   const characterSkills = [
@@ -61,9 +60,11 @@ const GameRulesDialog: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="nav-link">
-          {t('game_rules')}
-        </Button>
+        {trigger ? trigger : (
+          <Button variant="ghost" className="nav-link flex items-center">
+            <span className="hidden sm:inline">{t('game_rules')}</span>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] md:max-w-[1000px] bg-werewolf-card text-werewolf-text">
         <DialogHeader>
