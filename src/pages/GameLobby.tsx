@@ -298,8 +298,8 @@ const GameLobby = () => {
         description: `Room "${roomId}" has been created successfully`,
       });
       
-      // Refresh the rooms list
-      await fetchRooms();
+      // Navigate to the specific room
+      navigate(`/room/${newRoom.id}`);
     } catch (error) {
       console.error('Error creating room:', error);
       toast({
@@ -383,9 +383,8 @@ const GameLobby = () => {
         description: "Room with AI Judge created successfully",
       });
       
-      // Navigate to game room
-      console.log('Navigating to /room');
-      navigate('/room');
+      // Navigate to the specific room
+      navigate(`/room/${newRoom.id}`);
     } catch (error) {
       console.error('Error creating AI judge room:', error);
       toast({
@@ -435,7 +434,7 @@ const GameLobby = () => {
           title: "Already in room",
           description: "You're already a member of this room",
         });
-        navigate('/room');
+        navigate(`/room/${roomId}`);
         return;
       }
 
@@ -460,7 +459,7 @@ const GameLobby = () => {
       }
 
       console.log('Successfully joined room:', roomId);
-      navigate('/room');
+      navigate(`/room/${roomId}`);
     } catch (error) {
       console.error('Error joining room:', error);
       toast({

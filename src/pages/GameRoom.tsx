@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Brain, MessageSquareText, User, Users, Minus, Plus } from 'lucide-react
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -40,6 +39,7 @@ const initialMessages = [
 
 const GameRoom = () => {
   const navigate = useNavigate();
+  const { roomId } = useParams();
   const { toast } = useToast();
   const [isReady, setIsReady] = useState(true);
   const [messages, setMessages] = useState(initialMessages);
@@ -72,9 +72,50 @@ const GameRoom = () => {
           }
         }
 
-        // Fetch room data - in a real implementation, you'd get the room ID from route params
-        // For now, we'll fetch the most recent room where the user is a member
-        if (session?.user) {
+        // Fetch room data using the roomId from URL params or fallback to user's most recent room
+        if (roomId) {
+          console.log('Fetching room data for room ID:', roomId);
+          
+          // Fetch specific room by ID
+          const { data: roomData, error: roomError } = await supabase
+            .from('rooms')
+            .select(`
+              id,
+              room_id,
+              max_players,
+              host_id,
+              users!rooms_host_id_fkey(player_name),
+              room_players(id, user_id)
+            `)
+            .eq('id', roomId)
+            .maybeSingle();
+
+          if (roomError) {
+            console.error('Error fetching room:', roomError);
+            toast({
+              title: "Error",
+              description: "Failed to load room data",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          if (roomData) {
+            console.log('Room data found:', roomData);
+            setRoomData({
+              id: roomData.id,
+              roomId: roomData.room_id,
+              hostPlayerId: roomData.users?.player_name || 'Unknown',
+              topic: 'Periodic Table Elements', // This would come from room data in real implementation
+              maxPlayers: roomData.max_players,
+            });
+          } else {
+            console.log('No room found with ID:', roomId);
+          }
+        } else if (session?.user) {
+          // Fallback: fetch user's most recent room
+          console.log('No room ID in URL, fetching user\'s most recent room');
+          
           const { data: roomPlayerData } = await supabase
             .from('room_players')
             .select(`
@@ -98,7 +139,7 @@ const GameRoom = () => {
               id: room.id,
               roomId: room.room_id,
               hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: 'Periodic Table Elements', // This would come from room data in real implementation
+              topic: 'Periodic Table Elements',
               maxPlayers: room.max_players,
             });
           }
@@ -116,7 +157,7 @@ const GameRoom = () => {
     };
 
     fetchData();
-  }, [toast]);
+  }, [toast, roomId]);
 
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
@@ -224,6 +265,9 @@ const GameRoom = () => {
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <p className="text-gray-400 mb-4">No room data found</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Room ID: {roomId || 'Not specified'}
+              </p>
               <Button onClick={() => navigate('/lobby')}>
                 Return to Lobby
               </Button>
