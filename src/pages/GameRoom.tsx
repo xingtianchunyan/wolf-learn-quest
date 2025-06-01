@@ -1,27 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Brain, MessageSquareText, User, Users } from 'lucide-react';
+import { Brain, MessageSquareText, User, Users, Minus, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock room data
-const roomData = {
-  id: 'room1',
-  roomId: 'ROOM123', // This is the actual Room ID that users see
-  hostPlayerId: 'Teacher1#1234', // This is the Player ID of the host
-  topic: 'Periodic Table Elements',
-  maxPlayers: 10,
-};
-
-// Mock players data
+// Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
   { id: 'player1', name: 'You', avatar: '', isReady: true, isHost: true, isAI: false },
   { id: 'player2', name: 'Alice', avatar: '', isReady: false, isHost: false, isAI: false },
@@ -53,8 +45,119 @@ const GameRoom = () => {
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [roomData, setRoomData] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const allReady = players.every(player => player.isReady);
+
+  // Fetch current user and room data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setCurrentUser(session.user);
+          
+          // Get user profile for player name
+          const { data: userData } = await supabase
+            .from('users')
+            .select('player_name')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (userData) {
+            setCurrentUser({ ...session.user, player_name: userData.player_name });
+          }
+        }
+
+        // Fetch room data - in a real implementation, you'd get the room ID from route params
+        // For now, we'll fetch the most recent room where the user is a member
+        if (session?.user) {
+          const { data: roomPlayerData } = await supabase
+            .from('room_players')
+            .select(`
+              room_id,
+              rooms!inner(
+                id,
+                room_id,
+                max_players,
+                host_id,
+                users!rooms_host_id_fkey(player_name)
+              )
+            `)
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (roomPlayerData?.rooms) {
+            const room = roomPlayerData.rooms;
+            setRoomData({
+              id: room.id,
+              roomId: room.room_id,
+              hostPlayerId: room.users?.player_name || 'Unknown',
+              topic: 'Periodic Table Elements', // This would come from room data in real implementation
+              maxPlayers: room.max_players,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load room data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
+  const handleMaxPlayersChange = async (increment: number) => {
+    if (!roomData || !currentUser) return;
+
+    const newMaxPlayers = Math.max(4, Math.min(12, roomData.maxPlayers + increment));
+    
+    if (newMaxPlayers === roomData.maxPlayers) return;
+
+    try {
+      // Update max players in database
+      const { error } = await supabase
+        .from('rooms')
+        .update({ max_players: newMaxPlayers })
+        .eq('id', roomData.id);
+
+      if (error) {
+        console.error('Error updating max players:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update max players",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
+      
+      toast({
+        title: "Max Players Updated",
+        description: `Maximum players set to ${newMaxPlayers}`,
+      });
+    } catch (error) {
+      console.error('Error updating max players:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update max players",
+        variant: "destructive",
+      });
+    }
+  };
   
   const handleAddAIPlayer = () => {
     toast({
@@ -99,6 +202,38 @@ const GameRoom = () => {
     navigate('/game');
   };
 
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading room data...</p>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!roomData) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <p className="text-gray-400 mb-4">No room data found</p>
+              <Button onClick={() => navigate('/lobby')}>
+                Return to Lobby
+              </Button>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4">
@@ -125,9 +260,31 @@ const GameRoom = () => {
                       <p className="text-sm text-gray-400">Learning Topic</p>
                       <p>{roomData.topic}</p>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Max Players</span>
-                      <span>{roomData.maxPlayers}</span>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-2">Max Players</p>
+                      <div className="flex items-center justify-center space-x-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMaxPlayersChange(-1)}
+                          disabled={roomData.maxPlayers <= 4}
+                          className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="font-bold text-lg min-w-[2rem] text-center">
+                          {roomData.maxPlayers}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMaxPlayersChange(1)}
+                          disabled={roomData.maxPlayers >= 12}
+                          className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
