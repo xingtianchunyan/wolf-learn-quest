@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -14,8 +15,8 @@ import { useToast } from '@/components/ui/use-toast';
 // Mock room data
 const roomData = {
   id: 'room1',
-  name: 'Learning Chemistry',
-  host: 'Teacher1',
+  roomId: 'ROOM123', // This is the actual Room ID that users see
+  hostPlayerId: 'Teacher1#1234', // This is the Player ID of the host
   topic: 'Periodic Table Elements',
   maxPlayers: 10,
 };
@@ -113,20 +114,20 @@ const GameRoom = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-400">Room Name</p>
-                      <p className="font-bold">{roomData.name}</p>
+                      <p className="text-sm text-gray-400">Room ID</p>
+                      <p className="font-bold">{roomData.roomId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Host</p>
-                      <p>{roomData.host}</p>
+                      <p className="text-sm text-gray-400">Host Player ID</p>
+                      <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-400">Learning Topic</p>
                       <p>{roomData.topic}</p>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Players</span>
-                      <span>{players.length}/{roomData.maxPlayers}</span>
+                      <span className="text-sm text-gray-400">Max Players</span>
+                      <span>{roomData.maxPlayers}</span>
                     </div>
                   </div>
                 </CardContent>
