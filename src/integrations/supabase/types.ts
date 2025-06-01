@@ -322,7 +322,7 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -360,7 +360,7 @@ export type Database = {
             columns: ["host_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -385,7 +385,7 @@ export type Database = {
           id?: string
           level?: number | null
           player_name?: string | null
-          user_id: string
+          user_id?: string
         }
         Update: {
           avatar_url?: string | null

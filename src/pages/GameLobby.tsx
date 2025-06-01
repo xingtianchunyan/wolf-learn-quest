@@ -411,6 +411,34 @@ const GameLobby = () => {
     try {
       console.log('Joining room:', roomId, 'as user:', currentUser.id);
 
+      // First, check if user is already in the room
+      const { data: existingPlayer, error: checkError } = await supabase
+        .from('room_players')
+        .select('id')
+        .eq('room_id', roomId)
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing player:', checkError);
+        toast({
+          title: "Failed to join room",
+          description: "Error checking room membership",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (existingPlayer) {
+        console.log('User already in room, navigating to room');
+        toast({
+          title: "Already in room",
+          description: "You're already a member of this room",
+        });
+        navigate('/room');
+        return;
+      }
+
       // Add player to room
       const { error } = await supabase
         .from('room_players')
