@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface GameRoom {
   id: string;
@@ -35,145 +36,22 @@ const GameLobby = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isCreatingAIRoom, setIsCreatingAIRoom] = useState(false);
+  const { currentUser, initializing, setIsLoginOpen } = useAuth();
 
   // Add room cleanup functionality
   useRoomCleanup();
 
   // Initialize authentication and fetch data
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // Get current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          setAuthLoading(false);
-          return;
-        }
-
-        if (session?.user) {
-          console.log('User found:', session.user.id);
-          await ensureUserProfile(session.user);
-          setCurrentUser(session.user);
-          
-          // Get user profile
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
-          } else if (userError && userError.code !== 'PGRST116') {
-            console.error('Error fetching user profile:', userError);
-          }
-        } else {
-          console.log('No user session found');
-        }
-        
-        await fetchRooms();
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth change:', event, session?.user?.id);
-      
-      if (session?.user) {
-        await ensureUserProfile(session.user);
-        setCurrentUser(session.user);
-        
-        // Get updated user profile
-        setTimeout(async () => {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
-          }
-        }, 100);
-      } else {
-        setCurrentUser(null);
-      }
-      
-      setAuthLoading(false);
-      await fetchRooms();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Ensure user profile exists in users table
-  const ensureUserProfile = async (user: any) => {
-    try {
-      // Check if user profile exists
-      const { data: existingUser, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error checking user profile:', fetchError);
-        return;
-      }
-
-      // If user doesn't exist, create profile
-      if (!existingUser) {
-        console.log('Creating user profile for:', user.id);
-        
-        // Get player name from user metadata or display name, fallback to email
-        const playerName = user.user_metadata?.player_name || 
-                          user.user_metadata?.display_name || 
-                          user.email?.split('@')[0] || 
-                          'Player';
-        
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({
-            user_id: user.id, // This should be a string (UUID as text)
-            player_name: playerName,
-            level: 1,
-            experience: 0,
-            games_won: 0,
-            games_lost: 0
-          });
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError);
-          toast({
-            title: "Profile Creation Failed",
-            description: `Failed to create user profile: ${insertError.message}. Please try refreshing the page.`,
-            variant: "destructive",
-          });
-        } else {
-          console.log('User profile created successfully');
-        }
-      }
-    } catch (error) {
-      console.error('Error ensuring user profile:', error);
-      toast({
-        title: "Profile Creation Failed",
-        description: "An unexpected error occurred while creating your profile.",
-        variant: "destructive",
-      });
+    if (!initializing && !currentUser) {
+      setIsLoginOpen(true);
+    } else if (currentUser) {
+      fetchRooms();
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initializing, currentUser]);
 
   // Fetch rooms from the database
   const fetchRooms = async () => {
@@ -246,9 +124,6 @@ const GameLobby = () => {
     setIsCreatingRoom(true);
     
     try {
-      // Ensure user profile exists before creating room
-      await ensureUserProfile(currentUser);
-
       const roomId = generateRoomId();
       
       console.log('Creating room with user ID:', currentUser.id);
@@ -259,7 +134,7 @@ const GameLobby = () => {
         .insert({
           room_id: roomId,
           host_id: currentUser.id,
-          max_players: 10,
+          max_players: 12,
           status: 'waiting',
           human_judge: true
         })
@@ -331,9 +206,6 @@ const GameLobby = () => {
     setIsCreatingAIRoom(true);
 
     try {
-      // Ensure user profile exists before creating room
-      await ensureUserProfile(currentUser);
-
       const roomId = generateRoomId();
       
       console.log('Creating AI judge room with user ID:', currentUser.id);
@@ -497,7 +369,7 @@ const GameLobby = () => {
     }
   };
 
-  if (authLoading) {
+  if (initializing) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
@@ -516,9 +388,19 @@ const GameLobby = () => {
     <PageLayout>
       <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Player Info - Left Side */}
+          {/* Player Info or Auth Notice - Left Side */}
           <div className="w-full lg:w-1/4">
-            <PlayerInfo />
+            {currentUser ? (
+              <PlayerInfo currentUser={currentUser} />
+            ) : (
+              <Card className="bg-amber-900/20 border-amber-700/30 h-full">
+                <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <p className="text-amber-200 text-center">
+                    Please sign in to create or join game rooms
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Main Content - Right Side */}
@@ -543,17 +425,6 @@ const GameLobby = () => {
                 {isCreatingRoom ? 'Creating...' : t('create room')}
               </Button>
             </div>
-
-            {/* Authentication Notice */}
-            {!currentUser && (
-              <Card className="bg-amber-900/20 border-amber-700/30 mb-4">
-                <CardContent className="pt-6">
-                  <p className="text-amber-200 text-center">
-                    Please sign in to create or join game rooms
-                  </p>
-                </CardContent>
-              </Card>
-            )}
             
             {/* Game Room List */}
             <Card className="bg-werewolf-card border-werewolf-purple/30">

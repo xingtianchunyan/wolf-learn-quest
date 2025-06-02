@@ -16,108 +16,17 @@ import { LogIn, UserPlus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '../layout/LanguageSwitcher';
+import { useAuth } from '@/providers/AuthProvider';
 
 const LoginDialog: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [playerId, setPlayerId] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
-
-  // Check for existing session on component mount
-  React.useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // First get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          return;
-        }
-
-        if (session?.user) {
-          setIsLoggedIn(true);
-          setCurrentUser(session.user);
-          
-          // Try to get or create user profile
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userError && userError.code !== 'PGRST116') {
-            console.error('Error fetching user profile:', userError);
-          }
-          
-          // If no profile exists, create one
-          if (!userData && session.user.user_metadata?.player_name) {
-            const { error: insertError } = await supabase
-              .from('users')
-              .insert({
-                user_id: session.user.id,
-                player_name: session.user.user_metadata.player_name,
-                experience: 0,
-                level: 1,
-                games_won: 0,
-                games_lost: 0,
-              });
-            
-            if (insertError) {
-              console.error('Error creating user profile:', insertError);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-      }
-    };
-    
-    initializeAuth();
-    
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      setIsLoggedIn(!!session);
-      setCurrentUser(session?.user || null);
-      
-      // When user logs in, ensure profile exists
-      if (event === 'SIGNED_IN' && session?.user) {
-        setTimeout(async () => {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (!userData && session.user.user_metadata?.player_name) {
-            const { error: insertError } = await supabase
-              .from('users')
-              .insert({
-                user_id: session.user.id,
-                player_name: session.user.user_metadata.player_name,
-                experience: 0,
-                level: 1,
-                games_won: 0,
-                games_lost: 0,
-              });
-            
-            if (insertError) {
-              console.error('Error creating user profile:', insertError);
-            }
-          }
-        }, 100);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, []);
+  const { isLoggedIn, initializing, isLoginOpen, setIsLoginOpen } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +52,7 @@ const LoginDialog: React.FC = () => {
         description: t('login_success_desc'),
       });
       
-      setIsOpen(false);
+      setIsLoginOpen(false);
       // Reset form
       setEmail('');
       setPassword('');
@@ -233,23 +142,6 @@ const LoginDialog: React.FC = () => {
         if (updateError) {
           console.error('Error updating display name:', updateError);
         }
-        
-        // Create user profile with Player ID
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            user_id: data.user.id,
-            player_name: playerId.trim(),
-            experience: 0,
-            level: 1,
-            games_won: 0,
-            games_lost: 0,
-          });
-          
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Don't show error to user as the account was created successfully
-        }
       }
       
       toast({
@@ -257,7 +149,7 @@ const LoginDialog: React.FC = () => {
         description: t('registration_success_desc'),
       });
       
-      setIsOpen(false);
+      setIsLoginOpen(false);
       // Reset form
       setEmail('');
       setPassword('');
@@ -289,7 +181,6 @@ const LoginDialog: React.FC = () => {
         title: t('logout_success'),
         description: t('logout_success_desc'),
       });
-      setCurrentUser(null);
     }
   };
 
@@ -303,9 +194,9 @@ const LoginDialog: React.FC = () => {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="nav-link flex items-center">
+        <Button variant="ghost" className="nav-link flex items-center" loading={initializing}>
           <LogIn size={20} className="mr-1" />
           <span>{t('signin')}</span>
         </Button>
