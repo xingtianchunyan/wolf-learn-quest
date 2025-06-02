@@ -12,6 +12,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
+import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 
 // Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
@@ -49,6 +50,7 @@ const GameRoom = () => {
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { leaveCurrentRoom } = usePlayerRoom();
   
   const allReady = players.every(player => player.isReady);
 
@@ -248,35 +250,22 @@ const GameRoom = () => {
   };
 
   const handleLeaveRoom = async () => {
-    if (!roomData || !currentUser) {
-      navigate('/lobby');
-      return;
-    }
-
     try {
-      // Remove the current user from room_players
-      const { error } = await supabase
-        .from('room_players')
-        .delete()
-        .eq('room_id', roomData.id)
-        .eq('user_id', currentUser.id);
-
-      if (error) {
-        console.error('Error leaving room:', error);
+      const success = await leaveCurrentRoom();
+      
+      if (success) {
+        toast({
+          title: "Left Room",
+          description: "You have left the game room",
+        });
+        navigate('/lobby');
+      } else {
         toast({
           title: "Error",
           description: "Failed to leave room",
           variant: "destructive",
         });
-        return;
       }
-
-      toast({
-        title: "Left Room",
-        description: "You have left the game room",
-      });
-
-      navigate('/lobby');
     } catch (error) {
       console.error('Error leaving room:', error);
       toast({

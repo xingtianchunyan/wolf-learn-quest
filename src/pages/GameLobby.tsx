@@ -3,7 +3,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { Brain, Plus, User, Users, Gavel } from 'lucide-react';
+import { Brain, Plus, User, Users, Gavel, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import PlayerInfo from '@/components/lobby/PlayerInfo';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
+import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useAuth } from '@/providers/AuthProvider';
 
 interface GameRoom {
@@ -38,20 +39,29 @@ const GameLobby = () => {
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isCreatingAIRoom, setIsCreatingAIRoom] = useState(false);
+  const [isLeavingRoom, setIsLeavingRoom] = useState(false);
   const { currentUser, initializing, setIsLoginOpen } = useAuth();
+  const { playerRoom, leaveCurrentRoom } = usePlayerRoom();
 
   // Add room cleanup functionality
   useRoomCleanup();
+
+  // Auto-redirect to player's room if they're already in one
+  useEffect(() => {
+    if (!initializing && currentUser && !playerRoom.isLoading && playerRoom.roomDbId) {
+      console.log('Player already in room, redirecting to:', playerRoom.roomDbId);
+      navigate(`/room/${playerRoom.roomDbId}`);
+    }
+  }, [initializing, currentUser, playerRoom, navigate]);
 
   // Initialize authentication and fetch data
   useEffect(() => {
     if (!initializing && !currentUser) {
       setIsLoginOpen(true);
-    } else if (currentUser) {
+    } else if (currentUser && !playerRoom.roomDbId) {
       fetchRooms();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initializing, currentUser]);
+  }, [initializing, currentUser, playerRoom.roomDbId]);
 
   // Fetch rooms from the database
   const fetchRooms = async () => {
@@ -109,6 +119,40 @@ const GameLobby = () => {
     return `${year}/${month}/${day}-${String(sequence).padStart(2, '0')}`;
   };
 
+  const handleLeaveCurrentRoom = async () => {
+    if (!playerRoom.roomDbId) return;
+
+    setIsLeavingRoom(true);
+    
+    try {
+      const success = await leaveCurrentRoom();
+      
+      if (success) {
+        toast({
+          title: "Left Room",
+          description: "You have left your current room",
+        });
+        // Refresh the room list
+        fetchRooms();
+      } else {
+        toast({
+          title: "Failed to leave room",
+          description: "An error occurred while leaving the room",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error leaving room:', error);
+      toast({
+        title: "Failed to leave room",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLeavingRoom(false);
+    }
+  };
+
   const handleCreateRoom = async () => {
     console.log('Create room clicked, currentUser:', currentUser);
     
@@ -116,6 +160,15 @@ const GameLobby = () => {
       toast({
         title: "Authentication required",
         description: "Please sign in to create rooms",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (playerRoom.roomDbId) {
+      toast({
+        title: "Already in a room",
+        description: "Please leave your current room first",
         variant: "destructive",
       });
       return;
@@ -203,6 +256,15 @@ const GameLobby = () => {
       return;
     }
 
+    if (playerRoom.roomDbId) {
+      toast({
+        title: "Already in a room",
+        description: "Please leave your current room first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreatingAIRoom(true);
 
     try {
@@ -283,36 +345,17 @@ const GameLobby = () => {
       return;
     }
 
+    if (playerRoom.roomDbId) {
+      toast({
+        title: "Already in a room",
+        description: "Please leave your current room first before joining another",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       console.log('Joining room:', roomId, 'as user:', currentUser.id);
-
-      // First, check if user is already in the room
-      const { data: existingPlayer, error: checkError } = await supabase
-        .from('room_players')
-        .select('id')
-        .eq('room_id', roomId)
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking existing player:', checkError);
-        toast({
-          title: "Failed to join room",
-          description: "Error checking room membership",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (existingPlayer) {
-        console.log('User already in room, navigating to room');
-        toast({
-          title: "Already in room",
-          description: "You're already a member of this room",
-        });
-        navigate(`/room/${roomId}`);
-        return;
-      }
 
       // Add player to room
       const { error } = await supabase
@@ -369,7 +412,7 @@ const GameLobby = () => {
     }
   };
 
-  if (initializing) {
+  if (initializing || playerRoom.isLoading) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
@@ -391,7 +434,42 @@ const GameLobby = () => {
           {/* Player Info or Auth Notice - Left Side */}
           <div className="w-full lg:w-1/4">
             {currentUser ? (
-              <PlayerInfo currentUser={currentUser} />
+              <div className="space-y-4">
+                <PlayerInfo currentUser={currentUser} />
+                
+                {/* Current Room Status */}
+                {playerRoom.roomDbId && (
+                  <Card className="bg-amber-900/20 border-amber-700/30">
+                    <CardHeader>
+                      <CardTitle className="text-amber-200 text-sm">当前房间</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-amber-200 text-sm mb-3">
+                        房间ID: {playerRoom.roomId}
+                      </p>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => navigate(`/room/${playerRoom.roomDbId}`)}
+                          className="w-full bg-werewolf-purple hover:bg-werewolf-light"
+                          size="sm"
+                        >
+                          返回房间
+                        </Button>
+                        <Button
+                          onClick={handleLeaveCurrentRoom}
+                          variant="outline"
+                          className="w-full border-amber-700/30 hover:bg-amber-900/40"
+                          size="sm"
+                          disabled={isLeavingRoom}
+                        >
+                          <LogOut className="mr-2 h-3 w-3" />
+                          {isLeavingRoom ? '退出中...' : '退出房间'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             ) : (
               <Card className="bg-amber-900/20 border-amber-700/30 h-full">
                 <CardContent className="pt-6 h-full flex items-center justify-center">
@@ -410,7 +488,7 @@ const GameLobby = () => {
               <Button 
                 onClick={handleCreateAIJudge}
                 className="bg-werewolf-purple hover:bg-werewolf-light"
-                disabled={!currentUser || isCreatingAIRoom}
+                disabled={!currentUser || isCreatingAIRoom || !!playerRoom.roomDbId}
               >
                 <Brain className="mr-2 h-4 w-4" />
                 {isCreatingAIRoom ? 'Creating...' : t('create ai judge')}
@@ -419,7 +497,7 @@ const GameLobby = () => {
               <Button 
                 onClick={handleCreateRoom}
                 className="bg-werewolf-purple hover:bg-werewolf-light"
-                disabled={!currentUser || isCreatingRoom}
+                disabled={!currentUser || isCreatingRoom || !!playerRoom.roomDbId}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 {isCreatingRoom ? 'Creating...' : t('create room')}
@@ -431,7 +509,10 @@ const GameLobby = () => {
               <CardHeader>
                 <CardTitle>{t('game rooms')}</CardTitle>
                 <CardDescription>
-                  {t('join existing')}
+                  {playerRoom.roomDbId 
+                    ? '您已在房间中，需要先退出当前房间才能加入其他房间' 
+                    : t('join existing')
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -497,7 +578,7 @@ const GameLobby = () => {
                                   size="sm"
                                   onClick={() => joinRoom(room.id)}
                                   className="bg-werewolf-purple hover:bg-werewolf-light"
-                                  disabled={!currentUser}
+                                  disabled={!currentUser || !!playerRoom.roomDbId}
                                 >
                                   <User className="h-3 w-3 mr-1" />
                                   {t('join')}
