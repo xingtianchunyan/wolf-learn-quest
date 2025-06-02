@@ -1,3 +1,4 @@
+
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -223,6 +224,7 @@ const translations: Record<string, Record<string, string>> = {
     'player_config_10': '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
     'player_config_11': '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
     'player_config_12': '2 Werewolves, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
+    
     // Info Disclosure Table
     'info_phases_villager': 'Daytime + Evening + Dawn',
     'info_phases_all': 'All',
@@ -431,6 +433,7 @@ const translations: Record<string, Record<string, string>> = {
     'player_config_10': '1狼人、1白狼王、2村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
     'player_config_11': '1狼人、1白狼王、3村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
     'player_config_12': '2狼人、1白狼王、3村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
+    
     // Info Disclosure Table
     'info_phases_villager': '白天+晚上+黎明',
     'info_phases_all': '全部',

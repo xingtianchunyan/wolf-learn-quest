@@ -41,7 +41,7 @@ const initialMessages = [
 
 const GameRoom = () => {
   const navigate = useNavigate();
-  const { roomId } = useParams();
+  const { id } = useParams();
   const { toast } = useToast();
   const [isReady, setIsReady] = useState(true);
   const [messages, setMessages] = useState(initialMessages);
@@ -78,9 +78,9 @@ const GameRoom = () => {
           }
         }
 
-        // Fetch room data using the roomId from URL params or fallback to user's most recent room
-        if (roomId) {
-          console.log('Fetching room data for room ID:', roomId);
+        // Fetch room data using the id from URL params or fallback to user's most recent room
+        if (id) {
+          console.log('Fetching room data for room ID:', id);
           
           // Fetch specific room by ID
           const { data: roomData, error: roomError } = await supabase
@@ -93,7 +93,7 @@ const GameRoom = () => {
               users!rooms_host_id_fkey(player_name),
               room_players(id, user_id)
             `)
-            .eq('id', roomId)
+            .eq('id', id)
             .maybeSingle();
 
           if (roomError) {
@@ -116,7 +116,7 @@ const GameRoom = () => {
               maxPlayers: roomData.max_players,
             });
           } else {
-            console.log('No room found with ID:', roomId);
+            console.log('No room found with ID:', id);
           }
         } else if (session?.user) {
           // Fallback: fetch user's most recent room
@@ -163,7 +163,7 @@ const GameRoom = () => {
     };
 
     fetchData();
-  }, [toast, roomId]);
+  }, [toast, id]);
 
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
@@ -299,7 +299,7 @@ const GameRoom = () => {
             <div className="text-center">
               <p className="text-gray-400 mb-4">No room data found</p>
               <p className="text-sm text-gray-500 mb-4">
-                Room ID: {roomId || 'Not specified'}
+                Room ID: {id || 'Not specified'}
               </p>
               <Button onClick={() => navigate('/lobby')}>
                 Return to Lobby
