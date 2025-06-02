@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -260,9 +261,7 @@ const GameRoom = () => {
               onAddAIPlayer={handleAddAIPlayer}
               onLeaveRoom={handleLeaveRoom}
               onToggleReady={handleToggleReady}
-              onStartGame={handleStartGame}
               isUserReady={isUserReady}
-              selectedRole={selectedRole}
             />
           </div>
           
@@ -273,20 +272,36 @@ const GameRoom = () => {
               selectedRole={selectedRole}
               onRoleSelect={setSelectedRole}
             />
+            
+            {/* 开始游戏按钮 */}
+            <div className="mt-6 text-center">
+              <Button
+                className="bg-werewolf-purple hover:bg-werewolf-light px-8"
+                onClick={handleStartGame}
+                disabled={!isUserReady || !allReady || roomData.room_players.length < 6}
+              >
+                开始游戏
+              </Button>
+              <p className="text-sm mt-2 text-gray-400">
+                {!allReady ? '等待所有玩家准备完毕...' : 
+                 roomData.room_players.length < 6 ? '至少需要6名玩家才能开始游戏' :
+                 '所有玩家已准备完毕！'}
+              </p>
+            </div>
           </div>
           
           {/* 右列 - 聊天 */}
           <div className="lg:col-span-4">
-            <div className="flex flex-col h-full">
-              <Card className="bg-werewolf-card border-werewolf-purple/30 flex-1">
-                <CardHeader>
-                  <CardTitle className="text-werewolf-purple flex items-center">
-                    <MessageSquareText className="mr-2 h-5 w-5" />
-                    房间聊天
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <ScrollArea className="h-[500px] pr-4">
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+              <CardHeader>
+                <CardTitle className="text-werewolf-purple flex items-center">
+                  <MessageSquareText className="mr-2 h-5 w-5" />
+                  房间聊天
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col h-full">
+                  <ScrollArea className="flex-1 h-[400px] pr-4">
                     <div className="space-y-4">
                       {messages.map((message) => (
                         <div key={message.id} className="chat-message">
@@ -304,26 +319,23 @@ const GameRoom = () => {
                       ))}
                     </div>
                   </ScrollArea>
-                </CardContent>
-              </Card>
-              
-              {/* 聊天输入框移到底部 */}
-              <div className="mt-4">
-                <form onSubmit={handleSendMessage}>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="输入消息..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                    />
-                    <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                      发送
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
+                  
+                  <form onSubmit={handleSendMessage} className="mt-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="输入消息..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                      />
+                      <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                        发送
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
