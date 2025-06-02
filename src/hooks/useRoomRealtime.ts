@@ -27,12 +27,15 @@ export const useRoomRealtime = (roomId: string) => {
         },
         (payload) => {
           console.log('Room update received:', payload);
-          if (payload.new) {
-            setRoomData({
-              maxPlayers: payload.new.max_players,
-              status: payload.new.status,
-              lastUpdate: new Date()
-            });
+          if (payload.new && typeof payload.new === 'object') {
+            const newData = payload.new as any;
+            if (newData.max_players !== undefined && newData.status !== undefined) {
+              setRoomData({
+                maxPlayers: newData.max_players,
+                status: newData.status,
+                lastUpdate: new Date()
+              });
+            }
           }
         }
       )
