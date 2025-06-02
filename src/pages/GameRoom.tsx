@@ -3,86 +3,55 @@ import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Brain, MessageSquareText, User, Users, Minus, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { MessageSquareText, Minus, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
-
-// Mock players data - this would be fetched from Supabase in a real implementation
-const players = [
-  { id: 'player1', name: 'You', avatar: '', isReady: true, isHost: true, isAI: false },
-  { id: 'player2', name: 'Alice', avatar: '', isReady: false, isHost: false, isAI: false },
-  { id: 'player3', name: 'Bob', avatar: '', isReady: true, isHost: false, isAI: false },
-  { id: 'player4', name: 'AI-Charlie', avatar: '', isReady: true, isHost: false, isAI: true },
-  { id: 'player5', name: 'AI-Diana', avatar: '', isReady: true, isHost: false, isAI: true },
-];
-
-// Mock character cards
-const characterCards = [
-  { id: 'villager', name: 'Villager', description: 'A regular villager trying to identify the werewolves', image: '/placeholder.svg', team: 'Village' },
-  { id: 'werewolf', name: 'Werewolf', description: 'Hunt down villagers without being caught', image: '/placeholder.svg', team: 'Werewolves' },
-  { id: 'seer', name: 'Seer', description: 'Check one player\'s identity each night', image: '/placeholder.svg', team: 'Village' },
-  { id: 'doctor', name: 'Doctor', description: 'Protect one player from elimination each night', image: '/placeholder.svg', team: 'Village' },
-];
+import { useRoomRealtime } from '@/hooks/useRoomRealtime';
+import { useAuth } from '@/providers/AuthProvider';
+import RoleSelection from '@/components/room/RoleSelection';
+import PlayersList from '@/components/room/PlayersList';
 
 // Mock chat messages
 const initialMessages = [
-  { id: 1, sender: 'System', content: 'Welcome to the game room!' },
-  { id: 2, sender: 'System', content: 'Waiting for all players to get ready...' },
-  { id: 3, sender: 'Alice', content: 'Hi everyone, excited to play!' },
-  { id: 4, sender: 'You', content: 'Let me know when you\'re all ready' },
+  { id: 1, sender: 'System', content: '欢迎来到游戏房间！' },
+  { id: 2, sender: 'System', content: '等待所有玩家准备...' },
 ];
 
 const GameRoom = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  const [isReady, setIsReady] = useState(true);
+  const { currentUser } = useAuth();
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
-  const [roomData, setRoomData] = useState<any>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [roomInfo, setRoomInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { leaveCurrentRoom } = usePlayerRoom();
   
-  const allReady = players.every(player => player.isReady);
-
+  // 使用实时房间数据
+  const { roomData, isLoading: realtimeLoading, updatePlayerReady, addAIPlayer } = useRoomRealtime(roomInfo?.id || null);
+  
+  // 获取当前用户在房间中的状态
+  const currentPlayer = roomData.players.find(p => p.user_id === currentUser?.id);
+  const currentUserReady = currentPlayer?.is_ready || false;
+  
   // Add room cleanup functionality
   useRoomCleanup();
 
-  // Fetch current user and room data
+  // Fetch room info
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRoomInfo = async () => {
       try {
-        // Get current session
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setCurrentUser(session.user);
-          
-          // Get user profile for player name
-          const { data: userData } = await supabase
-            .from('users')
-            .select('player_name')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
-          }
-        }
-
-        // Fetch room data using the id from URL params or fallback to user's most recent room
+        
         if (id) {
           console.log('Fetching room data for room ID:', id);
           
-          // Fetch specific room by ID
           const { data: roomData, error: roomError } = await supabase
             .from('rooms')
             .select(`
@@ -90,8 +59,7 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
-              users!rooms_host_id_fkey(player_name),
-              room_players(id, user_id)
+              users!rooms_host_id_fkey(player_name)
             `)
             .eq('id', id)
             .maybeSingle();
@@ -99,8 +67,8 @@ const GameRoom = () => {
           if (roomError) {
             console.error('Error fetching room:', roomError);
             toast({
-              title: "Error",
-              description: "Failed to load room data",
+              title: "错误",
+              description: "无法加载房间数据",
               variant: "destructive",
             });
             return;
@@ -108,53 +76,20 @@ const GameRoom = () => {
 
           if (roomData) {
             console.log('Room data found:', roomData);
-            setRoomData({
+            setRoomInfo({
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
-              topic: 'Periodic Table Elements', // This would come from room data in real implementation
+              topic: '元素周期表', 
               maxPlayers: roomData.max_players,
-            });
-          } else {
-            console.log('No room found with ID:', id);
-          }
-        } else if (session?.user) {
-          // Fallback: fetch user's most recent room
-          console.log('No room ID in URL, fetching user\'s most recent room');
-          
-          const { data: roomPlayerData } = await supabase
-            .from('room_players')
-            .select(`
-              room_id,
-              rooms!inner(
-                id,
-                room_id,
-                max_players,
-                host_id,
-                users!rooms_host_id_fkey(player_name)
-              )
-            `)
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms;
-            setRoomData({
-              id: room.id,
-              roomId: room.room_id,
-              hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: 'Periodic Table Elements',
-              maxPlayers: room.max_players,
             });
           }
         }
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
-          title: "Error",
-          description: "Failed to load room data",
+          title: "错误",
+          description: "无法加载房间数据",
           variant: "destructive",
         });
       } finally {
@@ -162,55 +97,57 @@ const GameRoom = () => {
       }
     };
 
-    fetchData();
+    fetchRoomInfo();
   }, [toast, id]);
 
   const handleMaxPlayersChange = async (increment: number) => {
-    if (!roomData || !currentUser) return;
+    if (!roomInfo || !currentUser) return;
 
-    const newMaxPlayers = Math.max(6, Math.min(12, roomData.maxPlayers + increment));
+    const newMaxPlayers = Math.max(6, Math.min(12, roomInfo.maxPlayers + increment));
     
-    if (newMaxPlayers === roomData.maxPlayers) return;
+    if (newMaxPlayers === roomInfo.maxPlayers) return;
 
     try {
-      // Update max players in database
       const { error } = await supabase
         .from('rooms')
         .update({ max_players: newMaxPlayers })
-        .eq('id', roomData.id);
+        .eq('id', roomInfo.id);
 
       if (error) {
         console.error('Error updating max players:', error);
         toast({
-          title: "Error",
-          description: "Failed to update max players",
+          title: "错误",
+          description: "无法更新最大玩家数",
           variant: "destructive",
         });
         return;
       }
 
-      // Update local state
-      setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
+      setRoomInfo({ ...roomInfo, maxPlayers: newMaxPlayers });
       
       toast({
-        title: "Max Players Updated",
-        description: `Maximum players set to ${newMaxPlayers}`,
+        title: "最大玩家数已更新",
+        description: `最大玩家数设置为 ${newMaxPlayers}`,
       });
     } catch (error) {
       console.error('Error updating max players:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update max players",
-        variant: "destructive",
-      });
     }
   };
   
-  const handleAddAIPlayer = () => {
-    toast({
-      title: "AI Player Added",
-      description: "An AI player has joined the game room",
-    });
+  const handleAddAIPlayer = async () => {
+    const success = await addAIPlayer();
+    if (success) {
+      toast({
+        title: "AI玩家已添加",
+        description: "AI玩家已加入游戏房间",
+      });
+    } else {
+      toast({
+        title: "错误",
+        description: "无法添加AI玩家",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleSendMessage = (e: React.FormEvent) => {
@@ -219,7 +156,7 @@ const GameRoom = () => {
     
     const message = {
       id: messages.length + 1,
-      sender: 'You',
+      sender: '你',
       content: newMessage,
     };
     
@@ -228,19 +165,30 @@ const GameRoom = () => {
   };
   
   const handleStartGame = () => {
-    if (!allReady) {
+    const allReady = roomData.players.every(player => player.is_ready);
+    
+    if (roomData.playerCount < 6) {
       toast({
-        title: "Cannot start game",
-        description: "Not all players are ready yet",
+        title: "无法开始游戏",
+        description: "至少需要6名玩家才能开始游戏",
         variant: "destructive",
       });
       return;
     }
     
-    if (!selectedCharacter) {
+    if (!allReady) {
       toast({
-        title: "Select a character",
-        description: "Please select a character card before starting",
+        title: "无法开始游戏",
+        description: "还有玩家未准备完毕",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!selectedRole) {
+      toast({
+        title: "请选择角色",
+        description: "开始游戏前请先选择一个角色",
         variant: "destructive",
       });
       return;
@@ -249,41 +197,52 @@ const GameRoom = () => {
     navigate('/game');
   };
 
+  const handleToggleReady = async () => {
+    const success = await updatePlayerReady(!currentUserReady);
+    if (!success) {
+      toast({
+        title: "错误",
+        description: "无法更新准备状态",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleLeaveRoom = async () => {
     try {
       const success = await leaveCurrentRoom();
       
       if (success) {
         toast({
-          title: "Left Room",
-          description: "You have left the game room",
+          title: "已离开房间",
+          description: "你已离开游戏房间",
         });
         navigate('/lobby');
       } else {
         toast({
-          title: "Error",
-          description: "Failed to leave room",
+          title: "错误",
+          description: "离开房间失败",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error leaving room:', error);
       toast({
-        title: "Error",
-        description: "Failed to leave room",
+        title: "错误",
+        description: "离开房间失败",
         variant: "destructive",
       });
     }
   };
 
-  if (isLoading) {
+  if (isLoading || realtimeLoading) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading room data...</p>
+              <p className="text-gray-400">加载房间数据...</p>
             </div>
           </div>
         </div>
@@ -291,18 +250,18 @@ const GameRoom = () => {
     );
   }
 
-  if (!roomData) {
+  if (!roomInfo) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <p className="text-gray-400 mb-4">No room data found</p>
+              <p className="text-gray-400 mb-4">未找到房间数据</p>
               <p className="text-sm text-gray-500 mb-4">
-                Room ID: {id || 'Not specified'}
+                房间ID: {id || '未指定'}
               </p>
               <Button onClick={() => navigate('/lobby')}>
-                Return to Lobby
+                返回大厅
               </Button>
             </div>
           </div>
@@ -310,6 +269,9 @@ const GameRoom = () => {
       </PageLayout>
     );
   }
+
+  const allReady = roomData.players.every(player => player.is_ready);
+  const canStartGame = roomData.playerCount >= 6 && allReady && selectedRole;
 
   return (
     <PageLayout>
@@ -321,24 +283,24 @@ const GameRoom = () => {
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30">
                 <CardHeader>
-                  <CardTitle className="text-werewolf-purple">Room Information</CardTitle>
+                  <CardTitle className="text-werewolf-purple">房间信息</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-400">Room ID</p>
-                      <p className="font-bold">{roomData.roomId}</p>
+                      <p className="text-sm text-gray-400">房间ID</p>
+                      <p className="font-bold">{roomInfo.roomId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Host Player ID</p>
-                      <p>{roomData.hostPlayerId}</p>
+                      <p className="text-sm text-gray-400">房主</p>
+                      <p>{roomInfo.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Learning Topic</p>
-                      <p>{roomData.topic}</p>
+                      <p className="text-sm text-gray-400">学习主题</p>
+                      <p>{roomInfo.topic}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-2">Max Players</p>
+                      <p className="text-sm text-gray-400 mb-2">最大玩家数</p>
                       <div className="flex items-center justify-center space-x-3">
                         <Button
                           size="sm"
@@ -365,7 +327,7 @@ const GameRoom = () => {
                     </div>
                     <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
-                        ⚠️ Room auto-closes after 3 minutes with no human players
+                        ⚠️ 房间在没有真人玩家时3分钟后自动关闭
                       </p>
                     </div>
                   </div>
@@ -373,137 +335,40 @@ const GameRoom = () => {
               </Card>
               
               {/* Players List */}
-              <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-werewolf-purple">
-                    <Users className="inline mr-2 h-5 w-5" />
-                    Players
-                  </CardTitle>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={handleAddAIPlayer}
-                    className="h-8 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                  >
-                    <Brain className="h-4 w-4 mr-1" />
-                    Add AI
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-60 pr-4">
-                    <div className="space-y-3">
-                      {players.map((player) => (
-                        <div 
-                          key={player.id} 
-                          className={`flex items-center justify-between p-2 rounded-md ${player.isReady ? 'bg-green-900/20' : 'bg-werewolf-dark/40'}`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Avatar>
-                              <AvatarImage src={player.avatar} />
-                              <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'}`}>
-                                {player.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{player.name}</p>
-                              <div className="flex space-x-2 mt-1">
-                                {player.isHost && (
-                                  <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">Host</Badge>
-                                )}
-                                {player.isAI && (
-                                  <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            {player.isReady ? (
-                              <Badge className="bg-green-700 text-xs">Ready</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">Not Ready</Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  
-                  <div className="mt-4 flex justify-between">
-                    <Button 
-                      variant="outline"
-                      className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                      onClick={handleLeaveRoom}
-                    >
-                      Leave Room
-                    </Button>
-                    <Button 
-                      className={isReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
-                      onClick={() => setIsReady(!isReady)}
-                    >
-                      {isReady ? 'Ready' : 'Not Ready'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <PlayersList
+                players={roomData.players}
+                currentUserId={currentUser?.id || ''}
+                maxPlayers={roomData.maxPlayers}
+                onAddAI={handleAddAIPlayer}
+                onToggleReady={handleToggleReady}
+                onLeaveRoom={handleLeaveRoom}
+                currentUserReady={currentUserReady}
+              />
             </div>
           </div>
           
-          {/* Middle Column - Character Selection */}
+          {/* Middle Column - Role Selection */}
           <div className="lg:col-span-5">
-            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-              <CardHeader>
-                <CardTitle className="text-werewolf-purple">Choose Your Character</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {characterCards.map((card) => (
-                    <div 
-                      key={card.id}
-                      className={`p-4 rounded-lg cursor-pointer transition-all ${
-                        selectedCharacter === card.id 
-                          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
-                          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
-                      }`}
-                      onClick={() => setSelectedCharacter(card.id)}
-                    >
-                      <div className="aspect-square bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
-                        <img 
-                          src={card.image} 
-                          alt={card.name} 
-                          className="max-h-full max-w-full p-2"
-                        />
-                      </div>
-                      <h3 className="font-bold text-lg mb-1">
-                        {card.name}
-                        <span 
-                          className={`ml-2 text-xs px-2 py-0.5 rounded ${
-                            card.team === 'Village' ? 'bg-green-900/60 text-green-200' : 
-                            card.team === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
-                            'bg-blue-900/60 text-blue-200'
-                          }`}
-                        >
-                          {card.team}
-                        </span>
-                      </h3>
-                      <p className="text-sm">{card.description}</p>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <Button
-                    className="bg-werewolf-purple hover:bg-werewolf-light px-8"
-                    onClick={handleStartGame}
-                    disabled={!isReady || !allReady}
-                  >
-                    Start Game
-                  </Button>
-                  <p className="text-sm mt-2 text-gray-400">
-                    {!allReady ? 'Waiting for all players to be ready...' : 'All players are ready!'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <RoleSelection
+              playerCount={roomData.playerCount}
+              selectedRole={selectedRole}
+              onRoleSelect={setSelectedRole}
+            />
+            
+            <div className="mt-6 text-center">
+              <Button
+                className="bg-werewolf-purple hover:bg-werewolf-light px-8"
+                onClick={handleStartGame}
+                disabled={!canStartGame}
+              >
+                开始游戏
+              </Button>
+              <p className="text-sm mt-2 text-gray-400">
+                {roomData.playerCount < 6 ? `需要至少6名玩家 (当前${roomData.playerCount}人)` :
+                 !allReady ? '等待所有玩家准备...' : 
+                 !selectedRole ? '请选择角色' : '所有玩家已准备完毕！'}
+              </p>
+            </div>
           </div>
           
           {/* Right Column - Chat */}
@@ -512,7 +377,7 @@ const GameRoom = () => {
               <CardHeader>
                 <CardTitle className="text-werewolf-purple flex items-center">
                   <MessageSquareText className="mr-2 h-5 w-5" />
-                  Room Chat
+                  房间聊天
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -524,7 +389,7 @@ const GameRoom = () => {
                           <p className="text-sm">
                             <span className={`font-bold ${
                               message.sender === 'System' ? 'text-yellow-400' :
-                              message.sender === 'You' ? 'text-werewolf-purple' :
+                              message.sender === '你' ? 'text-werewolf-purple' :
                               'text-blue-400'
                             }`}>
                               {message.sender}:
@@ -539,13 +404,13 @@ const GameRoom = () => {
                   <form onSubmit={handleSendMessage} className="mt-4">
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Type your message..."
+                        placeholder="输入消息..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         className="bg-werewolf-dark/40 border-werewolf-purple/30"
                       />
                       <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                        Send
+                        发送
                       </Button>
                     </div>
                   </form>
