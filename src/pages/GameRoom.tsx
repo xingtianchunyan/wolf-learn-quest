@@ -162,7 +162,7 @@ const GameRoom = () => {
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
 
-    const newMaxPlayers = Math.max(4, Math.min(12, roomData.maxPlayers + increment));
+    const newMaxPlayers = Math.max(6, Math.min(12, roomData.maxPlayers + increment));
     
     if (newMaxPlayers === roomData.maxPlayers) return;
 
@@ -311,7 +311,7 @@ const GameRoom = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => handleMaxPlayersChange(-1)}
-                          disabled={roomData.maxPlayers <= 4}
+                          disabled={roomData.maxPlayers <= 6}
                           className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
                         >
                           <Minus className="h-4 w-4" />
