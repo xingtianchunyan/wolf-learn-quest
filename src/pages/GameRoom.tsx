@@ -211,9 +211,9 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 h-[calc(100vh-200px)] flex flex-col">
+      <div className="container mx-auto py-6 px-4">
         {/* 房间信息栏 */}
-        <div className="mb-6 flex-shrink-0">
+        <div className="mb-6">
           <Card className="bg-werewolf-card border-werewolf-purple/30">
             <CardHeader>
               <CardTitle className="text-werewolf-purple">房间信息</CardTitle>
@@ -248,7 +248,7 @@ const GameRoom = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* 左列 - 玩家列表 */}
           <div className="lg:col-span-3">
             <PlayersList
@@ -257,13 +257,11 @@ const GameRoom = () => {
               currentUserId={currentUser?.id || null}
               hostId={roomData.host_id}
               isHost={isHost || false}
-              selectedRole={selectedRole}
-              isUserReady={isUserReady}
               onMaxPlayersChange={handleMaxPlayersChange}
               onAddAIPlayer={handleAddAIPlayer}
               onLeaveRoom={handleLeaveRoom}
               onToggleReady={handleToggleReady}
-              onStartGame={handleStartGame}
+              isUserReady={isUserReady}
             />
           </div>
           
@@ -274,55 +272,70 @@ const GameRoom = () => {
               selectedRole={selectedRole}
               onRoleSelect={setSelectedRole}
             />
+            
+            {/* 开始游戏按钮 */}
+            <div className="mt-6 text-center">
+              <Button
+                className="bg-werewolf-purple hover:bg-werewolf-light px-8"
+                onClick={handleStartGame}
+                disabled={!isUserReady || !allReady || roomData.room_players.length < 6}
+              >
+                开始游戏
+              </Button>
+              <p className="text-sm mt-2 text-gray-400">
+                {!allReady ? '等待所有玩家准备完毕...' : 
+                 roomData.room_players.length < 6 ? '至少需要6名玩家才能开始游戏' :
+                 '所有玩家已准备完毕！'}
+              </p>
+            </div>
           </div>
           
           {/* 右列 - 聊天 */}
-          <div className="lg:col-span-4 flex flex-col">
-            <Card className="bg-werewolf-card border-werewolf-purple/30 flex-1 flex flex-col">
-              <CardHeader className="flex-shrink-0">
+          <div className="lg:col-span-4">
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+              <CardHeader>
                 <CardTitle className="text-werewolf-purple flex items-center">
                   <MessageSquareText className="mr-2 h-5 w-5" />
                   房间聊天
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col min-h-0">
-                <ScrollArea className="flex-1 pr-4">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div key={message.id} className="chat-message">
-                        <p className="text-sm">
-                          <span className={`font-bold ${
-                            message.sender === 'System' ? 'text-yellow-400' :
-                            message.sender === currentUser?.player_name ? 'text-werewolf-purple' :
-                            'text-blue-400'
-                          }`}>
-                            {message.sender}:
-                          </span>
-                          <span className="ml-2">{message.content}</span>
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+              <CardContent>
+                <div className="flex flex-col h-full">
+                  <ScrollArea className="flex-1 h-[400px] pr-4">
+                    <div className="space-y-4">
+                      {messages.map((message) => (
+                        <div key={message.id} className="chat-message">
+                          <p className="text-sm">
+                            <span className={`font-bold ${
+                              message.sender === 'System' ? 'text-yellow-400' :
+                              message.sender === currentUser?.player_name ? 'text-werewolf-purple' :
+                              'text-blue-400'
+                            }`}>
+                              {message.sender}:
+                            </span>
+                            <span className="ml-2">{message.content}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                  
+                  <form onSubmit={handleSendMessage} className="mt-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="输入消息..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                      />
+                      <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                        发送
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               </CardContent>
             </Card>
-            
-            {/* 聊天输入框移到底部 */}
-            <div className="mt-4">
-              <form onSubmit={handleSendMessage}>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="输入消息..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                  />
-                  <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                    发送
-                  </Button>
-                </div>
-              </form>
-            </div>
           </div>
         </div>
       </div>
