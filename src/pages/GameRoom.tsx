@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 
 // Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
