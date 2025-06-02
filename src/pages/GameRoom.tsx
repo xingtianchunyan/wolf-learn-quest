@@ -1,18 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Brain, MessageSquareText, User, Users, Minus, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { MessageSquareText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
+import { useRoomRealtime } from '@/hooks/useRoomRealtime';
+import PlayersList from '@/components/room/PlayersList';
+import RoleSelection from '@/components/room/RoleSelection';
 
 // Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
@@ -23,20 +24,12 @@ const players = [
   { id: 'player5', name: 'AI-Diana', avatar: '', isReady: true, isHost: false, isAI: true },
 ];
 
-// Mock character cards
-const characterCards = [
-  { id: 'villager', name: 'Villager', description: 'A regular villager trying to identify the werewolves', image: '/placeholder.svg', team: 'Village' },
-  { id: 'werewolf', name: 'Werewolf', description: 'Hunt down villagers without being caught', image: '/placeholder.svg', team: 'Werewolves' },
-  { id: 'seer', name: 'Seer', description: 'Check one player\'s identity each night', image: '/placeholder.svg', team: 'Village' },
-  { id: 'doctor', name: 'Doctor', description: 'Protect one player from elimination each night', image: '/placeholder.svg', team: 'Village' },
-];
-
 // Mock chat messages
 const initialMessages = [
-  { id: 1, sender: 'System', content: 'Welcome to the game room!' },
-  { id: 2, sender: 'System', content: 'Waiting for all players to get ready...' },
-  { id: 3, sender: 'Alice', content: 'Hi everyone, excited to play!' },
-  { id: 4, sender: 'You', content: 'Let me know when you\'re all ready' },
+  { id: 1, sender: 'System', content: '欢迎来到游戏房间!' },
+  { id: 2, sender: 'System', content: '等待所有玩家准备...' },
+  { id: 3, sender: 'Alice', content: '大家好，很期待这局游戏!' },
+  { id: 4, sender: 'You', content: '准备好了就告诉我' },
 ];
 
 const GameRoom = () => {
@@ -51,11 +44,15 @@ const GameRoom = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { leaveCurrentRoom } = usePlayerRoom();
+  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   
   const allReady = players.every(player => player.isReady);
 
   // Add room cleanup functionality
   useRoomCleanup();
+
+  // Get current max players from realtime data or fallback to local state
+  const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
 
   // Fetch current user and room data
   useEffect(() => {
@@ -99,8 +96,8 @@ const GameRoom = () => {
           if (roomError) {
             console.error('Error fetching room:', roomError);
             toast({
-              title: "Error",
-              description: "Failed to load room data",
+              title: "错误",
+              description: "加载房间数据失败",
               variant: "destructive",
             });
             return;
@@ -112,7 +109,7 @@ const GameRoom = () => {
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
-              topic: 'Periodic Table Elements', // This would come from room data in real implementation
+              topic: '元素周期表', // This would come from room data in real implementation
               maxPlayers: roomData.max_players,
             });
           } else {
@@ -145,7 +142,7 @@ const GameRoom = () => {
               id: room.id,
               roomId: room.room_id,
               hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: 'Periodic Table Elements',
+              topic: '元素周期表',
               maxPlayers: room.max_players,
             });
           }
@@ -153,8 +150,8 @@ const GameRoom = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
-          title: "Error",
-          description: "Failed to load room data",
+          title: "错误",
+          description: "加载房间数据失败",
           variant: "destructive",
         });
       } finally {
@@ -168,39 +165,34 @@ const GameRoom = () => {
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
 
-    const newMaxPlayers = Math.max(6, Math.min(12, roomData.maxPlayers + increment));
+    const newMaxPlayers = Math.max(6, Math.min(12, currentMaxPlayers + increment));
     
-    if (newMaxPlayers === roomData.maxPlayers) return;
+    if (newMaxPlayers === currentMaxPlayers) return;
 
     try {
-      // Update max players in database
-      const { error } = await supabase
-        .from('rooms')
-        .update({ max_players: newMaxPlayers })
-        .eq('id', roomData.id);
-
-      if (error) {
-        console.error('Error updating max players:', error);
+      const success = await updateMaxPlayers(newMaxPlayers);
+      
+      if (!success) {
         toast({
-          title: "Error",
-          description: "Failed to update max players",
+          title: "错误",
+          description: "更新最大玩家数失败",
           variant: "destructive",
         });
         return;
       }
 
-      // Update local state
+      // Update local state for immediate feedback
       setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
       
       toast({
-        title: "Max Players Updated",
-        description: `Maximum players set to ${newMaxPlayers}`,
+        title: "最大玩家数已更新",
+        description: `最大玩家数设置为 ${newMaxPlayers}`,
       });
     } catch (error) {
       console.error('Error updating max players:', error);
       toast({
-        title: "Error",
-        description: "Failed to update max players",
+        title: "错误",
+        description: "更新最大玩家数失败",
         variant: "destructive",
       });
     }
@@ -208,8 +200,8 @@ const GameRoom = () => {
   
   const handleAddAIPlayer = () => {
     toast({
-      title: "AI Player Added",
-      description: "An AI player has joined the game room",
+      title: "AI玩家已添加",
+      description: "一个AI玩家已加入游戏房间",
     });
   };
   
@@ -230,8 +222,8 @@ const GameRoom = () => {
   const handleStartGame = () => {
     if (!allReady) {
       toast({
-        title: "Cannot start game",
-        description: "Not all players are ready yet",
+        title: "无法开始游戏",
+        description: "还有玩家未准备",
         variant: "destructive",
       });
       return;
@@ -239,8 +231,8 @@ const GameRoom = () => {
     
     if (!selectedCharacter) {
       toast({
-        title: "Select a character",
-        description: "Please select a character card before starting",
+        title: "请选择角色",
+        description: "开始游戏前请先选择角色卡片",
         variant: "destructive",
       });
       return;
@@ -255,22 +247,22 @@ const GameRoom = () => {
       
       if (success) {
         toast({
-          title: "Left Room",
-          description: "You have left the game room",
+          title: "已离开房间",
+          description: "您已离开游戏房间",
         });
         navigate('/lobby');
       } else {
         toast({
-          title: "Error",
-          description: "Failed to leave room",
+          title: "错误",
+          description: "离开房间失败",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error leaving room:', error);
       toast({
-        title: "Error",
-        description: "Failed to leave room",
+        title: "错误",
+        description: "离开房间失败",
         variant: "destructive",
       });
     }
@@ -283,7 +275,7 @@ const GameRoom = () => {
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading room data...</p>
+              <p className="text-gray-400">加载房间数据中...</p>
             </div>
           </div>
         </div>
@@ -297,12 +289,12 @@ const GameRoom = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <p className="text-gray-400 mb-4">No room data found</p>
+              <p className="text-gray-400 mb-4">未找到房间数据</p>
               <p className="text-sm text-gray-500 mb-4">
-                Room ID: {id || 'Not specified'}
+                房间ID: {id || '未指定'}
               </p>
               <Button onClick={() => navigate('/lobby')}>
-                Return to Lobby
+                返回大厅
               </Button>
             </div>
           </div>
@@ -314,58 +306,32 @@ const GameRoom = () => {
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
-            <div className="space-y-6">
+            <div className="space-y-6 h-full">
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30">
                 <CardHeader>
-                  <CardTitle className="text-werewolf-purple">Room Information</CardTitle>
+                  <CardTitle className="text-werewolf-purple">房间信息</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-400">Room ID</p>
+                      <p className="text-sm text-gray-400">房间ID</p>
                       <p className="font-bold">{roomData.roomId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Host Player ID</p>
+                      <p className="text-sm text-gray-400">房主玩家ID</p>
                       <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Learning Topic</p>
+                      <p className="text-sm text-gray-400">学习主题</p>
                       <p>{roomData.topic}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400 mb-2">Max Players</p>
-                      <div className="flex items-center justify-center space-x-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleMaxPlayersChange(-1)}
-                          disabled={roomData.maxPlayers <= 6}
-                          className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="font-bold text-lg min-w-[2rem] text-center">
-                          {roomData.maxPlayers}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleMaxPlayersChange(1)}
-                          disabled={roomData.maxPlayers >= 12}
-                          className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </div>
                     <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
-                        ⚠️ Room auto-closes after 3 minutes with no human players
+                        ⚠️ 无人类玩家3分钟后房间自动关闭
                       </p>
                     </div>
                   </div>
@@ -373,183 +339,74 @@ const GameRoom = () => {
               </Card>
               
               {/* Players List */}
-              <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-werewolf-purple">
-                    <Users className="inline mr-2 h-5 w-5" />
-                    Players
-                  </CardTitle>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={handleAddAIPlayer}
-                    className="h-8 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                  >
-                    <Brain className="h-4 w-4 mr-1" />
-                    Add AI
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-60 pr-4">
-                    <div className="space-y-3">
-                      {players.map((player) => (
-                        <div 
-                          key={player.id} 
-                          className={`flex items-center justify-between p-2 rounded-md ${player.isReady ? 'bg-green-900/20' : 'bg-werewolf-dark/40'}`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Avatar>
-                              <AvatarImage src={player.avatar} />
-                              <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'}`}>
-                                {player.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{player.name}</p>
-                              <div className="flex space-x-2 mt-1">
-                                {player.isHost && (
-                                  <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">Host</Badge>
-                                )}
-                                {player.isAI && (
-                                  <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            {player.isReady ? (
-                              <Badge className="bg-green-700 text-xs">Ready</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">Not Ready</Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  
-                  <div className="mt-4 flex justify-between">
-                    <Button 
-                      variant="outline"
-                      className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                      onClick={handleLeaveRoom}
-                    >
-                      Leave Room
-                    </Button>
-                    <Button 
-                      className={isReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
-                      onClick={() => setIsReady(!isReady)}
-                    >
-                      {isReady ? 'Ready' : 'Not Ready'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex-1">
+                <PlayersList
+                  players={players}
+                  maxPlayers={currentMaxPlayers}
+                  isReady={isReady}
+                  allReady={allReady}
+                  selectedCharacter={selectedCharacter}
+                  onReadyToggle={() => setIsReady(!isReady)}
+                  onLeaveRoom={handleLeaveRoom}
+                  onStartGame={handleStartGame}
+                  onAddAIPlayer={handleAddAIPlayer}
+                  onMaxPlayersChange={handleMaxPlayersChange}
+                />
+              </div>
             </div>
           </div>
           
           {/* Middle Column - Character Selection */}
           <div className="lg:col-span-5">
-            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-              <CardHeader>
-                <CardTitle className="text-werewolf-purple">Choose Your Character</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {characterCards.map((card) => (
-                    <div 
-                      key={card.id}
-                      className={`p-4 rounded-lg cursor-pointer transition-all ${
-                        selectedCharacter === card.id 
-                          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
-                          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
-                      }`}
-                      onClick={() => setSelectedCharacter(card.id)}
-                    >
-                      <div className="aspect-square bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
-                        <img 
-                          src={card.image} 
-                          alt={card.name} 
-                          className="max-h-full max-w-full p-2"
-                        />
-                      </div>
-                      <h3 className="font-bold text-lg mb-1">
-                        {card.name}
-                        <span 
-                          className={`ml-2 text-xs px-2 py-0.5 rounded ${
-                            card.team === 'Village' ? 'bg-green-900/60 text-green-200' : 
-                            card.team === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
-                            'bg-blue-900/60 text-blue-200'
-                          }`}
-                        >
-                          {card.team}
-                        </span>
-                      </h3>
-                      <p className="text-sm">{card.description}</p>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <Button
-                    className="bg-werewolf-purple hover:bg-werewolf-light px-8"
-                    onClick={handleStartGame}
-                    disabled={!isReady || !allReady}
-                  >
-                    Start Game
-                  </Button>
-                  <p className="text-sm mt-2 text-gray-400">
-                    {!allReady ? 'Waiting for all players to be ready...' : 'All players are ready!'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <RoleSelection
+              maxPlayers={currentMaxPlayers}
+              selectedCharacter={selectedCharacter}
+              onCharacterSelect={setSelectedCharacter}
+            />
           </div>
           
           {/* Right Column - Chat */}
           <div className="lg:col-span-4">
-            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-              <CardHeader>
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-werewolf-purple flex items-center">
                   <MessageSquareText className="mr-2 h-5 w-5" />
-                  Room Chat
+                  房间聊天
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-col h-full">
-                  <ScrollArea className="flex-1 h-[400px] pr-4">
-                    <div className="space-y-4">
-                      {messages.map((message) => (
-                        <div key={message.id} className="chat-message">
-                          <p className="text-sm">
-                            <span className={`font-bold ${
-                              message.sender === 'System' ? 'text-yellow-400' :
-                              message.sender === 'You' ? 'text-werewolf-purple' :
-                              'text-blue-400'
-                            }`}>
-                              {message.sender}:
-                            </span>
-                            <span className="ml-2">{message.content}</span>
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  
-                  <form onSubmit={handleSendMessage} className="mt-4">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Type your message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                      />
-                      <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                        Send
-                      </Button>
-                    </div>
-                  </form>
-                </div>
+              <CardContent className="flex flex-col flex-1">
+                <ScrollArea className="flex-1 pr-4 mb-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <div key={message.id} className="chat-message">
+                        <p className="text-sm">
+                          <span className={`font-bold ${
+                            message.sender === 'System' ? 'text-yellow-400' :
+                            message.sender === 'You' ? 'text-werewolf-purple' :
+                            'text-blue-400'
+                          }`}>
+                            {message.sender}:
+                          </span>
+                          <span className="ml-2">{message.content}</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+                
+                <form onSubmit={handleSendMessage} className="flex-shrink-0">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="输入消息..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                    />
+                    <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                      发送
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
           </div>
