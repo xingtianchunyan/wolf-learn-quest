@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { getRoleConfiguration, RoleConfig } from '@/utils/roleConfiguration';
 
 interface RoleSelectionProps {
@@ -43,6 +44,18 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
   };
 
+  // 将角色展开，相同角色分别显示
+  const expandedRoles: Array<RoleConfig & { roleId: string }> = [];
+  config.roles.forEach((role) => {
+    for (let i = 1; i <= role.count; i++) {
+      expandedRoles.push({
+        ...role,
+        roleId: role.count > 1 ? `${role.name}${i}` : role.name,
+        name: role.count > 1 ? `${role.name}${i}` : role.name,
+      });
+    }
+  });
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
       <CardHeader>
@@ -53,46 +66,43 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           当前配置：{config.roles.map(role => `${role.count}${role.name}`).join('、')}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {config.roles.map((role) => (
-            <div
-              key={role.name}
-              className={`p-4 rounded-lg cursor-pointer transition-all ${
-                selectedRole === role.name
-                  ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
-                  : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
-              }`}
-              onClick={() => onRoleSelect(role.name)}
-            >
-              <div className="aspect-square bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
-                <div className="text-4xl">
-                  {role.team === 'Werewolves' ? '🐺' : 
-                   role.name === '预言家' ? '🔮' :
-                   role.name === '女巫' ? '🧙‍♀️' :
-                   role.name === '猎人' ? '🏹' :
-                   role.name === '守卫' ? '🛡️' :
-                   role.name === '暗夜术士' ? '🌙' :
-                   role.name === '恶魔' ? '😈' : '👤'}
+      <CardContent className="h-[calc(100%-120px)]">
+        <ScrollArea className="h-full pr-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {expandedRoles.map((role) => (
+              <div
+                key={role.roleId}
+                className={`p-4 rounded-lg cursor-pointer transition-all ${
+                  selectedRole === role.roleId
+                    ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
+                    : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
+                }`}
+                onClick={() => onRoleSelect(role.roleId)}
+              >
+                <div className="aspect-square bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
+                  <div className="text-4xl">
+                    {role.team === 'Werewolves' ? '🐺' : 
+                     role.name.includes('预言家') ? '🔮' :
+                     role.name.includes('女巫') ? '🧙‍♀️' :
+                     role.name.includes('猎人') ? '🏹' :
+                     role.name.includes('守卫') ? '🛡️' :
+                     role.name.includes('暗夜术士') ? '🌙' :
+                     role.name.includes('恶魔') ? '😈' : '👤'}
+                  </div>
                 </div>
-              </div>
-              <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-                {role.name}
-                {role.count > 1 && (
-                  <Badge variant="outline" className="text-xs">
-                    ×{role.count}
+                <h3 className="font-bold text-lg mb-1">
+                  {role.name}
+                </h3>
+                <div className="mb-2">
+                  <Badge className={`text-xs ${getTeamColor(role.team)}`}>
+                    {getTeamName(role.team)}
                   </Badge>
-                )}
-              </h3>
-              <div className="mb-2">
-                <Badge className={`text-xs ${getTeamColor(role.team)}`}>
-                  {getTeamName(role.team)}
-                </Badge>
+                </div>
+                <p className="text-sm text-gray-300">{role.description}</p>
               </div>
-              <p className="text-sm text-gray-300">{role.description}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

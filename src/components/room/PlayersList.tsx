@@ -23,11 +23,13 @@ interface PlayersListProps {
   currentUserId: string | null;
   hostId: string;
   isHost: boolean;
+  selectedRole: string | null;
+  isUserReady: boolean;
   onMaxPlayersChange: (increment: number) => void;
   onAddAIPlayer: () => void;
   onLeaveRoom: () => void;
   onToggleReady: () => void;
-  isUserReady: boolean;
+  onStartGame: () => void;
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -36,11 +38,13 @@ const PlayersList: React.FC<PlayersListProps> = ({
   currentUserId,
   hostId,
   isHost,
+  selectedRole,
+  isUserReady,
   onMaxPlayersChange,
   onAddAIPlayer,
   onLeaveRoom,
   onToggleReady,
-  isUserReady,
+  onStartGame,
 }) => {
   const allReady = players.every(player => player.is_ready);
 
@@ -159,20 +163,39 @@ const PlayersList: React.FC<PlayersListProps> = ({
             </div>
           </ScrollArea>
           
-          <div className="mt-4 flex justify-between">
-            <Button 
-              variant="outline"
-              className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-              onClick={onLeaveRoom}
-            >
-              离开房间
-            </Button>
-            <Button 
-              className={isUserReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
-              onClick={onToggleReady}
-            >
-              {isUserReady ? '已准备' : '未准备'}
-            </Button>
+          <div className="mt-4 space-y-3">
+            <div className="flex justify-between">
+              <Button 
+                variant="outline"
+                className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                onClick={onLeaveRoom}
+              >
+                离开房间
+              </Button>
+              <Button 
+                className={isUserReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
+                onClick={onToggleReady}
+              >
+                {isUserReady ? '已准备' : '未准备'}
+              </Button>
+            </div>
+            
+            {/* 开始游戏按钮 */}
+            <div className="text-center">
+              <Button
+                className="w-full bg-werewolf-purple hover:bg-werewolf-light"
+                onClick={onStartGame}
+                disabled={!isUserReady || !allReady || players.length < 6 || !selectedRole}
+              >
+                开始游戏
+              </Button>
+              <p className="text-sm mt-2 text-gray-400">
+                {!selectedRole ? '请先选择角色' :
+                 !allReady ? '等待所有玩家准备完毕...' : 
+                 players.length < 6 ? '至少需要6名玩家才能开始游戏' :
+                 '所有玩家已准备完毕！'}
+              </p>
+            </div>
           </div>
           
           {allReady && players.length >= 6 && (
