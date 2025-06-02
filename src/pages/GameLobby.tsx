@@ -16,6 +16,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 
 interface GameRoom {
   id: string;
@@ -38,6 +39,9 @@ const GameLobby = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isCreatingAIRoom, setIsCreatingAIRoom] = useState(false);
+
+  // Add room cleanup functionality
+  useRoomCleanup();
 
   // Initialize authentication and fetch data
   useEffect(() => {

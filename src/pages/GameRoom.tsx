@@ -51,6 +51,9 @@ const GameRoom = () => {
   
   const allReady = players.every(player => player.isReady);
 
+  // Add room cleanup functionality
+  useRoomCleanup();
+
   // Fetch current user and room data
   useEffect(() => {
     const fetchData = async () => {
@@ -243,6 +246,46 @@ const GameRoom = () => {
     navigate('/game');
   };
 
+  const handleLeaveRoom = async () => {
+    if (!roomData || !currentUser) {
+      navigate('/lobby');
+      return;
+    }
+
+    try {
+      // Remove the current user from room_players
+      const { error } = await supabase
+        .from('room_players')
+        .delete()
+        .eq('room_id', roomData.id)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('Error leaving room:', error);
+        toast({
+          title: "Error",
+          description: "Failed to leave room",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Left Room",
+        description: "You have left the game room",
+      });
+
+      navigate('/lobby');
+    } catch (error) {
+      console.error('Error leaving room:', error);
+      toast({
+        title: "Error",
+        description: "Failed to leave room",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -330,6 +373,11 @@ const GameRoom = () => {
                         </Button>
                       </div>
                     </div>
+                    <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
+                      <p className="text-xs text-gray-400 text-center">
+                        ⚠️ Room auto-closes after 3 minutes with no human players
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -394,7 +442,7 @@ const GameRoom = () => {
                     <Button 
                       variant="outline"
                       className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
-                      onClick={() => navigate('/lobby')}
+                      onClick={handleLeaveRoom}
                     >
                       Leave Room
                     </Button>

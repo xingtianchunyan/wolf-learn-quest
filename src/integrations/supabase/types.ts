@@ -332,6 +332,7 @@ export type Database = {
           host_id: string | null
           human_judge: boolean | null
           id: string
+          last_human_activity: string | null
           max_players: number | null
           room_id: string
           status: string | null
@@ -341,6 +342,7 @@ export type Database = {
           host_id?: string | null
           human_judge?: boolean | null
           id?: string
+          last_human_activity?: string | null
           max_players?: number | null
           room_id: string
           status?: string | null
@@ -350,6 +352,7 @@ export type Database = {
           host_id?: string | null
           human_judge?: boolean | null
           id?: string
+          last_human_activity?: string | null
           max_players?: number | null
           room_id?: string
           status?: string | null
@@ -405,7 +408,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      close_inactive_rooms: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
