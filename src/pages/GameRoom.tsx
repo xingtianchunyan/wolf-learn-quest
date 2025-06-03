@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 // Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
@@ -36,6 +36,7 @@ const GameRoom = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isReady, setIsReady] = useState(true);
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -96,8 +97,8 @@ const GameRoom = () => {
           if (roomError) {
             console.error('Error fetching room:', roomError);
             toast({
-              title: "错误",
-              description: "加载房间数据失败",
+              title: t('error'),
+              description: t('error_loading_room'),
               variant: "destructive",
             });
             return;
@@ -150,8 +151,8 @@ const GameRoom = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
-          title: "错误",
-          description: "加载房间数据失败",
+          title: t('error'),
+          description: t('error_loading_room'),
           variant: "destructive",
         });
       } finally {
@@ -174,8 +175,8 @@ const GameRoom = () => {
       
       if (!success) {
         toast({
-          title: "错误",
-          description: "更新最大玩家数失败",
+          title: t('error'),
+          description: t('error_updating_players'),
           variant: "destructive",
         });
         return;
@@ -185,14 +186,14 @@ const GameRoom = () => {
       setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
       
       toast({
-        title: "最大玩家数已更新",
-        description: `最大玩家数设置为 ${newMaxPlayers}`,
+        title: t('max_players_updated'),
+        description: `${t('max_players_set')} ${newMaxPlayers}`,
       });
     } catch (error) {
       console.error('Error updating max players:', error);
       toast({
-        title: "错误",
-        description: "更新最大玩家数失败",
+        title: t('error'),
+        description: t('error_updating_players'),
         variant: "destructive",
       });
     }
@@ -200,8 +201,8 @@ const GameRoom = () => {
   
   const handleAddAIPlayer = () => {
     toast({
-      title: "AI玩家已添加",
-      description: "一个AI玩家已加入游戏房间",
+      title: t('ai_player_added'),
+      description: t('ai_player_joined'),
     });
   };
   
@@ -222,8 +223,8 @@ const GameRoom = () => {
   const handleStartGame = () => {
     if (!allReady) {
       toast({
-        title: "无法开始游戏",
-        description: "还有玩家未准备",
+        title: t('cannot_start_game'),
+        description: t('players_not_ready'),
         variant: "destructive",
       });
       return;
@@ -231,8 +232,8 @@ const GameRoom = () => {
     
     if (!selectedCharacter) {
       toast({
-        title: "请选择角色",
-        description: "开始游戏前请先选择角色卡片",
+        title: t('select_character'),
+        description: t('select_character_desc'),
         variant: "destructive",
       });
       return;
@@ -247,22 +248,22 @@ const GameRoom = () => {
       
       if (success) {
         toast({
-          title: "已离开房间",
-          description: "您已离开游戏房间",
+          title: t('left_room'),
+          description: t('left_room_desc'),
         });
         navigate('/lobby');
       } else {
         toast({
-          title: "错误",
-          description: "离开房间失败",
+          title: t('error'),
+          description: t('leave_room_failed'),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error leaving room:', error);
       toast({
-        title: "错误",
-        description: "离开房间失败",
+        title: t('error'),
+        description: t('leave_room_failed'),
         variant: "destructive",
       });
     }
@@ -275,7 +276,7 @@ const GameRoom = () => {
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">加载房间数据中...</p>
+              <p className="text-gray-400">{t('loading_room')}</p>
             </div>
           </div>
         </div>
@@ -289,12 +290,12 @@ const GameRoom = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
-              <p className="text-gray-400 mb-4">未找到房间数据</p>
+              <p className="text-gray-400 mb-4">{t('room_not_found')}</p>
               <p className="text-sm text-gray-500 mb-4">
-                房间ID: {id || '未指定'}
+                {t('room_id_label')}: {id || t('not_specified')}
               </p>
               <Button onClick={() => navigate('/lobby')}>
-                返回大厅
+                {t('return_to_lobby')}
               </Button>
             </div>
           </div>
@@ -305,33 +306,33 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
-            <div className="space-y-6 h-full">
+            <div className="space-y-6">
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30">
                 <CardHeader>
-                  <CardTitle className="text-werewolf-purple">房间信息</CardTitle>
+                  <CardTitle className="text-werewolf-purple">{t('room_info')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-400">房间ID</p>
+                      <p className="text-sm text-gray-400">{t('room_id')}</p>
                       <p className="font-bold">{roomData.roomId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">房主玩家ID</p>
+                      <p className="text-sm text-gray-400">{t('host_player_id')}</p>
                       <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">学习主题</p>
+                      <p className="text-sm text-gray-400">{t('learning_topic')}</p>
                       <p>{roomData.topic}</p>
                     </div>
                     <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
-                        ⚠️ 无人类玩家3分钟后房间自动关闭
+                        {t('auto_close_warning')}
                       </p>
                     </div>
                   </div>
@@ -339,7 +340,7 @@ const GameRoom = () => {
               </Card>
               
               {/* Players List */}
-              <div className="flex-1">
+              <div>
                 <PlayersList
                   players={players}
                   maxPlayers={currentMaxPlayers}
@@ -371,10 +372,10 @@ const GameRoom = () => {
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-werewolf-purple flex items-center">
                   <MessageSquareText className="mr-2 h-5 w-5" />
-                  房间聊天
+                  {t('room_chat')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col flex-1">
+              <CardContent className="flex flex-col flex-1 min-h-[400px]">
                 <ScrollArea className="flex-1 pr-4 mb-4">
                   <div className="space-y-4">
                     {messages.map((message) => (
@@ -394,16 +395,16 @@ const GameRoom = () => {
                   </div>
                 </ScrollArea>
                 
-                <form onSubmit={handleSendMessage} className="flex-shrink-0">
+                <form onSubmit={handleSendMessage} className="flex-shrink-0 mt-auto">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="输入消息..."
+                      placeholder={t('enter_message')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       className="bg-werewolf-dark/40 border-werewolf-purple/30"
                     />
                     <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                      发送
+                      {t('send')}
                     </Button>
                   </div>
                 </form>

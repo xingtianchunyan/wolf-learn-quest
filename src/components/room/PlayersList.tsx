@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Users, Minus, Plus } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface Player {
   id: string;
@@ -41,12 +41,14 @@ const PlayersList: React.FC<PlayersListProps> = ({
   onAddAIPlayer,
   onMaxPlayersChange
 }) => {
+  const { t } = useLanguage();
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
         <CardTitle className="text-werewolf-purple">
           <Users className="inline mr-2 h-5 w-5" />
-          玩家列表
+          {t('players_list')}
         </CardTitle>
         <Button 
           size="sm" 
@@ -55,12 +57,12 @@ const PlayersList: React.FC<PlayersListProps> = ({
           className="h-8 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
         >
           <Brain className="h-4 w-4 mr-1" />
-          添加AI
+          {t('add_ai')}
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col flex-1">
         <div className="mb-4">
-          <p className="text-sm text-gray-400 mb-2">最大玩家数</p>
+          <p className="text-sm text-gray-400 mb-2">{t('max_players')}</p>
           <div className="flex items-center justify-center space-x-3">
             <Button
               size="sm"
@@ -106,7 +108,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
                     <p className="font-medium">{player.name}</p>
                     <div className="flex space-x-2 mt-1">
                       {player.isHost && (
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">房主</Badge>
+                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">{t('host')}</Badge>
                       )}
                       {player.isAI && (
                         <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
@@ -116,9 +118,9 @@ const PlayersList: React.FC<PlayersListProps> = ({
                 </div>
                 <div>
                   {player.isReady ? (
-                    <Badge className="bg-green-700 text-xs">准备</Badge>
+                    <Badge className="bg-green-700 text-xs">{t('ready')}</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-xs">未准备</Badge>
+                    <Badge variant="outline" className="text-xs">{t('not_ready')}</Badge>
                   )}
                 </div>
               </div>
@@ -133,13 +135,13 @@ const PlayersList: React.FC<PlayersListProps> = ({
               className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
               onClick={onLeaveRoom}
             >
-              离开房间
+              {t('leave_room')}
             </Button>
             <Button 
               className={isReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
               onClick={onReadyToggle}
             >
-              {isReady ? '已准备' : '未准备'}
+              {isReady ? t('ready') : t('not_ready')}
             </Button>
           </div>
           
@@ -148,12 +150,12 @@ const PlayersList: React.FC<PlayersListProps> = ({
             onClick={onStartGame}
             disabled={!isReady || !allReady || !selectedCharacter}
           >
-            开始游戏
+            {t('start_game')}
           </Button>
           
           <p className="text-sm text-gray-400 text-center">
-            {!allReady ? '等待所有玩家准备...' : 
-             !selectedCharacter ? '请选择角色...' : '准备开始游戏!'}
+            {!allReady ? t('waiting_for_players') : 
+             !selectedCharacter ? t('select_character') : t('ready_to_start')}
           </p>
         </div>
       </CardContent>

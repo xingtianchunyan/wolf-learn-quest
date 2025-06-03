@@ -331,6 +331,53 @@ const translations: Record<string, Record<string, string>> = {
     'experience_rewards': 'Experience Rewards',
     'win_xp': 'Win a game: +50 XP',
     'lose_xp': 'Lose a game: +30 XP',
+
+    // Game Room
+    'room_info': 'Room Information',
+    'host_player_id': 'Host Player ID',
+    'learning_topic': 'Learning Topic',
+    'auto_close_warning': '⚠️ Room will automatically close after 3 minutes without human players',
+    'room_chat': 'Room Chat',
+    'enter_message': 'Enter message...',
+    'send': 'Send',
+    'loading_room': 'Loading room data...',
+    'room_id_label': 'Room ID',
+    'return_to_lobby': 'Return to Lobby',
+    'error': 'Error',
+    'error_loading_room': 'Failed to load room data',
+    'error_updating_players': 'Failed to update max players',
+    'max_players_updated': 'Max players updated',
+    'max_players_set': 'Max players set to',
+    'ai_player_added': 'AI player added',
+    'ai_player_joined': 'An AI player has joined the game room',
+    'cannot_start_game': 'Cannot start game',
+    'players_not_ready': 'Some players are not ready',
+    'select_character': 'Please select a character',
+    'select_character_desc': 'Please select a character card before starting the game',
+    'left_room': 'Left room',
+    'left_room_desc': 'You have left the game room',
+    'leave_room_failed': 'Failed to leave room',
+
+    // Game Room Messages
+    'welcome_to_room': 'Welcome to the game room!',
+    'waiting_for_players': 'Waiting for all players to be ready...',
+    'not_specified': 'Not specified',
+
+    // Players List
+    'players_list': 'Players List',
+    'add_ai': 'Add AI',
+    'ready': 'Ready',
+    'not_ready': 'Not Ready',
+    'ready_to_start': 'Ready to start!',
+
+    // Role Selection
+    'select_role': 'Select Role',
+    'current_config': 'Current Configuration',
+    'players_game': ' Players Game',
+    'roles': ' Roles',
+    'village': 'Village',
+    'werewolves': 'Werewolves',
+    'neutral': 'Neutral',
   },
   zh: {
     // Navigation
@@ -637,6 +684,53 @@ const translations: Record<string, Record<string, string>> = {
     'experience_rewards': '经验值奖励',
     'win_xp': '赢得游戏：+50经验值',
     'lose_xp': '输掉游戏：+30经验值',
+
+    // Game Room
+    'room_info': '房间信息',
+    'host_player_id': '房主玩家ID',
+    'learning_topic': '学习主题',
+    'auto_close_warning': '⚠️ 无人类玩家3分钟后房间自动关闭',
+    'room_chat': '房间聊天',
+    'enter_message': '输入消息...',
+    'send': '发送',
+    'loading_room': '加载房间数据中...',
+    'room_id_label': '房间ID',
+    'return_to_lobby': '返回大厅',
+    'error': '错误',
+    'error_loading_room': '加载房间数据失败',
+    'error_updating_players': '更新最大玩家数失败',
+    'max_players_updated': '最大玩家数已更新',
+    'max_players_set': '最大玩家数设置为',
+    'ai_player_added': 'AI玩家已添加',
+    'ai_player_joined': '一个AI玩家已加入游戏房间',
+    'cannot_start_game': '无法开始游戏',
+    'players_not_ready': '还有玩家未准备',
+    'select_character': '请选择角色...',
+    'select_character_desc': '开始游戏前请先选择角色卡片',
+    'left_room': '已离开房间',
+    'left_room_desc': '您已离开游戏房间',
+    'leave_room_failed': '离开房间失败',
+
+    // Game Room Messages
+    'welcome_to_room': '欢迎来到游戏房间！',
+    'waiting_for_players': '等待所有玩家准备...',
+    'not_specified': '未指定',
+
+    // Players List
+    'players_list': '玩家列表',
+    'add_ai': '添加AI',
+    'ready': '已准备',
+    'not_ready': '未准备',
+    'ready_to_start': '准备开始游戏！',
+
+    // Role Selection
+    'select_role': '选择角色',
+    'current_config': '当前配置',
+    'players_game': '人局',
+    'roles': '个角色',
+    'village': '好人阵营',
+    'werewolves': '狼人阵营',
+    'neutral': '中立阵营',
   }
 };
 
