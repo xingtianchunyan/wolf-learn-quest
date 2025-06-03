@@ -129,23 +129,23 @@ const GameLobby = () => {
       
       if (success) {
         toast({
-          title: "Left Room",
-          description: "You have left your current room",
+          title: t('room_leave_success'),
+          description: t('room_leave_success'),
         });
         // Refresh the room list
         fetchRooms();
       } else {
         toast({
-          title: "Failed to leave room",
-          description: "An error occurred while leaving the room",
+          title: t('room_leave_failed'),
+          description: t('room_leave_error'),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error leaving room:', error);
       toast({
-        title: "Failed to leave room",
-        description: "An unexpected error occurred",
+        title: t('room_leave_failed'),
+        description: t('room_leave_error'),
         variant: "destructive",
       });
     } finally {
@@ -158,8 +158,8 @@ const GameLobby = () => {
     
     if (!currentUser) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to create rooms",
+        title: t('auth_required'),
+        description: t('sign_in_required'),
         variant: "destructive",
       });
       return;
@@ -167,8 +167,8 @@ const GameLobby = () => {
 
     if (playerRoom.roomDbId) {
       toast({
-        title: "Already in a room",
-        description: "Please leave your current room first",
+        title: t('already_in_room'),
+        description: t('leave_first'),
         variant: "destructive",
       });
       return;
@@ -197,8 +197,8 @@ const GameLobby = () => {
       if (roomError) {
         console.error('Error creating room:', roomError);
         toast({
-          title: "Failed to create room",
-          description: roomError.message || "An error occurred while creating the room",
+          title: t('room_create_failed'),
+          description: roomError.message || t('room_create_error'),
           variant: "destructive",
         });
         return;
@@ -219,15 +219,15 @@ const GameLobby = () => {
       if (playerError) {
         console.error('Error adding player to room:', playerError);
         toast({
-          title: "Room created but failed to join",
-          description: "You may need to join the room manually",
+          title: t('room_create_failed'),
+          description: t('room_create_error'),
           variant: "destructive",
         });
       }
 
       toast({
-        title: "Room created!",
-        description: `Room "${roomId}" has been created successfully`,
+        title: t('room_created'),
+        description: t('room_created_desc'),
       });
       
       // Navigate to the specific room
@@ -235,8 +235,8 @@ const GameLobby = () => {
     } catch (error) {
       console.error('Error creating room:', error);
       toast({
-        title: "Failed to create room",
-        description: "An unexpected error occurred",
+        title: t('room_create_failed'),
+        description: t('room_create_error'),
         variant: "destructive",
       });
     } finally {
@@ -249,8 +249,8 @@ const GameLobby = () => {
     
     if (!currentUser) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to create rooms",
+        title: t('auth_required'),
+        description: t('sign_in_required'),
         variant: "destructive",
       });
       return;
@@ -258,8 +258,8 @@ const GameLobby = () => {
 
     if (playerRoom.roomDbId) {
       toast({
-        title: "Already in a room",
-        description: "Please leave your current room first",
+        title: t('already_in_room'),
+        description: t('leave_first'),
         variant: "destructive",
       });
       return;
@@ -278,7 +278,7 @@ const GameLobby = () => {
         .insert({
           room_id: roomId,
           host_id: currentUser.id,
-          max_players: 10,
+          max_players: 12,
           status: 'waiting',
           human_judge: false
         })
@@ -288,8 +288,8 @@ const GameLobby = () => {
       if (roomError) {
         console.error('Error creating room:', roomError);
         toast({
-          title: "Failed to create room",
-          description: roomError.message || "An error occurred while creating the room",
+          title: t('room_create_failed'),
+          description: roomError.message || t('room_create_error'),
           variant: "destructive",
         });
         return;
@@ -310,15 +310,15 @@ const GameLobby = () => {
       if (playerError) {
         console.error('Error adding player to room:', playerError);
         toast({
-          title: "Room created but failed to join",
-          description: "Player addition failed",
+          title: t('room_create_failed'),
+          description: t('room_create_error'),
           variant: "destructive",
         });
       }
 
       toast({
-        title: "AI Judge Room Created",
-        description: "Room with AI Judge created successfully",
+        title: t('room_created'),
+        description: t('room_created_desc'),
       });
       
       // Navigate to the specific room
@@ -326,8 +326,8 @@ const GameLobby = () => {
     } catch (error) {
       console.error('Error creating AI judge room:', error);
       toast({
-        title: "Failed to create room",
-        description: "An unexpected error occurred",
+        title: t('room_create_failed'),
+        description: t('room_create_error'),
         variant: "destructive",
       });
     } finally {
@@ -338,8 +338,8 @@ const GameLobby = () => {
   const joinRoom = async (roomId: string) => {
     if (!currentUser) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to join rooms",
+        title: t('auth_required'),
+        description: t('sign_in_required'),
         variant: "destructive",
       });
       return;
@@ -347,8 +347,8 @@ const GameLobby = () => {
 
     if (playerRoom.roomDbId) {
       toast({
-        title: "Already in a room",
-        description: "Please leave your current room first before joining another",
+        title: t('already_in_room'),
+        description: t('leave_first'),
         variant: "destructive",
       });
       return;
@@ -370,8 +370,8 @@ const GameLobby = () => {
       if (error) {
         console.error('Error joining room:', error);
         toast({
-          title: "Failed to join room",
-          description: error.message || "An error occurred while joining the room",
+          title: t('room_join_failed'),
+          description: error.message || t('room_join_error'),
           variant: "destructive",
         });
         return;
@@ -382,8 +382,8 @@ const GameLobby = () => {
     } catch (error) {
       console.error('Error joining room:', error);
       toast({
-        title: "Failed to join room",
-        description: "An unexpected error occurred",
+        title: t('room_join_failed'),
+        description: t('room_join_error'),
         variant: "destructive",
       });
     }
@@ -419,7 +419,7 @@ const GameLobby = () => {
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading...</p>
+              <p className="text-gray-400">{t('loading')}</p>
             </div>
           </div>
         </div>
@@ -441,11 +441,11 @@ const GameLobby = () => {
                 {playerRoom.roomDbId && (
                   <Card className="bg-amber-900/20 border-amber-700/30">
                     <CardHeader>
-                      <CardTitle className="text-amber-200 text-sm">当前房间</CardTitle>
+                      <CardTitle className="text-amber-200 text-sm">{t('current_room')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-amber-200 text-sm mb-3">
-                        房间ID: {playerRoom.roomId}
+                        {t('room_id')}: {playerRoom.roomId}
                       </p>
                       <div className="space-y-2">
                         <Button
@@ -453,7 +453,7 @@ const GameLobby = () => {
                           className="w-full bg-werewolf-purple hover:bg-werewolf-light"
                           size="sm"
                         >
-                          返回房间
+                          {t('return_to_room')}
                         </Button>
                         <Button
                           onClick={handleLeaveCurrentRoom}
@@ -463,7 +463,7 @@ const GameLobby = () => {
                           disabled={isLeavingRoom}
                         >
                           <LogOut className="mr-2 h-3 w-3" />
-                          {isLeavingRoom ? '退出中...' : '退出房间'}
+                          {isLeavingRoom ? t('leaving') : t('leave_room')}
                         </Button>
                       </div>
                     </CardContent>
@@ -474,7 +474,7 @@ const GameLobby = () => {
               <Card className="bg-amber-900/20 border-amber-700/30 h-full">
                 <CardContent className="pt-6 h-full flex items-center justify-center">
                   <p className="text-amber-200 text-center">
-                    Please sign in to create or join game rooms
+                    {t('sign_in_required')}
                   </p>
                 </CardContent>
               </Card>
@@ -491,7 +491,7 @@ const GameLobby = () => {
                 disabled={!currentUser || isCreatingAIRoom || !!playerRoom.roomDbId}
               >
                 <Brain className="mr-2 h-4 w-4" />
-                {isCreatingAIRoom ? 'Creating...' : t('create ai judge')}
+                {isCreatingAIRoom ? t('creating') : t('create_ai_judge')}
               </Button>
               
               <Button 
@@ -500,18 +500,18 @@ const GameLobby = () => {
                 disabled={!currentUser || isCreatingRoom || !!playerRoom.roomDbId}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {isCreatingRoom ? 'Creating...' : t('create room')}
+                {isCreatingRoom ? t('creating') : t('create_room')}
               </Button>
             </div>
             
             {/* Game Room List */}
             <Card className="bg-werewolf-card border-werewolf-purple/30">
               <CardHeader>
-                <CardTitle>{t('game rooms')}</CardTitle>
+                <CardTitle>{t('game_rooms')}</CardTitle>
                 <CardDescription>
                   {playerRoom.roomDbId 
-                    ? '您已在房间中，需要先退出当前房间才能加入其他房间' 
-                    : t('join existing')
+                    ? t('leave_first')
+                    : t('join_existing')
                   }
                 </CardDescription>
               </CardHeader>
@@ -520,9 +520,9 @@ const GameLobby = () => {
                   <Table>
                     <TableHeader className="bg-werewolf-dark/60">
                       <TableRow>
-                        <TableHead className="text-werewolf-purple w-[180px]">{t('room id')}</TableHead>
+                        <TableHead className="text-werewolf-purple w-[180px]">{t('room_id')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('players')}</TableHead>
-                        <TableHead className="text-werewolf-purple text-center">{t('max players')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('max_players')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('status')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('judge')}</TableHead>
                         <TableHead className="text-werewolf-purple text-center">{t('action')}</TableHead>
@@ -537,7 +537,7 @@ const GameLobby = () => {
                       {gameRooms.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={6} className="text-center text-gray-400 py-8">
-                            No active rooms available. Create a new room to get started!
+                            {t('no_rooms')}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -567,7 +567,7 @@ const GameLobby = () => {
                                   disabled={!currentUser}
                                 >
                                   <Gavel className="h-3 w-3 mr-1" />
-                                  {t('play judge')}
+                                  {t('play_judge')}
                                 </Button>
                               )}
                             </TableCell>

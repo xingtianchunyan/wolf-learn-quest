@@ -1,6 +1,6 @@
-
 import React from 'react';
 import ExperienceTooltip from './ExperienceTooltip';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface PlayerStatsProps {
   level: number;
@@ -15,6 +15,8 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
   wins,
   losses
 }) => {
+  const { t } = useLanguage();
+  
   // Get level from experience
   const getLevelInfo = (exp: number) => {
     if (exp >= 200) return { level: 4, nextLevelExp: null };
@@ -31,14 +33,14 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
       <div className="grid grid-cols-2 gap-4 w-full max-w-xs text-center mb-4">
         <div className="p-3 bg-werewolf-dark/50 rounded-md">
           <div className="flex justify-center items-center mb-1">
-            <p className="text-sm text-gray-400 mr-1">Level</p>
+            <p className="text-sm text-gray-400 mr-1">{t('level')}</p>
             <ExperienceTooltip />
           </div>
           <p className="font-bold text-werewolf-purple text-lg">{levelInfo.level}</p>
         </div>
         
         <div className="p-3 bg-werewolf-dark/50 rounded-md">
-          <p className="text-sm text-gray-400 mb-1">Experience</p>
+          <p className="text-sm text-gray-400 mb-1">{t('experience')}</p>
           <p className="font-bold text-lg">
             {experience}
             {levelInfo.nextLevelExp && (
@@ -51,11 +53,11 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
       {/* Wins and Losses Row - Centered */}
       <div className="grid grid-cols-2 gap-4 w-full max-w-xs text-center">
         <div className="p-3 bg-werewolf-dark/50 rounded-md">
-          <p className="text-sm text-gray-400 mb-1">Wins</p>
+          <p className="text-sm text-gray-400 mb-1">{t('wins')}</p>
           <p className="font-bold text-green-500 text-lg">{wins}</p>
         </div>
         <div className="p-3 bg-werewolf-dark/50 rounded-md">
-          <p className="text-sm text-gray-400 mb-1">Losses</p>
+          <p className="text-sm text-gray-400 mb-1">{t('losses')}</p>
           <p className="font-bold text-red-400 text-lg">{losses}</p>
         </div>
       </div>

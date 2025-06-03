@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface AvatarUploadProps {
   avatarUrl: string | null;
@@ -18,6 +18,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   onAvatarUpdate 
 }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -28,8 +29,8 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
-          title: "Authentication required",
-          description: "Please login to upload an avatar",
+          title: t('auth_required_avatar'),
+          description: t('auth_required_avatar_desc'),
           variant: "destructive",
         });
         return;
@@ -47,7 +48,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         
       if (uploadError) {
         toast({
-          title: "Upload failed",
+          title: t('upload_failed'),
           description: uploadError.message,
           variant: "destructive",
         });
@@ -70,22 +71,22 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       if (updateError) {
         console.error("Error updating avatar URL:", updateError);
         toast({
-          title: "Failed to update profile",
-          description: "Your avatar was uploaded but we couldn't update your profile",
+          title: t('profile_update_failed'),
+          description: t('profile_update_failed_desc'),
           variant: "destructive",
         });
         return;
       }
       
       toast({
-        title: "Avatar uploaded",
-        description: "Your profile has been updated",
+        title: t('avatar_uploaded'),
+        description: t('avatar_uploaded_desc'),
       });
     } catch (error) {
       console.error("Avatar upload error:", error);
       toast({
-        title: "Upload failed",
-        description: "Something went wrong. Please try again.",
+        title: t('upload_failed'),
+        description: t('upload_failed_desc'),
         variant: "destructive",
       });
     }
@@ -107,7 +108,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         onClick={() => document.getElementById('avatar-upload')?.click()}
       >
         <Upload size={16} className="mr-1" />
-        Upload Avatar
+        {t('upload_avatar')}
       </Button>
       <input
         id="avatar-upload"

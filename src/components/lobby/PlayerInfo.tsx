@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -133,7 +132,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
   return (
     <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
       <CardHeader className="text-center">
-        <CardTitle className="text-werewolf-purple">Player Information</CardTitle>
+        <CardTitle className="text-werewolf-purple">{t('player_information')}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center">
         {/* Avatar Section - Centered */}
@@ -148,7 +147,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
         
         {/* Player ID - Centered below name */}
         {playerData.playerId && (
-          <p className="text-sm text-gray-400 mb-4 text-center">ID: {playerData.playerId}</p>
+          <p className="text-sm text-gray-400 mb-4 text-center">{t('player_id')}: {playerData.playerId}</p>
         )}
         
         {/* Player Stats */}
