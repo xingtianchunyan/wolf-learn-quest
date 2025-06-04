@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ interface PlayersListProps {
   isReady: boolean;
   allReady: boolean;
   selectedCharacter: string | null;
+  loading?: boolean;
   onReadyToggle: () => void;
   onLeaveRoom: () => void;
   onStartGame: () => void;
@@ -35,6 +37,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
   isReady,
   allReady,
   selectedCharacter,
+  loading = false,
   onReadyToggle,
   onLeaveRoom,
   onStartGame,
@@ -43,17 +46,35 @@ const PlayersList: React.FC<PlayersListProps> = ({
 }) => {
   const { t } = useLanguage();
 
+  if (loading) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30 flex flex-col h-full">
+        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
+          <CardTitle className="text-werewolf-purple">
+            <Users className="inline mr-2 h-5 w-5" />
+            {t('players_list')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col flex-1 justify-center items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mb-4"></div>
+          <p className="text-gray-400">{t('loading_players')}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
         <CardTitle className="text-werewolf-purple">
           <Users className="inline mr-2 h-5 w-5" />
-          {t('players_list')}
+          {t('players_list')} ({players.length}/{maxPlayers})
         </CardTitle>
         <Button 
           size="sm" 
           variant="outline"
           onClick={onAddAIPlayer}
+          disabled={players.length >= maxPlayers}
           className="h-8 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
         >
           <Brain className="h-4 w-4 mr-1" />
@@ -148,13 +169,14 @@ const PlayersList: React.FC<PlayersListProps> = ({
           <Button
             className="bg-werewolf-purple hover:bg-werewolf-light w-full"
             onClick={onStartGame}
-            disabled={!isReady || !allReady || !selectedCharacter}
+            disabled={!isReady || !allReady || !selectedCharacter || players.length < 6}
           >
             {t('start_game')}
           </Button>
           
           <p className="text-sm text-gray-400 text-center">
-            {!allReady ? t('waiting_for_players') : 
+            {players.length < 6 ? t('need_more_players') :
+             !allReady ? t('waiting_for_players') : 
              !selectedCharacter ? t('select_character') : t('ready_to_start')}
           </p>
         </div>

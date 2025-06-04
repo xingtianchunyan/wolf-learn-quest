@@ -1,0 +1,134 @@
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Player {
+  id: string;
+  name: string;
+  avatar: string;
+  isReady: boolean;
+  isHost: boolean;
+  isAI: boolean;
+}
+
+export const usePlayersRealtime = (roomId: string) => {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    // 初始获取玩家列表
+    const fetchPlayers = async () => {
+      try {
+        const { data: roomPlayers, error } = await supabase
+          .from('room_players')
+          .select(`
+            id,
+            is_ready,
+            is_ai,
+            user_id,
+            users!room_players_user_id_fkey(player_name, avatar_url),
+            rooms!room_players_room_id_fkey(host_id)
+          `)
+          .eq('room_id', roomId);
+
+        if (error) {
+          console.error('Error fetching players:', error);
+          return;
+        }
+
+        if (roomPlayers) {
+          const transformedPlayers: Player[] = roomPlayers.map((player: any) => ({
+            id: player.id,
+            name: player.is_ai ? `AI-Player-${player.id.slice(0, 8)}` : (player.users?.player_name || 'Unknown'),
+            avatar: player.users?.avatar_url || '',
+            isReady: player.is_ready || false,
+            isHost: player.rooms?.host_id === player.user_id,
+            isAI: player.is_ai || false
+          }));
+          
+          setPlayers(transformedPlayers);
+        }
+      } catch (error) {
+        console.error('Error fetching players:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlayers();
+
+    // 订阅房间玩家变化
+    const channel = supabase
+      .channel(`room_players_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_players',
+          filter: `room_id=eq.${roomId}`
+        },
+        (payload) => {
+          console.log('Player update received:', payload);
+          // 重新获取玩家列表以确保数据同步
+          fetchPlayers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
+
+  const updatePlayerReady = async (playerId: string, isReady: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('room_players')
+        .update({ is_ready: isReady })
+        .eq('id', playerId);
+
+      if (error) {
+        console.error('Error updating player ready status:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating player ready status:', error);
+      return false;
+    }
+  };
+
+  const addAIPlayer = async () => {
+    try {
+      const { error } = await supabase
+        .from('room_players')
+        .insert({
+          room_id: roomId,
+          is_ai: true,
+          is_ready: true,
+          user_id: null
+        });
+
+      if (error) {
+        console.error('Error adding AI player:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error adding AI player:', error);
+      return false;
+    }
+  };
+
+  return {
+    players,
+    loading,
+    updatePlayerReady,
+    addAIPlayer
+  };
+};

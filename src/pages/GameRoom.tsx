@@ -14,6 +14,7 @@ import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 
 // Mock players data - this would be fetched from Supabase in a real implementation
 const players = [
@@ -46,6 +47,7 @@ const GameRoom = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
+  const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
   
   const allReady = players.every(player => player.isReady);
 
@@ -199,11 +201,75 @@ const GameRoom = () => {
     }
   };
   
-  const handleAddAIPlayer = () => {
-    toast({
-      title: t('ai_player_added'),
-      description: t('ai_player_joined'),
-    });
+  const handleAddAIPlayer = async () => {
+    if (players.length >= currentMaxPlayers) {
+      toast({
+        title: t('room_full'),
+        description: t('room_is_full'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const success = await addAIPlayer();
+      
+      if (success) {
+        toast({
+          title: t('ai_player_added'),
+          description: t('ai_player_joined'),
+        });
+      } else {
+        toast({
+          title: t('error'),
+          description: t('failed_to_add_ai'),
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error adding AI player:', error);
+      toast({
+        title: t('error'),
+        description: t('failed_to_add_ai'),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReadyToggle = async () => {
+    if (!currentUser || !roomData) return;
+
+    const newReadyState = !isReady;
+    
+    // Find current user's player record
+    const currentPlayer = players.find(p => p.name === currentUser.player_name || p.name === 'You');
+    
+    if (currentPlayer) {
+      try {
+        const success = await updatePlayerReady(currentPlayer.id, newReadyState);
+        
+        if (success) {
+          setIsReady(newReadyState);
+          toast({
+            title: newReadyState ? t('ready') : t('not_ready'),
+            description: newReadyState ? t('you_are_ready') : t('you_are_not_ready'),
+          });
+        } else {
+          toast({
+            title: t('error'),
+            description: t('failed_to_update_status'),
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error updating ready status:', error);
+        toast({
+          title: t('error'),
+          description: t('failed_to_update_status'),
+          variant: "destructive",
+        });
+      }
+    }
   };
   
   const handleSendMessage = (e: React.FormEvent) => {
@@ -347,7 +413,8 @@ const GameRoom = () => {
                   isReady={isReady}
                   allReady={allReady}
                   selectedCharacter={selectedCharacter}
-                  onReadyToggle={() => setIsReady(!isReady)}
+                  loading={playersLoading}
+                  onReadyToggle={handleReadyToggle}
                   onLeaveRoom={handleLeaveRoom}
                   onStartGame={handleStartGame}
                   onAddAIPlayer={handleAddAIPlayer}
