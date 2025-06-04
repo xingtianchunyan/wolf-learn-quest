@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +31,7 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
     { role: t('seer'), skill: t('skill_prophecy'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_prophecy') },
     { role: t('guard'), skill: t('skill_vigil'), usages: t('usage_unlimited'), type: t('type_protect'), effect: t('effect_vigil') },
     { role: t('werewolf'), skill: t('skill_night_attack'), usages: t('usage_unlimited'), type: t('type_attack'), effect: t('effect_night_attack') },
-    { role: t('white_wolf'), skill: t('skill_self_destruct'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_self_destruct') },
+    { role: t('whitewolf'), skill: t('skill_self_destruct'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_self_destruct') },
     { role: t('warlock'), skill: t('skill_voodoo'), usages: t('usage_1'), type: t('type_protect'), effect: t('effect_voodoo') },
     { role: t('demon'), skill: t('skill_demon_eye'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_demon_eye') },
   ];
@@ -42,7 +43,7 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode }> = ({ trigger }) =
     { role: t('seer'), phases: t('info_phases_all'), scope: t('info_scope_seer') },
     { role: t('guard'), phases: t('info_phases_villager'), scope: t('info_scope_villager') },
     { role: t('werewolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf') },
-    { role: t('white_wolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf') },
+    { role: t('whitewolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf') },
     { role: t('warlock'), phases: t('info_phases_all'), scope: t('info_scope_warlock') },
     { role: t('demon'), phases: t('info_phases_all'), scope: t('info_scope_demon') },
   ];
