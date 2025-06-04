@@ -1,4 +1,3 @@
-
 export interface RoleConfig {
   id: string;
   name: string;
@@ -18,7 +17,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     7: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 2 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
@@ -26,7 +25,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     8: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 2 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
@@ -35,7 +34,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     9: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 3 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
@@ -44,7 +43,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     10: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 2 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
@@ -55,7 +54,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     11: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 3 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
@@ -66,7 +65,7 @@ export const getRoleConfiguration = (playerCount: number): RoleConfig[] => {
     ],
     12: [
       { id: 'werewolf', name: 'werewolf_role', description: 'skill_night_attack', image: '/placeholder.svg', team: 'Werewolves', count: 2 },
-      { id: 'whitewolf', name: 'whitewolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
+      { id: 'white_wolf', name: 'white_wolf_role', description: 'skill_self_destruct', image: '/placeholder.svg', team: 'Werewolves', count: 1 },
       { id: 'villager', name: 'villager_role', description: 'skill_sleep', image: '/placeholder.svg', team: 'Village', count: 3 },
       { id: 'hunter', name: 'hunter_role', description: 'skill_dying_shot', image: '/placeholder.svg', team: 'Village', count: 1 },
       { id: 'seer', name: 'seer_role', description: 'skill_prophecy', image: '/placeholder.svg', team: 'Village', count: 1 },
