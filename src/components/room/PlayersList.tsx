@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -109,6 +108,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
           </div>
         </div>
 
+        
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-3">
             {players.map((player) => (
