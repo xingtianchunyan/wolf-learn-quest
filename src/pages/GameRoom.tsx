@@ -338,7 +338,7 @@ const GameRoom = () => {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
+        <div className="container mx-auto py-4 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
@@ -353,7 +353,7 @@ const GameRoom = () => {
   if (!roomData) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
+        <div className="container mx-auto py-4 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <p className="text-gray-400 mb-4">{t('room_not_found')}</p>
@@ -372,31 +372,31 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="container mx-auto py-4 px-3 min-h-[calc(100vh-4rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader>
-                  <CardTitle className="text-werewolf-purple">{t('room_info')}</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-werewolf-purple text-lg">{t('room_info')}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-3 pt-0">
+                  <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-400">{t('room_id')}</p>
-                      <p className="font-bold">{roomData.roomId}</p>
+                      <p className="text-xs text-gray-400">{t('room_id')}</p>
+                      <p className="font-bold text-sm">{roomData.roomId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">{t('host_player_id')}</p>
-                      <p>{roomData.hostPlayerId}</p>
+                      <p className="text-xs text-gray-400">{t('host_player_id')}</p>
+                      <p className="text-sm">{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">{t('learning_topic')}</p>
-                      <p>{roomData.topic}</p>
+                      <p className="text-xs text-gray-400">{t('learning_topic')}</p>
+                      <p className="text-sm">{roomData.topic}</p>
                     </div>
-                    <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
+                    <div className="mt-3 p-2 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
                         {t('auto_close_warning')}
                       </p>
@@ -436,15 +436,15 @@ const GameRoom = () => {
           {/* Right Column - Chat */}
           <div className="lg:col-span-4">
             <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-              <CardHeader className="flex-shrink-0">
-                <CardTitle className="text-werewolf-purple flex items-center">
-                  <MessageSquareText className="mr-2 h-5 w-5" />
+              <CardHeader className="flex-shrink-0 pb-3">
+                <CardTitle className="text-werewolf-purple flex items-center text-lg">
+                  <MessageSquareText className="mr-2 h-4 w-4" />
                   {t('room_chat')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col flex-1 min-h-[400px]">
-                <ScrollArea className="flex-1 pr-4 mb-4">
-                  <div className="space-y-4">
+              <CardContent className="flex flex-col flex-1 min-h-[400px] p-3 pt-0">
+                <ScrollArea className="flex-1 pr-2 mb-3">
+                  <div className="space-y-3">
                     {messages.map((message) => (
                       <div key={message.id} className="chat-message">
                         <p className="text-sm">
@@ -468,9 +468,9 @@ const GameRoom = () => {
                       placeholder={t('enter_message')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                      className="bg-werewolf-dark/40 border-werewolf-purple/30 text-sm"
                     />
-                    <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                    <Button type="submit" size="sm" className="bg-werewolf-purple hover:bg-werewolf-light text-xs">
                       {t('send')}
                     </Button>
                   </div>

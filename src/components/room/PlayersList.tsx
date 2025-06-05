@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,9 +49,9 @@ const PlayersList: React.FC<PlayersListProps> = ({
   if (loading) {
     return (
       <Card className="bg-werewolf-card border-werewolf-purple/30 flex flex-col h-full">
-        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
-          <CardTitle className="text-werewolf-purple">
-            <Users className="inline mr-2 h-5 w-5" />
+        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0 pb-3">
+          <CardTitle className="text-werewolf-purple text-lg">
+            <Users className="inline mr-2 h-4 w-4" />
             {t('players_list')}
           </CardTitle>
         </CardHeader>
@@ -64,9 +65,9 @@ const PlayersList: React.FC<PlayersListProps> = ({
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 flex flex-col h-full">
-      <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
-        <CardTitle className="text-werewolf-purple">
-          <Users className="inline mr-2 h-5 w-5" />
+      <CardHeader className="flex flex-row items-center justify-between flex-shrink-0 pb-3">
+        <CardTitle className="text-werewolf-purple text-lg">
+          <Users className="inline mr-2 h-4 w-4" />
           {t('players_list')} ({players.length}/{maxPlayers})
         </CardTitle>
         <Button 
@@ -74,26 +75,26 @@ const PlayersList: React.FC<PlayersListProps> = ({
           variant="outline"
           onClick={onAddAIPlayer}
           disabled={players.length >= maxPlayers}
-          className="h-8 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+          className="h-7 text-xs border-werewolf-purple/30 hover:bg-werewolf-purple/20"
         >
-          <Brain className="h-4 w-4 mr-1" />
+          <Brain className="h-3 w-3 mr-1" />
           {t('add_ai')}
         </Button>
       </CardHeader>
-      <CardContent className="flex flex-col flex-1">
-        <div className="mb-4">
-          <p className="text-sm text-gray-400 mb-2">{t('max_players')}</p>
-          <div className="flex items-center justify-center space-x-3">
+      <CardContent className="flex flex-col flex-1 p-3 pt-0">
+        <div className="mb-3">
+          <p className="text-xs text-gray-400 mb-2">{t('max_players')}</p>
+          <div className="flex items-center justify-center space-x-2">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onMaxPlayersChange(-1)}
               disabled={maxPlayers <= 6}
-              className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+              className="h-7 w-7 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-3 w-3" />
             </Button>
-            <span className="font-bold text-lg min-w-[2rem] text-center">
+            <span className="font-bold text-base min-w-[1.5rem] text-center">
               {maxPlayers}
             </span>
             <Button
@@ -101,16 +102,15 @@ const PlayersList: React.FC<PlayersListProps> = ({
               variant="outline"
               onClick={() => onMaxPlayersChange(1)}
               disabled={maxPlayers >= 12}
-              className="h-8 w-8 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+              className="h-7 w-7 p-0 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </Button>
           </div>
         </div>
 
-        
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-3">
+        <ScrollArea className="flex-1 pr-2">
+          <div className="space-y-2">
             {players.map((player) => (
               <div 
                 key={player.id} 
@@ -118,30 +118,30 @@ const PlayersList: React.FC<PlayersListProps> = ({
                   player.isReady ? 'bg-green-900/20' : 'bg-werewolf-dark/40'
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <Avatar>
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={player.avatar} />
-                    <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'}`}>
+                    <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'} text-xs`}>
                       {player.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{player.name}</p>
-                    <div className="flex space-x-2 mt-1">
+                    <p className="font-medium text-sm">{player.name}</p>
+                    <div className="flex space-x-1 mt-0.5">
                       {player.isHost && (
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">{t('host')}</Badge>
+                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs h-4 px-1">{t('host')}</Badge>
                       )}
                       {player.isAI && (
-                        <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
+                        <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs h-4 px-1">AI</Badge>
                       )}
                     </div>
                   </div>
                 </div>
                 <div>
                   {player.isReady ? (
-                    <Badge className="bg-green-700 text-xs">{t('ready')}</Badge>
+                    <Badge className="bg-green-700 text-xs h-5 px-2">{t('ready')}</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-xs">{t('not_ready')}</Badge>
+                    <Badge variant="outline" className="text-xs h-5 px-2">{t('not_ready')}</Badge>
                   )}
                 </div>
               </div>
@@ -149,17 +149,19 @@ const PlayersList: React.FC<PlayersListProps> = ({
           </div>
         </ScrollArea>
         
-        <div className="mt-4 flex flex-col space-y-2 flex-shrink-0">
-          <div className="flex justify-between">
+        <div className="mt-3 flex flex-col space-y-2 flex-shrink-0">
+          <div className="flex justify-between gap-2">
             <Button 
               variant="outline"
-              className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+              size="sm"
+              className="border-werewolf-purple/30 hover:bg-werewolf-purple/20 text-xs"
               onClick={onLeaveRoom}
             >
               {t('leave_room')}
             </Button>
             <Button 
-              className={isReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'}
+              size="sm"
+              className={`${isReady ? 'bg-green-700 hover:bg-green-600' : 'bg-werewolf-purple hover:bg-werewolf-light'} text-xs`}
               onClick={onReadyToggle}
             >
               {isReady ? t('ready') : t('not_ready')}
@@ -167,14 +169,15 @@ const PlayersList: React.FC<PlayersListProps> = ({
           </div>
           
           <Button
-            className="bg-werewolf-purple hover:bg-werewolf-light w-full"
+            size="sm"
+            className="bg-werewolf-purple hover:bg-werewolf-light w-full text-xs"
             onClick={onStartGame}
             disabled={!isReady || !allReady || !selectedCharacter || players.length < 6}
           >
             {t('start_game')}
           </Button>
           
-          <p className="text-sm text-gray-400 text-center">
+          <p className="text-xs text-gray-400 text-center">
             {players.length < 6 ? t('need_more_players') :
              !allReady ? t('waiting_for_players') : 
              !selectedCharacter ? t('select_character') : t('ready_to_start')}
