@@ -22,19 +22,19 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 pb-3">
-        <CardTitle className="text-werewolf-purple text-lg">{t('select_role')}</CardTitle>
+      <CardHeader className="flex-shrink-0 pb-2">
+        <CardTitle className="text-werewolf-purple text-base">{t('select_role')}</CardTitle>
         <p className="text-xs text-gray-400">
           {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
         </p>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col min-h-0 pt-0">
-        <ScrollArea className="flex-1 pr-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ScrollArea className="flex-1 pr-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {expandedRoles.map((role) => (
               <div 
                 key={role.instanceId}
-                className={`relative p-3 rounded-lg cursor-pointer transition-all ${
+                className={`relative p-2 rounded-lg cursor-pointer transition-all ${
                   selectedCharacter === role.instanceId
                     ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
                     : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
@@ -48,10 +48,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                     className="max-h-full max-w-full p-1"
                   />
                 </div>
-                <h3 className="font-bold text-base mb-1">
+                <h3 className="font-bold text-sm mb-1">
                   {t(role.name)}
                   <span 
-                    className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
+                    className={`ml-1 text-xs px-1 py-0.5 rounded ${
                       role.team === 'Village' ? 'bg-green-900/60 text-green-200' : 
                       role.team === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
                       'bg-purple-900/60 text-purple-200'
@@ -60,7 +60,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                     {t(role.team.toLowerCase())}
                   </span>
                 </h3>
-                <p className="text-xs text-gray-300 leading-tight">{t(role.description)}</p>
+                <p className="text-xs text-gray-300 leading-tight line-clamp-2">{t(role.description)}</p>
               </div>
             ))}
           </div>

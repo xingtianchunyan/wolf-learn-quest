@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -373,11 +372,11 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-4 px-4 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-8rem)]">
+      <div className="container mx-auto py-4 px-4 max-w-7xl h-[calc(100vh-8rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
           {/* Left Column - Room Info & Players */}
-          <div className="lg:col-span-3 flex flex-col">
-            <div className="space-y-4 flex-1">
+          <div className="lg:col-span-3 flex flex-col h-full">
+            <div className="space-y-4 flex-1 min-h-0">
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30 flex-shrink-0">
                 <CardHeader className="pb-3">
@@ -426,7 +425,7 @@ const GameRoom = () => {
           </div>
           
           {/* Middle Column - Character Selection */}
-          <div className="lg:col-span-5 min-h-0">
+          <div className="lg:col-span-5 h-full">
             <RoleSelection
               maxPlayers={currentMaxPlayers}
               selectedCharacter={selectedCharacter}
@@ -435,7 +434,7 @@ const GameRoom = () => {
           </div>
           
           {/* Right Column - Chat */}
-          <div className="lg:col-span-4 min-h-0">
+          <div className="lg:col-span-4 h-full">
             <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
               <CardHeader className="flex-shrink-0 pb-3">
                 <CardTitle className="text-werewolf-purple flex items-center text-lg">
