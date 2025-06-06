@@ -113,16 +113,26 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
   // 发送信令消息
   const sendSignalingMessage = async (message: any) => {
     try {
-      await supabase
-        .from('voice_signals')
-        .insert({
-          room_id: roomId,
-          from_user: message.from,
-          to_user: message.to,
-          signal_type: message.type,
-          signal_data: message,
-          created_at: new Date().toISOString()
-        });
+      // Use direct SQL insert with proper typing
+      const { error } = await supabase.rpc('exec_sql', {
+        sql: `INSERT INTO voice_signals (room_id, from_user, to_user, signal_type, signal_data) 
+              VALUES ($1, $2, $3, $4, $5)`,
+        params: [roomId, message.from, message.to, message.type, JSON.stringify(message)]
+      }).single();
+
+      if (error) {
+        // Fallback to direct table access if RPC fails
+        await (supabase as any)
+          .from('voice_signals')
+          .insert({
+            room_id: roomId,
+            from_user: message.from,
+            to_user: message.to,
+            signal_type: message.type,
+            signal_data: message,
+            created_at: new Date().toISOString()
+          });
+      }
     } catch (error) {
       console.error('发送信令消息失败:', error);
     }
@@ -218,15 +228,19 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
       .subscribe();
 
     // 通知其他用户我已加入语音聊天
-    await supabase
-      .from('voice_participants')
-      .upsert({
-        room_id: roomId,
-        user_id: userId,
-        player_name: playerName,
-        is_connected: true,
-        joined_at: new Date().toISOString()
-      });
+    try {
+      await (supabase as any)
+        .from('voice_participants')
+        .upsert({
+          room_id: roomId,
+          user_id: userId,
+          player_name: playerName,
+          is_connected: true,
+          joined_at: new Date().toISOString()
+        });
+    } catch (error) {
+      console.error('更新语音参与者状态失败:', error);
+    }
 
     setIsConnected(true);
     toast({
@@ -259,11 +273,15 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
     }
 
     // 更新数据库状态
-    await supabase
-      .from('voice_participants')
-      .update({ is_connected: false })
-      .eq('room_id', roomId)
-      .eq('user_id', userId);
+    try {
+      await (supabase as any)
+        .from('voice_participants')
+        .update({ is_connected: false })
+        .eq('room_id', roomId)
+        .eq('user_id', userId);
+    } catch (error) {
+      console.error('更新语音参与者状态失败:', error);
+    }
 
     setIsConnected(false);
     toast({
