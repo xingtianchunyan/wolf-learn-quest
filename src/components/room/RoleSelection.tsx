@@ -21,17 +21,17 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
-  // 技能详细信息映射
+  // 技能详细信息映射 - 基于游戏规则对话框中的数据
   const skillDetails = {
-    skill_night_attack: { name: 'skill_night_attack', effect: 'skill_night_attack_effect', uses: 'skill_night_attack_uses' },
-    skill_prophecy: { name: 'skill_prophecy', effect: 'skill_prophecy_effect', uses: 'skill_prophecy_uses' },
-    skill_magic_potion: { name: 'skill_magic_potion', effect: 'skill_magic_potion_effect', uses: 'skill_magic_potion_uses' },
-    skill_dying_shot: { name: 'skill_dying_shot', effect: 'skill_dying_shot_effect', uses: 'skill_dying_shot_uses' },
-    skill_vigil: { name: 'skill_vigil', effect: 'skill_vigil_effect', uses: 'skill_vigil_uses' },
-    skill_self_destruct: { name: 'skill_self_destruct', effect: 'skill_self_destruct_effect', uses: 'skill_self_destruct_uses' },
-    skill_voodoo: { name: 'skill_voodoo', effect: 'skill_voodoo_effect', uses: 'skill_voodoo_uses' },
-    skill_demon_eye: { name: 'skill_demon_eye', effect: 'skill_demon_eye_effect', uses: 'skill_demon_eye_uses' },
-    skill_sleep: { name: 'skill_sleep', effect: 'skill_sleep_effect', uses: 'skill_sleep_uses' }
+    skill_night_attack: { name: 'skill_night_attack', effect: 'effect_night_attack', uses: 'usage_unlimited', type: 'type_attack' },
+    skill_prophecy: { name: 'skill_prophecy', effect: 'effect_prophecy', uses: 'usage_unlimited', type: 'type_view' },
+    skill_magic_potion: { name: 'skill_magic_potion', effect: 'effect_magic_potion', uses: 'usage_2', type: 'type_protect_or_attack' },
+    skill_dying_shot: { name: 'skill_dying_shot', effect: 'effect_dying_shot', uses: 'usage_1', type: 'type_attack' },
+    skill_vigil: { name: 'skill_vigil', effect: 'effect_vigil', uses: 'usage_unlimited', type: 'type_protect' },
+    skill_sleep: { name: 'skill_sleep', effect: 'effect_none', uses: 'usage_unlimited', type: 'type_none' },
+    skill_self_destruct: { name: 'skill_self_destruct', effect: 'effect_self_destruct', uses: 'usage_1', type: 'type_attack' },
+    skill_voodoo: { name: 'skill_voodoo', effect: 'effect_voodoo', uses: 'usage_1', type: 'type_protect' },
+    skill_demon_eye: { name: 'skill_demon_eye', effect: 'effect_demon_eye', uses: 'usage_unlimited', type: 'type_view' }
   };
 
   const handleCardDoubleClick = (roleId: string) => {
