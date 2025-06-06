@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
+import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -48,6 +49,10 @@ const GameRoom = () => {
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
+  
+  // 添加在线状态追踪
+  const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
+  const onlinePlayers = getOnlinePlayers().map(p => p.user_id);
   
   const allReady = players.every(player => player.isReady);
 
@@ -396,6 +401,10 @@ const GameRoom = () => {
                       <p className="text-sm text-gray-400">{t('learning_topic')}</p>
                       <p>{roomData.topic}</p>
                     </div>
+                    <div>
+                      <p className="text-sm text-gray-400">在线玩家</p>
+                      <p>{onlinePlayers.length} / {players.length}</p>
+                    </div>
                     <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
                         {t('auto_close_warning')}
@@ -419,6 +428,7 @@ const GameRoom = () => {
                   onStartGame={handleStartGame}
                   onAddAIPlayer={handleAddAIPlayer}
                   onMaxPlayersChange={handleMaxPlayersChange}
+                  onlinePlayers={onlinePlayers}
                 />
               </div>
             </div>

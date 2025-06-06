@@ -403,11 +403,75 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_participants: {
+        Row: {
+          id: string
+          is_connected: boolean
+          joined_at: string
+          player_name: string
+          room_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_connected?: boolean
+          joined_at?: string
+          player_name: string
+          room_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_connected?: boolean
+          joined_at?: string
+          player_name?: string
+          room_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_signals: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          room_id: string
+          signal_data: Json
+          signal_type: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          room_id: string
+          signal_data: Json
+          signal_type: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          room_id?: string
+          signal_data?: Json
+          signal_type?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_voice_signals: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       close_inactive_rooms: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Users, Minus, Plus } from 'lucide-react';
+import { Brain, Users, Minus, Plus, Circle } from 'lucide-react';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface Player {
@@ -14,6 +15,7 @@ interface Player {
   isReady: boolean;
   isHost: boolean;
   isAI: boolean;
+  user_id?: string;
 }
 
 interface PlayersListProps {
@@ -28,6 +30,7 @@ interface PlayersListProps {
   onStartGame: () => void;
   onAddAIPlayer: () => void;
   onMaxPlayersChange: (increment: number) => void;
+  onlinePlayers?: string[];
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -41,7 +44,8 @@ const PlayersList: React.FC<PlayersListProps> = ({
   onLeaveRoom,
   onStartGame,
   onAddAIPlayer,
-  onMaxPlayersChange
+  onMaxPlayersChange,
+  onlinePlayers = []
 }) => {
   const { t } = useLanguage();
 
@@ -111,41 +115,58 @@ const PlayersList: React.FC<PlayersListProps> = ({
         
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-3">
-            {players.map((player) => (
-              <div 
-                key={player.id} 
-                className={`flex items-center justify-between p-2 rounded-md ${
-                  player.isReady ? 'bg-green-900/20' : 'bg-werewolf-dark/40'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarImage src={player.avatar} />
-                    <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'}`}>
-                      {player.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{player.name}</p>
-                    <div className="flex space-x-2 mt-1">
-                      {player.isHost && (
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">{t('host')}</Badge>
-                      )}
-                      {player.isAI && (
-                        <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
-                      )}
+            {players.map((player) => {
+              const isOnline = player.isAI || (player.user_id && onlinePlayers.includes(player.user_id));
+              
+              return (
+                <div 
+                  key={player.id} 
+                  className={`flex items-center justify-between p-2 rounded-md ${
+                    player.isReady ? 'bg-green-900/20' : 'bg-werewolf-dark/40'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Avatar>
+                        <AvatarImage src={player.avatar} />
+                        <AvatarFallback className={`${player.isAI ? 'bg-blue-700' : 'bg-werewolf-purple/70'}`}>
+                          {player.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* 在线状态指示器 */}
+                      <Circle 
+                        className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-werewolf-card rounded-full ${
+                          isOnline ? 'fill-green-500 text-green-500' : 'fill-gray-500 text-gray-500'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium">{player.name}</p>
+                        {!isOnline && !player.isAI && (
+                          <span className="text-xs text-gray-400">(离线)</span>
+                        )}
+                      </div>
+                      <div className="flex space-x-2 mt-1">
+                        {player.isHost && (
+                          <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">{t('host')}</Badge>
+                        )}
+                        {player.isAI && (
+                          <Badge variant="outline" className="border-blue-500 text-blue-500 text-xs">AI</Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div>
+                    {player.isReady ? (
+                      <Badge className="bg-green-700 text-xs">{t('ready')}</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs">{t('not_ready')}</Badge>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {player.isReady ? (
-                    <Badge className="bg-green-700 text-xs">{t('ready')}</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">{t('not_ready')}</Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </ScrollArea>
         
