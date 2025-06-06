@@ -250,11 +250,16 @@ const translations: Record<string, Record<string, string>> = {
 
     // Character Skills Table
     'villager_role': 'Villager',
+    'villager_role_1': 'Villager 1',
+    'villager_role_2': 'Villager 2',
+    'villager_role_3': 'Villager 3',
     'hunter_role': 'Hunter',
     'witch_role': 'Witch',
     'seer_role': 'Seer',
     'guard_role': 'Guard',
     'werewolf_role': 'Werewolf',
+    'werewolf_role_1': 'Werewolf 1',
+    'werewolf_role_2': 'Werewolf 2',
     'white_wolf_role': 'White Wolf',
     'warlock_role': 'Warlock',
     'demon_role': 'Demon',
@@ -603,11 +608,16 @@ const translations: Record<string, Record<string, string>> = {
 
     // Character Skills Table
     'villager_role': '村民',
+    'villager_role_1': '村民1',
+    'villager_role_2': '村民2',
+    'villager_role_3': '村民3',
     'hunter_role': '猎人',
     'witch_role': '女巫',
     'seer_role': '预言家',
     'guard_role': '守卫',
     'werewolf_role': '狼人',
+    'werewolf_role_1': '狼人1',
+    'werewolf_role_2': '狼人2',
     'white_wolf_role': '白狼王',
     'warlock_role': '暗夜术士',
     'demon_role': '恶魔',
