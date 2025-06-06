@@ -139,28 +139,28 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                         </div>
 
                         {/* 技能详情 */}
-                        <div className="flex-1 bg-werewolf-dark/60 rounded-md p-3">
-                          <div className="space-y-3">
+                        <div className="flex-1 bg-werewolf-dark/60 rounded-md p-2">
+                          <div className="space-y-2">
                             <div>
-                              <h4 className="text-werewolf-purple font-semibold mb-1">
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
                                 技能名称
                               </h4>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-xs text-gray-300">
                                 {t(skill?.name || role.description)}
                               </p>
                             </div>
                             
                             <div>
-                              <h4 className="text-werewolf-purple font-semibold mb-1">
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
                                 技能效果
                               </h4>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-xs text-gray-300 leading-tight">
                                 {skill ? t(skill.effect) : '暂无详细说明'}
                               </p>
                             </div>
                             
                             <div>
-                              <h4 className="text-werewolf-purple font-semibold mb-1">
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
                                 使用次数
                               </h4>
                               <p className="text-sm text-gray-300">
