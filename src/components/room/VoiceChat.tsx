@@ -113,26 +113,16 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
   // 发送信令消息
   const sendSignalingMessage = async (message: any) => {
     try {
-      // Use direct SQL insert with proper typing
-      const { error } = await supabase.rpc('exec_sql', {
-        sql: `INSERT INTO voice_signals (room_id, from_user, to_user, signal_type, signal_data) 
-              VALUES ($1, $2, $3, $4, $5)`,
-        params: [roomId, message.from, message.to, message.type, JSON.stringify(message)]
-      }).single();
-
-      if (error) {
-        // Fallback to direct table access if RPC fails
-        await (supabase as any)
-          .from('voice_signals')
-          .insert({
-            room_id: roomId,
-            from_user: message.from,
-            to_user: message.to,
-            signal_type: message.type,
-            signal_data: message,
-            created_at: new Date().toISOString()
-          });
-      }
+      await (supabase as any)
+        .from('voice_signals')
+        .insert({
+          room_id: roomId,
+          from_user: message.from,
+          to_user: message.to,
+          signal_type: message.type,
+          signal_data: message,
+          created_at: new Date().toISOString()
+        });
     } catch (error) {
       console.error('发送信令消息失败:', error);
     }
@@ -188,6 +178,45 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
       from: userId,
       to: targetPeerId
     });
+  };
+
+  // 断开语音聊天
+  const disconnectVoiceChat = async () => {
+    console.log('Disconnecting voice chat...');
+    
+    // 关闭所有peer连接
+    peers.forEach(({ connection, audioElement }) => {
+      connection.close();
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.srcObject = null;
+      }
+    });
+    setPeers(new Map());
+
+    // 停止本地流
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      setLocalStream(null);
+    }
+
+    // 取消订阅
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
+    // 更新数据库状态
+    try {
+      await (supabase as any)
+        .from('voice_participants')
+        .update({ is_connected: false })
+        .eq('room_id', roomId)
+        .eq('user_id', userId);
+    } catch (error) {
+      console.error('更新语音参与者状态失败:', error);
+    }
+
+    setIsConnected(false);
   };
 
   // 连接语音聊天
@@ -249,41 +278,9 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
     });
   };
 
-  // 断开语音聊天
-  const disconnectVoiceChat = async () => {
-    // 关闭所有peer连接
-    peers.forEach(({ connection, audioElement }) => {
-      connection.close();
-      if (audioElement) {
-        audioElement.pause();
-        audioElement.srcObject = null;
-      }
-    });
-    setPeers(new Map());
-
-    // 停止本地流
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
-    }
-
-    // 取消订阅
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-    }
-
-    // 更新数据库状态
-    try {
-      await (supabase as any)
-        .from('voice_participants')
-        .update({ is_connected: false })
-        .eq('room_id', roomId)
-        .eq('user_id', userId);
-    } catch (error) {
-      console.error('更新语音参与者状态失败:', error);
-    }
-
-    setIsConnected(false);
+  // 手动断开语音聊天
+  const handleDisconnectVoiceChat = async () => {
+    await disconnectVoiceChat();
     toast({
       title: '语音聊天已断开',
       description: '您已离开语音聊天',
@@ -299,6 +296,34 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
       setIsMuted(!isMuted);
     }
   };
+
+  // 页面可见性检测 - 当用户离开页面时自动断开语音
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isConnected) {
+        console.log('Page hidden, disconnecting voice chat');
+        disconnectVoiceChat();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (isConnected) {
+        console.log('Page unloading, disconnecting voice chat');
+        disconnectVoiceChat();
+      }
+    };
+
+    // 监听页面可见性变化
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // 监听页面即将卸载
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isConnected]);
 
   // 监听其他用户加入语音聊天
   useEffect(() => {
@@ -381,7 +406,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ roomId, userId, playerName }) => 
               </Button>
               
               <Button
-                onClick={disconnectVoiceChat}
+                onClick={handleDisconnectVoiceChat}
                 variant="outline"
                 className="w-full text-sm py-2"
                 size="sm"
