@@ -13,6 +13,7 @@ import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
+import VoiceChat from '@/components/room/VoiceChat';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 
@@ -404,6 +405,15 @@ const GameRoom = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Voice Chat Component */}
+              {currentUser && roomData && (
+                <VoiceChat
+                  roomId={roomData.id}
+                  userId={currentUser.id}
+                  playerName={currentUser.player_name || 'Unknown'}
+                />
+              )}
               
               {/* Players List */}
               <div>
