@@ -9,25 +9,39 @@ interface PlayerPresence {
   online_at: string;
 }
 
-interface OnlineStatus {
-  [key: string]: PlayerPresence[];
-}
-
 export const usePlayerPresence = (roomId: string, currentUser: any) => {
-  const [onlineStatus, setOnlineStatus] = useState<OnlineStatus>({});
+  const [onlinePlayers, setOnlinePlayers] = useState<PlayerPresence[]>([]);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
   useEffect(() => {
     if (!roomId || !currentUser) return;
+
+    console.log('Setting up presence for room:', roomId, 'user:', currentUser);
 
     const roomChannel = supabase.channel(`room_presence_${roomId}`);
 
     // 监听presence变化
     roomChannel
       .on('presence', { event: 'sync' }, () => {
-        const newState = roomChannel.presenceState();
-        console.log('Presence sync:', newState);
-        setOnlineStatus(newState);
+        const presenceState = roomChannel.presenceState();
+        console.log('Presence sync, raw state:', presenceState);
+        
+        // 转换presence state为我们需要的格式
+        const players: PlayerPresence[] = [];
+        Object.values(presenceState).forEach((presences: any) => {
+          presences.forEach((presence: any) => {
+            if (presence.user_id && presence.player_name) {
+              players.push({
+                user_id: presence.user_id,
+                player_name: presence.player_name,
+                online_at: presence.online_at
+              });
+            }
+          });
+        });
+        
+        console.log('Converted online players:', players);
+        setOnlinePlayers(players);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('Player joined:', key, newPresences);
@@ -36,6 +50,7 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
         console.log('Player left:', key, leftPresences);
       })
       .subscribe(async (status) => {
+        console.log('Presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
           // 订阅成功后，发送当前用户的在线状态
           const userStatus: PlayerPresence = {
@@ -44,7 +59,9 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
             online_at: new Date().toISOString(),
           };
 
-          await roomChannel.track(userStatus);
+          console.log('Tracking user status:', userStatus);
+          const trackResult = await roomChannel.track(userStatus);
+          console.log('Track result:', trackResult);
         }
       });
 
@@ -52,6 +69,7 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
 
     // 页面卸载时自动取消订阅
     const handleBeforeUnload = () => {
+      console.log('Page unloading, untracking presence');
       roomChannel.untrack();
       roomChannel.unsubscribe();
     };
@@ -59,8 +77,10 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     // 页面隐藏时标记离线
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        console.log('Page hidden, untracking presence');
         roomChannel.untrack();
       } else {
+        console.log('Page visible, tracking presence');
         // 页面重新可见时重新追踪
         const userStatus: PlayerPresence = {
           user_id: currentUser.id,
@@ -75,6 +95,7 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      console.log('Cleaning up presence listeners');
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (roomChannel) {
@@ -86,21 +107,16 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
 
   // 获取所有在线玩家列表
   const getOnlinePlayers = (): PlayerPresence[] => {
-    const allPresences: PlayerPresence[] = [];
-    Object.values(onlineStatus).forEach(presences => {
-      allPresences.push(...presences);
-    });
-    return allPresences;
+    return onlinePlayers;
   };
 
   // 检查特定玩家是否在线
   const isPlayerOnline = (userId: string): boolean => {
-    const onlinePlayers = getOnlinePlayers();
     return onlinePlayers.some(player => player.user_id === userId);
   };
 
   return {
-    onlineStatus,
+    onlinePlayers,
     getOnlinePlayers,
     isPlayerOnline,
     channel

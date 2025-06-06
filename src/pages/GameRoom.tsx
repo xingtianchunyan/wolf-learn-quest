@@ -52,7 +52,11 @@ const GameRoom = () => {
   
   // 添加在线状态追踪
   const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
-  const onlinePlayers = getOnlinePlayers().map(p => p.user_id);
+  const onlinePlayersList = getOnlinePlayers();
+  const onlinePlayers = onlinePlayersList.map(p => p.user_id);
+  
+  console.log('Online players list:', onlinePlayersList);
+  console.log('Online player user IDs:', onlinePlayers);
   
   const allReady = players.every(player => player.isReady);
 
