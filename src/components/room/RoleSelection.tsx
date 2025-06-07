@@ -1,25 +1,44 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useToast } from '@/components/ui/use-toast';
 
 interface RoleSelectionProps {
   maxPlayers: number;
   selectedCharacter: string | null;
-  onCharacterSelect: (characterId: string) => void;
+  onCharacterSelect: (characterId: string | null) => void;
+  roomId: string;
+  currentPlayerId: string | null;
+  isReady: boolean;
 }
 
 const RoleSelection: React.FC<RoleSelectionProps> = ({
   maxPlayers,
   selectedCharacter,
-  onCharacterSelect
+  onCharacterSelect,
+  roomId,
+  currentPlayerId,
+  isReady
 }) => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const roleConfigs = getRoleConfiguration(maxPlayers);
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+
+  const {
+    selectRole,
+    unselectRole,
+    isRoleSelected,
+    getCurrentPlayerSelection,
+    loading: roleSelectionLoading
+  } = useRoleSelection(roomId, currentPlayerId);
+
+  // 获取当前玩家选择的角色
+  const currentSelection = getCurrentPlayerSelection();
 
   // 技能详细信息映射 - 基于游戏规则对话框中的数据
   const skillDetails = {
@@ -46,6 +65,63 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     });
   };
 
+  const handleRoleClick = async (roleId: string) => {
+    // 如果已经准备，不能选择角色
+    if (isReady) {
+      toast({
+        title: t('cannot_select_role'),
+        description: '请先取消准备状态才能选择角色',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 如果角色已被其他玩家选择，不能选择
+    if (isRoleSelected(roleId) && currentSelection !== roleId) {
+      toast({
+        title: t('role_already_selected'),
+        description: '该角色已被其他玩家选择',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 如果当前玩家已选择这个角色，则取消选择
+    if (currentSelection === roleId) {
+      const success = await unselectRole();
+      if (success) {
+        onCharacterSelect(null);
+        toast({
+          title: t('role_unselected'),
+          description: '已取消角色选择',
+        });
+      } else {
+        toast({
+          title: t('error'),
+          description: '取消选择失败，请重试',
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    // 选择新角色
+    const success = await selectRole(roleId);
+    if (success) {
+      onCharacterSelect(roleId);
+      toast({
+        title: t('role_selected'),
+        description: `已选择角色：${t(expandedRoles.find(r => r.instanceId === roleId)?.name || '')}`,
+      });
+    } else {
+      toast({
+        title: t('error'),
+        description: '选择角色失败，请重试',
+        variant: "destructive",
+      });
+    }
+  };
+
   const isFlipped = (roleId: string) => flippedCards.has(roleId);
 
   return (
@@ -55,6 +131,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
         <p className="text-sm text-gray-400">
           {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
         </p>
+        {currentSelection && (
+          <p className="text-sm text-werewolf-purple">
+            当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
+          </p>
+        )}
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <ScrollArea className="flex-1 pr-4">
@@ -62,19 +143,36 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             {expandedRoles.map((role) => {
               const flipped = isFlipped(role.instanceId);
               const skill = skillDetails[role.description as keyof typeof skillDetails];
+              const isSelected = isRoleSelected(role.instanceId);
+              const isCurrentSelection = currentSelection === role.instanceId;
+              const canSelect = !isReady && (!isSelected || isCurrentSelection);
               
               return (
                 <div 
                   key={role.instanceId}
-                  className={`relative cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                    selectedCharacter === role.instanceId
+                  className={`relative transition-all duration-300 transform hover:scale-105 ${
+                    canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  } ${
+                    isCurrentSelection
                       ? 'ring-2 ring-werewolf-purple' 
+                      : isSelected
+                      ? 'ring-2 ring-red-500'
                       : ''
                   }`}
-                  onClick={() => onCharacterSelect(role.instanceId)}
+                  onClick={() => handleRoleClick(role.instanceId)}
                   onDoubleClick={() => handleCardDoubleClick(role.instanceId)}
                   style={{ perspective: '1000px' }}
                 >
+                  {isSelected && !isCurrentSelection && (
+                    <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs">
+                      已选择
+                    </div>
+                  )}
+                  {isCurrentSelection && (
+                    <div className="absolute top-2 right-2 z-10 bg-werewolf-purple text-white px-2 py-1 rounded text-xs">
+                      我的选择
+                    </div>
+                  )}
                   <div 
                     className={`relative w-full h-80 transition-transform duration-700 transform-style-preserve-3d ${
                       flipped ? 'rotate-y-180' : ''
@@ -84,8 +182,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                     {/* 正面 - 角色形象和名称 */}
                     <div 
                       className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden ${
-                        selectedCharacter === role.instanceId
+                        isCurrentSelection
                           ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
+                          : isSelected
+                          ? 'bg-red-900/30 border-2 border-red-500'
                           : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
                       }`}
                       style={{ backfaceVisibility: 'hidden' }}
@@ -112,8 +212,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                     {/* 背面 - 阵营和技能详情 */}
                     <div 
                       className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden rotate-y-180 ${
-                        selectedCharacter === role.instanceId
+                        isCurrentSelection
                           ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
+                          : isSelected
+                          ? 'bg-red-900/30 border-2 border-red-500'
                           : 'bg-werewolf-dark/40'
                       }`}
                       style={{ 

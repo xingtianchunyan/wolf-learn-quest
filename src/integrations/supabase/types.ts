@@ -281,6 +281,30 @@ export type Database = {
         }
         Relationships: []
       }
+      role_selections: {
+        Row: {
+          id: string
+          player_id: string
+          role_id: string
+          room_id: string
+          selected_at: string
+        }
+        Insert: {
+          id?: string
+          player_id: string
+          role_id: string
+          room_id: string
+          selected_at?: string
+        }
+        Update: {
+          id?: string
+          player_id?: string
+          role_id?: string
+          room_id?: string
+          selected_at?: string
+        }
+        Relationships: []
+      }
       room_players: {
         Row: {
           id: string

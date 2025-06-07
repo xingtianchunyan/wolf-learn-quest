@@ -39,12 +39,13 @@ const GameRoom = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [isReady, setIsReady] = useState(true);
+  const [isReady, setIsReady] = useState(false); // 修改初始状态为 false
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
@@ -124,6 +125,16 @@ const GameRoom = () => {
               topic: '元素周期表', // This would come from room data in real implementation
               maxPlayers: roomData.max_players,
             });
+
+            // 查找当前用户的 player ID
+            if (session?.user) {
+              const currentPlayerRecord = roomData.room_players?.find(
+                (p: any) => p.user_id === session.user.id
+              );
+              if (currentPlayerRecord) {
+                setCurrentPlayerId(currentPlayerRecord.id);
+              }
+            }
           } else {
             console.log('No room found with ID:', id);
           }
@@ -134,6 +145,7 @@ const GameRoom = () => {
           const { data: roomPlayerData } = await supabase
             .from('room_players')
             .select(`
+              id,
               room_id,
               rooms!inner(
                 id,
@@ -157,6 +169,7 @@ const GameRoom = () => {
               topic: '元素周期表',
               maxPlayers: room.max_players,
             });
+            setCurrentPlayerId(roomPlayerData.id);
           }
         }
       } catch (error) {
@@ -248,6 +261,16 @@ const GameRoom = () => {
   const handleReadyToggle = async () => {
     if (!currentUser || !roomData) return;
 
+    // 检查是否选择了角色
+    if (!isReady && !selectedCharacter) {
+      toast({
+        title: t('select_character_first'),
+        description: '请先选择角色才能进入准备状态',
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newReadyState = !isReady;
     
     // Find current user's player record
@@ -279,6 +302,20 @@ const GameRoom = () => {
         });
       }
     }
+  };
+
+  const handleCharacterSelect = (characterId: string | null) => {
+    // 如果已经准备，不能更改角色选择
+    if (isReady && characterId !== selectedCharacter) {
+      toast({
+        title: t('cannot_change_character'),
+        description: '请先取消准备状态才能更换角色',
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSelectedCharacter(characterId);
   };
   
   const handleSendMessage = (e: React.FormEvent) => {
@@ -443,7 +480,10 @@ const GameRoom = () => {
             <RoleSelection
               maxPlayers={currentMaxPlayers}
               selectedCharacter={selectedCharacter}
-              onCharacterSelect={setSelectedCharacter}
+              onCharacterSelect={handleCharacterSelect}
+              roomId={roomData?.id || ''}
+              currentPlayerId={currentPlayerId}
+              isReady={isReady}
             />
           </div>
           
