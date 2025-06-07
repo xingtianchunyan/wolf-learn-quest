@@ -149,6 +149,47 @@ export type Database = {
         }
         Relationships: []
       }
+      game_phase_history: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          game_state_id: string
+          id: string
+          phase: string
+          round_number: number
+          started_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          game_state_id: string
+          id?: string
+          phase: string
+          round_number: number
+          started_at: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          game_state_id?: string
+          id?: string
+          phase?: string
+          round_number?: number
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_phase_history_game_state_id_fkey"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           active_role: string | null
@@ -182,6 +223,53 @@ export type Database = {
             foreignKeyName: "game_sessions_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_states: {
+        Row: {
+          auto_advance: boolean
+          created_at: string
+          current_phase: string
+          current_round: number
+          id: string
+          phase_duration: number
+          phase_start_time: string
+          room_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auto_advance?: boolean
+          created_at?: string
+          current_phase?: string
+          current_round?: number
+          id?: string
+          phase_duration?: number
+          phase_start_time?: string
+          room_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_advance?: boolean
+          created_at?: string
+          current_phase?: string
+          current_round?: number
+          id?: string
+          phase_duration?: number
+          phase_start_time?: string
+          room_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_states_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -492,6 +580,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      advance_game_phase: {
+        Args: { p_room_id: string }
+        Returns: {
+          new_phase: string
+          new_round: number
+        }[]
+      }
       cleanup_old_voice_signals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -499,6 +594,14 @@ export type Database = {
       close_inactive_rooms: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      initialize_game_state: {
+        Args: { p_room_id: string }
+        Returns: string
+      }
+      start_game: {
+        Args: { p_room_id: string }
+        Returns: string
       }
     }
     Enums: {

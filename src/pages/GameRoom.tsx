@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,12 @@ import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
+import GameStateDisplay from '@/components/game/GameStateDisplay';
+import GamePhaseIndicator from '@/components/game/GamePhaseIndicator';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useGameState } from '@/hooks/useGameState';
 
 // Mock chat messages
 const initialMessages = [
@@ -61,9 +63,13 @@ const GameRoom = () => {
     clearAllRoleSelections,
     getCurrentPlayerSelection
   } = useRoleSelection(roomData?.id || '', currentPlayerId, players.length, currentMaxPlayers);
+
+  // 添加游戏状态管理
+  const { gameState } = useGameState(roomData?.id || '');
   
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
+  console.log('Game state:', gameState);
   
   const allReady = players.every(player => player.isReady);
 
@@ -395,6 +401,16 @@ const GameRoom = () => {
       return;
     }
     
+    // 检查游戏状态是否已初始化
+    if (!gameState) {
+      toast({
+        title: '无法开始游戏',
+        description: '请先初始化游戏状态',
+        variant: "destructive",
+      });
+      return;
+    }
+    
     navigate('/game');
   };
 
@@ -424,6 +440,9 @@ const GameRoom = () => {
       });
     }
   };
+
+  // 检查当前用户是否为房主
+  const isCurrentUserHost = players.find(p => p.name === currentUser?.player_name || p.name === 'You')?.isHost || false;
 
   if (isLoading) {
     return (
@@ -463,6 +482,17 @@ const GameRoom = () => {
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+        {/* 游戏状态指示器 - 显示在顶部 */}
+        {gameState && (
+          <div className="mb-4">
+            <GamePhaseIndicator
+              phase={gameState.current_phase}
+              round={gameState.current_round}
+              className="justify-center"
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
@@ -498,6 +528,9 @@ const GameRoom = () => {
                   </div>
                 </CardContent>
               </Card>
+              
+              {/* 游戏状态显示卡片 */}
+              <GameStateDisplay roomId={roomData?.id || ''} isHost={isCurrentUserHost} />
               
               {/* Players List */}
               <div>
