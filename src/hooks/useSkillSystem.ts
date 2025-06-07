@@ -92,6 +92,15 @@ interface UseSkillSystemProps {
   currentRound: number;
 }
 
+// 类型转换辅助函数
+const convertToPlayerGameState = (data: any): PlayerGameState => {
+  return {
+    ...data,
+    skill_uses_remaining: data.skill_uses_remaining || {},
+    status_effects: data.status_effects || []
+  };
+};
+
 export const useSkillSystem = ({ gameStateId, playerId, currentPhase, currentRound }: UseSkillSystemProps) => {
   const [playerGameState, setPlayerGameState] = useState<PlayerGameState | null>(null);
   const [skillUses, setSkillUses] = useState<SkillUse[]>([]);
@@ -114,7 +123,7 @@ export const useSkillSystem = ({ gameStateId, playerId, currentPhase, currentRou
       if (error) throw error;
 
       if (data) {
-        setPlayerGameState(data);
+        setPlayerGameState(convertToPlayerGameState(data));
       } else {
         // 如果没有找到玩家状态，创建一个默认状态
         await initializePlayerGameState();
@@ -166,7 +175,7 @@ export const useSkillSystem = ({ gameStateId, playerId, currentPhase, currentRou
         .single();
 
       if (error) throw error;
-      setPlayerGameState(data);
+      setPlayerGameState(convertToPlayerGameState(data));
     } catch (error) {
       console.error('Error initializing player game state:', error);
     }
