@@ -63,52 +63,6 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null)
     };
   }, [roomId]);
 
-  // 计算角色选择限制
-  const calculateSelectionLimit = (playerCount: number, maxPlayers: number) => {
-    // 规则1：至少3名玩家才能选择角色
-    if (playerCount < 3) return 0;
-    
-    // 规则3：达到最大玩家数量时，所有玩家都可以选择
-    if (playerCount >= maxPlayers) return playerCount;
-    
-    // 规则2：玩家数量-2就是可选择角色的玩家数量
-    return Math.max(1, playerCount - 2);
-  };
-
-  // 检查是否可以选择角色
-  const canSelectRole = (playerCount: number, maxPlayers: number) => {
-    const limit = calculateSelectionLimit(playerCount, maxPlayers);
-    const currentSelections = roleSelections.length;
-    
-    // 如果当前玩家已经选择了角色，可以更改选择
-    if (getCurrentPlayerSelection()) return true;
-    
-    // 检查是否还有选择名额
-    return currentSelections < limit;
-  };
-
-  // 重置所有角色选择（当最大玩家数变化时）
-  const resetAllSelections = async () => {
-    if (!roomId) return false;
-
-    try {
-      const { error } = await supabase
-        .from('role_selections')
-        .delete()
-        .eq('room_id', roomId);
-
-      if (error) {
-        console.error('Error resetting role selections:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error resetting role selections:', error);
-      return false;
-    }
-  };
-
   const selectRole = async (roleId: string) => {
     if (!currentPlayerId || !roomId) return false;
 
@@ -175,9 +129,6 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null)
     unselectRole,
     getSelectedRoleByPlayer,
     isRoleSelected,
-    getCurrentPlayerSelection,
-    calculateSelectionLimit,
-    canSelectRole,
-    resetAllSelections
+    getCurrentPlayerSelection
   };
 };

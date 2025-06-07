@@ -484,7 +484,6 @@ const GameRoom = () => {
               roomId={roomData?.id || ''}
               currentPlayerId={currentPlayerId}
               isReady={isReady}
-              playerCount={players.length}
             />
           </div>
           

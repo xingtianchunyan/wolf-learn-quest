@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
@@ -14,7 +13,6 @@ interface RoleSelectionProps {
   roomId: string;
   currentPlayerId: string | null;
   isReady: boolean;
-  playerCount: number;
 }
 
 const RoleSelection: React.FC<RoleSelectionProps> = ({
@@ -23,51 +21,26 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   onCharacterSelect,
   roomId,
   currentPlayerId,
-  isReady,
-  playerCount
+  isReady
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const roleConfigs = getRoleConfiguration(maxPlayers);
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
-  const [previousMaxPlayers, setPreviousMaxPlayers] = useState(maxPlayers);
 
   const {
     selectRole,
     unselectRole,
     isRoleSelected,
     getCurrentPlayerSelection,
-    loading: roleSelectionLoading,
-    calculateSelectionLimit,
-    canSelectRole,
-    resetAllSelections
+    loading: roleSelectionLoading
   } = useRoleSelection(roomId, currentPlayerId);
 
   // 获取当前玩家选择的角色
   const currentSelection = getCurrentPlayerSelection();
 
-  // 监听最大玩家数变化，如果变化则重置所有选择
-  useEffect(() => {
-    if (previousMaxPlayers !== maxPlayers && previousMaxPlayers > 0) {
-      resetAllSelections().then((success) => {
-        if (success) {
-          onCharacterSelect(null);
-          toast({
-            title: '房间设置变更',
-            description: '最大玩家数已变更，所有角色选择已重置',
-          });
-        }
-      });
-    }
-    setPreviousMaxPlayers(maxPlayers);
-  }, [maxPlayers, previousMaxPlayers, resetAllSelections, onCharacterSelect, toast]);
-
-  // 计算选择限制信息
-  const selectionLimit = calculateSelectionLimit(playerCount, maxPlayers);
-  const canSelect = canSelectRole(playerCount, maxPlayers);
-
-  // 技能详细信息映射
+  // 技能详细信息映射 - 基于游戏规则对话框中的数据
   const skillDetails = {
     skill_night_attack: { name: 'skill_night_attack', effect: 'effect_night_attack', uses: 'usage_unlimited', type: 'type_attack' },
     skill_prophecy: { name: 'skill_prophecy', effect: 'effect_prophecy', uses: 'usage_unlimited', type: 'type_view' },
@@ -103,11 +76,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
-    // 检查玩家数量限制
-    if (playerCount < 3) {
+    // 如果角色已被其他玩家选择，不能选择
+    if (isRoleSelected(roleId) && currentSelection !== roleId) {
       toast({
-        title: '玩家数量不足',
-        description: '房间内至少需要3名玩家才能选择角色',
+        title: t('role_already_selected'),
+        description: '该角色已被其他玩家选择',
         variant: "destructive",
       });
       return;
@@ -132,26 +105,6 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
-    // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(roleId)) {
-      toast({
-        title: t('role_already_selected'),
-        description: '该角色已被其他玩家选择',
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // 检查是否还有选择名额
-    if (!canSelect) {
-      toast({
-        title: '选择名额已满',
-        description: `当前最多只允许 ${selectionLimit} 名玩家选择角色`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     // 选择新角色
     const success = await selectRole(roleId);
     if (success) {
@@ -171,33 +124,18 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   const isFlipped = (roleId: string) => flippedCards.has(roleId);
 
-  const getSelectionStatusMessage = () => {
-    if (playerCount < 3) {
-      return `需要至少3名玩家才能选择角色 (当前: ${playerCount})`;
-    }
-    if (playerCount >= maxPlayers) {
-      return `所有玩家都可以选择角色`;
-    }
-    return `当前最多 ${selectionLimit} 名玩家可选择角色`;
-  };
-
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
-        <div className="space-y-1">
-          <p className="text-sm text-gray-400">
-            {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
+        <p className="text-sm text-gray-400">
+          {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
+        </p>
+        {currentSelection && (
+          <p className="text-sm text-werewolf-purple">
+            当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
           </p>
-          <p className="text-sm text-yellow-400">
-            {getSelectionStatusMessage()}
-          </p>
-          {currentSelection && (
-            <p className="text-sm text-werewolf-purple">
-              当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
-            </p>
-          )}
-        </div>
+        )}
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <ScrollArea className="flex-1 pr-4">
@@ -207,13 +145,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const skill = skillDetails[role.description as keyof typeof skillDetails];
               const isSelected = isRoleSelected(role.instanceId);
               const isCurrentSelection = currentSelection === role.instanceId;
-              const canSelectThis = !isReady && (!isSelected || isCurrentSelection) && (canSelect || isCurrentSelection) && playerCount >= 3;
+              const canSelect = !isReady && (!isSelected || isCurrentSelection);
               
               return (
                 <div 
                   key={role.instanceId}
                   className={`relative transition-all duration-300 transform hover:scale-105 ${
-                    canSelectThis ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                    canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                   } ${
                     isCurrentSelection
                       ? 'ring-2 ring-werewolf-purple' 
