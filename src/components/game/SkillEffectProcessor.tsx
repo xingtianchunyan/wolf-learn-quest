@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -177,6 +176,93 @@ const SkillEffectProcessor: React.FC<SkillEffectProcessorProps> = ({
               target_id: skillUse.target_player_id,
               message: '开枪成功'
             };
+          }
+          break;
+
+        case 'self_destruct':
+          // 白狼王自爆
+          // 标记白狼王死亡
+          await supabase
+            .from('player_game_states')
+            .update({ is_alive: false })
+            .eq('game_state_id', gameStateId)
+            .eq('player_id', skillUse.player_id);
+
+          result = {
+            type: 'self_destruct_success',
+            player_id: skillUse.player_id,
+            message: '白狼王自爆，游戏立即进入夜晚阶段',
+            phase_change: 'night'
+          };
+
+          toast({
+            title: '白狼王自爆',
+            description: '游戏立即进入夜晚阶段',
+            duration: 5000
+          });
+          break;
+
+        case 'curse':
+          // 暗夜术士诅咒
+          if (skillUse.target_player_id) {
+            // 给目标玩家添加沉默状态效果
+            const { data: targetState } = await supabase
+              .from('player_game_states')
+              .select('status_effects')
+              .eq('game_state_id', gameStateId)
+              .eq('player_id', skillUse.target_player_id)
+              .single();
+
+            if (targetState) {
+              const currentEffects = targetState.status_effects || [];
+              const newEffects = [...currentEffects, {
+                type: 'silenced',
+                applied_round: skillUse.round_number,
+                duration: 1 // 持续一天
+              }];
+
+              await supabase
+                .from('player_game_states')
+                .update({ status_effects: newEffects })
+                .eq('game_state_id', gameStateId)
+                .eq('player_id', skillUse.target_player_id);
+
+              result = {
+                type: 'curse_success',
+                target_id: skillUse.target_player_id,
+                message: '诅咒成功，目标次日白天无法发言'
+              };
+            }
+          }
+          break;
+
+        case 'investigate':
+          // 恶魔查看身份
+          if (skillUse.target_player_id) {
+            const { data: targetPlayer } = await supabase
+              .from('player_game_states')
+              .select('role')
+              .eq('game_state_id', gameStateId)
+              .eq('player_id', skillUse.target_player_id)
+              .single();
+
+            if (targetPlayer) {
+              result = {
+                type: 'investigate_result',
+                target_id: skillUse.target_player_id,
+                role: targetPlayer.role,
+                message: `目标的真实身份是：${targetPlayer.role}`
+              };
+
+              // 只向恶魔显示结果
+              if (skillUse.player_id) {
+                toast({
+                  title: '身份调查结果',
+                  description: result.message,
+                  duration: 5000
+                });
+              }
+            }
           }
           break;
 

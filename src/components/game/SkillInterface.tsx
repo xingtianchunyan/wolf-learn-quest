@@ -12,7 +12,10 @@ import {
   Skull, 
   Eye,
   Heart,
-  Sword
+  Sword,
+  Bomb,
+  Zap as Curse,
+  Search
 } from 'lucide-react';
 import { useSkillSystem, SkillDefinition } from '@/hooks/useSkillSystem';
 
@@ -38,7 +41,10 @@ const skillIcons: Record<string, React.ReactNode> = {
   'heal': <Heart className="h-4 w-4" />,
   'poison': <Skull className="h-4 w-4 text-purple-400" />,
   'protect': <Shield className="h-4 w-4" />,
-  'shoot': <Sword className="h-4 w-4" />
+  'shoot': <Sword className="h-4 w-4" />,
+  'self_destruct': <Bomb className="h-4 w-4 text-red-400" />,
+  'curse': <Curse className="h-4 w-4 text-purple-600" />,
+  'investigate': <Search className="h-4 w-4 text-orange-400" />
 };
 
 const SkillInterface: React.FC<SkillInterfaceProps> = ({

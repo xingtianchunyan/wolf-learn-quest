@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -82,6 +81,27 @@ export const ROLE_SKILLS: Record<string, SkillDefinition[]> = {
     phases: ['night'],
     usesPerGame: undefined,
     cooldown: 1 // 不能连续保护同一人
+  }],
+  'White Wolf': [{
+    name: 'self_destruct',
+    description: '自爆结束发言，直接进入夜晚',
+    targetRequired: false,
+    phases: ['day'],
+    usesPerGame: 1
+  }],
+  'Warlock': [{
+    name: 'curse',
+    description: '诅咒一名玩家，被诅咒的玩家次日白天不能发言',
+    targetRequired: true,
+    phases: ['night'],
+    usesPerGame: undefined
+  }],
+  'Demon': [{
+    name: 'investigate',
+    description: '查看一名玩家的详细身份信息',
+    targetRequired: true,
+    phases: ['night'],
+    usesPerGame: undefined
   }]
 };
 
