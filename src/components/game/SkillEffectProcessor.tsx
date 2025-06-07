@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -214,7 +215,11 @@ const SkillEffectProcessor: React.FC<SkillEffectProcessorProps> = ({
               .single();
 
             if (targetState) {
-              const currentEffects = targetState.status_effects || [];
+              // 安全地处理status_effects，确保它是数组
+              const currentEffects = Array.isArray(targetState.status_effects) 
+                ? targetState.status_effects 
+                : [];
+              
               const newEffects = [...currentEffects, {
                 type: 'silenced',
                 applied_round: skillUse.round_number,
