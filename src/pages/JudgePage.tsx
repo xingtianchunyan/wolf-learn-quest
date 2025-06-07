@@ -145,17 +145,6 @@ const JudgePage = () => {
     setNewQuestion({ ...newQuestion, options: updatedOptions });
   };
   
-  const togglePhase = () => {
-    setGamePhase(gamePhase === 'day' ? 'night' : 'day');
-    
-    toast({
-      title: gamePhase === 'day' ? "Night has fallen" : "A new day begins",
-      description: gamePhase === 'day' 
-        ? "Werewolves are on the hunt. Special roles can use their abilities." 
-        : "Players will discuss who might be the werewolves.",
-    });
-  };
-  
   const handleJudgeAction = () => {
     if (!selectedPlayer) {
       toast({
