@@ -529,8 +529,8 @@ const GameRoom = () => {
                 </CardContent>
               </Card>
               
-              {/* 游戏状态显示卡片 - 只显示状态，不显示控制按钮 */}
-              <GameStateDisplay roomId={roomData?.id || ''} />
+              {/* 游戏状态显示卡片 */}
+              <GameStateDisplay roomId={roomData?.id || ''} isHost={isCurrentUserHost} />
               
               {/* Players List */}
               <div>
