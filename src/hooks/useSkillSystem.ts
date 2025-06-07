@@ -90,8 +90,8 @@ export const ROLE_SKILLS: Record<string, SkillDefinition[]> = {
     usesPerGame: 1
   }],
   'Warlock': [{
-    name: 'curse',
-    description: '诅咒一名玩家，被诅咒的玩家次日白天不能发言',
+    name: 'voodoo',
+    description: '使用巫术治疗一名玩家',
     targetRequired: true,
     phases: ['night'],
     usesPerGame: undefined

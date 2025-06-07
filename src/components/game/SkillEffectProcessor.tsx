@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -203,41 +202,27 @@ const SkillEffectProcessor: React.FC<SkillEffectProcessorProps> = ({
           });
           break;
 
-        case 'curse':
-          // 暗夜术士诅咒
+        case 'voodoo':
+          // 暗夜术士巫术治疗
           if (skillUse.target_player_id) {
-            // 给目标玩家添加沉默状态效果
-            const { data: targetState } = await supabase
+            // 恢复目标玩家的生命状态（如果已死亡则复活）
+            await supabase
               .from('player_game_states')
-              .select('status_effects')
+              .update({ is_alive: true })
               .eq('game_state_id', gameStateId)
-              .eq('player_id', skillUse.target_player_id)
-              .single();
+              .eq('player_id', skillUse.target_player_id);
 
-            if (targetState) {
-              // 安全地处理status_effects，确保它是数组
-              const currentEffects = Array.isArray(targetState.status_effects) 
-                ? targetState.status_effects 
-                : [];
-              
-              const newEffects = [...currentEffects, {
-                type: 'silenced',
-                applied_round: skillUse.round_number,
-                duration: 1 // 持续一天
-              }];
+            result = {
+              type: 'voodoo_success',
+              target_id: skillUse.target_player_id,
+              message: '巫术治疗成功'
+            };
 
-              await supabase
-                .from('player_game_states')
-                .update({ status_effects: newEffects })
-                .eq('game_state_id', gameStateId)
-                .eq('player_id', skillUse.target_player_id);
-
-              result = {
-                type: 'curse_success',
-                target_id: skillUse.target_player_id,
-                message: '诅咒成功，目标次日白天无法发言'
-              };
-            }
+            toast({
+              title: '巫术治疗',
+              description: '巫术治疗已生效',
+              duration: 5000
+            });
           }
           break;
 

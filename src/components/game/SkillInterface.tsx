@@ -43,7 +43,7 @@ const skillIcons: Record<string, React.ReactNode> = {
   'protect': <Shield className="h-4 w-4" />,
   'shoot': <Sword className="h-4 w-4" />,
   'self_destruct': <Bomb className="h-4 w-4 text-red-400" />,
-  'curse': <Curse className="h-4 w-4 text-purple-600" />,
+  'voodoo': <Heart className="h-4 w-4 text-green-400" />,
   'investigate': <Search className="h-4 w-4 text-orange-400" />
 };
 
