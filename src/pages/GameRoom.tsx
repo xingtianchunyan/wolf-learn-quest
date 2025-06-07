@@ -382,7 +382,7 @@ const GameRoom = () => {
     setNewMessage('');
   };
   
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     if (!allReady) {
       toast({
         title: t('cannot_start_game'),
@@ -411,7 +411,8 @@ const GameRoom = () => {
       return;
     }
     
-    navigate('/game');
+    // 导航到游戏页面，传递房间ID
+    navigate(`/game/${roomData.id}`);
   };
 
   const handleLeaveRoom = async () => {
