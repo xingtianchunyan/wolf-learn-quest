@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -16,15 +17,7 @@ import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-
-// Mock players data - this would be fetched from Supabase in a real implementation
-const players = [
-  { id: 'player1', name: 'You', avatar: '', isReady: true, isHost: true, isAI: false },
-  { id: 'player2', name: 'Alice', avatar: '', isReady: false, isHost: false, isAI: false },
-  { id: 'player3', name: 'Bob', avatar: '', isReady: true, isHost: false, isAI: false },
-  { id: 'player4', name: 'AI-Charlie', avatar: '', isReady: true, isHost: false, isAI: true },
-  { id: 'player5', name: 'AI-Diana', avatar: '', isReady: true, isHost: false, isAI: true },
-];
+import { useRoleSelection } from '@/hooks/useRoleSelection';
 
 // Mock chat messages
 const initialMessages = [
@@ -39,7 +32,7 @@ const GameRoom = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [isReady, setIsReady] = useState(false); // 修改初始状态为 false
+  const [isReady, setIsReady] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
@@ -47,6 +40,8 @@ const GameRoom = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
+  
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
@@ -56,6 +51,17 @@ const GameRoom = () => {
   const onlinePlayersList = getOnlinePlayers();
   const onlinePlayers = onlinePlayersList.map(p => p.user_id);
   
+  // Get current max players from realtime data or fallback to local state
+  const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
+  
+  // 使用角色选择 hook
+  const {
+    canSelectRoles,
+    allPlayersSelectedRoles,
+    clearAllRoleSelections,
+    getCurrentPlayerSelection
+  } = useRoleSelection(roomData?.id || '', currentPlayerId, players.length, currentMaxPlayers);
+  
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
   
@@ -64,8 +70,26 @@ const GameRoom = () => {
   // Add room cleanup functionality
   useRoomCleanup();
 
-  // Get current max players from realtime data or fallback to local state
-  const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
+  // 监听最大玩家数变化并重置角色选择
+  useEffect(() => {
+    if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
+      // 最大玩家数发生变化，清除所有角色选择
+      const resetRoleSelections = async () => {
+        const success = await clearAllRoleSelections();
+        if (success) {
+          setSelectedCharacter(null);
+          setIsReady(false);
+          toast({
+            title: '角色选择已重置',
+            description: '由于最大玩家数变化，所有角色选择已重置',
+          });
+        }
+      };
+      
+      resetRoleSelections();
+    }
+    setPreviousMaxPlayers(currentMaxPlayers);
+  }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast]);
 
   // Fetch current user and room data
   useEffect(() => {
@@ -122,9 +146,10 @@ const GameRoom = () => {
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
-              topic: '元素周期表', // This would come from room data in real implementation
+              topic: '元素周期表',
               maxPlayers: roomData.max_players,
             });
+            setPreviousMaxPlayers(roomData.max_players);
 
             // 查找当前用户的 player ID
             if (session?.user) {
@@ -169,6 +194,7 @@ const GameRoom = () => {
               topic: '元素周期表',
               maxPlayers: room.max_players,
             });
+            setPreviousMaxPlayers(room.max_players);
             setCurrentPlayerId(roomPlayerData.id);
           }
         }
@@ -261,7 +287,25 @@ const GameRoom = () => {
   const handleReadyToggle = async () => {
     if (!currentUser || !roomData) return;
 
-    // 检查是否选择了角色
+    // 检查是否满足准备条件
+    if (!canSelectRoles()) {
+      toast({
+        title: '无法准备',
+        description: `需要等待房间人数达到${currentMaxPlayers}人`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!allPlayersSelectedRoles()) {
+      toast({
+        title: '无法准备',
+        description: '需要等待所有玩家选择角色',
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!isReady && !selectedCharacter) {
       toast({
         title: t('select_character_first'),
@@ -470,6 +514,8 @@ const GameRoom = () => {
                   onAddAIPlayer={handleAddAIPlayer}
                   onMaxPlayersChange={handleMaxPlayersChange}
                   onlinePlayers={onlinePlayers}
+                  allPlayersSelectedRoles={allPlayersSelectedRoles()}
+                  canSelectRoles={canSelectRoles()}
                 />
               </div>
             </div>
@@ -479,6 +525,7 @@ const GameRoom = () => {
           <div className="lg:col-span-5">
             <RoleSelection
               maxPlayers={currentMaxPlayers}
+              currentPlayerCount={players.length}
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
               roomId={roomData?.id || ''}

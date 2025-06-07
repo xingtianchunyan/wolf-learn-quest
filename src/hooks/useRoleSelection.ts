@@ -10,7 +10,7 @@ interface RoleSelection {
   selected_at: string;
 }
 
-export const useRoleSelection = (roomId: string, currentPlayerId: string | null) => {
+export const useRoleSelection = (roomId: string, currentPlayerId: string | null, currentPlayerCount: number, maxPlayers: number) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,6 +62,28 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null)
       supabase.removeChannel(channel);
     };
   }, [roomId]);
+
+  // 当最大玩家数变化时，清除所有角色选择
+  const clearAllRoleSelections = async () => {
+    if (!roomId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('role_selections')
+        .delete()
+        .eq('room_id', roomId);
+
+      if (error) {
+        console.error('Error clearing role selections:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error clearing role selections:', error);
+      return false;
+    }
+  };
 
   const selectRole = async (roleId: string) => {
     if (!currentPlayerId || !roomId) return false;
@@ -122,6 +144,16 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null)
     return getSelectedRoleByPlayer(currentPlayerId);
   };
 
+  // 检查是否可以选择角色（当前玩家数等于最大玩家数）
+  const canSelectRoles = () => {
+    return currentPlayerCount >= maxPlayers;
+  };
+
+  // 检查是否所有玩家都已选择角色
+  const allPlayersSelectedRoles = () => {
+    return roleSelections.length >= currentPlayerCount;
+  };
+
   return {
     roleSelections,
     loading,
@@ -129,6 +161,9 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null)
     unselectRole,
     getSelectedRoleByPlayer,
     isRoleSelected,
-    getCurrentPlayerSelection
+    getCurrentPlayerSelection,
+    canSelectRoles,
+    allPlayersSelectedRoles,
+    clearAllRoleSelections
   };
 };

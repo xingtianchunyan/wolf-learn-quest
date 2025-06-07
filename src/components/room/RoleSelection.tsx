@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface RoleSelectionProps {
   maxPlayers: number;
+  currentPlayerCount: number;
   selectedCharacter: string | null;
   onCharacterSelect: (characterId: string | null) => void;
   roomId: string;
@@ -17,6 +19,7 @@ interface RoleSelectionProps {
 
 const RoleSelection: React.FC<RoleSelectionProps> = ({
   maxPlayers,
+  currentPlayerCount,
   selectedCharacter,
   onCharacterSelect,
   roomId,
@@ -34,13 +37,14 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     unselectRole,
     isRoleSelected,
     getCurrentPlayerSelection,
+    canSelectRoles,
     loading: roleSelectionLoading
-  } = useRoleSelection(roomId, currentPlayerId);
+  } = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
 
   // 获取当前玩家选择的角色
   const currentSelection = getCurrentPlayerSelection();
 
-  // 技能详细信息映射 - 基于游戏规则对话框中的数据
+  // 技能详细信息映射
   const skillDetails = {
     skill_night_attack: { name: 'skill_night_attack', effect: 'effect_night_attack', uses: 'usage_unlimited', type: 'type_attack' },
     skill_prophecy: { name: 'skill_prophecy', effect: 'effect_prophecy', uses: 'usage_unlimited', type: 'type_view' },
@@ -66,6 +70,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   };
 
   const handleRoleClick = async (roleId: string) => {
+    // 检查是否可以选择角色（玩家数是否等于最大玩家数）
+    if (!canSelectRoles()) {
+      toast({
+        title: '角色选择暂未开放',
+        description: `需要等待房间人数达到${maxPlayers}人才能选择角色`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // 如果已经准备，不能选择角色
     if (isReady) {
       toast({
@@ -128,14 +142,24 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
-        <p className="text-sm text-gray-400">
-          {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
-        </p>
-        {currentSelection && (
-          <p className="text-sm text-werewolf-purple">
-            当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
+        <div className="space-y-2">
+          <p className="text-sm text-gray-400">
+            {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
           </p>
-        )}
+          <p className="text-sm text-gray-400">
+            当前玩家数: {currentPlayerCount} / {maxPlayers}
+          </p>
+          {!canSelectRoles() && (
+            <p className="text-sm text-yellow-400">
+              等待房间人数达到{maxPlayers}人后开放角色选择
+            </p>
+          )}
+          {canSelectRoles() && currentSelection && (
+            <p className="text-sm text-werewolf-purple">
+              当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
+            </p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <ScrollArea className="flex-1 pr-4">
@@ -145,7 +169,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const skill = skillDetails[role.description as keyof typeof skillDetails];
               const isSelected = isRoleSelected(role.instanceId);
               const isCurrentSelection = currentSelection === role.instanceId;
-              const canSelect = !isReady && (!isSelected || isCurrentSelection);
+              const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
               
               return (
                 <div 

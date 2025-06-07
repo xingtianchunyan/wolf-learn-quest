@@ -29,6 +29,8 @@ interface PlayersListProps {
   onAddAIPlayer: () => void;
   onMaxPlayersChange: (increment: number) => void;
   onlinePlayers: string[];
+  allPlayersSelectedRoles: boolean;
+  canSelectRoles: boolean;
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -43,12 +45,22 @@ const PlayersList: React.FC<PlayersListProps> = ({
   onStartGame,
   onAddAIPlayer,
   onMaxPlayersChange,
-  onlinePlayers
+  onlinePlayers,
+  allPlayersSelectedRoles,
+  canSelectRoles
 }) => {
   const { t } = useLanguage();
 
   // 检查是否可以点击准备按钮
   const canToggleReady = () => {
+    // 必须先开放角色选择功能
+    if (!canSelectRoles) {
+      return false;
+    }
+    // 所有玩家都必须选择角色后才能准备
+    if (!allPlayersSelectedRoles) {
+      return false;
+    }
     // 如果要进入准备状态，必须先选择角色
     if (!isReady && !selectedCharacter) {
       return false;
@@ -57,6 +69,12 @@ const PlayersList: React.FC<PlayersListProps> = ({
   };
 
   const getReadyButtonText = () => {
+    if (!canSelectRoles) {
+      return `等待人数达到${maxPlayers}人`;
+    }
+    if (!allPlayersSelectedRoles) {
+      return '等待所有玩家选择角色';
+    }
     if (!isReady && !selectedCharacter) {
       return '请先选择角色';
     }
@@ -96,6 +114,24 @@ const PlayersList: React.FC<PlayersListProps> = ({
               >
                 <Plus className="h-3 w-3" />
               </Button>
+            </div>
+          </div>
+
+          {/* 游戏状态提示 */}
+          <div className="p-2 bg-werewolf-dark/20 rounded">
+            <div className="text-xs text-gray-400 space-y-1">
+              <div className="flex justify-between">
+                <span>角色选择:</span>
+                <span className={canSelectRoles ? 'text-green-400' : 'text-yellow-400'}>
+                  {canSelectRoles ? '已开放' : '等待人数'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>准备功能:</span>
+                <span className={allPlayersSelectedRoles ? 'text-green-400' : 'text-yellow-400'}>
+                  {allPlayersSelectedRoles ? '已开放' : '等待选角'}
+                </span>
+              </div>
             </div>
           </div>
 
