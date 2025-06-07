@@ -1,17 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Sun, 
   Sunset, 
   Moon, 
-  Sunrise, 
-  Play, 
-  Pause, 
-  SkipForward, 
-  Square,
+  Sunrise,
   Clock,
   Timer
 } from 'lucide-react';
@@ -19,21 +14,14 @@ import { useGameState, GamePhase, GameStatus } from '@/hooks/useGameState';
 
 interface GameStateDisplayProps {
   roomId: string;
-  isHost?: boolean;
 }
 
-const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isHost = false }) => {
+const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId }) => {
   const {
     gameState,
     loading,
     error,
-    timeRemaining,
-    startGame,
-    advancePhase,
-    pauseGame,
-    resumeGame,
-    endGame,
-    initializeGameState
+    timeRemaining
   } = useGameState(roomId);
 
   const phaseIcons: Record<GamePhase, React.ReactNode> = {
@@ -99,14 +87,6 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isHost = fa
         <CardContent>
           <div className="text-center space-y-4">
             <p className="text-gray-400">游戏尚未初始化</p>
-            {isHost && (
-              <Button
-                onClick={initializeGameState}
-                className="bg-werewolf-purple hover:bg-werewolf-light"
-              >
-                初始化游戏
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -117,7 +97,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isHost = fa
     <Card className="bg-werewolf-card border-werewolf-purple/30">
       <CardHeader>
         <CardTitle className="text-werewolf-purple flex items-center gap-2">
-          {gameState && phaseIcons[gameState.current_phase]}
+          {phaseIcons[gameState.current_phase]}
           游戏状态
         </CardTitle>
       </CardHeader>
@@ -162,68 +142,6 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isHost = fa
                   width: `${(timeRemaining / gameState.phase_duration) * 100}%` 
                 }}
               />
-            </div>
-          </div>
-        )}
-
-        {/* 主机控制按钮 */}
-        {isHost && (
-          <div className="space-y-2 pt-4 border-t border-gray-600">
-            <p className="text-sm text-gray-400">主机控制</p>
-            <div className="grid grid-cols-2 gap-2">
-              {gameState.status === 'waiting' && (
-                <Button
-                  onClick={startGame}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <Play className="h-4 w-4 mr-1" />
-                  开始游戏
-                </Button>
-              )}
-              
-              {gameState.status === 'active' && (
-                <>
-                  <Button
-                    onClick={pauseGame}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                    size="sm"
-                  >
-                    <Pause className="h-4 w-4 mr-1" />
-                    暂停
-                  </Button>
-                  <Button
-                    onClick={advancePhase}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    size="sm"
-                  >
-                    <SkipForward className="h-4 w-4 mr-1" />
-                    下一阶段
-                  </Button>
-                </>
-              )}
-              
-              {gameState.status === 'paused' && (
-                <Button
-                  onClick={resumeGame}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <Play className="h-4 w-4 mr-1" />
-                  继续游戏
-                </Button>
-              )}
-              
-              {gameState.status !== 'ended' && (
-                <Button
-                  onClick={endGame}
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Square className="h-4 w-4 mr-1" />
-                  结束游戏
-                </Button>
-              )}
             </div>
           </div>
         )}

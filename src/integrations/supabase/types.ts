@@ -330,6 +330,42 @@ export type Database = {
           },
         ]
       }
+      player_game_states: {
+        Row: {
+          created_at: string
+          game_state_id: string
+          id: string
+          is_alive: boolean
+          player_id: string
+          role: string
+          skill_uses_remaining: Json | null
+          status_effects: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game_state_id: string
+          id?: string
+          is_alive?: boolean
+          player_id: string
+          role: string
+          skill_uses_remaining?: Json | null
+          status_effects?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game_state_id?: string
+          id?: string
+          is_alive?: boolean
+          player_id?: string
+          role?: string
+          skill_uses_remaining?: Json | null
+          status_effects?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category: string | null
@@ -478,6 +514,42 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      skill_uses: {
+        Row: {
+          created_at: string
+          game_state_id: string
+          id: string
+          phase: string
+          player_id: string
+          result: Json | null
+          round_number: number
+          skill_name: string
+          target_player_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_state_id: string
+          id?: string
+          phase: string
+          player_id: string
+          result?: Json | null
+          round_number: number
+          skill_name: string
+          target_player_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_state_id?: string
+          id?: string
+          phase?: string
+          player_id?: string
+          result?: Json | null
+          round_number?: number
+          skill_name?: string
+          target_player_id?: string | null
+        }
+        Relationships: []
       }
       users: {
         Row: {
