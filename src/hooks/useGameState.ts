@@ -39,6 +39,22 @@ export const useGameState = (roomId: string): GameStateManager => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const { toast } = useToast();
 
+  // Helper function to convert Supabase data to typed GameState
+  const convertToGameState = (data: any): GameState => {
+    return {
+      id: data.id,
+      room_id: data.room_id,
+      current_phase: data.current_phase as GamePhase,
+      current_round: data.current_round,
+      phase_start_time: data.phase_start_time,
+      phase_duration: data.phase_duration,
+      auto_advance: data.auto_advance,
+      status: data.status as GameStatus,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+  };
+
   // 获取游戏状态
   const fetchGameState = useCallback(async () => {
     if (!roomId) return;
@@ -56,7 +72,11 @@ export const useGameState = (roomId: string): GameStateManager => {
         return;
       }
 
-      setGameState(data);
+      if (data) {
+        setGameState(convertToGameState(data));
+      } else {
+        setGameState(null);
+      }
       setError(null);
     } catch (err) {
       console.error('Error fetching game state:', err);
@@ -121,7 +141,7 @@ export const useGameState = (roomId: string): GameStateManager => {
           if (payload.eventType === 'DELETE') {
             setGameState(null);
           } else {
-            setGameState(payload.new as GameState);
+            setGameState(convertToGameState(payload.new));
           }
         }
       )
