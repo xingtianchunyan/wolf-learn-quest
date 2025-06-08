@@ -114,6 +114,45 @@ const GameRoom = () => {
     setPreviousMaxPlayers(currentMaxPlayers);
   }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast, players, updatePlayerReady]);
 
+  // 处理页面卸载时的清理逻辑
+  useEffect(() => {
+    const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
+      // 在页面卸载前清理角色选择
+      if (currentUser && roomData) {
+        try {
+          await leaveCurrentRoom(true);
+        } catch (error) {
+          console.error('Error cleaning up on page unload:', error);
+        }
+      }
+    };
+
+    const handlePopState = async () => {
+      // 处理浏览器后退按钮
+      if (currentUser && roomData) {
+        try {
+          await leaveCurrentRoom(true);
+        } catch (error) {
+          console.error('Error cleaning up on navigation:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+      // 组件卸载时也执行清理
+      if (currentUser && roomData) {
+        leaveCurrentRoom(true).catch(error => {
+          console.error('Error cleaning up on component unmount:', error);
+        });
+      }
+    };
+  }, [currentUser, roomData, leaveCurrentRoom]);
+  
   // Fetch current user and room data
   useEffect(() => {
     const fetchData = async () => {
