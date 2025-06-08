@@ -79,7 +79,6 @@ const GameRoom = () => {
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
     if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
-      console.log('Max players changed from', previousMaxPlayers, 'to', currentMaxPlayers);
       // 最大玩家数发生变化，清除所有角色选择
       const resetRoleSelections = async () => {
         const success = await clearAllRoleSelections();
@@ -89,12 +88,6 @@ const GameRoom = () => {
           toast({
             title: '角色选择已重置',
             description: '由于最大玩家数变化，所有角色选择已重置',
-          });
-        } else {
-          toast({
-            title: '重置失败',
-            description: '无法重置角色选择，请手动重新选择',
-            variant: "destructive",
           });
         }
       };
