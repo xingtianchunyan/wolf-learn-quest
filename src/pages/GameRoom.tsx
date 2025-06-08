@@ -434,7 +434,8 @@ const GameRoom = () => {
 
   const handleLeaveRoom = async () => {
     try {
-      const success = await leaveCurrentRoom();
+      // 在游戏房间页面退出，这是准备阶段，需要清除数据
+      const success = await leaveCurrentRoom(true);
       
       if (success) {
         toast({

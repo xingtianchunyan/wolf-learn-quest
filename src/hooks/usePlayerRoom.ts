@@ -54,33 +54,73 @@ export const usePlayerRoom = () => {
     }
   };
 
-  const leaveCurrentRoom = async (): Promise<boolean> => {
+  const leaveCurrentRoom = async (isPreparationPhase: boolean = true): Promise<boolean> => {
     if (!currentUser || !playerRoom.roomDbId) return false;
 
     try {
-      // Remove player from room
-      const { error: leaveError } = await supabase
-        .from('room_players')
-        .delete()
-        .eq('room_id', playerRoom.roomDbId)
-        .eq('user_id', currentUser.id);
+      console.log('Leaving room in', isPreparationPhase ? 'preparation' : 'game', 'phase');
 
-      if (leaveError) {
-        console.error('Error leaving room:', leaveError);
-        return false;
-      }
-
-      // Check if room is now empty and delete it
-      const { data: remainingPlayers } = await supabase
-        .from('room_players')
-        .select('id')
-        .eq('room_id', playerRoom.roomDbId);
-
-      if (!remainingPlayers || remainingPlayers.length === 0) {
-        await supabase
-          .from('rooms')
+      if (isPreparationPhase) {
+        // 准备阶段退出：清除用户的角色选择数据
+        const { error: roleSelectionError } = await supabase
+          .from('role_selections')
           .delete()
-          .eq('id', playerRoom.roomDbId);
+          .eq('room_id', playerRoom.roomDbId)
+          .eq('player_id', currentUser.id);
+
+        if (roleSelectionError) {
+          console.error('Error clearing role selection:', roleSelectionError);
+        }
+
+        // 清除用户的房间玩家数据
+        const { error: leaveError } = await supabase
+          .from('room_players')
+          .delete()
+          .eq('room_id', playerRoom.roomDbId)
+          .eq('user_id', currentUser.id);
+
+        if (leaveError) {
+          console.error('Error leaving room:', leaveError);
+          return false;
+        }
+
+        // 检查房间是否为空，如果为空则删除房间
+        const { data: remainingPlayers } = await supabase
+          .from('room_players')
+          .select('id')
+          .eq('room_id', playerRoom.roomDbId);
+
+        if (!remainingPlayers || remainingPlayers.length === 0) {
+          console.log('Room is empty, deleting room and related data');
+          
+          // 删除房间相关的所有数据
+          await supabase
+            .from('role_selections')
+            .delete()
+            .eq('room_id', playerRoom.roomDbId);
+
+          await supabase
+            .from('game_states')
+            .delete()
+            .eq('room_id', playerRoom.roomDbId);
+
+          await supabase
+            .from('rooms')
+            .delete()
+            .eq('id', playerRoom.roomDbId);
+        }
+      } else {
+        // 游戏阶段退出：保留所有数据，只更新玩家状态
+        const { error: updateError } = await supabase
+          .from('room_players')
+          .update({ status: 'disconnected' })
+          .eq('room_id', playerRoom.roomDbId)
+          .eq('user_id', currentUser.id);
+
+        if (updateError) {
+          console.error('Error updating player status:', updateError);
+          return false;
+        }
       }
 
       setPlayerRoom({ roomId: null, roomDbId: null, isLoading: false });
