@@ -61,15 +61,25 @@ export const usePlayerRoom = () => {
       console.log('Leaving room in', isPreparationPhase ? 'preparation' : 'game', 'phase');
 
       if (isPreparationPhase) {
-        // 准备阶段退出：清除用户的角色选择数据
-        const { error: roleSelectionError } = await supabase
-          .from('role_selections')
-          .delete()
+        // 准备阶段退出：首先获取当前用户的player_id
+        const { data: currentPlayerData } = await supabase
+          .from('room_players')
+          .select('id')
           .eq('room_id', playerRoom.roomDbId)
-          .eq('player_id', currentUser.id);
+          .eq('user_id', currentUser.id)
+          .single();
 
-        if (roleSelectionError) {
-          console.error('Error clearing role selection:', roleSelectionError);
+        // 清除用户的角色选择数据（使用正确的player_id）
+        if (currentPlayerData) {
+          const { error: roleSelectionError } = await supabase
+            .from('role_selections')
+            .delete()
+            .eq('room_id', playerRoom.roomDbId)
+            .eq('player_id', currentPlayerData.id);
+
+          if (roleSelectionError) {
+            console.error('Error clearing role selection:', roleSelectionError);
+          }
         }
 
         // 清除用户的房间玩家数据
