@@ -81,13 +81,30 @@ const GameRoom = () => {
     if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
       // 最大玩家数发生变化，清除所有角色选择
       const resetRoleSelections = async () => {
+        console.log('Max players changed from', previousMaxPlayers, 'to', currentMaxPlayers);
+        console.log('Clearing all role selections...');
+        
         const success = await clearAllRoleSelections();
         if (success) {
           setSelectedCharacter(null);
           setIsReady(false);
+          
+          // 同时重置所有玩家的准备状态
+          players.forEach(async (player) => {
+            if (player.isReady) {
+              await updatePlayerReady(player.id, false);
+            }
+          });
+          
           toast({
             title: '角色选择已重置',
-            description: '由于最大玩家数变化，所有角色选择已重置',
+            description: `由于最大玩家数变化为${currentMaxPlayers}人，所有角色选择和准备状态已重置`,
+          });
+        } else {
+          toast({
+            title: '重置失败',
+            description: '清除角色选择时发生错误，请刷新页面重试',
+            variant: "destructive",
           });
         }
       };
@@ -95,7 +112,7 @@ const GameRoom = () => {
       resetRoleSelections();
     }
     setPreviousMaxPlayers(currentMaxPlayers);
-  }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast]);
+  }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast, players, updatePlayerReady]);
 
   // Fetch current user and room data
   useEffect(() => {
