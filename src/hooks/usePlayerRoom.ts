@@ -55,7 +55,10 @@ export const usePlayerRoom = () => {
   };
 
   const leaveCurrentRoom = async (isPreparationPhase: boolean = true): Promise<boolean> => {
-    if (!currentUser || !playerRoom.roomDbId) return false;
+    if (!currentUser || !playerRoom.roomDbId) {
+      console.log('No current user or room to leave');
+      return false;
+    }
 
     try {
       console.log('Leaving room in', isPreparationPhase ? 'preparation' : 'game', 'phase');
@@ -69,17 +72,21 @@ export const usePlayerRoom = () => {
           .eq('user_id', currentUser.id)
           .single();
 
-        // 清除用户的角色选择数据（使用正确的player_id）
-        if (currentPlayerData) {
-          const { error: roleSelectionError } = await supabase
-            .from('role_selections')
-            .delete()
-            .eq('room_id', playerRoom.roomDbId)
-            .eq('player_id', currentPlayerData.id);
+        if (!currentPlayerData) {
+          console.log('Player not found in room');
+          return false;
+        }
 
-          if (roleSelectionError) {
-            console.error('Error clearing role selection:', roleSelectionError);
-          }
+        // 清除用户的角色选择数据（使用正确的player_id）
+        const { error: roleSelectionError } = await supabase
+          .from('role_selections')
+          .delete()
+          .eq('room_id', playerRoom.roomDbId)
+          .eq('player_id', currentPlayerData.id);
+
+        if (roleSelectionError) {
+          console.error('Error clearing role selection:', roleSelectionError);
+          // 继续执行，不要因为角色选择清除失败而停止整个流程
         }
 
         // 清除用户的房间玩家数据
