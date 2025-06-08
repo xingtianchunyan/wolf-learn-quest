@@ -53,7 +53,17 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
         },
         (payload) => {
           console.log('Role selection update received:', payload);
-          fetchRoleSelections();
+          
+          // 实时更新本地状态
+          if (payload.eventType === 'INSERT') {
+            setRoleSelections(prev => [...prev, payload.new as RoleSelection]);
+          } else if (payload.eventType === 'DELETE') {
+            setRoleSelections(prev => prev.filter(item => item.id !== payload.old.id));
+          } else if (payload.eventType === 'UPDATE') {
+            setRoleSelections(prev => prev.map(item => 
+              item.id === payload.new.id ? payload.new as RoleSelection : item
+            ));
+          }
         }
       )
       .subscribe();
@@ -68,6 +78,8 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
     if (!roomId) return false;
 
     try {
+      console.log('Clearing all role selections for room:', roomId);
+      
       const { error } = await supabase
         .from('role_selections')
         .delete()
@@ -78,6 +90,9 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
         return false;
       }
 
+      // 立即清空本地状态
+      setRoleSelections([]);
+      console.log('Successfully cleared all role selections');
       return true;
     } catch (error) {
       console.error('Error clearing role selections:', error);

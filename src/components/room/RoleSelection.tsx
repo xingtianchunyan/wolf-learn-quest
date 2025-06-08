@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
@@ -31,6 +31,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const roleConfigs = getRoleConfiguration(maxPlayers);
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+  const dragStartRef = useRef<{ x: number; time: number } | null>(null);
 
   const {
     selectRole,
@@ -57,16 +58,35 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     skill_demon_eye: { name: 'skill_demon_eye', effect: 'effect_demon_eye', uses: 'usage_unlimited', type: 'type_view' }
   };
 
-  const handleCardDoubleClick = (roleId: string) => {
-    setFlippedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(roleId)) {
-        newSet.delete(roleId);
-      } else {
-        newSet.add(roleId);
-      }
-      return newSet;
-    });
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent, roleId: string) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    dragStartRef.current = {
+      x: clientX,
+      time: Date.now()
+    };
+  };
+
+  const handleDragEnd = (e: React.MouseEvent | React.TouchEvent, roleId: string) => {
+    if (!dragStartRef.current) return;
+
+    const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : e.clientX;
+    const deltaX = clientX - dragStartRef.current.x;
+    const deltaTime = Date.now() - dragStartRef.current.time;
+
+    // 检查是否是有效的拖动操作
+    if (Math.abs(deltaX) > 50 && deltaTime < 500) {
+      setFlippedCards(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(roleId)) {
+          newSet.delete(roleId);
+        } else {
+          newSet.add(roleId);
+        }
+        return newSet;
+      });
+    }
+
+    dragStartRef.current = null;
   };
 
   const handleRoleClick = async (roleId: string) => {
@@ -159,6 +179,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
             </p>
           )}
+          <p className="text-xs text-gray-500">
+            左右拖动卡片查看技能详情
+          </p>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
@@ -174,7 +197,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               return (
                 <div 
                   key={role.instanceId}
-                  className={`relative transition-all duration-300 transform hover:scale-105 ${
+                  className={`relative transition-all duration-300 transform hover:scale-105 select-none ${
                     canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                   } ${
                     isCurrentSelection
@@ -184,7 +207,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       : ''
                   }`}
                   onClick={() => handleRoleClick(role.instanceId)}
-                  onDoubleClick={() => handleCardDoubleClick(role.instanceId)}
+                  onMouseDown={(e) => handleDragStart(e, role.instanceId)}
+                  onMouseUp={(e) => handleDragEnd(e, role.instanceId)}
+                  onTouchStart={(e) => handleDragStart(e, role.instanceId)}
+                  onTouchEnd={(e) => handleDragEnd(e, role.instanceId)}
                   style={{ perspective: '1000px' }}
                 >
                   {isSelected && !isCurrentSelection && (
@@ -227,7 +253,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                             {t(role.name)}
                           </h3>
                           <div className="text-xs text-gray-400">
-                            双击查看技能详情
+                            拖动查看技能详情
                           </div>
                         </div>
                       </div>
@@ -298,7 +324,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
                         <div className="text-center mt-3">
                           <div className="text-xs text-gray-400">
-                            双击返回正面
+                            拖动返回正面
                           </div>
                         </div>
                       </div>
