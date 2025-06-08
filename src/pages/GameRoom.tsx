@@ -44,44 +44,205 @@ const GameRoom = () => {
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
+  const [isInitializationComplete, setIsInitializationComplete] = useState(false);
   
   const { leaveCurrentRoom } = usePlayerRoom();
-  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
-  const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
   const { isJoining, isJoined, ensurePlayerInRoom } = useRoomJoin(id);
+  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
+  
+  // 只有在玩家成功加入房间后才初始化这些 hooks
+  const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(
+    isJoined ? roomData?.id : null
+  );
   
   // 添加在线状态追踪
-  const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
+  const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(
+    isJoined ? roomData?.id : null, 
+    currentUser
+  );
   const onlinePlayersList = getOnlinePlayers();
   const onlinePlayers = onlinePlayersList.map(p => p.user_id);
   
   // Get current max players from realtime data or fallback to local state
   const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
   
-  // 使用角色选择 hook
+  // 使用角色选择 hook - 只有在玩家成功加入后才初始化
   const {
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections,
     getCurrentPlayerSelection
-  } = useRoleSelection(roomData?.id || '', currentPlayerId, players.length, currentMaxPlayers);
+  } = useRoleSelection(
+    isJoined ? (roomData?.id || '') : '', 
+    currentPlayerId, 
+    players.length, 
+    currentMaxPlayers
+  );
 
   // 添加游戏状态管理
-  const { gameState } = useGameState(roomData?.id || '');
+  const { gameState } = useGameState(isJoined ? (roomData?.id || '') : '');
   
-  console.log('Online players list:', onlinePlayersList);
-  console.log('Online player user IDs:', onlinePlayers);
-  console.log('Game state:', gameState);
+  console.log('GameRoom initialization status:');
+  console.log('- Room ID from params:', id);
+  console.log('- Current user:', currentUser?.id);
+  console.log('- Room data:', roomData);
+  console.log('- Is joining:', isJoining);
+  console.log('- Is joined:', isJoined);
+  console.log('- Current player ID:', currentPlayerId);
+  console.log('- Initialization complete:', isInitializationComplete);
+  console.log('- Online players:', onlinePlayers);
+  console.log('- Game state:', gameState);
   
   const allReady = players.every(player => player.isReady);
 
   // Add room cleanup functionality
   useRoomCleanup();
 
+  // 获取当前用户信息
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('player_name')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          const userWithProfile = {
+            ...session.user,
+            player_name: userData?.player_name || session.user.email?.split('@')[0] || 'Unknown'
+          };
+          
+          setCurrentUser(userWithProfile);
+          console.log('Current user set:', userWithProfile);
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
+  // 获取房间数据
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      if (!id) {
+        console.log('No room ID provided');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('Fetching room data for room ID:', id);
+        
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select(`
+            id,
+            room_id,
+            max_players,
+            host_id,
+            users!rooms_host_id_fkey(player_name)
+          `)
+          .eq('id', id)
+          .maybeSingle();
+
+        if (roomError) {
+          console.error('Error fetching room:', roomError);
+          toast({
+            title: t('error'),
+            description: t('error_loading_room'),
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (roomData) {
+          console.log('Room data found:', roomData);
+          const processedRoomData = {
+            id: roomData.id,
+            roomId: roomData.room_id,
+            hostPlayerId: roomData.users?.player_name || 'Unknown',
+            topic: '元素周期表',
+            maxPlayers: roomData.max_players,
+          };
+          
+          setRoomData(processedRoomData);
+          setPreviousMaxPlayers(roomData.max_players);
+          console.log('Room data set:', processedRoomData);
+        } else {
+          console.log('No room found with ID:', id);
+        }
+      } catch (error) {
+        console.error('Error fetching room data:', error);
+        toast({
+          title: t('error'),
+          description: t('error_loading_room'),
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRoomData();
+  }, [id, toast]);
+
+  // 等待玩家成功加入房间后获取玩家ID
+  useEffect(() => {
+    const fetchPlayerIdAfterJoin = async () => {
+      if (!isJoined || !currentUser || !roomData) {
+        console.log('Conditions not met for fetching player ID:', {
+          isJoined,
+          currentUser: !!currentUser,
+          roomData: !!roomData
+        });
+        return;
+      }
+
+      // 添加延迟确保数据已经写入
+      setTimeout(async () => {
+        try {
+          console.log('Fetching player ID after successful join...');
+          
+          const { data: playerData, error: playerError } = await supabase
+            .from('room_players')
+            .select('id')
+            .eq('room_id', roomData.id)
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+          
+          if (playerError) {
+            console.error('Error fetching player ID:', playerError);
+            return;
+          }
+
+          if (playerData) {
+            console.log('Player ID found:', playerData.id);
+            setCurrentPlayerId(playerData.id);
+            setIsInitializationComplete(true);
+          } else {
+            console.log('No player data found - player may not have joined successfully');
+            // 尝试重新加入
+            ensurePlayerInRoom();
+          }
+        } catch (error) {
+          console.error('Error in fetchPlayerIdAfterJoin:', error);
+        }
+      }, 1000);
+    };
+
+    fetchPlayerIdAfterJoin();
+  }, [isJoined, currentUser, roomData, ensurePlayerInRoom]);
+
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
+    if (!isInitializationComplete) return;
+    
     if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
-      // 最大玩家数发生变化，清除所有角色选择
       const resetRoleSelections = async () => {
         console.log('Max players changed from', previousMaxPlayers, 'to', currentMaxPlayers);
         console.log('Clearing all role selections...');
@@ -91,7 +252,6 @@ const GameRoom = () => {
           setSelectedCharacter(null);
           setIsReady(false);
           
-          // 同时重置所有玩家的准备状态
           players.forEach(async (player) => {
             if (player.isReady) {
               await updatePlayerReady(player.id, false);
@@ -114,12 +274,11 @@ const GameRoom = () => {
       resetRoleSelections();
     }
     setPreviousMaxPlayers(currentMaxPlayers);
-  }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast, players, updatePlayerReady]);
+  }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast, players, updatePlayerReady, isInitializationComplete]);
 
   // 处理页面卸载时的清理逻辑
   useEffect(() => {
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
-      // 在页面卸载前清理角色选择
       if (currentUser && roomData) {
         try {
           await leaveCurrentRoom(true);
@@ -130,7 +289,6 @@ const GameRoom = () => {
     };
 
     const handlePopState = async () => {
-      // 处理浏览器后退按钮
       if (currentUser && roomData) {
         try {
           await leaveCurrentRoom(true);
@@ -146,7 +304,6 @@ const GameRoom = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
-      // 组件卸载时也执行清理
       if (currentUser && roomData) {
         leaveCurrentRoom(true).catch(error => {
           console.error('Error cleaning up on component unmount:', error);
@@ -305,7 +462,6 @@ const GameRoom = () => {
         return;
       }
 
-      // Update local state for immediate feedback
       setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
       
       toast({
@@ -360,7 +516,6 @@ const GameRoom = () => {
   const handleReadyToggle = async () => {
     if (!currentUser || !roomData) return;
 
-    // 检查是否满足准备条件
     if (!canSelectRoles()) {
       toast({
         title: '无法准备',
@@ -390,7 +545,6 @@ const GameRoom = () => {
 
     const newReadyState = !isReady;
     
-    // Find current user's player record
     const currentPlayer = players.find(p => p.name === currentUser.player_name || p.name === 'You');
     
     if (currentPlayer) {
@@ -422,7 +576,6 @@ const GameRoom = () => {
   };
 
   const handleCharacterSelect = (characterId: string | null) => {
-    // 如果已经准备，不能更改角色选择
     if (isReady && characterId !== selectedCharacter) {
       toast({
         title: t('cannot_change_character'),
@@ -468,7 +621,6 @@ const GameRoom = () => {
       return;
     }
     
-    // 检查游戏状态是否已初始化
     if (!gameState) {
       toast({
         title: '无法开始游戏',
@@ -478,13 +630,11 @@ const GameRoom = () => {
       return;
     }
     
-    // 导航到游戏页面，传递房间ID
     navigate(`/game/${roomData.id}`);
   };
 
   const handleLeaveRoom = async () => {
     try {
-      // 在游戏房间页面退出，这是准备阶段，需要清除数据
       const success = await leaveCurrentRoom(true);
       
       if (success) {
@@ -513,14 +663,19 @@ const GameRoom = () => {
   // 检查当前用户是否为房主
   const isCurrentUserHost = players.find(p => p.name === currentUser?.player_name || p.name === 'You')?.isHost || false;
 
-  if (isLoading || isJoining) {
+  // 修改加载状态的判断逻辑
+  if (isLoading || isJoining || !isInitializationComplete) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">{isJoining ? '正在加入房间...' : t('loading_room')}</p>
+              <p className="text-gray-400">
+                {isJoining ? '正在加入房间...' : 
+                 !isInitializationComplete ? '正在初始化房间数据...' : 
+                 t('loading_room')}
+              </p>
             </div>
           </div>
         </div>
