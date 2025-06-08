@@ -12,6 +12,7 @@ import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
+import { useRoomJoin } from '@/hooks/useRoomJoin';
 import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
@@ -47,6 +48,7 @@ const GameRoom = () => {
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
+  const { isJoining, isJoined, ensurePlayerInRoom } = useRoomJoin(id);
   
   // 添加在线状态追踪
   const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
@@ -213,14 +215,23 @@ const GameRoom = () => {
             });
             setPreviousMaxPlayers(roomData.max_players);
 
-            // 查找当前用户的 player ID
+            // 确保玩家已正确加入房间
             if (session?.user) {
-              const currentPlayerRecord = roomData.room_players?.find(
-                (p: any) => p.user_id === session.user.id
-              );
-              if (currentPlayerRecord) {
-                setCurrentPlayerId(currentPlayerRecord.id);
-              }
+              // 让 useRoomJoin hook 处理加入逻辑
+              // 等待加入完成后再查找 player ID
+              setTimeout(async () => {
+                const { data: playerData } = await supabase
+                  .from('room_players')
+                  .select('id')
+                  .eq('room_id', roomData.id)
+                  .eq('user_id', session.user.id)
+                  .maybeSingle();
+                
+                if (playerData) {
+                  setCurrentPlayerId(playerData.id);
+                  console.log('Current player ID set:', playerData.id);
+                }
+              }, 1000);
             }
           } else {
             console.log('No room found with ID:', id);
@@ -502,14 +513,14 @@ const GameRoom = () => {
   // 检查当前用户是否为房主
   const isCurrentUserHost = players.find(p => p.name === currentUser?.player_name || p.name === 'You')?.isHost || false;
 
-  if (isLoading) {
+  if (isLoading || isJoining) {
     return (
       <PageLayout>
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">{t('loading_room')}</p>
+              <p className="text-gray-400">{isJoining ? '正在加入房间...' : t('loading_room')}</p>
             </div>
           </div>
         </div>
@@ -527,9 +538,16 @@ const GameRoom = () => {
               <p className="text-sm text-gray-500 mb-4">
                 {t('room_id_label')}: {id || t('not_specified')}
               </p>
-              <Button onClick={() => navigate('/lobby')}>
-                {t('return_to_lobby')}
-              </Button>
+              <div className="space-y-2">
+                <Button onClick={() => navigate('/lobby')}>
+                  {t('return_to_lobby')}
+                </Button>
+                {id && (
+                  <Button onClick={ensurePlayerInRoom} variant="outline">
+                    重新尝试加入房间
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
