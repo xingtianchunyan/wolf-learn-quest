@@ -31,6 +31,7 @@ interface PlayersListProps {
   onlinePlayers: string[];
   allPlayersSelectedRoles: boolean;
   canSelectRoles: boolean;
+  currentPlayerHasSelectedRole?: boolean; // 新增：当前玩家是否已选择角色
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -47,7 +48,8 @@ const PlayersList: React.FC<PlayersListProps> = ({
   onMaxPlayersChange,
   onlinePlayers,
   allPlayersSelectedRoles,
-  canSelectRoles
+  canSelectRoles,
+  currentPlayerHasSelectedRole = false
 }) => {
   const { t } = useLanguage();
 
@@ -61,8 +63,8 @@ const PlayersList: React.FC<PlayersListProps> = ({
     if (!allPlayersSelectedRoles) {
       return false;
     }
-    // 如果要进入准备状态，必须先选择角色
-    if (!isReady && !selectedCharacter) {
+    // 如果要进入准备状态，必须先选择角色（使用数据库状态而非本地状态）
+    if (!isReady && !currentPlayerHasSelectedRole) {
       return false;
     }
     return true;
@@ -75,7 +77,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
     if (!allPlayersSelectedRoles) {
       return '等待所有玩家选择角色';
     }
-    if (!isReady && !selectedCharacter) {
+    if (!isReady && !currentPlayerHasSelectedRole) {
       return '请先选择角色';
     }
     return isReady ? t('cancel_ready') : t('ready');

@@ -62,6 +62,9 @@ const GameRoom = () => {
     getCurrentPlayerSelection
   } = useRoleSelection(roomData?.id || '', currentPlayerId, players.length, currentMaxPlayers);
   
+  // 获取当前玩家是否已选择角色
+  const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
+  
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
   
@@ -306,7 +309,8 @@ const GameRoom = () => {
       return;
     }
 
-    if (!isReady && !selectedCharacter) {
+    // 使用数据库状态检查角色选择
+    if (!isReady && !currentPlayerHasSelectedRole) {
       toast({
         title: t('select_character_first'),
         description: '请先选择角色才能进入准备状态',
@@ -516,6 +520,7 @@ const GameRoom = () => {
                   onlinePlayers={onlinePlayers}
                   allPlayersSelectedRoles={allPlayersSelectedRoles()}
                   canSelectRoles={canSelectRoles()}
+                  currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
                 />
               </div>
             </div>
