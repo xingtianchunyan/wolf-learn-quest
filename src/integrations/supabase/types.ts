@@ -19,6 +19,7 @@ export type Database = {
           id: string
           message: string
           recipient_id: string | null
+          room_id: string | null
           sender_id: string | null
         }
         Insert: {
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           message: string
           recipient_id?: string | null
+          room_id?: string | null
           sender_id?: string | null
         }
         Update: {
@@ -41,6 +43,7 @@ export type Database = {
           id?: string
           message?: string
           recipient_id?: string | null
+          room_id?: string | null
           sender_id?: string | null
         }
         Relationships: [
@@ -56,6 +59,13 @@ export type Database = {
             columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
           {

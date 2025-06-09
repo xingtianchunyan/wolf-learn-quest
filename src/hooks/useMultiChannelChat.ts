@@ -52,9 +52,10 @@ export const useMultiChannelChat = ({
             created_at,
             chat_type,
             game_round,
-            game_phase
+            game_phase,
+            room_id
           `)
-          .eq('recipient_id', roomId)
+          .eq('room_id', roomId)
           .in('chat_type', ['public', 'team', 'judge_private', 'system'])
           .order('created_at', { ascending: true });
 
@@ -74,7 +75,7 @@ export const useMultiChannelChat = ({
             const { data: userData } = await supabase
               .from('users')
               .select('player_name')
-              .eq('user_id', msg.sender_id)
+              .eq('id', msg.sender_id)
               .maybeSingle();
 
             return {
@@ -107,7 +108,7 @@ export const useMultiChannelChat = ({
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
-          filter: `recipient_id=eq.${roomId}`
+          filter: `room_id=eq.${roomId}`
         },
         async (payload) => {
           console.log('New chat message:', payload);
@@ -116,7 +117,7 @@ export const useMultiChannelChat = ({
           const { data: userData } = await supabase
             .from('users')
             .select('player_name')
-            .eq('user_id', payload.new.sender_id)
+            .eq('id', payload.new.sender_id)
             .maybeSingle();
 
           const newMessage = {
@@ -139,7 +140,7 @@ export const useMultiChannelChat = ({
     if (!roomId || !currentUser || !messageText.trim()) return false;
 
     try {
-      // 获取当前用户在auth.users表中的真实ID
+      // 获取当前认证用户
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -152,14 +153,31 @@ export const useMultiChannelChat = ({
         return false;
       }
 
-      console.log('Sending message with user ID:', user.id);
+      // 获取用户在users表中的记录
+      const { data: userRecord } = await supabase
+        .from('users')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!userRecord) {
+        console.error('User record not found in users table');
+        toast({
+          title: '发送消息失败',
+          description: '用户记录未找到',
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log('Sending message with user record ID:', userRecord.id);
       
       const { error } = await supabase
         .from('chat_messages')
         .insert({
           chat_type: chatType,
-          recipient_id: roomId,
-          sender_id: user.id, // 使用auth.users表中的真实ID
+          room_id: roomId,
+          sender_id: userRecord.id, // 使用users表中的ID
           message: messageText.trim(),
           game_round: gameRound,
           game_phase: gamePhase
