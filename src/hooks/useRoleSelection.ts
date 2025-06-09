@@ -68,8 +68,6 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
     if (!roomId) return false;
 
     try {
-      console.log('Clearing all role selections for room:', roomId);
-      
       const { error } = await supabase
         .from('role_selections')
         .delete()
@@ -80,11 +78,6 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
         return false;
       }
 
-      console.log('Successfully cleared all role selections from database');
-      
-      // 立即更新本地状态
-      setRoleSelections([]);
-      
       return true;
     } catch (error) {
       console.error('Error clearing role selections:', error);

@@ -7,14 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MessageSquareText, Plus, Trash2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { MessageSquareText, Moon, Plus, Sun, Trash2, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
-import GameStateDisplay from '@/components/game/GameStateDisplay';
-import GamePhaseIndicator from '@/components/game/GamePhaseIndicator';
-import JudgeControls from '@/components/game/JudgeControls';
-import { useGameState } from '@/hooks/useGameState';
 
 // Mock players data
 const players = [
@@ -87,6 +84,7 @@ const initialMessages = [
 
 const JudgePage = () => {
   const { toast } = useToast();
+  const [gamePhase, setGamePhase] = useState<'day' | 'night'>('night');
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [newQuestion, setNewQuestion] = useState({
@@ -96,10 +94,6 @@ const JudgePage = () => {
     topic: ''
   });
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-  
-  // 模拟房间ID - 在实际应用中这应该从路由参数获取
-  const roomId = 'demo-room-id';
-  const { gameState } = useGameState(roomId);
   
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +139,17 @@ const JudgePage = () => {
     setNewQuestion({ ...newQuestion, options: updatedOptions });
   };
   
+  const togglePhase = () => {
+    setGamePhase(gamePhase === 'day' ? 'night' : 'day');
+    
+    toast({
+      title: gamePhase === 'day' ? "Night has fallen" : "A new day begins",
+      description: gamePhase === 'day' 
+        ? "Werewolves are on the hunt. Special roles can use their abilities." 
+        : "Players will discuss who might be the werewolves.",
+    });
+  };
+  
   const handleJudgeAction = () => {
     if (!selectedPlayer) {
       toast({
@@ -158,39 +163,18 @@ const JudgePage = () => {
     const player = players.find(p => p.id === selectedPlayer);
     
     toast({
-      title: `Player ${player?.name} action completed`,
-      description: `Action performed on ${player?.name}`,
+      title: `Player ${player?.name} ${gamePhase === 'day' ? 'eliminated' : 'revealed'}`,
+      description: gamePhase === 'day' 
+        ? `${player?.name} has been eliminated from the game` 
+        : `${player?.name}'s role is ${player?.role}`,
     });
   };
 
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4">
-        {/* 游戏状态指示器 - 显示在顶部 */}
-        {gameState && (
-          <div className="mb-4">
-            <GamePhaseIndicator
-              phase={gameState.current_phase}
-              round={gameState.current_round}
-              timeRemaining={undefined}
-              className="justify-center"
-            />
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - Game State & Judge Controls */}
-          <div className="lg:col-span-4">
-            <div className="space-y-6">
-              {/* 游戏状态显示 */}
-              <GameStateDisplay roomId={roomId} />
-              
-              {/* 法官控制台 */}
-              <JudgeControls roomId={roomId} />
-            </div>
-          </div>
-          
-          {/* Middle Column - Question Management */}
+          {/* Left Column - Question Bank */}
           <div className="lg:col-span-4">
             <div className="space-y-6">
               <Card className="bg-werewolf-card border-werewolf-purple/30">
@@ -327,20 +311,86 @@ const JudgePage = () => {
             </div>
           </div>
           
-          {/* Right Column - Player Management & Chat */}
+          {/* Middle Column - Game Management */}
           <div className="lg:col-span-4">
             <div className="space-y-6">
-              {/* Player Management */}
+              <Card className="bg-werewolf-card border-werewolf-purple/30">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-werewolf-purple flex items-center gap-2">
+                      {gamePhase === 'day' ? (
+                        <>
+                          <Sun className="h-5 w-5 text-yellow-500" />
+                          Day Phase
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="h-5 w-5 text-blue-400" />
+                          Night Phase
+                        </>
+                      )}
+                    </CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={togglePhase}
+                      className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                    >
+                      Change Phase
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-werewolf-dark/40 p-4 rounded-md mb-4">
+                    <p className="text-center font-medium mb-2">Round 2</p>
+                    <p className="text-sm text-center text-gray-400">
+                      {gamePhase === 'day' 
+                        ? "Players are discussing and voting to eliminate a suspected werewolf."
+                        : "Werewolves are choosing a victim. Special roles are using abilities."}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium mb-2">Time Remaining</p>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{gamePhase === 'day' ? 'Discussion' : 'Action'} Phase</span>
+                        <span>2:45</span>
+                      </div>
+                      <Progress value={70} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium mb-2">Game Status</p>
+                      <div className="grid grid-cols-2 gap-2 text-center">
+                        <div className="bg-werewolf-dark/40 p-2 rounded-md">
+                          <p className="text-xs text-gray-400">Villagers</p>
+                          <p className="font-bold">3</p>
+                        </div>
+                        <div className="bg-werewolf-dark/40 p-2 rounded-md">
+                          <p className="text-xs text-gray-400">Werewolves</p>
+                          <p className="font-bold text-red-400">2</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
               <Card className="bg-werewolf-card border-werewolf-purple/30">
                 <CardHeader>
-                  <CardTitle className="text-werewolf-purple">玩家管理</CardTitle>
+                  <CardTitle className="text-werewolf-purple">Judge Actions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="bg-werewolf-dark/40 p-4 rounded-md">
-                      <p className="font-medium mb-2">选择玩家进行操作</p>
+                      <p className="font-medium mb-2">
+                        {gamePhase === 'day'
+                          ? "Override player votes or force elimination"
+                          : "Reveal player roles or manage night actions"}
+                      </p>
                       <p className="text-sm text-gray-400">
-                        选择下方玩家进行特殊操作
+                        Select a player from the list below
                       </p>
                     </div>
                     
@@ -379,7 +429,7 @@ const JudgePage = () => {
                     
                     {selectedPlayer && (
                       <p className="text-center">
-                        已选择: <span className="font-bold">{players.find(p => p.id === selectedPlayer)?.name}</span>
+                        Selected: <span className="font-bold">{players.find(p => p.id === selectedPlayer)?.name}</span>
                       </p>
                     )}
                     
@@ -388,58 +438,60 @@ const JudgePage = () => {
                       onClick={handleJudgeAction}
                       disabled={!selectedPlayer}
                     >
-                      执行操作
+                      {gamePhase === 'day' ? 'Eliminate Player' : 'Reveal Role to All'}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Chat */}
-              <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader>
-                  <CardTitle className="text-werewolf-purple flex items-center">
-                    <MessageSquareText className="mr-2 h-5 w-5" />
-                    法官聊天
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col h-full">
-                    <ScrollArea className="flex-1 h-[300px] pr-4">
-                      <div className="space-y-4">
-                        {messages.map((message) => (
-                          <div key={message.id} className="chat-message">
-                            <p className="text-sm">
-                              <span className={`font-bold ${
-                                message.sender === 'System' ? 'text-yellow-400' :
-                                message.sender === 'Judge' ? 'text-werewolf-purple' :
-                                'text-blue-400'
-                              }`}>
-                                {message.sender}:
-                              </span>
-                              <span className="ml-2">{message.content}</span>
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                    
-                    <form onSubmit={handleSendMessage} className="mt-4">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="输入消息..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                        />
-                        <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
-                          发送
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
+          </div>
+          
+          {/* Right Column - Chat */}
+          <div className="lg:col-span-4">
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+              <CardHeader>
+                <CardTitle className="text-werewolf-purple flex items-center">
+                  <MessageSquareText className="mr-2 h-5 w-5" />
+                  Judge Chat
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col h-full">
+                  <ScrollArea className="flex-1 h-[500px] pr-4">
+                    <div className="space-y-4">
+                      {messages.map((message) => (
+                        <div key={message.id} className="chat-message">
+                          <p className="text-sm">
+                            <span className={`font-bold ${
+                              message.sender === 'System' ? 'text-yellow-400' :
+                              message.sender === 'Judge' ? 'text-werewolf-purple' :
+                              'text-blue-400'
+                            }`}>
+                              {message.sender}:
+                            </span>
+                            <span className="ml-2">{message.content}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                  
+                  <form onSubmit={handleSendMessage} className="mt-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type your message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                      />
+                      <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                        Send
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

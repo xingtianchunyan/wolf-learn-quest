@@ -57,7 +57,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     skill_demon_eye: { name: 'skill_demon_eye', effect: 'effect_demon_eye', uses: 'usage_unlimited', type: 'type_view' }
   };
 
-  const handleCardFlip = (roleId: string) => {
+  const handleCardDoubleClick = (roleId: string) => {
     setFlippedCards(prev => {
       const newSet = new Set(prev);
       if (newSet.has(roleId)) {
@@ -175,12 +175,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                 <div 
                   key={role.instanceId}
                   className={`relative transition-all duration-300 transform hover:scale-105 ${
+                    canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  } ${
                     isCurrentSelection
                       ? 'ring-2 ring-werewolf-purple' 
                       : isSelected
                       ? 'ring-2 ring-red-500'
                       : ''
                   }`}
+                  onClick={() => handleRoleClick(role.instanceId)}
+                  onDoubleClick={() => handleCardDoubleClick(role.instanceId)}
                   style={{ perspective: '1000px' }}
                 >
                   {isSelected && !isCurrentSelection && (
@@ -211,12 +215,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       style={{ backfaceVisibility: 'hidden' }}
                     >
                       <div className="h-full flex flex-col">
-                        <div 
-                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center ${
-                            canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-                          }`}
-                          onClick={() => handleRoleClick(role.instanceId)}
-                        >
+                        <div className="flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
                           <img 
                             src={role.image} 
                             alt={t(role.name)} 
@@ -224,14 +223,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           />
                         </div>
                         <div className="text-center">
-                          <h3 
-                            className="font-bold text-lg text-white mb-2 cursor-pointer hover:text-werewolf-purple"
-                            onClick={() => handleCardFlip(role.instanceId)}
-                          >
+                          <h3 className="font-bold text-lg text-white mb-2">
                             {t(role.name)}
                           </h3>
                           <div className="text-xs text-gray-400">
-                            单击图片选中，单击名称翻面
+                            双击查看技能详情
                           </div>
                         </div>
                       </div>
@@ -254,10 +250,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       <div className="h-full flex flex-col">
                         {/* 阵营信息 */}
                         <div className="text-center mb-4">
-                          <h3 
-                            className="font-bold text-lg text-white mb-2 cursor-pointer hover:text-werewolf-purple"
-                            onClick={() => handleCardFlip(role.instanceId)}
-                          >
+                          <h3 className="font-bold text-lg text-white mb-2">
                             {t(role.name)}
                           </h3>
                           <span 
@@ -305,7 +298,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
                         <div className="text-center mt-3">
                           <div className="text-xs text-gray-400">
-                            单击名称返回正面
+                            双击返回正面
                           </div>
                         </div>
                       </div>

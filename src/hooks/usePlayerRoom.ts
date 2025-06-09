@@ -54,138 +54,36 @@ export const usePlayerRoom = () => {
     }
   };
 
-  const leaveCurrentRoom = async (isPreparationPhase: boolean = true): Promise<boolean> => {
-    if (!currentUser) {
-      console.log('No current user to leave room');
-      return false;
-    }
+  const leaveCurrentRoom = async (): Promise<boolean> => {
+    if (!currentUser || !playerRoom.roomDbId) return false;
 
     try {
-      console.log('Attempting to leave room...');
-      console.log('User ID:', currentUser.id);
-      console.log('Is preparation phase:', isPreparationPhase);
-
-      // 首先查找用户当前在哪个房间
-      const { data: currentPlayerData, error: playerError } = await supabase
+      // Remove player from room
+      const { error: leaveError } = await supabase
         .from('room_players')
-        .select(`
-          id,
-          room_id,
-          rooms!inner(
-            id,
-            room_id,
-            status
-          )
-        `)
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
+        .delete()
+        .eq('room_id', playerRoom.roomDbId)
+        .eq('user_id', currentUser.id);
 
-      console.log('Current player data found:', currentPlayerData);
-
-      if (playerError) {
-        console.error('Error fetching current player:', playerError);
+      if (leaveError) {
+        console.error('Error leaving room:', leaveError);
         return false;
       }
 
-      if (!currentPlayerData) {
-        console.log('Player not found in any room - already left or not joined');
-        // 更新本地状态
-        setPlayerRoom({ roomId: null, roomDbId: null, isLoading: false });
-        return true;
+      // Check if room is now empty and delete it
+      const { data: remainingPlayers } = await supabase
+        .from('room_players')
+        .select('id')
+        .eq('room_id', playerRoom.roomDbId);
+
+      if (!remainingPlayers || remainingPlayers.length === 0) {
+        await supabase
+          .from('rooms')
+          .delete()
+          .eq('id', playerRoom.roomDbId);
       }
 
-      const roomDbId = currentPlayerData.room_id;
-
-      if (isPreparationPhase) {
-        // 清除用户的角色选择数据
-        console.log('Clearing role selections for player ID:', currentPlayerData.id);
-        const { error: roleSelectionError } = await supabase
-          .from('role_selections')
-          .delete()
-          .eq('room_id', roomDbId)
-          .eq('player_id', currentPlayerData.id);
-
-        if (roleSelectionError) {
-          console.error('Error clearing role selection:', roleSelectionError);
-          // 继续执行，不要因为角色选择清除失败而停止整个流程
-        }
-
-        // 清除用户的房间玩家数据
-        console.log('Removing player from room');
-        const { error: leaveError } = await supabase
-          .from('room_players')
-          .delete()
-          .eq('id', currentPlayerData.id);
-
-        if (leaveError) {
-          console.error('Error leaving room:', leaveError);
-          return false;
-        }
-
-        console.log('Successfully removed player from room');
-
-        // 检查房间是否为空，如果为空则删除房间
-        const { data: remainingPlayers, error: remainingError } = await supabase
-          .from('room_players')
-          .select('id')
-          .eq('room_id', roomDbId);
-
-        if (remainingError) {
-          console.error('Error checking remaining players:', remainingError);
-        } else {
-          console.log('Remaining players count:', remainingPlayers?.length || 0);
-        }
-
-        if (!remainingPlayers || remainingPlayers.length === 0) {
-          console.log('Room is empty, deleting room and related data');
-          
-          // 删除房间相关的所有数据
-          const { error: roleDelError } = await supabase
-            .from('role_selections')
-            .delete()
-            .eq('room_id', roomDbId);
-
-          if (roleDelError) {
-            console.error('Error deleting remaining role selections:', roleDelError);
-          }
-
-          const { error: gameStateDelError } = await supabase
-            .from('game_states')
-            .delete()
-            .eq('room_id', roomDbId);
-
-          if (gameStateDelError) {
-            console.error('Error deleting game states:', gameStateDelError);
-          }
-
-          const { error: roomDelError } = await supabase
-            .from('rooms')
-            .delete()
-            .eq('id', roomDbId);
-
-          if (roomDelError) {
-            console.error('Error deleting room:', roomDelError);
-          } else {
-            console.log('Successfully deleted empty room');
-          }
-        }
-      } else {
-        // 游戏阶段退出：保留所有数据，只更新玩家状态
-        console.log('Updating player status to disconnected');
-        const { error: updateError } = await supabase
-          .from('room_players')
-          .update({ status: 'disconnected' })
-          .eq('id', currentPlayerData.id);
-
-        if (updateError) {
-          console.error('Error updating player status:', updateError);
-          return false;
-        }
-      }
-
-      // 更新本地状态
       setPlayerRoom({ roomId: null, roomDbId: null, isLoading: false });
-      console.log('Successfully left room');
       return true;
     } catch (error) {
       console.error('Error leaving room:', error);
