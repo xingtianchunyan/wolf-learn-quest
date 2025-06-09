@@ -14,6 +14,8 @@ export type Database = {
           chat_type: string
           created_at: string | null
           game_id: string | null
+          game_phase: string | null
+          game_round: number | null
           id: string
           message: string
           recipient_id: string | null
@@ -23,6 +25,8 @@ export type Database = {
           chat_type: string
           created_at?: string | null
           game_id?: string | null
+          game_phase?: string | null
+          game_round?: number | null
           id?: string
           message: string
           recipient_id?: string | null
@@ -32,6 +36,8 @@ export type Database = {
           chat_type?: string
           created_at?: string | null
           game_id?: string | null
+          game_phase?: string | null
+          game_round?: number | null
           id?: string
           message?: string
           recipient_id?: string | null

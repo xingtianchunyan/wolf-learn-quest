@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquareText } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +14,7 @@ import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { useRoomChat } from '@/hooks/useRoomChat';
+import MultiChannelChat from '@/components/chat/MultiChannelChat';
 
 const GameRoom = () => {
   const navigate = useNavigate();
@@ -25,7 +22,6 @@ const GameRoom = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isReady, setIsReady] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -41,9 +37,6 @@ const GameRoom = () => {
   const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
   const onlinePlayersList = getOnlinePlayers();
   const onlinePlayers = onlinePlayersList.map(p => p.user_id);
-  
-  // 使用实时聊天功能
-  const { messages, isLoading: chatLoading, sendMessage } = useRoomChat(roomData?.id, currentUser);
   
   // Get current max players from realtime data or fallback to local state
   const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
@@ -148,14 +141,6 @@ const GameRoom = () => {
               maxPlayers: roomData.max_players,
             });
             setPreviousMaxPlayers(roomData.max_players);
-
-            // 查找当前用户的 player ID - 这里不需要设置 currentPlayerId
-            if (session?.user) {
-              const currentPlayerRecord = roomData.room_players?.find(
-                (p: any) => p.user_id === session.user.id
-              );
-              // currentPlayerId 已经不再需要，因为我们使用 currentUserId
-            }
           } else {
             console.log('No room found with ID:', id);
           }
@@ -191,7 +176,6 @@ const GameRoom = () => {
               maxPlayers: room.max_players,
             });
             setPreviousMaxPlayers(room.max_players);
-            // 不再需要设置 currentPlayerId，使用 currentUserId
           }
         }
       } catch (error) {
@@ -359,16 +343,6 @@ const GameRoom = () => {
     setSelectedCharacter(characterId);
   };
   
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    
-    const success = await sendMessage(newMessage);
-    if (success) {
-      setNewMessage('');
-    }
-  };
-  
   const handleStartGame = () => {
     if (!allReady) {
       toast({
@@ -532,66 +506,12 @@ const GameRoom = () => {
           
           {/* Right Column - Chat */}
           <div className="lg:col-span-4">
-            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-              <CardHeader className="flex-shrink-0">
-                <CardTitle className="text-werewolf-purple flex items-center">
-                  <MessageSquareText className="mr-2 h-5 w-5" />
-                  {t('room_chat')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1 min-h-[400px]">
-                <ScrollArea className="flex-1 pr-4 mb-4">
-                  <div className="space-y-4">
-                    {chatLoading ? (
-                      <div className="text-center text-gray-400">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
-                        加载聊天记录...
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="text-center text-gray-400">
-                        暂无聊天消息
-                      </div>
-                    ) : (
-                      messages.map((message) => (
-                        <div key={message.id} className="chat-message">
-                          <p className="text-sm">
-                            <span className={`font-bold ${
-                              message.sender_id === currentUser?.id ? 'text-werewolf-purple' :
-                              'text-blue-400'
-                            }`}>
-                              {message.sender_id === currentUser?.id ? 'You' : message.sender_name}:
-                            </span>
-                            <span className="ml-2">{message.message}</span>
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(message.created_at).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
-                
-                <form onSubmit={handleSendMessage} className="flex-shrink-0 mt-auto">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={t('enter_message')}
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      className="bg-werewolf-dark/40 border-werewolf-purple/30"
-                      disabled={!currentUser}
-                    />
-                    <Button 
-                      type="submit" 
-                      className="bg-werewolf-purple hover:bg-werewolf-light"
-                      disabled={!currentUser || !newMessage.trim()}
-                    >
-                      {t('send')}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+            <MultiChannelChat
+              roomId={roomData?.id || null}
+              currentUser={currentUser}
+              isGameRoom={true}
+              title={t('room_chat')}
+            />
           </div>
         </div>
       </div>
