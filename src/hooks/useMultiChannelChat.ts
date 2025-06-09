@@ -139,12 +139,27 @@ export const useMultiChannelChat = ({
     if (!roomId || !currentUser || !messageText.trim()) return false;
 
     try {
+      // 获取当前用户在auth.users表中的真实ID
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('No authenticated user found');
+        toast({
+          title: '发送消息失败',
+          description: '用户未认证',
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log('Sending message with user ID:', user.id);
+      
       const { error } = await supabase
         .from('chat_messages')
         .insert({
           chat_type: chatType,
           recipient_id: roomId,
-          sender_id: currentUser.id,
+          sender_id: user.id, // 使用auth.users表中的真实ID
           message: messageText.trim(),
           game_round: gameRound,
           game_phase: gamePhase
