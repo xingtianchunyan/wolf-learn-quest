@@ -57,7 +57,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     skill_demon_eye: { name: 'skill_demon_eye', effect: 'effect_demon_eye', uses: 'usage_unlimited', type: 'type_view' }
   };
 
-  const handleCardDoubleClick = (roleId: string) => {
+  const handleCardFlip = (roleId: string) => {
     setFlippedCards(prev => {
       const newSet = new Set(prev);
       if (newSet.has(roleId)) {
@@ -69,7 +69,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     });
   };
 
-  const handleRoleClick = async (roleId: string) => {
+  const handleRoleSelect = async (roleId: string) => {
     // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
@@ -175,16 +175,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                 <div 
                   key={role.instanceId}
                   className={`relative transition-all duration-300 transform hover:scale-105 ${
-                    canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-                  } ${
                     isCurrentSelection
                       ? 'ring-2 ring-werewolf-purple' 
                       : isSelected
                       ? 'ring-2 ring-red-500'
                       : ''
                   }`}
-                  onClick={() => handleRoleClick(role.instanceId)}
-                  onDoubleClick={() => handleCardDoubleClick(role.instanceId)}
                   style={{ perspective: '1000px' }}
                 >
                   {isSelected && !isCurrentSelection && (
@@ -215,19 +211,29 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       style={{ backfaceVisibility: 'hidden' }}
                     >
                       <div className="h-full flex flex-col">
-                        <div className="flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center">
+                        {/* 图片区域 - 点击选择角色 */}
+                        <div 
+                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center ${
+                            canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                          }`}
+                          onClick={() => canSelect && handleRoleSelect(role.instanceId)}
+                        >
                           <img 
                             src={role.image} 
                             alt={t(role.name)} 
                             className="max-h-full max-w-full object-contain p-2"
                           />
                         </div>
-                        <div className="text-center">
+                        {/* 名称区域 - 点击翻面 */}
+                        <div 
+                          className="text-center cursor-pointer"
+                          onClick={() => handleCardFlip(role.instanceId)}
+                        >
                           <h3 className="font-bold text-lg text-white mb-2">
                             {t(role.name)}
                           </h3>
                           <div className="text-xs text-gray-400">
-                            双击查看技能详情
+                            单击图片选中，单击名称翻面
                           </div>
                         </div>
                       </div>
@@ -296,9 +302,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           </div>
                         </div>
 
-                        <div className="text-center mt-3">
+                        {/* 返回提示 - 点击翻面 */}
+                        <div 
+                          className="text-center mt-3 cursor-pointer"
+                          onClick={() => handleCardFlip(role.instanceId)}
+                        >
                           <div className="text-xs text-gray-400">
-                            双击返回正面
+                            单击返回正面
                           </div>
                         </div>
                       </div>
