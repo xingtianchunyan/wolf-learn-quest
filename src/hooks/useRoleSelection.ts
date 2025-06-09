@@ -139,7 +139,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     return roleSelections.some(selection => selection.role_id === roleId);
   };
 
-  const getCurrentUserSelection = () => {
+  const getCurrentPlayerSelection = () => {
     if (!currentUserId) return null;
     return getSelectedRoleByUser(currentUserId);
   };
@@ -161,7 +161,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     unselectRole,
     getSelectedRoleByUser,
     isRoleSelected,
-    getCurrentUserSelection,
+    getCurrentPlayerSelection,
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections

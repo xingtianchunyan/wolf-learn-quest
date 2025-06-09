@@ -465,6 +465,7 @@ export type Database = {
         Row: {
           id: string
           role_id: string
+          ROLE_ID: string | null
           room_id: string
           selected_at: string
           user_id: string
@@ -472,6 +473,7 @@ export type Database = {
         Insert: {
           id?: string
           role_id: string
+          ROLE_ID?: string | null
           room_id: string
           selected_at?: string
           user_id: string
@@ -479,35 +481,20 @@ export type Database = {
         Update: {
           id?: string
           role_id?: string
+          ROLE_ID?: string | null
           room_id?: string
           selected_at?: string
           user_id?: string
         }
-        Relationships: []
-      }
-      role_selections_backup: {
-        Row: {
-          id: string | null
-          player_id: string | null
-          role_id: string | null
-          room_id: string | null
-          selected_at: string | null
-        }
-        Insert: {
-          id?: string | null
-          player_id?: string | null
-          role_id?: string | null
-          room_id?: string | null
-          selected_at?: string | null
-        }
-        Update: {
-          id?: string | null
-          player_id?: string | null
-          role_id?: string | null
-          room_id?: string | null
-          selected_at?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "role_selections_ROLE_ID_fkey"
+            columns: ["ROLE_ID"]
+            isOneToOne: false
+            referencedRelation: "game_characters"
+            referencedColumns: ["Role ID"]
+          },
+        ]
       }
       room_players: {
         Row: {

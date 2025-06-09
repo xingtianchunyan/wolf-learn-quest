@@ -154,14 +154,12 @@ const GameRoom = () => {
             });
             setPreviousMaxPlayers(roomData.max_players);
 
-            // 查找当前用户的 player ID
+            // 查找当前用户的 player ID - 这里不需要设置 currentPlayerId
             if (session?.user) {
               const currentPlayerRecord = roomData.room_players?.find(
                 (p: any) => p.user_id === session.user.id
               );
-              if (currentPlayerRecord) {
-                setCurrentPlayerId(currentPlayerRecord.id);
-              }
+              // currentPlayerId 已经不再需要，因为我们使用 currentUserId
             }
           } else {
             console.log('No room found with ID:', id);
@@ -198,7 +196,7 @@ const GameRoom = () => {
               maxPlayers: room.max_players,
             });
             setPreviousMaxPlayers(room.max_players);
-            setCurrentPlayerId(roomPlayerData.id);
+            // 不再需要设置 currentPlayerId，使用 currentUserId
           }
         }
       } catch (error) {
