@@ -69,8 +69,8 @@ export const useGameState = (roomId: string) => {
           setGameState({
             id: stateData.id,
             roomId: stateData.room_id,
-            status: stateData.status,
-            currentPhase: stateData.current_phase,
+            status: stateData.status as 'waiting' | 'active' | 'paused' | 'ended',
+            currentPhase: stateData.current_phase as 'day' | 'evening' | 'night' | 'dawn',
             currentRound: stateData.current_round,
             phaseStartTime: stateData.phase_start_time,
             phaseEndTime: stateData.phase_end_time,
@@ -124,8 +124,8 @@ export const useGameState = (roomId: string) => {
             setGameState({
               id: newData.id,
               roomId: newData.room_id,
-              status: newData.status,
-              currentPhase: newData.current_phase,
+              status: newData.status as 'waiting' | 'active' | 'paused' | 'ended',
+              currentPhase: newData.current_phase as 'day' | 'evening' | 'night' | 'dawn',
               currentRound: newData.current_round,
               phaseStartTime: newData.phase_start_time,
               phaseEndTime: newData.phase_end_time,
