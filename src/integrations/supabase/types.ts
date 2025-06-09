@@ -228,6 +228,50 @@ export type Database = {
           },
         ]
       }
+      game_settings: {
+        Row: {
+          created_at: string
+          dawn_duration: number
+          day_duration: number
+          evening_duration: number
+          id: string
+          is_auto_advance: boolean
+          night_duration: number
+          room_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dawn_duration?: number
+          day_duration?: number
+          evening_duration?: number
+          id?: string
+          is_auto_advance?: boolean
+          night_duration?: number
+          room_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dawn_duration?: number
+          day_duration?: number
+          evening_duration?: number
+          id?: string
+          is_auto_advance?: boolean
+          night_duration?: number
+          room_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_settings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_states: {
         Row: {
           auto_advance: boolean
@@ -235,10 +279,14 @@ export type Database = {
           current_phase: string
           current_round: number
           id: string
+          is_paused: boolean
+          paused_at: string | null
           phase_duration: number
+          phase_end_time: string | null
           phase_start_time: string
           room_id: string
           status: string
+          total_paused_duration: number
           updated_at: string
         }
         Insert: {
@@ -247,10 +295,14 @@ export type Database = {
           current_phase?: string
           current_round?: number
           id?: string
+          is_paused?: boolean
+          paused_at?: string | null
           phase_duration?: number
+          phase_end_time?: string | null
           phase_start_time?: string
           room_id: string
           status?: string
+          total_paused_duration?: number
           updated_at?: string
         }
         Update: {
@@ -259,10 +311,14 @@ export type Database = {
           current_phase?: string
           current_round?: number
           id?: string
+          is_paused?: boolean
+          paused_at?: string | null
           phase_duration?: number
+          phase_end_time?: string | null
           phase_start_time?: string
           room_id?: string
           status?: string
+          total_paused_duration?: number
           updated_at?: string
         }
         Relationships: [
@@ -657,6 +713,7 @@ export type Database = {
         Returns: {
           new_phase: string
           new_round: number
+          phase_end_time: string
         }[]
       }
       cleanup_old_voice_signals: {
@@ -667,6 +724,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_phase_duration: {
+        Args: { p_room_id: string; p_phase: string }
+        Returns: number
+      }
       initialize_game_state: {
         Args: { p_room_id: string }
         Returns: string
@@ -674,6 +735,10 @@ export type Database = {
       start_game: {
         Args: { p_room_id: string }
         Returns: string
+      }
+      toggle_game_pause: {
+        Args: { p_room_id: string }
+        Returns: boolean
       }
     }
     Enums: {
