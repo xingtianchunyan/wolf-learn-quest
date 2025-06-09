@@ -5,12 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 interface RoleSelection {
   id: string;
   room_id: string;
-  player_id: string;
+  user_id: string;
   role_id: string;
   selected_at: string;
 }
 
-export const useRoleSelection = (roomId: string, currentPlayerId: string | null, currentPlayerCount: number, maxPlayers: number) => {
+export const useRoleSelection = (roomId: string, currentUserId: string | null, currentPlayerCount: number, maxPlayers: number) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,14 +86,14 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
   };
 
   const selectRole = async (roleId: string) => {
-    if (!currentPlayerId || !roomId) return false;
+    if (!currentUserId || !roomId) return false;
 
     try {
       const { error } = await supabase
         .from('role_selections')
         .upsert({
           room_id: roomId,
-          player_id: currentPlayerId,
+          user_id: currentUserId,
           role_id: roleId
         });
 
@@ -110,14 +110,14 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
   };
 
   const unselectRole = async () => {
-    if (!currentPlayerId || !roomId) return false;
+    if (!currentUserId || !roomId) return false;
 
     try {
       const { error } = await supabase
         .from('role_selections')
         .delete()
         .eq('room_id', roomId)
-        .eq('player_id', currentPlayerId);
+        .eq('user_id', currentUserId);
 
       if (error) {
         console.error('Error unselecting role:', error);
@@ -131,17 +131,17 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
     }
   };
 
-  const getSelectedRoleByPlayer = (playerId: string) => {
-    return roleSelections.find(selection => selection.player_id === playerId)?.role_id || null;
+  const getSelectedRoleByUser = (userId: string) => {
+    return roleSelections.find(selection => selection.user_id === userId)?.role_id || null;
   };
 
   const isRoleSelected = (roleId: string) => {
     return roleSelections.some(selection => selection.role_id === roleId);
   };
 
-  const getCurrentPlayerSelection = () => {
-    if (!currentPlayerId) return null;
-    return getSelectedRoleByPlayer(currentPlayerId);
+  const getCurrentUserSelection = () => {
+    if (!currentUserId) return null;
+    return getSelectedRoleByUser(currentUserId);
   };
 
   // 检查是否可以选择角色（当前玩家数等于最大玩家数）
@@ -159,9 +159,9 @@ export const useRoleSelection = (roomId: string, currentPlayerId: string | null,
     loading,
     selectRole,
     unselectRole,
-    getSelectedRoleByPlayer,
+    getSelectedRoleByUser,
     isRoleSelected,
-    getCurrentPlayerSelection,
+    getCurrentUserSelection,
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ const GameRoom = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
   
@@ -54,16 +53,16 @@ const GameRoom = () => {
   // Get current max players from realtime data or fallback to local state
   const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
   
-  // 使用角色选择 hook
+  // 使用角色选择 hook，传递 user_id 而不是 player_id
   const {
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections,
-    getCurrentPlayerSelection
-  } = useRoleSelection(roomData?.id || '', currentPlayerId, players.length, currentMaxPlayers);
+    getCurrentUserSelection
+  } = useRoleSelection(roomData?.id || '', currentUserId, players.length, currentMaxPlayers);
   
   // 获取当前玩家是否已选择角色
-  const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
+  const currentPlayerHasSelectedRole = !!getCurrentUserSelection();
   
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
@@ -102,6 +101,7 @@ const GameRoom = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUser(session.user);
+          setCurrentUserId(session.user.id);
           
           // Get user profile for player name
           const { data: userData } = await supabase
@@ -534,7 +534,7 @@ const GameRoom = () => {
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
               roomId={roomData?.id || ''}
-              currentPlayerId={currentPlayerId}
+              currentPlayerId={currentUserId}
               isReady={isReady}
             />
           </div>

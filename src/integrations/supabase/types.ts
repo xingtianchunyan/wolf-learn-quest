@@ -392,33 +392,33 @@ export type Database = {
           game_state_id: string
           id: string
           is_alive: boolean
-          player_id: string
           role: string
           skill_uses_remaining: Json | null
           status_effects: Json | null
           updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           game_state_id: string
           id?: string
           is_alive?: boolean
-          player_id: string
           role: string
           skill_uses_remaining?: Json | null
           status_effects?: Json | null
           updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           game_state_id?: string
           id?: string
           is_alive?: boolean
-          player_id?: string
           role?: string
           skill_uses_remaining?: Json | null
           status_effects?: Json | null
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -464,24 +464,48 @@ export type Database = {
       role_selections: {
         Row: {
           id: string
-          player_id: string
           role_id: string
           room_id: string
           selected_at: string
+          user_id: string
         }
         Insert: {
           id?: string
-          player_id: string
           role_id: string
           room_id: string
           selected_at?: string
+          user_id: string
         }
         Update: {
           id?: string
-          player_id?: string
           role_id?: string
           room_id?: string
           selected_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      role_selections_backup: {
+        Row: {
+          id: string | null
+          player_id: string | null
+          role_id: string | null
+          room_id: string | null
+          selected_at: string | null
+        }
+        Insert: {
+          id?: string | null
+          player_id?: string | null
+          role_id?: string | null
+          room_id?: string | null
+          selected_at?: string | null
+        }
+        Update: {
+          id?: string | null
+          player_id?: string | null
+          role_id?: string | null
+          room_id?: string | null
+          selected_at?: string | null
         }
         Relationships: []
       }
@@ -577,33 +601,33 @@ export type Database = {
           game_state_id: string
           id: string
           phase: string
-          player_id: string
           result: Json | null
           round_number: number
           skill_name: string
-          target_player_id: string | null
+          target_user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
           game_state_id: string
           id?: string
           phase: string
-          player_id: string
           result?: Json | null
           round_number: number
           skill_name: string
-          target_player_id?: string | null
+          target_user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
           game_state_id?: string
           id?: string
           phase?: string
-          player_id?: string
           result?: Json | null
           round_number?: number
           skill_name?: string
-          target_player_id?: string | null
+          target_user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
