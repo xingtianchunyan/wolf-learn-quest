@@ -47,7 +47,7 @@ const GameRoom = () => {
   const [isInitializationComplete, setIsInitializationComplete] = useState(false);
   
   const { leaveCurrentRoom } = usePlayerRoom();
-  const { isJoining, isJoined, ensurePlayerInRoom } = useRoomJoin(id);
+  const { isJoining, isJoined, ensurePlayerInRoom, resetJoinState } = useRoomJoin(id);
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   
   // 只有在玩家成功加入房间后才初始化这些 hooks
@@ -292,6 +292,7 @@ const GameRoom = () => {
       if (currentUser && roomData) {
         try {
           await leaveCurrentRoom(true);
+          resetJoinState(); // 重置加入状态
         } catch (error) {
           console.error('Error cleaning up on navigation:', error);
         }
@@ -305,12 +306,14 @@ const GameRoom = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
       if (currentUser && roomData) {
-        leaveCurrentRoom(true).catch(error => {
+        leaveCurrentRoom(true).then(() => {
+          resetJoinState(); // 重置加入状态
+        }).catch(error => {
           console.error('Error cleaning up on component unmount:', error);
         });
       }
     };
-  }, [currentUser, roomData, leaveCurrentRoom]);
+  }, [currentUser, roomData, leaveCurrentRoom, resetJoinState]);
   
   // Fetch current user and room data
   useEffect(() => {
@@ -638,6 +641,9 @@ const GameRoom = () => {
       const success = await leaveCurrentRoom(true);
       
       if (success) {
+        // 重置加入状态
+        resetJoinState();
+        
         toast({
           title: t('left_room'),
           description: t('left_room_desc'),

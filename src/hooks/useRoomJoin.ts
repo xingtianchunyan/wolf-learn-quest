@@ -33,7 +33,7 @@ export const useRoomJoin = (roomId: string | undefined) => {
 
       if (checkError) {
         console.error('Error checking existing player:', checkError);
-        throw checkError;
+        // 不要抛出错误，继续尝试加入
       }
 
       if (existingPlayer) {
@@ -104,6 +104,7 @@ export const useRoomJoin = (roomId: string | undefined) => {
       console.log('Successfully added player to room:', newPlayer);
       setIsJoined(true);
       
+      // 只有真正新加入时才显示成功提示
       toast({
         title: '成功加入房间',
         description: '你已成功加入游戏房间',
@@ -126,6 +127,12 @@ export const useRoomJoin = (roomId: string | undefined) => {
     }
   };
 
+  // 重置状态的函数
+  const resetJoinState = () => {
+    setIsJoined(false);
+    setIsJoining(false);
+  };
+
   // 页面加载时自动尝试加入房间
   useEffect(() => {
     if (currentUser && roomId && !isJoined && !isJoining) {
@@ -136,6 +143,7 @@ export const useRoomJoin = (roomId: string | undefined) => {
   return {
     isJoining,
     isJoined,
-    ensurePlayerInRoom
+    ensurePlayerInRoom,
+    resetJoinState
   };
 };
