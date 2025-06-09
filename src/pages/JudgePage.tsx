@@ -1,83 +1,497 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import GameStateDisplay from '@/components/game/GameStateDisplay';
-import GameSettingsPanel from '@/components/game/GameSettingsPanel';
-import { useSearchParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { MessageSquareText, Moon, Plus, Sun, Trash2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/use-toast';
+
+// Mock players data
+const players = [
+  { id: 'player1', name: 'Alice', avatar: '', role: 'Seer', isAlive: true },
+  { id: 'player2', name: 'Bob', avatar: '', role: 'Werewolf', isAlive: true },
+  { id: 'player3', name: 'Charlie', avatar: '', role: 'Villager', isAlive: true },
+  { id: 'player4', name: 'Diana', avatar: '', role: 'Hunter', isAlive: false },
+  { id: 'player5', name: 'Ethan', avatar: '', role: 'Werewolf', isAlive: true },
+];
+
+// Mock question bank
+const questionBank = [
+  { 
+    id: 'q1', 
+    question: 'What is the atomic number of Carbon?', 
+    options: ['4', '6', '8', '12'], 
+    correctAnswer: '6',
+    topic: 'Chemistry'
+  },
+  { 
+    id: 'q2', 
+    question: 'Which of the following is a noble gas?', 
+    options: ['Oxygen', 'Chlorine', 'Helium', 'Sodium'], 
+    correctAnswer: 'Helium',
+    topic: 'Chemistry'
+  },
+  { 
+    id: 'q3', 
+    question: 'What is the formula for water?', 
+    options: ['H2O', 'CO2', 'NaCl', 'O2'], 
+    correctAnswer: 'H2O',
+    topic: 'Chemistry'
+  },
+];
+
+// Mock student responses
+const studentResponses = [
+  { 
+    id: 'r1', 
+    player: 'Alice', 
+    question: 'What is the atomic number of Carbon?', 
+    answer: '6', 
+    isCorrect: true,
+    timestamp: '2 min ago'
+  },
+  { 
+    id: 'r2', 
+    player: 'Bob', 
+    question: 'Which of the following is a noble gas?', 
+    answer: 'Oxygen', 
+    isCorrect: false,
+    timestamp: '3 min ago'
+  },
+  { 
+    id: 'r3', 
+    player: 'Charlie', 
+    question: 'What is the formula for water?', 
+    answer: 'H2O', 
+    isCorrect: true,
+    timestamp: '5 min ago'
+  },
+];
+
+// Mock chat messages
+const initialMessages = [
+  { id: 1, sender: 'System', content: 'Game has started with you as the Judge!' },
+  { id: 2, sender: 'System', content: 'Night phase has begun. Werewolves are choosing their victim...' },
+  { id: 3, sender: 'Judge', content: 'Remember to answer questions to unlock special abilities!' },
+];
 
 const JudgePage = () => {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('roomId') || '';
+  const { toast } = useToast();
+  const [gamePhase, setGamePhase] = useState<'day' | 'night'>('night');
+  const [messages, setMessages] = useState(initialMessages);
+  const [newMessage, setNewMessage] = useState('');
+  const [newQuestion, setNewQuestion] = useState({
+    question: '',
+    options: ['', '', '', ''],
+    correctAnswer: 0,
+    topic: ''
+  });
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    
+    const message = {
+      id: messages.length + 1,
+      sender: 'Judge',
+      content: newMessage,
+    };
+    
+    setMessages([...messages, message]);
+    setNewMessage('');
+  };
+  
+  const handleAddQuestion = () => {
+    if (!newQuestion.question || !newQuestion.topic || !newQuestion.options[newQuestion.correctAnswer]) {
+      toast({
+        title: "Incomplete question",
+        description: "Please fill all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Question added",
+      description: "New question has been added to the question bank",
+    });
+    
+    // Reset the form
+    setNewQuestion({
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: 0,
+      topic: ''
+    });
+  };
+  
+  const handleOptionChange = (index: number, value: string) => {
+    const updatedOptions = [...newQuestion.options];
+    updatedOptions[index] = value;
+    setNewQuestion({ ...newQuestion, options: updatedOptions });
+  };
+  
+  const togglePhase = () => {
+    setGamePhase(gamePhase === 'day' ? 'night' : 'day');
+    
+    toast({
+      title: gamePhase === 'day' ? "Night has fallen" : "A new day begins",
+      description: gamePhase === 'day' 
+        ? "Werewolves are on the hunt. Special roles can use their abilities." 
+        : "Players will discuss who might be the werewolves.",
+    });
+  };
+  
+  const handleJudgeAction = () => {
+    if (!selectedPlayer) {
+      toast({
+        title: "Select a player",
+        description: "Please select a player first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const player = players.find(p => p.id === selectedPlayer);
+    
+    toast({
+      title: `Player ${player?.name} ${gamePhase === 'day' ? 'eliminated' : 'revealed'}`,
+      description: gamePhase === 'day' 
+        ? `${player?.name} has been eliminated from the game` 
+        : `${player?.name}'s role is ${player?.role}`,
+    });
+  };
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
-        <div className="space-y-6">
-          {/* Game State Display at the top center */}
-          <div className="max-w-2xl mx-auto">
-            <GameStateDisplay roomId={roomId} isJudge={true} />
+      <div className="container mx-auto py-6 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - Question Bank */}
+          <div className="lg:col-span-4">
+            <div className="space-y-6">
+              <Card className="bg-werewolf-card border-werewolf-purple/30">
+                <CardHeader>
+                  <CardTitle className="text-werewolf-purple">Question Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="bank">
+                    <TabsList className="bg-werewolf-dark/60 w-full mb-4">
+                      <TabsTrigger value="bank" className="flex-1">Question Bank</TabsTrigger>
+                      <TabsTrigger value="add" className="flex-1">Add Question</TabsTrigger>
+                      <TabsTrigger value="responses" className="flex-1">Responses</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="bank">
+                      <ScrollArea className="h-[400px] pr-4">
+                        <div className="space-y-4">
+                          {questionBank.map((q) => (
+                            <div key={q.id} className="bg-werewolf-dark/40 p-3 rounded-md">
+                              <div className="flex justify-between mb-2">
+                                <Badge className="bg-blue-700">{q.topic}</Badge>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                                    <Eye className="h-4 w-4 text-blue-400" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                                    <Trash2 className="h-4 w-4 text-red-400" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <p className="text-sm font-medium mb-2">{q.question}</p>
+                              <div className="text-xs text-gray-400">
+                                <p>Correct: {q.correctAnswer}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                    
+                    <TabsContent value="add">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="question">Question</Label>
+                          <Textarea 
+                            id="question"
+                            placeholder="Enter your question here"
+                            value={newQuestion.question}
+                            onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
+                            className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Options</Label>
+                          {newQuestion.options.map((option, index) => (
+                            <div key={index} className="flex gap-2 items-center mb-2">
+                              <input 
+                                type="radio" 
+                                id={`correct-${index}`} 
+                                name="correct-answer"
+                                checked={newQuestion.correctAnswer === index}
+                                onChange={() => setNewQuestion({...newQuestion, correctAnswer: index})}
+                                className="text-werewolf-purple"
+                              />
+                              <Input 
+                                placeholder={`Option ${index + 1}`}
+                                value={option}
+                                onChange={(e) => handleOptionChange(index, e.target.value)}
+                                className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="topic">Topic</Label>
+                          <Input 
+                            id="topic"
+                            placeholder="e.g., Chemistry, Math, History"
+                            value={newQuestion.topic}
+                            onChange={(e) => setNewQuestion({...newQuestion, topic: e.target.value})}
+                            className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                          />
+                        </div>
+                        
+                        <Button 
+                          className="w-full bg-werewolf-purple hover:bg-werewolf-light"
+                          onClick={handleAddQuestion}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Question
+                        </Button>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="responses">
+                      <ScrollArea className="h-[400px] pr-4">
+                        <div className="space-y-4">
+                          {studentResponses.map((response) => (
+                            <div 
+                              key={response.id} 
+                              className={`p-3 rounded-md ${
+                                response.isCorrect ? 'bg-green-900/20' : 'bg-red-900/20'
+                              }`}
+                            >
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-medium text-sm">{response.player}</p>
+                                  <p className="text-xs text-gray-400">{response.timestamp}</p>
+                                </div>
+                                {response.isCorrect ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <XCircle className="h-5 w-5 text-red-500" />
+                                )}
+                              </div>
+                              <div className="mt-2">
+                                <p className="text-xs text-gray-400">Question:</p>
+                                <p className="text-sm">{response.question}</p>
+                              </div>
+                              <div className="mt-1">
+                                <p className="text-xs text-gray-400">Answer:</p>
+                                <p className="text-sm">{response.answer}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Main Judge Content */}
-            <div className="lg:col-span-8">
-              <div className="space-y-6">
-                <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
-                  <h2 className="text-2xl font-bold text-werewolf-purple mb-4">法官控制台</h2>
+          {/* Middle Column - Game Management */}
+          <div className="lg:col-span-4">
+            <div className="space-y-6">
+              <Card className="bg-werewolf-card border-werewolf-purple/30">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-werewolf-purple flex items-center gap-2">
+                      {gamePhase === 'day' ? (
+                        <>
+                          <Sun className="h-5 w-5 text-yellow-500" />
+                          Day Phase
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="h-5 w-5 text-blue-400" />
+                          Night Phase
+                        </>
+                      )}
+                    </CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={togglePhase}
+                      className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                    >
+                      Change Phase
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-werewolf-dark/40 p-4 rounded-md mb-4">
+                    <p className="text-center font-medium mb-2">Round 2</p>
+                    <p className="text-sm text-center text-gray-400">
+                      {gamePhase === 'day' 
+                        ? "Players are discussing and voting to eliminate a suspected werewolf."
+                        : "Werewolves are choosing a victim. Special roles are using abilities."}
+                    </p>
+                  </div>
+                  
                   <div className="space-y-4">
-                    <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                      <h3 className="font-semibold text-werewolf-purple mb-2">游戏监控</h3>
-                      <p className="text-gray-300">
-                        这里显示游戏的详细状态信息，包括所有玩家的行动、投票结果、技能使用等。
+                    <div>
+                      <p className="font-medium mb-2">Time Remaining</p>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{gamePhase === 'day' ? 'Discussion' : 'Action'} Phase</span>
+                        <span>2:45</span>
+                      </div>
+                      <Progress value={70} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium mb-2">Game Status</p>
+                      <div className="grid grid-cols-2 gap-2 text-center">
+                        <div className="bg-werewolf-dark/40 p-2 rounded-md">
+                          <p className="text-xs text-gray-400">Villagers</p>
+                          <p className="font-bold">3</p>
+                        </div>
+                        <div className="bg-werewolf-dark/40 p-2 rounded-md">
+                          <p className="text-xs text-gray-400">Werewolves</p>
+                          <p className="font-bold text-red-400">2</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-werewolf-card border-werewolf-purple/30">
+                <CardHeader>
+                  <CardTitle className="text-werewolf-purple">Judge Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="bg-werewolf-dark/40 p-4 rounded-md">
+                      <p className="font-medium mb-2">
+                        {gamePhase === 'day'
+                          ? "Override player votes or force elimination"
+                          : "Reveal player roles or manage night actions"}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Select a player from the list below
                       </p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                        <h3 className="font-semibold text-werewolf-purple mb-2">玩家状态</h3>
-                        <p className="text-sm text-gray-400">
-                          监控所有玩家的状态和行动
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                        <h3 className="font-semibold text-werewolf-purple mb-2">游戏日志</h3>
-                        <p className="text-sm text-gray-400">
-                          记录游戏中的所有重要事件
-                        </p>
-                      </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {players.map((player) => (
+                        <div
+                          key={player.id}
+                          className={`p-2 rounded-md cursor-pointer ${
+                            player.isAlive 
+                              ? selectedPlayer === player.id 
+                                ? 'bg-werewolf-purple/30 border border-werewolf-purple' 
+                                : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
+                              : 'bg-red-900/20 opacity-60'
+                          }`}
+                          onClick={() => player.isAlive && setSelectedPlayer(player.id)}
+                        >
+                          <div className="flex flex-col items-center text-center">
+                            <Avatar>
+                              <AvatarImage src={player.avatar} />
+                              <AvatarFallback className="bg-werewolf-purple/70">
+                                {player.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <p className="mt-1 text-sm font-medium">{player.name}</p>
+                            <Badge 
+                              className={`mt-1 text-xs ${
+                                player.role === 'Werewolf' ? 'bg-red-700' : 'bg-green-700'
+                              }`}
+                            >
+                              {player.role}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </div>
-                
-                <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-werewolf-purple mb-4">问题管理</h3>
-                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                    <p className="text-gray-300">
-                      管理答题阶段的问题，包括问题选择、答案验证、评分等功能。
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Settings and Control Panel */}
-            <div className="lg:col-span-4">
-              <div className="space-y-6">
-                <GameSettingsPanel roomId={roomId} />
-                
-                <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-werewolf-purple mb-4">快速操作</h3>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                      <p className="text-sm text-gray-400">
-                        法官专用的快速操作按钮和功能面板
+                    
+                    {selectedPlayer && (
+                      <p className="text-center">
+                        Selected: <span className="font-bold">{players.find(p => p.id === selectedPlayer)?.name}</span>
                       </p>
-                    </div>
+                    )}
+                    
+                    <Button 
+                      className="w-full bg-werewolf-purple hover:bg-werewolf-light"
+                      onClick={handleJudgeAction}
+                      disabled={!selectedPlayer}
+                    >
+                      {gamePhase === 'day' ? 'Eliminate Player' : 'Reveal Role to All'}
+                    </Button>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
+          </div>
+          
+          {/* Right Column - Chat */}
+          <div className="lg:col-span-4">
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+              <CardHeader>
+                <CardTitle className="text-werewolf-purple flex items-center">
+                  <MessageSquareText className="mr-2 h-5 w-5" />
+                  Judge Chat
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col h-full">
+                  <ScrollArea className="flex-1 h-[500px] pr-4">
+                    <div className="space-y-4">
+                      {messages.map((message) => (
+                        <div key={message.id} className="chat-message">
+                          <p className="text-sm">
+                            <span className={`font-bold ${
+                              message.sender === 'System' ? 'text-yellow-400' :
+                              message.sender === 'Judge' ? 'text-werewolf-purple' :
+                              'text-blue-400'
+                            }`}>
+                              {message.sender}:
+                            </span>
+                            <span className="ml-2">{message.content}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                  
+                  <form onSubmit={handleSendMessage} className="mt-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Type your message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                      />
+                      <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                        Send
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
