@@ -401,7 +401,8 @@ const GameLobby = () => {
 
     try {
       console.log('Playing as judge in room:', roomId);
-      navigate('/judge');
+      // 直接导航到对应房间的法官页面
+      navigate(`/room/${roomId}/judge`);
     } catch (error) {
       console.error('Error playing as judge:', error);
       toast({
