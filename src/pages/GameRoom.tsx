@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -58,11 +59,11 @@ const GameRoom = () => {
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections,
-    getCurrentUserSelection
+    getCurrentPlayerSelection
   } = useRoleSelection(roomData?.id || '', currentUserId, players.length, currentMaxPlayers);
   
   // 获取当前玩家是否已选择角色
-  const currentPlayerHasSelectedRole = !!getCurrentUserSelection();
+  const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
   
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
