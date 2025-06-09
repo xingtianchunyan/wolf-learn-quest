@@ -2,15 +2,43 @@
 import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const GamePage = () => {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('roomId') || '';
+  const { id: roomId } = useParams();
+  const { t } = useLanguage();
+
+  if (!roomId) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">房间ID不存在</p>
+            <Link to="/lobby">
+              <Button>返回大厅</Button>
+            </Link>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Link to={`/room/${roomId}`}>
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              返回房间
+            </Button>
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Game State Display at the top center */}
           <div className="lg:col-span-12">
@@ -26,6 +54,9 @@ const GamePage = () => {
               <div className="space-y-4">
                 <div className="p-4 bg-werewolf-dark/40 rounded-md">
                   <p className="text-gray-300">
+                    房间ID: {roomId}
+                  </p>
+                  <p className="text-gray-300 mt-2">
                     游戏内容区域 - 这里将显示游戏的主要界面，包括玩家列表、投票界面、技能使用等功能。
                   </p>
                 </div>

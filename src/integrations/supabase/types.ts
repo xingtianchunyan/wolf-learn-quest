@@ -465,7 +465,6 @@ export type Database = {
         Row: {
           id: string
           role_id: string
-          ROLE_ID: string | null
           room_id: string
           selected_at: string
           user_id: string
@@ -473,7 +472,6 @@ export type Database = {
         Insert: {
           id?: string
           role_id: string
-          ROLE_ID?: string | null
           room_id: string
           selected_at?: string
           user_id: string
@@ -481,20 +479,11 @@ export type Database = {
         Update: {
           id?: string
           role_id?: string
-          ROLE_ID?: string | null
           room_id?: string
           selected_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "role_selections_ROLE_ID_fkey"
-            columns: ["ROLE_ID"]
-            isOneToOne: false
-            referencedRelation: "game_characters"
-            referencedColumns: ["Role ID"]
-          },
-        ]
+        Relationships: []
       }
       room_players: {
         Row: {
@@ -651,66 +640,6 @@ export type Database = {
           level?: number | null
           player_name?: string | null
           user_id?: string
-        }
-        Relationships: []
-      }
-      voice_participants: {
-        Row: {
-          id: string
-          is_connected: boolean
-          joined_at: string
-          player_name: string
-          room_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          is_connected?: boolean
-          joined_at?: string
-          player_name: string
-          room_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          is_connected?: boolean
-          joined_at?: string
-          player_name?: string
-          room_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      voice_signals: {
-        Row: {
-          created_at: string
-          from_user: string
-          id: string
-          room_id: string
-          signal_data: Json
-          signal_type: string
-          to_user: string
-        }
-        Insert: {
-          created_at?: string
-          from_user: string
-          id?: string
-          room_id: string
-          signal_data: Json
-          signal_type: string
-          to_user: string
-        }
-        Update: {
-          created_at?: string
-          from_user?: string
-          id?: string
-          room_id?: string
-          signal_data?: Json
-          signal_type?: string
-          to_user?: string
         }
         Relationships: []
       }

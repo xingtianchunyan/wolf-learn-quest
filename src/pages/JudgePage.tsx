@@ -3,15 +3,43 @@ import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
 import GameSettingsPanel from '@/components/game/GameSettingsPanel';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const JudgePage = () => {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('roomId') || '';
+  const { id: roomId } = useParams();
+  const { t } = useLanguage();
+
+  if (!roomId) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">房间ID不存在</p>
+            <Link to="/lobby">
+              <Button>返回大厅</Button>
+            </Link>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Link to={`/room/${roomId}`}>
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              返回房间
+            </Button>
+          </Link>
+        </div>
+
         <div className="space-y-6">
           {/* Game State Display at the top center */}
           <div className="max-w-2xl mx-auto">
@@ -26,6 +54,9 @@ const JudgePage = () => {
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">法官控制台</h2>
                   <div className="space-y-4">
                     <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                      <p className="text-gray-300 mb-2">
+                        房间ID: {roomId}
+                      </p>
                       <h3 className="font-semibold text-werewolf-purple mb-2">游戏监控</h3>
                       <p className="text-gray-300">
                         这里显示游戏的详细状态信息，包括所有玩家的行动、投票结果、技能使用等。

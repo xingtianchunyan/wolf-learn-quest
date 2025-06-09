@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -398,7 +397,13 @@ const GameRoom = () => {
       return;
     }
     
-    navigate('/game');
+    // 导航到游戏页面，传递房间ID
+    navigate(`/room/${roomData.id}/game`);
+  };
+
+  const handleJudgeView = () => {
+    // 导航到法官页面，传递房间ID
+    navigate(`/room/${roomData.id}/judge`);
   };
 
   const handleLeaveRoom = async () => {
@@ -493,6 +498,18 @@ const GameRoom = () => {
                       <p className="text-sm text-gray-400">在线玩家</p>
                       <p>{onlinePlayers.length} / {players.length}</p>
                     </div>
+                    
+                    {/* 添加法官视图按钮 */}
+                    <div className="mt-4">
+                      <Button 
+                        onClick={handleJudgeView}
+                        variant="outline"
+                        className="w-full bg-yellow-600/20 hover:bg-yellow-600/30 border-yellow-600/50"
+                      >
+                        法官视图
+                      </Button>
+                    </div>
+                    
                     <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
                       <p className="text-xs text-gray-400 text-center">
                         {t('auto_close_warning')}
