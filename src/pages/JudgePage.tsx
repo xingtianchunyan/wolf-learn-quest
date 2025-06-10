@@ -13,7 +13,7 @@ import { useAuth } from '@/providers/AuthProvider';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
 
   if (!roomId) {
     return (
@@ -69,7 +69,7 @@ const JudgePage = () => {
           <div className="lg:col-span-3">
             <MultiChannelChat
               roomId={roomId}
-              currentUser={user}
+              currentUser={currentUser}
               isGameRoom={false}
               title="法官聊天"
               className="h-full"
