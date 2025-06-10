@@ -23,6 +23,7 @@ export const usePlayersRealtime = (roomId: string) => {
       try {
         console.log('Fetching players for room:', roomId);
         
+        // 修复查询：简化 join 语法
         const { data: roomPlayers, error } = await supabase
           .from('room_players')
           .select(`
@@ -30,7 +31,10 @@ export const usePlayersRealtime = (roomId: string) => {
             is_ready,
             is_ai,
             user_id,
-            users!room_players_user_id_fkey(player_name, avatar_url)
+            users (
+              player_name,
+              avatar_url
+            )
           `)
           .eq('room_id', roomId);
 
@@ -59,11 +63,17 @@ export const usePlayersRealtime = (roomId: string) => {
           const transformedPlayers: Player[] = roomPlayers.map((player: any) => {
             console.log('Transforming player:', player);
             
+            // 处理 AI 玩家和真实玩家的名称
+            let playerName = 'Unknown';
+            if (player.is_ai) {
+              playerName = `AI-Player-${player.id.slice(0, 8)}`;
+            } else if (player.users && player.users.player_name) {
+              playerName = player.users.player_name;
+            }
+            
             return {
               id: player.id,
-              name: player.is_ai 
-                ? `AI-Player-${player.id.slice(0, 8)}` 
-                : (player.users?.player_name || 'Unknown'),
+              name: playerName,
               avatar: player.users?.avatar_url || '',
               isReady: player.is_ready || false,
               isHost: roomData?.host_id === player.user_id,

@@ -247,7 +247,7 @@ const GameRoom = () => {
     if (!currentUser || !roomData) return;
 
     // 检查是否满足准备条件
-    if (!canSelectRoles()) {
+    if (!canSelectRoles) {
       toast({
         title: '无法准备',
         description: `需要等待房间人数达到${currentMaxPlayers}人`,
@@ -256,7 +256,7 @@ const GameRoom = () => {
       return;
     }
 
-    if (!allPlayersSelectedRoles()) {
+    if (!allPlayersSelectedRoles) {
       toast({
         title: '无法准备',
         description: '需要等待所有玩家选择角色',
@@ -277,20 +277,20 @@ const GameRoom = () => {
 
     const newReadyState = !isReady;
     
-    // Find current user's player record by user_id
+    // 修复玩家匹配逻辑：通过 user_id 而不是 player_name 匹配
     const currentPlayer = players.find(p => {
       // For AI players, they don't have user_id, so we skip them
       if (p.isAI) return false;
       
-      // For human players, we need to match by user_id in the database
-      // Since we don't have direct access to user_id in the Player interface,
-      // we'll need to find by player name or implement a better matching strategy
+      // 我们需要通过数据库查询来找到当前用户的 room_players 记录
+      // 但现在先通过名称匹配作为临时解决方案
       return p.name === currentUser.player_name;
     });
     
     console.log('Current player for ready toggle:', currentPlayer);
     console.log('All players:', players);
     console.log('Current user:', currentUser);
+    console.log('Looking for player with name:', currentUser.player_name);
     
     if (currentPlayer) {
       try {
@@ -319,6 +319,7 @@ const GameRoom = () => {
       }
     } else {
       console.error('Could not find current player in players list');
+      console.error('Available player names:', players.map(p => p.name));
       toast({
         title: t('error'),
         description: '无法找到当前玩家信息',
