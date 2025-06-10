@@ -19,7 +19,7 @@ export type Database = {
           id: string
           message: string
           recipient_id: string | null
-          room_id: string | null
+          room_id: string
           sender_id: string | null
         }
         Insert: {
@@ -31,7 +31,7 @@ export type Database = {
           id?: string
           message: string
           recipient_id?: string | null
-          room_id?: string | null
+          room_id: string
           sender_id?: string | null
         }
         Update: {
@@ -43,7 +43,7 @@ export type Database = {
           id?: string
           message?: string
           recipient_id?: string | null
-          room_id?: string | null
+          room_id?: string
           sender_id?: string | null
         }
         Relationships: [
@@ -55,24 +55,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_messages_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "chat_messages_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -537,13 +523,6 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "room_players_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       rooms: {
@@ -641,7 +620,7 @@ export type Database = {
           experience?: number | null
           games_lost?: number | null
           games_won?: number | null
-          id?: string
+          id: string
           level?: number | null
           player_name?: string | null
           user_id?: string
