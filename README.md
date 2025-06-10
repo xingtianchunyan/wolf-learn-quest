@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/1a0a8c2b-8a82-4973-9bfd-eaf0fe62a7ab
+**URL**: https://wolf-learn-quest.lovable.app/
 
 ## How can I edit this code?
 
