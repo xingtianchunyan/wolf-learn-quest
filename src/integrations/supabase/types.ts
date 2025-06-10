@@ -620,7 +620,7 @@ export type Database = {
           experience?: number | null
           games_lost?: number | null
           games_won?: number | null
-          id?: string
+          id: string
           level?: number | null
           player_name?: string | null
           user_id?: string
