@@ -539,6 +539,7 @@ const GameRoom = () => {
               currentUser={currentUser}
               isGameRoom={true}
               title={t('room_chat')}
+              height="calc(100vh - 200px)"
             />
           </div>
         </div>
