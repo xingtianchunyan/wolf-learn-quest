@@ -23,7 +23,38 @@ export const useMultiChannelChat = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChatChannel>('public');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserRecord, setCurrentUserRecord] = useState<any>(null);
   const { toast } = useToast();
+
+  // 获取当前用户在users表中的记录
+  useEffect(() => {
+    const fetchCurrentUserRecord = async () => {
+      if (!currentUser) return;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) return;
+
+        const { data: userRecord } = await supabase
+          .from('users')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (userRecord) {
+          setCurrentUserRecord(userRecord);
+          console.log('Current user record found:', userRecord);
+        } else {
+          console.error('No user record found in users table');
+        }
+      } catch (error) {
+        console.error('Error fetching user record:', error);
+      }
+    };
+
+    fetchCurrentUserRecord();
+  }, [currentUser]);
 
   // 确定可用频道
   const getAvailableChannels = (): ChatChannel[] => {
@@ -39,7 +70,7 @@ export const useMultiChannelChat = ({
 
   // 获取聊天消息
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || !currentUserRecord) return;
 
     const fetchMessages = async () => {
       try {
@@ -73,13 +104,13 @@ export const useMultiChannelChat = ({
 
         console.log('Fetched messages:', data);
 
-        // 获取发送者信息 - 使用sender_id关联users表的user_id字段
+        // 获取发送者信息
         const messagesWithSenders = await Promise.all(
           (data || []).map(async (msg) => {
             const { data: userData } = await supabase
               .from('users')
               .select('player_name')
-              .eq('user_id', msg.sender_id)
+              .eq('id', msg.sender_id)
               .maybeSingle();
 
             return {
@@ -98,7 +129,7 @@ export const useMultiChannelChat = ({
     };
 
     fetchMessages();
-  }, [roomId, toast]);
+  }, [roomId, currentUserRecord, toast]);
 
   // 设置实时监听
   useEffect(() => {
@@ -121,7 +152,7 @@ export const useMultiChannelChat = ({
           const { data: userData } = await supabase
             .from('users')
             .select('player_name')
-            .eq('user_id', payload.new.sender_id)
+            .eq('id', payload.new.sender_id)
             .maybeSingle();
 
           const newMessage = {
@@ -141,33 +172,20 @@ export const useMultiChannelChat = ({
 
   // 发送消息
   const sendMessage = async (messageText: string, chatType: string = 'public') => {
-    if (!roomId || !currentUser || !messageText.trim()) {
+    if (!roomId || !currentUserRecord || !messageText.trim()) {
       console.error('Missing required data for sending message:', {
         roomId,
-        currentUser,
+        currentUserRecord,
         messageText: messageText.trim()
       });
       return false;
     }
 
     try {
-      // 获取当前认证用户
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.error('No authenticated user found');
-        toast({
-          title: '发送消息失败',
-          description: '用户未认证',
-          variant: "destructive",
-        });
-        return false;
-      }
-
       console.log('Sending message with data:', {
         chat_type: chatType,
         room_id: roomId,
-        sender_id: user.id, // 直接使用认证用户ID
+        sender_id: currentUserRecord.id,
         message: messageText.trim(),
         game_round: gameRound,
         game_phase: gamePhase
@@ -178,7 +196,7 @@ export const useMultiChannelChat = ({
         .insert({
           chat_type: chatType,
           room_id: roomId,
-          sender_id: user.id, // 使用认证用户ID，与RLS策略一致
+          sender_id: currentUserRecord.id,
           message: messageText.trim(),
           game_round: gameRound,
           game_phase: gamePhase

@@ -9,8 +9,6 @@ export interface ChatMessage {
   message: string;
   created_at: string;
   sender_name?: string;
-  chat_type: string;
-  room_id: string;
 }
 
 export const useRoomChat = (roomId: string | null, currentUser: any) => {
@@ -30,12 +28,10 @@ export const useRoomChat = (roomId: string | null, currentUser: any) => {
             id,
             sender_id,
             message,
-            created_at,
-            chat_type,
-            room_id
+            created_at
           `)
-          .eq('room_id', roomId)
-          .eq('chat_type', 'public')
+          .eq('chat_type', 'room')
+          .eq('recipient_id', roomId)
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -48,7 +44,7 @@ export const useRoomChat = (roomId: string | null, currentUser: any) => {
           return;
         }
 
-        // 获取发送者信息 - 使用sender_id关联users表的user_id字段
+        // 获取发送者信息
         const messagesWithSenders = await Promise.all(
           (data || []).map(async (msg) => {
             const { data: userData } = await supabase
@@ -87,7 +83,7 @@ export const useRoomChat = (roomId: string | null, currentUser: any) => {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
-          filter: `room_id=eq.${roomId}`
+          filter: `chat_type=eq.room,recipient_id=eq.${roomId}`
         },
         async (payload) => {
           console.log('New chat message:', payload);
@@ -118,25 +114,12 @@ export const useRoomChat = (roomId: string | null, currentUser: any) => {
     if (!roomId || !currentUser || !messageText.trim()) return false;
 
     try {
-      // 获取当前认证用户
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.error('No authenticated user found');
-        toast({
-          title: '发送消息失败',
-          description: '用户未认证',
-          variant: "destructive",
-        });
-        return false;
-      }
-
       const { error } = await supabase
         .from('chat_messages')
         .insert({
-          chat_type: 'public',
-          room_id: roomId,
-          sender_id: user.id, // 使用认证用户ID，与RLS策略一致
+          chat_type: 'room',
+          recipient_id: roomId,
+          sender_id: currentUser.id,
           message: messageText.trim()
         });
 

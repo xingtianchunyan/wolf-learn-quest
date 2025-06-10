@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -67,7 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert({
-            id: user.id, // Add the required id field
             user_id: user.id,
             player_name: playerName,
             level: 1,
