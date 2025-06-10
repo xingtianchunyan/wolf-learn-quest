@@ -52,6 +52,9 @@ const GameRoom = () => {
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
   
+  console.log('Current room data:', roomData);
+  console.log('Players from hook:', players);
+  console.log('Players loading:', playersLoading);
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
   
@@ -85,11 +88,15 @@ const GameRoom = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching data for room ID:', id);
+        
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUser(session.user);
           setCurrentUserId(session.user.id);
+          
+          console.log('Current user session:', session.user);
           
           // Get user profile for player name
           const { data: userData } = await supabase
@@ -98,12 +105,14 @@ const GameRoom = () => {
             .eq('user_id', session.user.id)
             .maybeSingle();
           
+          console.log('User profile data:', userData);
+          
           if (userData) {
             setCurrentUser({ ...session.user, player_name: userData.player_name });
           }
         }
 
-        // Fetch room data using the id from URL params or fallback to user's most recent room
+        // Fetch room data using the id from URL params
         if (id) {
           console.log('Fetching room data for room ID:', id);
           
@@ -115,11 +124,12 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
-              users!rooms_host_id_fkey(player_name),
-              room_players(id, user_id)
+              users!rooms_host_id_fkey(player_name)
             `)
             .eq('id', id)
             .maybeSingle();
+
+          console.log('Room query result:', { roomData, roomError });
 
           if (roomError) {
             console.error('Error fetching room:', roomError);
@@ -133,49 +143,18 @@ const GameRoom = () => {
 
           if (roomData) {
             console.log('Room data found:', roomData);
-            setRoomData({
+            const processedRoomData = {
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
               topic: '元素周期表',
               maxPlayers: roomData.max_players,
-            });
+            };
+            console.log('Processed room data:', processedRoomData);
+            setRoomData(processedRoomData);
             setPreviousMaxPlayers(roomData.max_players);
           } else {
             console.log('No room found with ID:', id);
-          }
-        } else if (session?.user) {
-          // Fallback: fetch user's most recent room
-          console.log('No room ID in URL, fetching user\'s most recent room');
-          
-          const { data: roomPlayerData } = await supabase
-            .from('room_players')
-            .select(`
-              id,
-              room_id,
-              rooms!inner(
-                id,
-                room_id,
-                max_players,
-                host_id,
-                users!rooms_host_id_fkey(player_name)
-              )
-            `)
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms;
-            setRoomData({
-              id: room.id,
-              roomId: room.room_id,
-              hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: '元素周期表',
-              maxPlayers: room.max_players,
-            });
-            setPreviousMaxPlayers(room.max_players);
           }
         }
       } catch (error) {
@@ -298,8 +277,20 @@ const GameRoom = () => {
 
     const newReadyState = !isReady;
     
-    // Find current user's player record
-    const currentPlayer = players.find(p => p.name === currentUser.player_name || p.name === 'You');
+    // Find current user's player record by user_id
+    const currentPlayer = players.find(p => {
+      // For AI players, they don't have user_id, so we skip them
+      if (p.isAI) return false;
+      
+      // For human players, we need to match by user_id in the database
+      // Since we don't have direct access to user_id in the Player interface,
+      // we'll need to find by player name or implement a better matching strategy
+      return p.name === currentUser.player_name;
+    });
+    
+    console.log('Current player for ready toggle:', currentPlayer);
+    console.log('All players:', players);
+    console.log('Current user:', currentUser);
     
     if (currentPlayer) {
       try {
@@ -326,6 +317,13 @@ const GameRoom = () => {
           variant: "destructive",
         });
       }
+    } else {
+      console.error('Could not find current player in players list');
+      toast({
+        title: t('error'),
+        description: '无法找到当前玩家信息',
+        variant: "destructive",
+      });
     }
   };
 

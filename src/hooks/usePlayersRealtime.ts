@@ -18,9 +18,11 @@ export const usePlayersRealtime = (roomId: string) => {
   useEffect(() => {
     if (!roomId) return;
 
-    // 初始获取玩家列表
+    // 获取玩家列表
     const fetchPlayers = async () => {
       try {
+        console.log('Fetching players for room:', roomId);
+        
         const { data: roomPlayers, error } = await supabase
           .from('room_players')
           .select(`
@@ -28,8 +30,7 @@ export const usePlayersRealtime = (roomId: string) => {
             is_ready,
             is_ai,
             user_id,
-            users!room_players_user_id_fkey(player_name, avatar_url),
-            rooms!room_players_room_id_fkey(host_id)
+            users!room_players_user_id_fkey(player_name, avatar_url)
           `)
           .eq('room_id', roomId);
 
@@ -38,16 +39,39 @@ export const usePlayersRealtime = (roomId: string) => {
           return;
         }
 
+        console.log('Raw room players data:', roomPlayers);
+
+        // 获取房间信息以确定房主
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('host_id')
+          .eq('id', roomId)
+          .single();
+
+        if (roomError) {
+          console.error('Error fetching room data:', roomError);
+          return;
+        }
+
+        console.log('Room data:', roomData);
+
         if (roomPlayers) {
-          const transformedPlayers: Player[] = roomPlayers.map((player: any) => ({
-            id: player.id,
-            name: player.is_ai ? `AI-Player-${player.id.slice(0, 8)}` : (player.users?.player_name || 'Unknown'),
-            avatar: player.users?.avatar_url || '',
-            isReady: player.is_ready || false,
-            isHost: player.rooms?.host_id === player.user_id,
-            isAI: player.is_ai || false
-          }));
+          const transformedPlayers: Player[] = roomPlayers.map((player: any) => {
+            console.log('Transforming player:', player);
+            
+            return {
+              id: player.id,
+              name: player.is_ai 
+                ? `AI-Player-${player.id.slice(0, 8)}` 
+                : (player.users?.player_name || 'Unknown'),
+              avatar: player.users?.avatar_url || '',
+              isReady: player.is_ready || false,
+              isHost: roomData?.host_id === player.user_id,
+              isAI: player.is_ai || false
+            };
+          });
           
+          console.log('Transformed players:', transformedPlayers);
           setPlayers(transformedPlayers);
         }
       } catch (error) {
