@@ -26,6 +26,7 @@ const GameRoom = () => {
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
   
@@ -52,6 +53,9 @@ const GameRoom = () => {
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
   
+  console.log('Current user ID:', currentUserId);
+  console.log('Players list:', players);
+  console.log('Current player record:', currentPlayerRecord);
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
   
@@ -59,6 +63,35 @@ const GameRoom = () => {
 
   // Add room cleanup functionality
   useRoomCleanup();
+
+  // 查找当前用户的玩家记录
+  useEffect(() => {
+    if (currentUserId && players.length > 0) {
+      // 通过查询数据库来获取当前用户的玩家记录
+      const fetchCurrentPlayerRecord = async () => {
+        try {
+          const { data: playerRecord, error } = await supabase
+            .from('room_players')
+            .select('*')
+            .eq('room_id', roomData?.id)
+            .eq('user_id', currentUserId)
+            .single();
+
+          if (error) {
+            console.error('Error fetching current player record:', error);
+          } else {
+            console.log('Current player record found:', playerRecord);
+            setCurrentPlayerRecord(playerRecord);
+            setIsReady(playerRecord?.is_ready || false);
+          }
+        } catch (error) {
+          console.error('Error fetching current player record:', error);
+        }
+      };
+
+      fetchCurrentPlayerRecord();
+    }
+  }, [currentUserId, players.length, roomData?.id]);
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
@@ -265,7 +298,7 @@ const GameRoom = () => {
   };
 
   const handleReadyToggle = async () => {
-    if (!currentUser || !roomData) return;
+    if (!currentUser || !roomData || !currentPlayerRecord) return;
 
     // 检查是否满足准备条件
     if (!canSelectRoles()) {
@@ -298,34 +331,29 @@ const GameRoom = () => {
 
     const newReadyState = !isReady;
     
-    // Find current user's player record
-    const currentPlayer = players.find(p => p.name === currentUser.player_name || p.name === 'You');
-    
-    if (currentPlayer) {
-      try {
-        const success = await updatePlayerReady(currentPlayer.id, newReadyState);
-        
-        if (success) {
-          setIsReady(newReadyState);
-          toast({
-            title: newReadyState ? t('ready') : t('not_ready'),
-            description: newReadyState ? t('you_are_ready') : t('you_are_not_ready'),
-          });
-        } else {
-          toast({
-            title: t('error'),
-            description: t('failed_to_update_status'),
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error('Error updating ready status:', error);
+    try {
+      const success = await updatePlayerReady(currentPlayerRecord.id, newReadyState);
+      
+      if (success) {
+        setIsReady(newReadyState);
+        toast({
+          title: newReadyState ? t('ready') : t('not_ready'),
+          description: newReadyState ? t('you_are_ready') : t('you_are_not_ready'),
+        });
+      } else {
         toast({
           title: t('error'),
           description: t('failed_to_update_status'),
           variant: "destructive",
         });
       }
+    } catch (error) {
+      console.error('Error updating ready status:', error);
+      toast({
+        title: t('error'),
+        description: t('failed_to_update_status'),
+        variant: "destructive",
+      });
     }
   };
 

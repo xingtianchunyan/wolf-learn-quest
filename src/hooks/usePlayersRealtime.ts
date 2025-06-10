@@ -21,34 +21,84 @@ export const usePlayersRealtime = (roomId: string) => {
     // 初始获取玩家列表
     const fetchPlayers = async () => {
       try {
-        const { data: roomPlayers, error } = await supabase
-          .from('room_players')
-          .select(`
-            id,
-            is_ready,
-            is_ai,
-            user_id,
-            users!room_players_user_id_fkey(player_name, avatar_url),
-            rooms!room_players_room_id_fkey(host_id)
-          `)
-          .eq('room_id', roomId);
+        console.log('Fetching players for room:', roomId);
+        
+        // 首先获取房间信息以确定房主
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('host_id')
+          .eq('id', roomId)
+          .single();
 
-        if (error) {
-          console.error('Error fetching players:', error);
+        if (roomError) {
+          console.error('Error fetching room data:', roomError);
           return;
         }
 
-        if (roomPlayers) {
-          const transformedPlayers: Player[] = roomPlayers.map((player: any) => ({
-            id: player.id,
-            name: player.is_ai ? `AI-Player-${player.id.slice(0, 8)}` : (player.users?.player_name || 'Unknown'),
-            avatar: player.users?.avatar_url || '',
-            isReady: player.is_ready || false,
-            isHost: player.rooms?.host_id === player.user_id,
-            isAI: player.is_ai || false
-          }));
+        // 获取房间玩家信息，分别查询用户信息
+        const { data: roomPlayers, error: playersError } = await supabase
+          .from('room_players')
+          .select('*')
+          .eq('room_id', roomId);
+
+        if (playersError) {
+          console.error('Error fetching room players:', playersError);
+          return;
+        }
+
+        console.log('Room players data:', roomPlayers);
+
+        if (roomPlayers && roomPlayers.length > 0) {
+          // 获取所有非AI玩家的用户信息
+          const userIds = roomPlayers
+            .filter(player => !player.is_ai && player.user_id)
+            .map(player => player.user_id);
+
+          let usersData = [];
+          if (userIds.length > 0) {
+            const { data: users, error: usersError } = await supabase
+              .from('users')
+              .select('user_id, player_name, avatar_url')
+              .in('user_id', userIds);
+
+            if (usersError) {
+              console.error('Error fetching users:', usersError);
+            } else {
+              usersData = users || [];
+            }
+          }
+
+          console.log('Users data:', usersData);
+
+          // 转换玩家数据
+          const transformedPlayers: Player[] = roomPlayers.map((player: any) => {
+            if (player.is_ai) {
+              return {
+                id: player.id,
+                name: `AI-Player-${player.id.slice(0, 8)}`,
+                avatar: '',
+                isReady: player.is_ready || false,
+                isHost: false,
+                isAI: true
+              };
+            } else {
+              const userData = usersData.find(user => user.user_id === player.user_id);
+              return {
+                id: player.id,
+                name: userData?.player_name || 'Unknown Player',
+                avatar: userData?.avatar_url || '',
+                isReady: player.is_ready || false,
+                isHost: roomData?.host_id === player.user_id,
+                isAI: false
+              };
+            }
+          });
           
+          console.log('Transformed players:', transformedPlayers);
           setPlayers(transformedPlayers);
+        } else {
+          console.log('No players found in room');
+          setPlayers([]);
         }
       } catch (error) {
         console.error('Error fetching players:', error);
