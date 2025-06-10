@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MessageSquareText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
@@ -14,7 +17,14 @@ import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
-import MultiChannelChat from '@/components/chat/MultiChannelChat';
+
+// Mock chat messages
+const initialMessages = [
+  { id: 1, sender: 'System', content: '欢迎来到游戏房间!' },
+  { id: 2, sender: 'System', content: '等待所有玩家准备...' },
+  { id: 3, sender: 'Alice', content: '大家好，很期待这局游戏!' },
+  { id: 4, sender: 'You', content: '准备好了就告诉我' },
+];
 
 const GameRoom = () => {
   const navigate = useNavigate();
@@ -22,6 +32,8 @@ const GameRoom = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isReady, setIsReady] = useState(false);
+  const [messages, setMessages] = useState(initialMessages);
+  const [newMessage, setNewMessage] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -52,9 +64,6 @@ const GameRoom = () => {
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
   
-  console.log('Current room data:', roomData);
-  console.log('Players from hook:', players);
-  console.log('Players loading:', playersLoading);
   console.log('Online players list:', onlinePlayersList);
   console.log('Online player user IDs:', onlinePlayers);
   
@@ -88,15 +97,11 @@ const GameRoom = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching data for room ID:', id);
-        
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUser(session.user);
           setCurrentUserId(session.user.id);
-          
-          console.log('Current user session:', session.user);
           
           // Get user profile for player name
           const { data: userData } = await supabase
@@ -105,14 +110,12 @@ const GameRoom = () => {
             .eq('user_id', session.user.id)
             .maybeSingle();
           
-          console.log('User profile data:', userData);
-          
           if (userData) {
             setCurrentUser({ ...session.user, player_name: userData.player_name });
           }
         }
 
-        // Fetch room data using the id from URL params
+        // Fetch room data using the id from URL params or fallback to user's most recent room
         if (id) {
           console.log('Fetching room data for room ID:', id);
           
@@ -124,12 +127,11 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
-              users!rooms_host_id_fkey(player_name)
+              users!rooms_host_id_fkey(player_name),
+              room_players(id, user_id)
             `)
             .eq('id', id)
             .maybeSingle();
-
-          console.log('Room query result:', { roomData, roomError });
 
           if (roomError) {
             console.error('Error fetching room:', roomError);
@@ -143,18 +145,58 @@ const GameRoom = () => {
 
           if (roomData) {
             console.log('Room data found:', roomData);
-            const processedRoomData = {
+            setRoomData({
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
               topic: '元素周期表',
               maxPlayers: roomData.max_players,
-            };
-            console.log('Processed room data:', processedRoomData);
-            setRoomData(processedRoomData);
+            });
             setPreviousMaxPlayers(roomData.max_players);
+
+            // 查找当前用户的 player ID - 这里不需要设置 currentPlayerId
+            if (session?.user) {
+              const currentPlayerRecord = roomData.room_players?.find(
+                (p: any) => p.user_id === session.user.id
+              );
+              // currentPlayerId 已经不再需要，因为我们使用 currentUserId
+            }
           } else {
             console.log('No room found with ID:', id);
+          }
+        } else if (session?.user) {
+          // Fallback: fetch user's most recent room
+          console.log('No room ID in URL, fetching user\'s most recent room');
+          
+          const { data: roomPlayerData } = await supabase
+            .from('room_players')
+            .select(`
+              id,
+              room_id,
+              rooms!inner(
+                id,
+                room_id,
+                max_players,
+                host_id,
+                users!rooms_host_id_fkey(player_name)
+              )
+            `)
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (roomPlayerData?.rooms) {
+            const room = roomPlayerData.rooms;
+            setRoomData({
+              id: room.id,
+              roomId: room.room_id,
+              hostPlayerId: room.users?.player_name || 'Unknown',
+              topic: '元素周期表',
+              maxPlayers: room.max_players,
+            });
+            setPreviousMaxPlayers(room.max_players);
+            // 不再需要设置 currentPlayerId，使用 currentUserId
           }
         }
       } catch (error) {
@@ -247,7 +289,7 @@ const GameRoom = () => {
     if (!currentUser || !roomData) return;
 
     // 检查是否满足准备条件
-    if (!canSelectRoles) {
+    if (!canSelectRoles()) {
       toast({
         title: '无法准备',
         description: `需要等待房间人数达到${currentMaxPlayers}人`,
@@ -256,7 +298,7 @@ const GameRoom = () => {
       return;
     }
 
-    if (!allPlayersSelectedRoles) {
+    if (!allPlayersSelectedRoles()) {
       toast({
         title: '无法准备',
         description: '需要等待所有玩家选择角色',
@@ -277,20 +319,8 @@ const GameRoom = () => {
 
     const newReadyState = !isReady;
     
-    // 修复玩家匹配逻辑：通过 user_id 而不是 player_name 匹配
-    const currentPlayer = players.find(p => {
-      // For AI players, they don't have user_id, so we skip them
-      if (p.isAI) return false;
-      
-      // 我们需要通过数据库查询来找到当前用户的 room_players 记录
-      // 但现在先通过名称匹配作为临时解决方案
-      return p.name === currentUser.player_name;
-    });
-    
-    console.log('Current player for ready toggle:', currentPlayer);
-    console.log('All players:', players);
-    console.log('Current user:', currentUser);
-    console.log('Looking for player with name:', currentUser.player_name);
+    // Find current user's player record
+    const currentPlayer = players.find(p => p.name === currentUser.player_name || p.name === 'You');
     
     if (currentPlayer) {
       try {
@@ -317,14 +347,6 @@ const GameRoom = () => {
           variant: "destructive",
         });
       }
-    } else {
-      console.error('Could not find current player in players list');
-      console.error('Available player names:', players.map(p => p.name));
-      toast({
-        title: t('error'),
-        description: '无法找到当前玩家信息',
-        variant: "destructive",
-      });
     }
   };
 
@@ -340,6 +362,20 @@ const GameRoom = () => {
     }
     
     setSelectedCharacter(characterId);
+  };
+  
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    
+    const message = {
+      id: messages.length + 1,
+      sender: 'You',
+      content: newMessage,
+    };
+    
+    setMessages([...messages, message]);
+    setNewMessage('');
   };
   
   const handleStartGame = () => {
@@ -505,12 +541,48 @@ const GameRoom = () => {
           
           {/* Right Column - Chat */}
           <div className="lg:col-span-4">
-            <MultiChannelChat
-              roomId={roomData?.id || null}
-              currentUser={currentUser}
-              isGameRoom={true}
-              title={t('room_chat')}
-            />
+            <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="text-werewolf-purple flex items-center">
+                  <MessageSquareText className="mr-2 h-5 w-5" />
+                  {t('room_chat')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col flex-1 min-h-[400px]">
+                <ScrollArea className="flex-1 pr-4 mb-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <div key={message.id} className="chat-message">
+                        <p className="text-sm">
+                          <span className={`font-bold ${
+                            message.sender === 'System' ? 'text-yellow-400' :
+                            message.sender === 'You' ? 'text-werewolf-purple' :
+                            'text-blue-400'
+                          }`}>
+                            {message.sender}:
+                          </span>
+                          <span className="ml-2">{message.content}</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+                
+                <form onSubmit={handleSendMessage} className="flex-shrink-0 mt-auto">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder={t('enter_message')}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      className="bg-werewolf-dark/40 border-werewolf-purple/30"
+                    />
+                    <Button type="submit" className="bg-werewolf-purple hover:bg-werewolf-light">
+                      {t('send')}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
