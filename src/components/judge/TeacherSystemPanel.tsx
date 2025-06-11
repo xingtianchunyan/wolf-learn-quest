@@ -1,209 +1,138 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Upload, FileText, Trash2, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { GraduationCap, Clock } from 'lucide-react';
 
 interface TeacherSystemPanelProps {
   roomId: string;
-  className?: string;
 }
 
-interface FileStatus {
+interface CurrentQuestion {
   id: string;
-  file_name: string;
-  status: string;
-  created_at: string;
-  processed_file_path?: string;
+  question: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_option: number;
+  explanation: string;
 }
 
-const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId, className }) => {
-  const [files, setFiles] = useState<FileStatus[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
+  const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes default
+  const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion | null>(null);
+  const [displayRound, setDisplayRound] = useState(1);
+  const [displayPhase, setDisplayPhase] = useState('傍晚');
 
+  // Mock data for demonstration
   useEffect(() => {
-    if (roomId) {
-      fetchFiles();
-    }
-  }, [roomId]);
+    setCurrentQuestion({
+      id: '1',
+      question: '在狼人杀游戏中，预言家的主要作用是什么？',
+      option_a: '每晚可以查验一名玩家的身份',
+      option_b: '每晚可以毒死一名玩家',
+      option_c: '每晚可以保护一名玩家',
+      option_d: '每晚可以与狼人队友交流',
+      correct_option: 1,
+      explanation: '预言家是神民阵营的重要角色，每晚可以查验一名玩家的身份（好人或狼人），是好人阵营获取信息的重要途径。'
+    });
+  }, []);
 
-  const fetchFiles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('file_processing_status')
-        .select('*')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false });
+  // Timer countdown effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
 
-      if (error) {
-        console.error('Error fetching files:', error);
-        return;
-      }
+    return () => clearInterval(timer);
+  }, []);
 
-      setFiles(data || []);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    } finally {
-      setLoading(false);
-    }
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      // TODO: Implement file upload to storage and processing
-      toast({
-        title: '文件上传功能待实现',
-        description: '文件上传和处理功能将在后续版本中实现',
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: '上传失败',
-        description: '文件上传过程中出现错误',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploading(false);
-    }
+  const getOptionLabel = (index: number) => {
+    return ['A', 'B', 'C', 'D'][index];
   };
 
-  const handleDeleteFile = async (fileId: string) => {
-    try {
-      const { error } = await supabase
-        .from('file_processing_status')
-        .delete()
-        .eq('id', fileId);
-
-      if (error) {
-        throw error;
-      }
-
-      await fetchFiles();
-      toast({
-        title: '文件删除成功',
-        description: '文件已从系统中删除',
-      });
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      toast({
-        title: '删除失败',
-        description: '删除文件时出现错误',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'text-green-400';
-      case 'processing': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed': return '已完成';
-      case 'processing': return '处理中';
-      case 'error': return '错误';
-      case 'uploaded': return '已上传';
-      default: return '未知状态';
+  const getOptionText = (option: number) => {
+    if (!currentQuestion) return '';
+    switch (option) {
+      case 1: return currentQuestion.option_a;
+      case 2: return currentQuestion.option_b;
+      case 3: return currentQuestion.option_c;
+      case 4: return currentQuestion.option_d;
+      default: return '';
     }
   };
 
   return (
-    <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
-          <FileText className="mr-2 h-5 w-5" />
-          教师系统
+          <GraduationCap className="mr-2 h-5 w-5" />
+          教师系统 - 第{displayRound}轮 {displayPhase}阶段
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-4">
-        {/* File Upload Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-white font-medium">文件上传</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-              onClick={() => document.getElementById('file-upload')?.click()}
-              disabled={uploading}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              {uploading ? '上传中...' : '选择文件'}
-            </Button>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </div>
-        </div>
+      
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 pr-4">
+            {/* 剩余答题时间 */}
+            <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
+              <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
+              <span className="text-lg font-bold text-werewolf-purple">
+                剩余时间: {formatTime(timeRemaining)}
+              </span>
+            </div>
 
-        {/* Files List */}
-        <div className="space-y-2">
-          <h3 className="text-white font-medium">上传的文件</h3>
-          <div className="max-h-48 overflow-y-auto space-y-2">
-            {loading ? (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
-                <p className="text-gray-400 text-sm">等待读取对应数据</p>
-              </div>
-            ) : files.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-gray-400 text-sm">暂无上传的文件</p>
-              </div>
-            ) : (
-              files.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between p-3 bg-werewolf-dark/40 rounded-md border border-werewolf-purple/30"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-300 text-sm font-medium truncate">
-                      {file.file_name}
-                    </p>
-                    <p className={`text-xs ${getStatusColor(file.status)}`}>
-                      {getStatusText(file.status)}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 ml-2">
-                    {file.status === 'completed' && file.processed_file_path && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 hover:bg-werewolf-purple/20"
-                      >
-                        <Download className="h-4 w-4 text-green-400" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteFile(file.id)}
-                      className="h-8 w-8 p-0 hover:bg-red-500/20"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-400" />
-                    </Button>
-                  </div>
+            {currentQuestion ? (
+              <>
+                {/* 题目题干 */}
+                <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                  <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
+                  <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
                 </div>
-              ))
+
+                {/* 选项列表 */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-werewolf-purple">选项</h3>
+                  {[1, 2, 3, 4].map((optionNum) => (
+                    <div 
+                      key={optionNum}
+                      className={`p-3 rounded-md border ${
+                        optionNum === currentQuestion.correct_option
+                          ? 'bg-green-500/20 border-green-500 text-green-300'
+                          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300'
+                      }`}
+                    >
+                      <span className="font-semibold mr-2">
+                        {getOptionLabel(optionNum - 1)}.
+                      </span>
+                      {getOptionText(optionNum)}
+                      {optionNum === currentQuestion.correct_option && (
+                        <span className="ml-2 text-green-400 font-bold">✓ 正确答案</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* 正确答案解析 */}
+                <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                  <h3 className="font-semibold text-werewolf-purple mb-2">答案解析</h3>
+                  <p className="text-gray-300 leading-relaxed">{currentQuestion.explanation}</p>
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-gray-400 py-8">
+                暂无题目信息
+              </div>
             )}
           </div>
-        </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
