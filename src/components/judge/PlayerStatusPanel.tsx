@@ -14,7 +14,8 @@ interface Player {
   isReady: boolean;
   isHost: boolean;
   isAI: boolean;
-  role?: string; // Add role property
+  role?: string;
+  user_id?: string; // Add user_id property for matching
 }
 
 interface PlayerStatusPanelProps {
@@ -98,7 +99,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                           {player.name}
                         </TableCell>
                         <TableCell className="text-gray-300">
-                          {(player as any).role || player.role || '未选择'}
+                          {(player as any).role || '未选择'}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
