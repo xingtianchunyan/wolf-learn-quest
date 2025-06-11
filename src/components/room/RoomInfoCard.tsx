@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePlayerPresence } from '@/hooks/usePlayerPresence';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 
 interface RoomInfoCardProps {
   roomId: string;
@@ -11,7 +13,6 @@ interface RoomInfoCardProps {
 interface RoomInfo {
   roomId: string;
   hostPlayerId: string;
-  topic: string;
   maxPlayers: number;
   currentPlayers: number;
   onlinePlayers: number;
@@ -21,6 +22,11 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // 获取玩家列表和在线状态
+  const { players } = usePlayersRealtime(roomId);
+  const { getOnlinePlayers } = usePlayerPresence(roomId, null);
+  const onlinePlayersList = getOnlinePlayers();
 
   useEffect(() => {
     const fetchRoomInfo = async () => {
@@ -49,23 +55,12 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           return;
         }
 
-        // 获取房间玩家数量
-        const { data: playersData, error: playersError } = await supabase
-          .from('room_players')
-          .select('id')
-          .eq('room_id', roomId);
-
-        if (playersError) {
-          console.error('Error fetching players:', playersError);
-        }
-
         const roomInfo: RoomInfo = {
           roomId: roomData.room_id,
           hostPlayerId: roomData.users?.player_name || 'Unknown',
-          topic: '元素周期表', // 固定主题
           maxPlayers: roomData.max_players,
-          currentPlayers: playersData?.length || 0,
-          onlinePlayers: playersData?.length || 0 // 简化处理，后续可以集成实际在线状态
+          currentPlayers: players.length,
+          onlinePlayers: onlinePlayersList.length
         };
 
         setRoomInfo(roomInfo);
@@ -84,7 +79,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
     if (roomId) {
       fetchRoomInfo();
     }
-  }, [roomId, toast]);
+  }, [roomId, toast, players.length, onlinePlayersList.length]);
 
   if (loading) {
     return (
@@ -131,10 +126,6 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           <div>
             <p className="text-sm text-gray-400">房主ID</p>
             <p>{roomInfo.hostPlayerId}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">学习主题</p>
-            <p>{roomInfo.topic}</p>
           </div>
           <div>
             <p className="text-sm text-gray-400">房间人数</p>

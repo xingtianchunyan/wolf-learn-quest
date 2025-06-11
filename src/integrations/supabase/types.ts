@@ -63,6 +63,47 @@ export type Database = {
           },
         ]
       }
+      file_processing_status: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          original_file_path: string | null
+          processed_file_path: string | null
+          room_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          original_file_path?: string | null
+          processed_file_path?: string | null
+          room_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          original_file_path?: string | null
+          processed_file_path?: string | null
+          room_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_processing_status_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_actions: {
         Row: {
           action_type: string
@@ -328,6 +369,56 @@ export type Database = {
             foreignKeyName: "game_states_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: true
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          created_by: string | null
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          room_id: string
+          source_file: string | null
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          room_id: string
+          source_file?: string | null
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_text?: string
+          room_id?: string
+          source_file?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_questions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
