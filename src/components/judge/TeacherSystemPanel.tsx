@@ -80,11 +80,11 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
       
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="space-y-4 pr-4">
+          <div className="space-y-3 pr-4">
             {/* 剩余答题时间 */}
-            <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
-              <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
-              <span className="text-lg font-bold text-werewolf-purple">
+            <div className="flex items-center justify-center p-2 bg-werewolf-dark/40 rounded-md">
+              <Clock className="mr-2 h-4 w-4 text-werewolf-purple" />
+              <span className="text-sm font-bold text-werewolf-purple">
                 剩余时间: {formatTime(timeRemaining)}
               </span>
             </div>
@@ -92,18 +92,18 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
             {currentQuestion ? (
               <>
                 {/* 题目题干 */}
-                <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                  <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
-                  <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
+                <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                  <h3 className="font-semibold text-werewolf-purple mb-2 text-sm">题目</h3>
+                  <p className="text-gray-300 leading-relaxed text-sm">{currentQuestion.question}</p>
                 </div>
 
                 {/* 选项列表 */}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-werewolf-purple">选项</h3>
+                  <h3 className="font-semibold text-werewolf-purple text-sm">选项</h3>
                   {[1, 2, 3, 4].map((optionNum) => (
                     <div 
                       key={optionNum}
-                      className={`p-3 rounded-md border ${
+                      className={`p-2 rounded-md border text-sm ${
                         optionNum === currentQuestion.correct_option
                           ? 'bg-green-500/20 border-green-500 text-green-300'
                           : 'bg-werewolf-dark/40 border-gray-600 text-gray-300'
@@ -114,16 +114,16 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                       </span>
                       {getOptionText(optionNum)}
                       {optionNum === currentQuestion.correct_option && (
-                        <span className="ml-2 text-green-400 font-bold">✓ 正确答案</span>
+                        <span className="ml-2 text-green-400 font-bold">✓</span>
                       )}
                     </div>
                   ))}
                 </div>
 
                 {/* 正确答案解析 */}
-                <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                  <h3 className="font-semibold text-werewolf-purple mb-2">答案解析</h3>
-                  <p className="text-gray-300 leading-relaxed">{currentQuestion.explanation}</p>
+                <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                  <h3 className="font-semibold text-werewolf-purple mb-2 text-sm">答案解析</h3>
+                  <p className="text-gray-300 leading-relaxed text-sm">{currentQuestion.explanation}</p>
                 </div>
               </>
             ) : (

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { GamepadIcon } from 'lucide-react';
 import PlayerStatusDisplay from './PlayerStatusDisplay';
 
@@ -23,27 +24,31 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
   ];
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GamepadIcon className="mr-2 h-5 w-5" />
           游戏信息
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        {/* 当前游戏轮次和阶段 */}
-        <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">
-          <h2 className="text-xl font-bold text-werewolf-purple">
-            第{currentRound}轮 - {currentPhase}阶段
-          </h2>
-        </div>
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 pr-4">
+            {/* 当前游戏轮次和阶段 */}
+            <div className="text-center p-3 bg-werewolf-dark/40 rounded-md">
+              <h2 className="text-lg font-bold text-werewolf-purple">
+                第{currentRound}轮 - {currentPhase}阶段
+              </h2>
+            </div>
 
-        {/* 玩家角色和状态 */}
-        <div className="space-y-3">
-          <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
-          <PlayerStatusDisplay players={players} />
-        </div>
+            {/* 玩家角色和状态 */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
+              <PlayerStatusDisplay players={players} />
+            </div>
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
