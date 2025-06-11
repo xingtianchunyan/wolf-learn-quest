@@ -43,10 +43,10 @@ const JudgePage = () => {
           </Link>
         </div>
 
-        {/* Main Content Grid - 修复高度问题 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{ height: 'calc(100vh - 16rem)' }}>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Teacher System and Answer Records */}
-          <div className="lg:col-span-3 flex flex-col gap-6 h-full">
+          <div className="lg:col-span-3 space-y-6 h-[70vh]">
             <div className="h-1/2">
               <TeacherSystemPanel roomId={roomId} />
             </div>
@@ -56,7 +56,7 @@ const JudgePage = () => {
           </div>
           
           {/* Center Column - Game State and Judge Actions */}
-          <div className="lg:col-span-6 flex flex-col gap-6 h-full">
+          <div className="lg:col-span-6 space-y-6 h-[70vh]">
             <div className="h-1/2">
               <EnhancedGameStateDisplay roomId={roomId} />
             </div>
@@ -66,7 +66,7 @@ const JudgePage = () => {
           </div>
           
           {/* Right Column - Chat */}
-          <div className="lg:col-span-3 h-full">
+          <div className="lg:col-span-3 h-[70vh]">
             <MultiChannelChat
               roomId={roomId}
               currentUser={currentUser}

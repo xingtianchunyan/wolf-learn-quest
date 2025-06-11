@@ -25,6 +25,10 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const [displayRound, setDisplayRound] = useState(1);
   const [displayPhase, setDisplayPhase] = useState('傍晚');
 
+  // Mock current game state - in real implementation, this would come from props or context
+  const currentGameRound = 2;
+  const currentGamePhase = '白天'; // Current phase from game state
+
   // Mock data for demonstration
   useEffect(() => {
     setCurrentQuestion({
@@ -37,7 +41,23 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
       correct_option: 1,
       explanation: '预言家是神民阵营的重要角色，每晚可以查验一名玩家的身份（好人或狼人），是好人阵营获取信息的重要途径。'
     });
-  }, []);
+
+    // Update display phase based on current game phase
+    // Only update when entering evening or dawn phases
+    if (currentGamePhase === '傍晚') {
+      setDisplayRound(currentGameRound);
+      setDisplayPhase('傍晚');
+    } else if (currentGamePhase === '黎明') {
+      setDisplayRound(currentGameRound);
+      setDisplayPhase('黎明');
+    } else if (currentGamePhase === '白天') {
+      // Show previous dawn phase info
+      setDisplayPhase('黎明');
+    } else if (currentGamePhase === '夜晚') {
+      // Show previous evening phase info
+      setDisplayPhase('傍晚');
+    }
+  }, [currentGameRound, currentGamePhase]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -70,17 +90,17 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   };
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+      <CardHeader className="pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GraduationCap className="mr-2 h-5 w-5" />
           教师系统 - 第{displayRound}轮 {displayPhase}阶段
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="space-y-4 pr-4">
+      <CardContent className="h-full p-0">
+        <ScrollArea className="h-[calc(100%-2rem)] px-6">
+          <div className="space-y-4 pb-4">
             {/* 剩余答题时间 */}
             <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
               <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
