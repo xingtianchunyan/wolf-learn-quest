@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,10 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   roomId
 }) => {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   // 使用真实数据
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
@@ -84,6 +88,42 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   const allPlayersReady = players.every(player => player.isReady);
 
+  // 拖动处理函数
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setPosition({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragStart]);
+
   const handleStartGame = () => {
     console.log('开始游戏');
     onClose();
@@ -115,149 +155,47 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
     );
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[80vh] bg-werewolf-card border-werewolf-purple/30">
-        <DialogHeader>
+    <div className="fixed inset-0 z-50 pointer-events-none">
+      <div 
+        ref={dialogRef}
+        className="absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl"
+        style={{
+          left: `${position.x + 100}px`,
+          top: `${position.y + 50}px`,
+          width: '900px',
+          height: '600px'
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <DialogHeader className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
           <DialogTitle className="text-werewolf-purple text-xl">
             准备阶段管理
           </DialogTitle>
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple"
+          >
+            ✕
+          </button>
         </DialogHeader>
         
-        <div className="grid grid-cols-12 gap-6 h-full overflow-hidden">
-          {/* 左侧 - 题库组件 */}
-          <div className="col-span-4 flex flex-col">
+        <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
+          {/* 左侧 - 房间信息和开始游戏按钮 */}
+          <div className="col-span-4 flex flex-col gap-4">
             {/* 房间信息 */}
-            <div className="mb-4">
+            <div className="flex-shrink-0">
               <RoomInfoCard roomId={roomId} />
             </div>
             
-            {/* 题库 */}
-            <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 flex-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-werewolf-purple flex items-center text-lg">
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  题库管理
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 h-full overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="space-y-3 pr-4">
-                    {questions.map((question) => (
-                      <div
-                        key={question.id}
-                        className={`p-3 rounded-md border cursor-pointer transition-colors ${
-                          selectedQuestionId === question.id
-                            ? 'border-werewolf-purple bg-werewolf-purple/20'
-                            : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
-                        }`}
-                        onClick={() => setSelectedQuestionId(question.id)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className={`${getDifficultyColor(question.difficulty)} text-white`}>
-                            {getDifficultyText(question.difficulty)}
-                          </Badge>
-                          <span className="text-xs text-gray-400">{question.category}</span>
-                        </div>
-                        <p className="text-sm text-gray-300">{question.question}</p>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 右侧 - 玩家状态表格和开始游戏按钮 */}
-          <div className="col-span-8 flex flex-col">
-            <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 flex-1 overflow-hidden">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-werewolf-purple flex items-center text-lg">
-                  <Users className="mr-2 h-5 w-5" />
-                  玩家状态
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 h-full overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="border border-werewolf-purple/30 rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-werewolf-purple/30">
-                          <TableHead className="text-werewolf-purple">玩家ID</TableHead>
-                          <TableHead className="text-werewolf-purple">角色</TableHead>
-                          <TableHead className="text-werewolf-purple">在线状态</TableHead>
-                          <TableHead className="text-werewolf-purple">准备状态</TableHead>
-                          <TableHead className="text-werewolf-purple">特殊标识</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {playersLoading ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-gray-400 py-4">
-                              加载中...
-                            </TableCell>
-                          </TableRow>
-                        ) : players.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-gray-400 py-4">
-                              暂无玩家
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          players.map((player) => (
-                            <TableRow key={player.id} className="border-werewolf-purple/30">
-                              <TableCell className="text-gray-300 font-medium">
-                                {player.name}
-                              </TableCell>
-                              <TableCell className="text-gray-300">
-                                未选择
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center space-x-2">
-                                  {isPlayerOnline(player) ? (
-                                    <Wifi className="h-4 w-4 text-green-400" />
-                                  ) : (
-                                    <WifiOff className="h-4 w-4 text-red-400" />
-                                  )}
-                                  <span className={`text-sm ${isPlayerOnline(player) ? 'text-green-400' : 'text-red-400'}`}>
-                                    {isPlayerOnline(player) ? '在线' : '离线'}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center space-x-2">
-                                  {player.isReady ? (
-                                    <UserCheck className="h-4 w-4 text-green-400" />
-                                  ) : (
-                                    <UserX className="h-4 w-4 text-red-400" />
-                                  )}
-                                  <span className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}>
-                                    {player.isReady ? '已准备' : '未准备'}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center space-x-1">
-                                  {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
-                                  {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
             {/* 开始游戏按钮 */}
-            <div className="mt-4 flex justify-center">
+            <div className="flex-shrink-0">
               <Button
                 onClick={handleStartGame}
                 disabled={!allPlayersReady || players.length === 0}
-                className={`px-8 py-3 text-lg ${
+                className={`w-full px-4 py-3 text-lg ${
                   allPlayersReady && players.length > 0
                     ? 'bg-werewolf-purple hover:bg-werewolf-light'
                     : 'bg-gray-600 cursor-not-allowed'
@@ -268,9 +206,134 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
               </Button>
             </div>
           </div>
+
+          {/* 右侧 - 题库和玩家状态 */}
+          <div className="col-span-8 flex flex-col gap-4">
+            {/* 题库管理 */}
+            <div className="flex-1">
+              <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-werewolf-purple flex items-center text-lg">
+                    <BookOpen className="mr-2 h-5 w-5" />
+                    题库管理
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
+                  <ScrollArea className="h-full">
+                    <div className="space-y-3 pr-4">
+                      {questions.map((question) => (
+                        <div
+                          key={question.id}
+                          className={`p-3 rounded-md border cursor-pointer transition-colors ${
+                            selectedQuestionId === question.id
+                              ? 'border-werewolf-purple bg-werewolf-purple/20'
+                              : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
+                          }`}
+                          onClick={() => setSelectedQuestionId(question.id)}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge className={`${getDifficultyColor(question.difficulty)} text-white`}>
+                              {getDifficultyText(question.difficulty)}
+                            </Badge>
+                            <span className="text-xs text-gray-400">{question.category}</span>
+                          </div>
+                          <p className="text-sm text-gray-300">{question.question}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 玩家状态 */}
+            <div className="flex-1">
+              <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-werewolf-purple flex items-center text-lg">
+                    <Users className="mr-2 h-5 w-5" />
+                    玩家状态
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
+                  <ScrollArea className="h-full">
+                    <div className="border border-werewolf-purple/30 rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-werewolf-purple/30">
+                            <TableHead className="text-werewolf-purple">玩家ID</TableHead>
+                            <TableHead className="text-werewolf-purple">角色</TableHead>
+                            <TableHead className="text-werewolf-purple">在线状态</TableHead>
+                            <TableHead className="text-werewolf-purple">准备状态</TableHead>
+                            <TableHead className="text-werewolf-purple">特殊标识</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {playersLoading ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center text-gray-400 py-4">
+                                加载中...
+                              </TableCell>
+                            </TableRow>
+                          ) : players.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center text-gray-400 py-4">
+                                暂无玩家
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            players.map((player) => (
+                              <TableRow key={player.id} className="border-werewolf-purple/30">
+                                <TableCell className="text-gray-300 font-medium">
+                                  {player.name}
+                                </TableCell>
+                                <TableCell className="text-gray-300">
+                                  未选择
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center space-x-2">
+                                    {isPlayerOnline(player) ? (
+                                      <Wifi className="h-4 w-4 text-green-400" />
+                                    ) : (
+                                      <WifiOff className="h-4 w-4 text-red-400" />
+                                    )}
+                                    <span className={`text-sm ${isPlayerOnline(player) ? 'text-green-400' : 'text-red-400'}`}>
+                                      {isPlayerOnline(player) ? '在线' : '离线'}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center space-x-2">
+                                    {player.isReady ? (
+                                      <UserCheck className="h-4 w-4 text-green-400" />
+                                    ) : (
+                                      <UserX className="h-4 w-4 text-red-400" />
+                                    )}
+                                    <span className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}>
+                                      {player.isReady ? '已准备' : '未准备'}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center space-x-1">
+                                    {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
+                                    {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 

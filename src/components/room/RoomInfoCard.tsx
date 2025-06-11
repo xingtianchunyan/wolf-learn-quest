@@ -147,7 +147,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           
           <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
             <p className="text-xs text-gray-400 text-center">
-              游戏开始后自动关闭房间
+              游戏开始后将玩家拉入对应游戏页面
             </p>
           </div>
         </div>
