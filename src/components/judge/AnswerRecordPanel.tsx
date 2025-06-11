@@ -1,176 +1,147 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, Clock, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnswerRecordPanelProps {
   roomId: string;
-}
-
-interface PlayerAnswer {
-  playerId: string;
-  playerName: string;
-  selectedOption: number;
-  remainingTime: number;
-  isCorrect: boolean;
+  className?: string;
 }
 
 interface AnswerRecord {
-  round: number;
-  phase: string;
-  questionText: string;
-  correctOption: number;
-  answers: PlayerAnswer[];
+  id: string;
+  player_name: string;
+  question_text: string;
+  selected_option: number;
+  is_correct: boolean;
+  response_time: number;
+  created_at: string;
 }
 
-const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  
-  // Mock data for demonstration
-  const answerRecords: AnswerRecord[] = [
-    {
-      round: 1,
-      phase: '傍晚',
-      questionText: '在狼人杀游戏中，预言家的主要作用是什么？',
-      correctOption: 1,
-      answers: [
-        { playerId: 'player1', playerName: '玩家1', selectedOption: 1, remainingTime: 45, isCorrect: true },
-        { playerId: 'player2', playerName: '玩家2', selectedOption: 2, remainingTime: 32, isCorrect: false },
-        { playerId: 'player3', playerName: '玩家3', selectedOption: 1, remainingTime: 28, isCorrect: true },
-        { playerId: 'player4', playerName: '玩家4', selectedOption: 3, remainingTime: 15, isCorrect: false },
-      ]
-    },
-    {
-      round: 1,
-      phase: '黎明',
-      questionText: '女巫的解药可以救活谁？',
-      correctOption: 2,
-      answers: [
-        { playerId: 'player1', playerName: '玩家1', selectedOption: 2, remainingTime: 50, isCorrect: true },
-        { playerId: 'player2', playerName: '玩家2', selectedOption: 1, remainingTime: 40, isCorrect: false },
-        { playerId: 'player3', playerName: '玩家3', selectedOption: 2, remainingTime: 35, isCorrect: true },
-        { playerId: 'player4', playerName: '玩家4', selectedOption: 4, remainingTime: 20, isCorrect: false },
-      ]
+const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId, className }) => {
+  const [answers, setAnswers] = useState<AnswerRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (roomId) {
+      fetchAnswers();
+      // TODO: Set up real-time subscription for answer updates
     }
-  ];
+  }, [roomId]);
 
-  const totalPages = Math.max(1, answerRecords.length);
-  const currentRecord = answerRecords[currentPage];
+  const fetchAnswers = async () => {
+    try {
+      // TODO: Implement proper query with joins once player_answers table structure is confirmed
+      // This is a placeholder query structure
+      const { data, error } = await supabase
+        .from('player_answers')
+        .select(`
+          id,
+          selected_option,
+          is_correct,
+          response_time,
+          created_at,
+          question_id,
+          player_id
+        `)
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(0, prev - 1));
+      if (error) {
+        console.error('Error fetching answers:', error);
+        return;
+      }
+
+      // TODO: Transform data once we have proper relations
+      setAnswers([]);
+    } catch (error) {
+      console.error('Error fetching answers:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
-  };
-
-  const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const formatResponseTime = (seconds: number) => {
+    return `${seconds}秒`;
   };
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 pb-3">
-        <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
-          <div className="flex items-center">
-            <ClipboardList className="mr-2 h-5 w-5" />
-            答题记录
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-gray-400">
-              {currentPage + 1} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages - 1}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+    <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-werewolf-purple flex items-center text-lg">
+          <Users className="mr-2 h-5 w-5" />
+          答题记录
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-        {currentRecord ? (
-          <div className="space-y-4 h-full">
-            {/* 题目信息 */}
-            <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold text-werewolf-purple">
-                  第{currentRecord.round}轮 - {currentRecord.phase}阶段
-                </h3>
-                <span className="text-sm text-gray-400">
-                  正确答案: {getOptionLabel(currentRecord.correctOption)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-300">{currentRecord.questionText}</p>
-            </div>
+      <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
+        {/* Current Question Status */}
+        <div className="mb-4 p-3 bg-werewolf-dark/40 rounded-md border border-werewolf-purple/30">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white font-medium text-sm">当前题目状态</span>
+            <Badge variant="outline" className="border-werewolf-purple/50">
+              <Clock className="h-3 w-3 mr-1" />
+              等待读取对应数据
+            </Badge>
+          </div>
+          <p className="text-gray-400 text-sm">
+            {currentQuestion || '暂无进行中的题目'}
+          </p>
+        </div>
 
-            {/* 答题记录列表 */}
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-2 pr-4">
-                  {currentRecord.answers.map((answer, index) => (
-                    <div 
-                      key={answer.playerId}
-                      className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-gray-300">
-                            {answer.playerName}
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            answer.isCorrect 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-red-500/20 text-red-400'
-                          }`}>
-                            {getOptionLabel(answer.selectedOption)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-400">
-                            剩余: {formatTime(answer.remainingTime)}
-                          </span>
-                          {answer.isCorrect ? (
-                            <span className="text-green-400">✓</span>
-                          ) : (
-                            <span className="text-red-400">✗</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+        {/* Answer Records */}
+        <ScrollArea className="h-[calc(100%-120px)]">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
+              <p className="text-gray-400 text-sm">等待读取对应数据</p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-8">
-            暂无答题记录
-          </div>
-        )}
+          ) : answers.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400 text-sm">暂无答题记录</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {answers.map((answer) => (
+                <div
+                  key={answer.id}
+                  className="p-3 bg-werewolf-dark/20 rounded-md border border-werewolf-purple/30"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="text-white font-medium text-sm">
+                          {answer.player_name}
+                        </span>
+                        {answer.is_correct ? (
+                          <CheckCircle className="h-4 w-4 text-green-400" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-400" />
+                        )}
+                      </div>
+                      <p className="text-gray-300 text-xs">
+                        选择: 选项 {String.fromCharCode(65 + answer.selected_option - 1)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-400 text-xs">
+                        {formatResponseTime(answer.response_time)}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {new Date(answer.created_at).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-xs truncate">
+                    {answer.question_text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
       </CardContent>
     </Card>
   );

@@ -1,214 +1,234 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings } from 'lucide-react';
+  Play, 
+  Pause, 
+  SkipForward, 
+  Settings,
+  HelpCircle,
+  Users,
+  FileQuestion,
+  Target
+} from 'lucide-react';
+import { useGameState } from '@/hooks/useGameState';
 import PreparationPhaseDialog from './PreparationPhaseDialog';
+import QuestionBankDialog from './QuestionBankDialog';
 
 interface JudgeActionPanelProps {
   roomId: string;
+  className?: string;
 }
 
-interface VoteRecord {
-  votedPlayerId: string;
-  votedPlayerName: string;
-  voteCount: number;
-  voters: string[];
-}
+const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId, className }) => {
+  const [showPreparationDialog, setShowPreparationDialog] = useState(false);
+  const [showQuestionBankDialog, setShowQuestionBankDialog] = useState(false);
+  
+  const {
+    gameState,
+    loading: gameLoading,
+    startGame,
+    advancePhase,
+    togglePause,
+    endGame,
+  } = useGameState(roomId);
 
-const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
-  const [isAutoAdvance, setIsAutoAdvance] = useState(true);
-  const [isSemiAuto, setIsSemiAuto] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
-
-  // Mock voting data
-  const voteRecords: VoteRecord[] = [
-    {
-      votedPlayerId: 'player1',
-      votedPlayerName: '玩家1',
-      voteCount: 3,
-      voters: ['玩家2', '玩家3', '玩家4']
-    },
-    {
-      votedPlayerId: 'player2',
-      votedPlayerName: '玩家2',
-      voteCount: 2,
-      voters: ['玩家5', '玩家6']
-    },
-    {
-      votedPlayerId: 'player3',
-      votedPlayerName: '玩家3',
-      voteCount: 1,
-      voters: ['玩家7']
-    }
-  ];
-
-  const handleAutoAdvanceToggle = (checked: boolean) => {
-    setIsAutoAdvance(checked);
-    if (checked) {
-      setIsSemiAuto(false);
-    } else {
-      // 如果关闭全自动，则自动开启半自动
-      setIsSemiAuto(true);
+  const handleStartGame = async () => {
+    try {
+      await startGame();
+    } catch (error) {
+      console.error('Error starting game:', error);
     }
   };
 
-  const handleSemiAutoToggle = (checked: boolean) => {
-    setIsSemiAuto(checked);
-    if (checked) {
-      setIsAutoAdvance(false);
-    } else {
-      // 如果关闭半自动，则自动开启全自动
-      setIsAutoAdvance(true);
+  const handleAdvancePhase = async () => {
+    try {
+      await advancePhase();
+    } catch (error) {
+      console.error('Error advancing phase:', error);
     }
   };
 
-  const handleNextPhase = () => {
-    console.log('进入下个阶段');
+  const handleTogglePause = async () => {
+    try {
+      await togglePause();
+    } catch (error) {
+      console.error('Error toggling pause:', error);
+    }
   };
 
-  const handlePauseGame = () => {
-    setIsPaused(!isPaused);
-    console.log(isPaused ? '恢复游戏' : '暂停游戏');
+  const handleEndGame = async () => {
+    try {
+      await endGame();
+    } catch (error) {
+      console.error('Error ending game:', error);
+    }
   };
 
-  const handleEndGame = () => {
-    console.log('结束游戏');
-  };
-
-  const handleGameSettlement = () => {
-    console.log('游戏结算');
-  };
+  const isGameActive = gameState?.status === 'active';
+  const isGamePaused = gameState?.isPaused || false;
 
   return (
     <>
-      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-        <CardHeader className="flex-shrink-0 pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-werewolf-purple flex items-center text-lg">
-              <Gavel className="mr-2 h-5 w-5" />
-              法官行动
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPreparationDialogOpen(true)}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              准备阶段
-            </Button>
-          </div>
+      <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-werewolf-purple flex items-center text-lg">
+            <Target className="mr-2 h-5 w-5" />
+            法官操作面板
+          </CardTitle>
         </CardHeader>
-        
-        <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="space-y-4 pr-4">
-              {/* 投票结果表格 */}
-              <div className="space-y-2">
-                <h3 className="font-semibold text-werewolf-purple">最新投票结果</h3>
-                <div className="border border-werewolf-purple/30 rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-werewolf-purple/30">
-                        <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
-                        <TableHead className="text-werewolf-purple">得票数</TableHead>
-                        <TableHead className="text-werewolf-purple">投票玩家</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {voteRecords.map((record) => (
-                        <TableRow key={record.votedPlayerId} className="border-werewolf-purple/30">
-                          <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
-                          <TableCell className="text-gray-300">{record.voteCount}</TableCell>
-                          <TableCell className="text-gray-300 text-sm">
-                            {record.voters.join(', ')}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-
-              {/* 自动化设置 */}
-              <div className="space-y-3 p-4 bg-werewolf-dark/40 rounded-md">
-                <h3 className="font-semibold text-werewolf-purple mb-3">游戏阶段控制</h3>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">全自动切换游戏阶段</span>
-                  <Switch
-                    checked={isAutoAdvance}
-                    onCheckedChange={handleAutoAdvanceToggle}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">半自动切换游戏阶段</span>
-                  <Switch
-                    checked={isSemiAuto}
-                    onCheckedChange={handleSemiAutoToggle}
-                  />
-                </div>
-              </div>
-
-              {/* 游戏控制按钮 */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleNextPhase}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+        <CardContent className="p-4 pt-0 space-y-4">
+          {/* Game Status */}
+          <div className="p-3 bg-werewolf-dark/40 rounded-md border border-werewolf-purple/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-white font-medium text-sm">游戏状态</span>
+              {gameLoading ? (
+                <Badge variant="outline" className="border-werewolf-purple/50">
+                  等待读取对应数据
+                </Badge>
+              ) : (
+                <Badge 
+                  variant="outline" 
+                  className={
+                    isGameActive 
+                      ? 'border-green-500 text-green-200' 
+                      : 'border-gray-500 text-gray-200'
+                  }
                 >
-                  <SkipForward className="h-4 w-4 mr-2" />
-                  进入下个阶段
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={handlePauseGame}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                >
-                  {isPaused ? <Play className="h-4 w-4 mr-2" /> : <Pause className="h-4 w-4 mr-2" />}
-                  {isPaused ? '恢复游戏' : '暂停游戏'}
-                </Button>
-                
-                <Button
-                  variant="destructive"
-                  onClick={handleEndGame}
-                  className="hover:bg-red-600"
-                >
-                  <Square className="h-4 w-4 mr-2" />
-                  结束游戏
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={handleGameSettlement}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                >
-                  <Calculator className="h-4 w-4 mr-2" />
-                  游戏结算
-                </Button>
-              </div>
+                  {isGameActive ? '进行中' : '等待开始'}
+                </Badge>
+              )}
             </div>
-          </ScrollArea>
+            {gameState && (
+              <div className="text-sm text-gray-400">
+                第 {gameState.currentRound} 轮 - {gameState.currentPhase === 'day' ? '白天' : 
+                  gameState.currentPhase === 'evening' ? '傍晚' :
+                  gameState.currentPhase === 'night' ? '夜晚' : '黎明'}阶段
+              </div>
+            )}
+          </div>
+
+          {/* Game Control Buttons */}
+          <div className="space-y-3">
+            <h3 className="text-white font-medium text-sm">游戏控制</h3>
+            
+            <div className="grid grid-cols-2 gap-2">
+              {!isGameActive ? (
+                <Button
+                  onClick={handleStartGame}
+                  disabled={gameLoading}
+                  className="bg-werewolf-purple hover:bg-werewolf-light text-white col-span-2"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  开始游戏
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTogglePause}
+                    className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                  >
+                    {isGamePaused ? (
+                      <>
+                        <Play className="h-4 w-4 mr-1" />
+                        恢复
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="h-4 w-4 mr-1" />
+                        暂停
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAdvancePhase}
+                    className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                  >
+                    <SkipForward className="h-4 w-4 mr-1" />
+                    下一阶段
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {isGameActive && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleEndGame}
+                className="w-full"
+              >
+                结束游戏
+              </Button>
+            )}
+          </div>
+
+          {/* Management Buttons */}
+          <div className="space-y-3">
+            <h3 className="text-white font-medium text-sm">管理功能</h3>
+            
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreparationDialog(true)}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 justify-start"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                准备阶段管理
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowQuestionBankDialog(true)}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 justify-start"
+              >
+                <FileQuestion className="h-4 w-4 mr-2" />
+                题库管理
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 justify-start opacity-50"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                游戏设置
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 justify-start opacity-50"
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                规则说明
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
+      {/* Dialogs */}
       <PreparationPhaseDialog
-        isOpen={isPreparationDialogOpen}
-        onClose={() => setIsPreparationDialogOpen(false)}
+        isOpen={showPreparationDialog}
+        onClose={() => setShowPreparationDialog(false)}
+        roomId={roomId}
+      />
+
+      <QuestionBankDialog
+        isOpen={showQuestionBankDialog}
+        onClose={() => setShowQuestionBankDialog(false)}
         roomId={roomId}
       />
     </>
