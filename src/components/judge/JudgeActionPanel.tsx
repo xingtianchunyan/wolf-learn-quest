@@ -53,16 +53,26 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   ];
 
   const handleAutoAdvanceToggle = (checked: boolean) => {
-    setIsAutoAdvance(checked);
     if (checked) {
+      // 开启全自动时，关闭半自动
+      setIsAutoAdvance(true);
       setIsSemiAuto(false);
+    } else {
+      // 关闭全自动时，必须开启半自动
+      setIsAutoAdvance(false);
+      setIsSemiAuto(true);
     }
   };
 
   const handleSemiAutoToggle = (checked: boolean) => {
-    setIsSemiAuto(checked);
     if (checked) {
+      // 开启半自动时，关闭全自动
+      setIsSemiAuto(true);
       setIsAutoAdvance(false);
+    } else {
+      // 关闭半自动时，必须开启全自动
+      setIsSemiAuto(false);
+      setIsAutoAdvance(true);
     }
   };
 

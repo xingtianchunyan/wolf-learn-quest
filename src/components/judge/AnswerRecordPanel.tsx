@@ -32,7 +32,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const answerRecords: AnswerRecord[] = [
     {
       round: 1,
-      phase: '白天',
+      phase: '傍晚',
       questionText: '在狼人杀游戏中，预言家的主要作用是什么？',
       correctOption: 1,
       answers: [
@@ -66,7 +66,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full max-h-[calc(70vh-1rem)]">
       <CardHeader className="pb-3">
         <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
           <div className="flex items-center">
@@ -101,7 +101,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       
       <CardContent className="h-full">
         {currentRecord ? (
-          <div className="space-y-4">
+          <div className="space-y-4 h-full">
             {/* 题目信息 */}
             <div className="p-3 bg-werewolf-dark/40 rounded-md">
               <div className="flex justify-between items-center mb-2">
@@ -116,41 +116,43 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             </div>
 
             {/* 答题记录列表 */}
-            <ScrollArea className="h-[200px]">
-              <div className="space-y-2">
-                {currentRecord.answers.map((answer, index) => (
-                  <div 
-                    key={answer.playerId}
-                    className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-gray-300">
-                          {answer.playerName}
-                        </span>
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          answer.isCorrect 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {getOptionLabel(answer.selectedOption)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400">
-                          剩余: {formatTime(answer.remainingTime)}
-                        </span>
-                        {answer.isCorrect ? (
-                          <span className="text-green-400">✓</span>
-                        ) : (
-                          <span className="text-red-400">✗</span>
-                        )}
+            <div className="flex-1">
+              <ScrollArea className="h-[300px]">
+                <div className="space-y-2">
+                  {currentRecord.answers.map((answer, index) => (
+                    <div 
+                      key={answer.playerId}
+                      className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-gray-300">
+                            {answer.playerName}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            answer.isCorrect 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-red-500/20 text-red-400'
+                          }`}>
+                            {getOptionLabel(answer.selectedOption)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-400">
+                            剩余: {formatTime(answer.remainingTime)}
+                          </span>
+                          {answer.isCorrect ? (
+                            <span className="text-green-400">✓</span>
+                          ) : (
+                            <span className="text-red-400">✗</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
         ) : (
           <div className="text-center text-gray-400 py-8">
