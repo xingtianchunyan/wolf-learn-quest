@@ -79,33 +79,33 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 pb-2">
-        <CardTitle className="text-werewolf-purple flex items-center justify-between text-base">
+      <CardHeader className="flex-shrink-0 pb-3">
+        <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
           <div className="flex items-center">
-            <ClipboardList className="mr-2 h-4 w-4" />
+            <ClipboardList className="mr-2 h-5 w-5" />
             答题记录
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handlePrevPage}
               disabled={currentPage === 0}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 h-6 w-6 p-0"
+              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
             >
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-gray-400">
-              {currentPage + 1}/{totalPages}
+            <span className="text-sm text-gray-400">
+              {currentPage + 1} / {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={handleNextPage}
               disabled={currentPage === totalPages - 1}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20 h-6 w-6 p-0"
+              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
             >
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </CardTitle>
@@ -113,18 +113,18 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         {currentRecord ? (
-          <div className="space-y-3 h-full">
+          <div className="space-y-4 h-full">
             {/* 题目信息 */}
-            <div className="p-2 bg-werewolf-dark/40 rounded-md flex-shrink-0">
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="font-semibold text-werewolf-purple text-sm">
+            <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-werewolf-purple">
                   第{currentRecord.round}轮 - {currentRecord.phase}阶段
                 </h3>
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-gray-400">
                   正确答案: {getOptionLabel(currentRecord.correctOption)}
                 </span>
               </div>
-              <p className="text-xs text-gray-300">{currentRecord.questionText}</p>
+              <p className="text-sm text-gray-300">{currentRecord.questionText}</p>
             </div>
 
             {/* 答题记录列表 */}
@@ -134,14 +134,14 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                   {currentRecord.answers.map((answer, index) => (
                     <div 
                       key={answer.playerId}
-                      className="p-2 bg-werewolf-dark/40 rounded-md border border-gray-600"
+                      className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
                     >
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-300 text-sm">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-gray-300">
                             {answer.playerName}
                           </span>
-                          <span className={`px-1 py-0.5 rounded text-xs font-semibold ${
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
                             answer.isCorrect 
                               ? 'bg-green-500/20 text-green-400' 
                               : 'bg-red-500/20 text-red-400'
@@ -149,14 +149,14 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                             {getOptionLabel(answer.selectedOption)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-gray-400">
-                            {formatTime(answer.remainingTime)}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-400">
+                            剩余: {formatTime(answer.remainingTime)}
                           </span>
                           {answer.isCorrect ? (
-                            <span className="text-green-400 text-sm">✓</span>
+                            <span className="text-green-400">✓</span>
                           ) : (
-                            <span className="text-red-400 text-sm">✗</span>
+                            <span className="text-red-400">✗</span>
                           )}
                         </div>
                       </div>
@@ -167,7 +167,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             </div>
           </div>
         ) : (
-          <div className="text-center text-gray-400 py-8 text-sm">
+          <div className="text-center text-gray-400 py-8">
             暂无答题记录
           </div>
         )}
