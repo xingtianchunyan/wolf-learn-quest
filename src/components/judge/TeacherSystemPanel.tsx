@@ -23,32 +23,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes default
   const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion | null>(null);
   const [displayRound, setDisplayRound] = useState(1);
-  const [displayPhase, setDisplayPhase] = useState('evening');
-  
-  // 从游戏信息组件获取的当前状态（这里用模拟数据）
-  const currentGameRound = 2;
-  const currentGamePhase = 'day'; // 可能是 'day', 'evening', 'night', 'dawn'
-
-  // 根据当前游戏阶段确定要显示的问题阶段
-  useEffect(() => {
-    if (currentGamePhase === 'day') {
-      // 白天阶段显示上一个黎明阶段的信息
-      setDisplayRound(currentGameRound);
-      setDisplayPhase('dawn');
-    } else if (currentGamePhase === 'night') {
-      // 夜晚阶段显示上一个傍晚阶段的信息
-      setDisplayRound(currentGameRound);
-      setDisplayPhase('evening');
-    } else if (currentGamePhase === 'evening') {
-      // 傍晚阶段显示当前阶段信息
-      setDisplayRound(currentGameRound);
-      setDisplayPhase('evening');
-    } else if (currentGamePhase === 'dawn') {
-      // 黎明阶段显示当前阶段信息
-      setDisplayRound(currentGameRound);
-      setDisplayPhase('dawn');
-    }
-  }, [currentGameRound, currentGamePhase]);
+  const [displayPhase, setDisplayPhase] = useState('傍晚');
 
   // Mock data for demonstration
   useEffect(() => {
@@ -62,7 +37,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
       correct_option: 1,
       explanation: '预言家是神民阵营的重要角色，每晚可以查验一名玩家的身份（好人或狼人），是好人阵营获取信息的重要途径。'
     });
-  }, [displayRound, displayPhase]);
+  }, []);
 
   // Timer countdown effect
   useEffect(() => {
@@ -94,26 +69,18 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
     }
   };
 
-  const getPhaseDisplayName = (phase: string) => {
-    switch (phase) {
-      case 'evening': return '傍晚';
-      case 'dawn': return '黎明';
-      default: return phase;
-    }
-  };
-
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GraduationCap className="mr-2 h-5 w-5" />
-          教师系统 - 第{displayRound}轮 {getPhaseDisplayName(displayPhase)}阶段
+          教师系统 - 第{displayRound}轮 {displayPhase}阶段
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="h-full p-0">
-        <ScrollArea className="h-full px-6 pb-6">
-          <div className="space-y-4">
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 pr-4">
             {/* 剩余答题时间 */}
             <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
               <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />

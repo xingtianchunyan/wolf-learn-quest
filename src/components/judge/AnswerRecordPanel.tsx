@@ -41,6 +41,18 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         { playerId: 'player3', playerName: '玩家3', selectedOption: 1, remainingTime: 28, isCorrect: true },
         { playerId: 'player4', playerName: '玩家4', selectedOption: 3, remainingTime: 15, isCorrect: false },
       ]
+    },
+    {
+      round: 1,
+      phase: '黎明',
+      questionText: '女巫的解药可以救活谁？',
+      correctOption: 2,
+      answers: [
+        { playerId: 'player1', playerName: '玩家1', selectedOption: 2, remainingTime: 50, isCorrect: true },
+        { playerId: 'player2', playerName: '玩家2', selectedOption: 1, remainingTime: 40, isCorrect: false },
+        { playerId: 'player3', playerName: '玩家3', selectedOption: 2, remainingTime: 35, isCorrect: true },
+        { playerId: 'player4', playerName: '玩家4', selectedOption: 4, remainingTime: 20, isCorrect: false },
+      ]
     }
   ];
 
@@ -66,8 +78,8 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full max-h-[calc(70vh-1rem)]">
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
           <div className="flex items-center">
             <ClipboardList className="mr-2 h-5 w-5" />
@@ -99,11 +111,11 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="h-full">
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         {currentRecord ? (
           <div className="space-y-4 h-full">
             {/* 题目信息 */}
-            <div className="p-3 bg-werewolf-dark/40 rounded-md">
+            <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-semibold text-werewolf-purple">
                   第{currentRecord.round}轮 - {currentRecord.phase}阶段
@@ -116,9 +128,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             </div>
 
             {/* 答题记录列表 */}
-            <div className="flex-1">
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2">
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="space-y-2 pr-4">
                   {currentRecord.answers.map((answer, index) => (
                     <div 
                       key={answer.playerId}
