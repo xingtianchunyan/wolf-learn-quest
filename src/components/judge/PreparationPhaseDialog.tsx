@@ -1,11 +1,5 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
@@ -170,17 +164,17 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
         }}
         onMouseDown={handleMouseDown}
       >
-        <DialogHeader className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
-          <DialogTitle className="text-werewolf-purple text-xl">
+        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
+          <h2 className="text-werewolf-purple text-xl font-semibold leading-none tracking-tight">
             准备阶段管理
-          </DialogTitle>
+          </h2>
           <button
             onClick={onClose}
             className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple"
           >
             ✕
           </button>
-        </DialogHeader>
+        </div>
         
         <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
           {/* 左侧 - 房间信息和开始游戏按钮 */}
