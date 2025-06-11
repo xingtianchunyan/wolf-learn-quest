@@ -1,7 +1,7 @@
 
 import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import GameStateDisplay from '@/components/game/GameStateDisplay';
+import EnhancedGameStateDisplay from '@/components/judge/EnhancedGameStateDisplay';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
 import TeacherSystemPanel from '@/components/judge/TeacherSystemPanel';
 import AnswerRecordPanel from '@/components/judge/AnswerRecordPanel';
@@ -58,7 +58,7 @@ const JudgePage = () => {
           {/* Center Column - Game State and Judge Actions */}
           <div className="lg:col-span-6 space-y-6">
             <div className="h-auto">
-              <GameStateDisplay roomId={roomId} isJudge={true} />
+              <EnhancedGameStateDisplay roomId={roomId} />
             </div>
             <div className="flex-1">
               <JudgeActionPanel roomId={roomId} />
