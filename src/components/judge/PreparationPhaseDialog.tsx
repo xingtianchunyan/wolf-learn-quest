@@ -19,21 +19,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Play, BookOpen, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { usePlayerPresence } from '@/hooks/usePlayerPresence';
+import RoomInfoCard from '@/components/room/RoomInfoCard';
 
 interface PreparationPhaseDialogProps {
   isOpen: boolean;
   onClose: () => void;
   roomId: string;
-}
-
-interface Player {
-  id: string;
-  name: string;
-  role: string;
-  isOnline: boolean;
-  isReady: boolean;
-  isHost: boolean;
-  isAI: boolean;
 }
 
 interface Question {
@@ -50,63 +43,10 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 }) => {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 
-  // Mock player data
-  const players: Player[] = [
-    {
-      id: 'player1',
-      name: '玩家1',
-      role: '预言家',
-      isOnline: true,
-      isReady: true,
-      isHost: true,
-      isAI: false
-    },
-    {
-      id: 'player2',
-      name: '玩家2',
-      role: '狼人',
-      isOnline: true,
-      isReady: false,
-      isHost: false,
-      isAI: false
-    },
-    {
-      id: 'player3',
-      name: '玩家3',
-      role: '村民',
-      isOnline: false,
-      isReady: false,
-      isHost: false,
-      isAI: false
-    },
-    {
-      id: 'player4',
-      name: 'AI-Player',
-      role: '女巫',
-      isOnline: true,
-      isReady: true,
-      isHost: false,
-      isAI: true
-    },
-    {
-      id: 'player5',
-      name: '玩家5',
-      role: '猎人',
-      isOnline: true,
-      isReady: true,
-      isHost: false,
-      isAI: false
-    },
-    {
-      id: 'player6',
-      name: '玩家6',
-      role: '狼人',
-      isOnline: true,
-      isReady: false,
-      isHost: false,
-      isAI: false
-    }
-  ];
+  // 使用真实数据
+  const { players, loading: playersLoading } = usePlayersRealtime(roomId);
+  const { getOnlinePlayers } = usePlayerPresence(roomId, null);
+  const onlinePlayersList = getOnlinePlayers();
 
   // Mock question bank
   const questions: Question[] = [
@@ -167,6 +107,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
     }
   };
 
+  // 检查玩家是否在线
+  const isPlayerOnline = (player: any) => {
+    return onlinePlayersList.some(onlinePlayer => 
+      onlinePlayer.user_id === player.id || 
+      (player.name && player.name.includes(onlinePlayer.user_id))
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[80vh] bg-werewolf-card border-werewolf-purple/30">
@@ -178,8 +126,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
         
         <div className="grid grid-cols-12 gap-6 h-full overflow-hidden">
           {/* 左侧 - 题库组件 */}
-          <div className="col-span-4">
-            <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
+          <div className="col-span-4 flex flex-col">
+            {/* 房间信息 */}
+            <div className="mb-4">
+              <RoomInfoCard roomId={roomId} />
+            </div>
+            
+            {/* 题库 */}
+            <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 flex-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-werewolf-purple flex items-center text-lg">
                   <BookOpen className="mr-2 h-5 w-5" />
@@ -237,46 +191,60 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {players.map((player) => (
-                          <TableRow key={player.id} className="border-werewolf-purple/30">
-                            <TableCell className="text-gray-300 font-medium">
-                              {player.name}
-                            </TableCell>
-                            <TableCell className="text-gray-300">
-                              {player.role}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
-                                {player.isOnline ? (
-                                  <Wifi className="h-4 w-4 text-green-400" />
-                                ) : (
-                                  <WifiOff className="h-4 w-4 text-red-400" />
-                                )}
-                                <span className={`text-sm ${player.isOnline ? 'text-green-400' : 'text-red-400'}`}>
-                                  {player.isOnline ? '在线' : '离线'}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
-                                {player.isReady ? (
-                                  <UserCheck className="h-4 w-4 text-green-400" />
-                                ) : (
-                                  <UserX className="h-4 w-4 text-red-400" />
-                                )}
-                                <span className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}>
-                                  {player.isReady ? '已准备' : '未准备'}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-1">
-                                {player.isHost && <Crown className="h-4 w-4 text-yellow-400" title="房主" />}
-                                {player.isAI && <Bot className="h-4 w-4 text-blue-400" title="AI玩家" />}
-                              </div>
+                        {playersLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-gray-400 py-4">
+                              加载中...
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ) : players.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-gray-400 py-4">
+                              暂无玩家
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          players.map((player) => (
+                            <TableRow key={player.id} className="border-werewolf-purple/30">
+                              <TableCell className="text-gray-300 font-medium">
+                                {player.name}
+                              </TableCell>
+                              <TableCell className="text-gray-300">
+                                未选择
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  {isPlayerOnline(player) ? (
+                                    <Wifi className="h-4 w-4 text-green-400" />
+                                  ) : (
+                                    <WifiOff className="h-4 w-4 text-red-400" />
+                                  )}
+                                  <span className={`text-sm ${isPlayerOnline(player) ? 'text-green-400' : 'text-red-400'}`}>
+                                    {isPlayerOnline(player) ? '在线' : '离线'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  {player.isReady ? (
+                                    <UserCheck className="h-4 w-4 text-green-400" />
+                                  ) : (
+                                    <UserX className="h-4 w-4 text-red-400" />
+                                  )}
+                                  <span className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}>
+                                    {player.isReady ? '已准备' : '未准备'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-1">
+                                  {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
+                                  {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
                   </div>
@@ -288,9 +256,9 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
             <div className="mt-4 flex justify-center">
               <Button
                 onClick={handleStartGame}
-                disabled={!allPlayersReady}
+                disabled={!allPlayersReady || players.length === 0}
                 className={`px-8 py-3 text-lg ${
-                  allPlayersReady
+                  allPlayersReady && players.length > 0
                     ? 'bg-werewolf-purple hover:bg-werewolf-light'
                     : 'bg-gray-600 cursor-not-allowed'
                 }`}
