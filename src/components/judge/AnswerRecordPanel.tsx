@@ -32,7 +32,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const answerRecords: AnswerRecord[] = [
     {
       round: 1,
-      phase: '白天',
+      phase: '傍晚',
       questionText: '在狼人杀游戏中，预言家的主要作用是什么？',
       correctOption: 1,
       answers: [
@@ -40,6 +40,18 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         { playerId: 'player2', playerName: '玩家2', selectedOption: 2, remainingTime: 32, isCorrect: false },
         { playerId: 'player3', playerName: '玩家3', selectedOption: 1, remainingTime: 28, isCorrect: true },
         { playerId: 'player4', playerName: '玩家4', selectedOption: 3, remainingTime: 15, isCorrect: false },
+      ]
+    },
+    {
+      round: 1,
+      phase: '黎明',
+      questionText: '狼人队在夜晚阶段可以进行什么行动？',
+      correctOption: 2,
+      answers: [
+        { playerId: 'player1', playerName: '玩家1', selectedOption: 2, remainingTime: 55, isCorrect: true },
+        { playerId: 'player2', playerName: '玩家2', selectedOption: 1, remainingTime: 42, isCorrect: false },
+        { playerId: 'player3', playerName: '玩家3', selectedOption: 2, remainingTime: 38, isCorrect: true },
+        { playerId: 'player4', playerName: '玩家4', selectedOption: 4, remainingTime: 25, isCorrect: false },
       ]
     }
   ];
@@ -99,24 +111,24 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="h-full">
-        {currentRecord ? (
-          <div className="space-y-4">
-            {/* 题目信息 */}
-            <div className="p-3 bg-werewolf-dark/40 rounded-md">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold text-werewolf-purple">
-                  第{currentRecord.round}轮 - {currentRecord.phase}阶段
-                </h3>
-                <span className="text-sm text-gray-400">
-                  正确答案: {getOptionLabel(currentRecord.correctOption)}
-                </span>
+      <CardContent className="h-full p-0">
+        <ScrollArea className="h-[calc(100%-2rem)] px-6">
+          {currentRecord ? (
+            <div className="space-y-4 pb-4">
+              {/* 题目信息 */}
+              <div className="p-3 bg-werewolf-dark/40 rounded-md">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold text-werewolf-purple">
+                    第{currentRecord.round}轮 - {currentRecord.phase}阶段
+                  </h3>
+                  <span className="text-sm text-gray-400">
+                    正确答案: {getOptionLabel(currentRecord.correctOption)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300">{currentRecord.questionText}</p>
               </div>
-              <p className="text-sm text-gray-300">{currentRecord.questionText}</p>
-            </div>
 
-            {/* 答题记录列表 */}
-            <ScrollArea className="h-[200px]">
+              {/* 答题记录列表 */}
               <div className="space-y-2">
                 {currentRecord.answers.map((answer, index) => (
                   <div 
@@ -150,13 +162,13 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                   </div>
                 ))}
               </div>
-            </ScrollArea>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-8">
-            暂无答题记录
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="text-center text-gray-400 py-8">
+              暂无答题记录
+            </div>
+          )}
+        </ScrollArea>
       </CardContent>
     </Card>
   );
