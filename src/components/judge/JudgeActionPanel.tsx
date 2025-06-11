@@ -54,16 +54,20 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
   const handleAutoAdvanceToggle = (checked: boolean) => {
     setIsAutoAdvance(checked);
-    if (!checked) {
-      // 关闭全自动时，自动开启半自动
+    if (checked) {
+      setIsSemiAuto(false);
+    } else {
+      // 如果关闭全自动，则自动开启半自动
       setIsSemiAuto(true);
     }
   };
 
   const handleSemiAutoToggle = (checked: boolean) => {
     setIsSemiAuto(checked);
-    if (!checked) {
-      // 关闭半自动时，自动开启全自动
+    if (checked) {
+      setIsAutoAdvance(false);
+    } else {
+      // 如果关闭半自动，则自动开启全自动
       setIsAutoAdvance(true);
     }
   };
@@ -86,17 +90,17 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   };
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <Gavel className="mr-2 h-5 w-5" />
           法官行动
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="h-full p-0">
-        <ScrollArea className="h-[calc(100%-2rem)] px-6">
-          <div className="space-y-4 pb-4">
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 pr-4">
             {/* 投票结果表格 */}
             <div className="space-y-2">
               <h3 className="font-semibold text-werewolf-purple">最新投票结果</h3>
