@@ -7,6 +7,16 @@ import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 
+interface Player {
+  id: string;
+  name: string;
+  avatar: string;
+  isReady: boolean;
+  isHost: boolean;
+  isAI: boolean;
+  role?: string; // Add role property
+}
+
 interface PlayerStatusPanelProps {
   roomId: string;
   className?: string;
@@ -18,14 +28,14 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const onlinePlayersList = getOnlinePlayers();
 
   // 检查玩家是否在线 - 修正匹配逻辑
-  const isPlayerOnline = (player: any) => {
+  const isPlayerOnline = (player: Player) => {
     console.log('Checking online status for player:', player);
     console.log('Online players list:', onlinePlayersList);
     
     // 尝试多种匹配方式
     return onlinePlayersList.some(onlinePlayer => {
       // 直接匹配用户ID
-      if (onlinePlayer.user_id === player.user_id) {
+      if (onlinePlayer.user_id === (player as any).user_id) {
         return true;
       }
       
@@ -88,7 +98,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                           {player.name}
                         </TableCell>
                         <TableCell className="text-gray-300">
-                          {player.role || '未选择'}
+                          {(player as any).role || player.role || '未选择'}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
