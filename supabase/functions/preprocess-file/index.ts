@@ -167,38 +167,6 @@ serve(async (req) => {
     const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
-    // 创建预处理文件表（如果不存在）
-    console.log('检查preprocessed_files表是否存在...');
-    const { error: createTableError } = await supabase.rpc('exec', {
-      sql: `
-        CREATE TABLE IF NOT EXISTS public.preprocessed_files (
-          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-          original_file_path TEXT NOT NULL,
-          file_name TEXT NOT NULL,
-          preprocessed_content TEXT NOT NULL,
-          model_used TEXT NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-        );
-        
-        -- 启用RLS
-        ALTER TABLE public.preprocessed_files ENABLE ROW LEVEL SECURITY;
-        
-        -- 创建查看策略
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to view preprocessed files" 
-        ON public.preprocessed_files FOR SELECT 
-        USING (true);
-        
-        -- 创建插入策略
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to create preprocessed files" 
-        ON public.preprocessed_files FOR INSERT 
-        WITH CHECK (true);
-      `
-    });
-
-    if (createTableError) {
-      console.log('表可能已存在，继续执行...');
-    }
-
     // 将预处理结果保存到数据库
     console.log('保存预处理结果到数据库...');
     const { data: savedData, error: saveError } = await supabase

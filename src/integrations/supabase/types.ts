@@ -515,6 +515,33 @@ export type Database = {
         }
         Relationships: []
       }
+      preprocessed_files: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          id: string
+          model_used: string
+          original_file_path: string
+          preprocessed_content: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          id?: string
+          model_used: string
+          original_file_path: string
+          preprocessed_content: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          id?: string
+          model_used?: string
+          original_file_path?: string
+          preprocessed_content?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category: string | null

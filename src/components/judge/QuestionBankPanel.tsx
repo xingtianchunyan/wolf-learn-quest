@@ -189,7 +189,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
     setIsProcessing(true);
-    setStatus('使用DeepSeek R1模型预处理文件中...');
+    setStatus('使用QwenLong模型预处理文件中...');
 
     try {
       console.log('调用预处理API:', selectedFile);
@@ -223,7 +223,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '预处理完成',
-        description: `文件已通过DeepSeek R1模型成功预处理为结构化格式`,
+        description: `文件已通过QwenLong模型成功预处理为结构化格式`,
       });
 
       console.log('预处理结果:', data);
