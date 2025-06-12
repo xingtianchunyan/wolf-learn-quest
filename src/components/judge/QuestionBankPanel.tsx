@@ -124,22 +124,39 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     }
 
     setIsProcessing(true);
-    setStatus('文件预处理中...');
+    setStatus('使用DeepSeek R1模型预处理文件中...');
 
     try {
-      // TODO: 实现文件预处理逻辑
-      // 这里应该调用后端API来处理文件
-      await new Promise(resolve => setTimeout(resolve, 3000)); // 模拟处理时间
+      console.log('调用预处理API:', selectedFile);
+      
+      // 调用硅基流动平台API进行文件预处理
+      const { data, error } = await supabase.functions.invoke('preprocess-file', {
+        body: {
+          filePath: selectedFile,
+          fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown'
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: '预处理完成',
-        description: '文件已成功预处理为结构化格式',
+        description: `文件已通过DeepSeek R1模型成功预处理为结构化格式`,
       });
+
+      console.log('预处理结果:', data);
+      
     } catch (error) {
       console.error('Error preprocessing file:', error);
       toast({
         title: '预处理失败',
-        description: '文件预处理失败，请重试',
+        description: `文件预处理失败: ${error.message}`,
         variant: 'destructive',
       });
     } finally {
@@ -152,29 +169,52 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     if (!selectedFile || !selectedModel) {
       toast({
         title: '请完善选择',
-        description: '请选择文件和LLM模型',
+        description: '请选择文件和AI模型',
         variant: 'destructive',
       });
       return;
     }
 
     setIsGenerating(true);
-    setStatus('题目生成中...');
+    const modelNames = {
+      'deepseek-r1': 'DeepSeek R1',
+      'qwen3-32b': 'Qwen2.5-32B'
+    };
+    setStatus(`使用${modelNames[selectedModel] || selectedModel}模型生成题目中...`);
 
     try {
-      // TODO: 实现题目生成逻辑
-      // 这里应该调用LLM API来生成题目
-      await new Promise(resolve => setTimeout(resolve, 5000)); // 模拟生成时间
+      console.log('调用生成题目API:', { selectedFile, selectedModel });
+      
+      // 调用硅基流动平台API生成题目
+      const { data, error } = await supabase.functions.invoke('generate-questions', {
+        body: {
+          filePath: selectedFile,
+          fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown',
+          model: selectedModel,
+          questionCount: 18
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: '生成完成',
-        description: '已成功生成18道题目',
+        description: `已通过${modelNames[selectedModel]}成功生成${data.questions?.length || 0}道题目`,
       });
+
+      console.log('生成结果:', data);
+      
     } catch (error) {
       console.error('Error generating questions:', error);
       toast({
         title: '生成失败',
-        description: '题目生成失败，请重试',
+        description: `题目生成失败: ${error.message}`,
         variant: 'destructive',
       });
     } finally {
@@ -189,7 +229,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         <CardHeader className="pb-3">
           <CardTitle className="text-werewolf-purple flex items-center text-lg">
             <BookOpen className="mr-2 h-5 w-5" />
-            题库管理
+            题库管理 (硅基流动AI)
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
@@ -233,15 +273,15 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </Select>
             </div>
 
-            {/* LLM模型选择和操作按钮 */}
+            {/* 硅基流动AI模型选择和操作按钮 */}
             <div className="space-y-3">
               <Select value={selectedModel} onValueChange={setSelectedModel}>
                 <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择LLM模型" />
+                  <SelectValue placeholder="选择硅基流动AI模型" />
                 </SelectTrigger>
                 <SelectContent className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectItem value="deepseek-r1">DeepSeek R1</SelectItem>
-                  <SelectItem value="qwen3-32b">Qwen3 32B</SelectItem>
+                  <SelectItem value="deepseek-r1">DeepSeek R1 (推理模型)</SelectItem>
+                  <SelectItem value="qwen3-32b">Qwen2.5-32B (通用模型)</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -252,7 +292,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                   className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
                 >
                   <Database className="mr-2 h-4 w-4" />
-                  {isProcessing ? '处理中...' : '预处理文件'}
+                  {isProcessing ? '处理中...' : 'AI预处理'}
                 </Button>
 
                 <Button
@@ -261,7 +301,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                   className="bg-green-600 hover:bg-green-700 text-white flex-1"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
-                  {isGenerating ? '生成中...' : '生成题目'}
+                  {isGenerating ? '生成中...' : 'AI生成题目'}
                 </Button>
               </div>
             </div>
@@ -270,7 +310,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
             {status && (
               <div className="flex items-center justify-center p-4 bg-werewolf-dark/20 rounded-md">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin text-werewolf-purple" />
-                <span className="text-werewolf-purple">{status}</span>
+                <span className="text-werewolf-purple text-sm">{status}</span>
               </div>
             )}
 
