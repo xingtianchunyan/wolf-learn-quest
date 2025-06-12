@@ -31,7 +31,7 @@ interface PlayersListProps {
   onlinePlayers: string[];
   allPlayersSelectedRoles: boolean;
   canSelectRoles: boolean;
-  currentPlayerHasSelectedRole?: boolean;
+  currentPlayerHasSelectedRole?: boolean; // 新增：当前玩家是否已选择角色
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -52,29 +52,6 @@ const PlayersList: React.FC<PlayersListProps> = ({
   currentPlayerHasSelectedRole = false
 }) => {
   const { t } = useLanguage();
-
-  // 检查玩家是否在线 - 修正匹配逻辑
-  const isPlayerOnline = (player: Player) => {
-    if (player.isAI) {
-      return true; // AI玩家总是在线
-    }
-    
-    // 通过玩家ID或用户ID匹配在线状态
-    return onlinePlayers.some(onlineUserId => {
-      // 直接匹配用户ID
-      if (player.id === onlineUserId) {
-        return true;
-      }
-      
-      // 如果玩家有user_id属性，也进行匹配
-      const playerWithUserId = player as any;
-      if (playerWithUserId.user_id && playerWithUserId.user_id === onlineUserId) {
-        return true;
-      }
-      
-      return false;
-    });
-  };
 
   // 检查是否可以点击准备按钮
   const canToggleReady = () => {
@@ -169,66 +146,66 @@ const PlayersList: React.FC<PlayersListProps> = ({
                   <p className="mt-2">{t('loading')}</p>
                 </div>
               ) : (
-                players.map((player) => {
-                  const playerOnline = isPlayerOnline(player);
-                  
-                  return (
-                    <div
-                      key={player.id}
-                      className={`flex items-center justify-between p-2 rounded ${
-                        player.isReady ? 'bg-green-900/30' : 'bg-werewolf-dark/40'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="relative">
-                          {player.avatar ? (
-                            <img
-                              src={player.avatar}
-                              alt={player.name}
-                              className="w-8 h-8 rounded-full"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-werewolf-purple/60 flex items-center justify-center">
-                              <span className="text-xs font-bold">
-                                {player.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          {/* 在线状态指示器 */}
-                          <div className="absolute -top-1 -right-1">
-                            {player.isAI ? (
-                              <Bot className="h-3 w-3 text-blue-400" />
-                            ) : playerOnline ? (
+                players.map((player) => (
+                  <div
+                    key={player.id}
+                    className={`flex items-center justify-between p-2 rounded ${
+                      player.isReady ? 'bg-green-900/30' : 'bg-werewolf-dark/40'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="relative">
+                        {player.avatar ? (
+                          <img
+                            src={player.avatar}
+                            alt={player.name}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-werewolf-purple/60 flex items-center justify-center">
+                            <span className="text-xs font-bold">
+                              {player.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        {/* 在线状态指示器 */}
+                        <div className="absolute -top-1 -right-1">
+                          {player.isAI ? (
+                            <Bot className="h-3 w-3 text-blue-400" />
+                          ) : onlinePlayers.length > 0 ? (
+                            onlinePlayers.some(id => player.name.includes(id) || id.includes(player.name)) ? (
                               <Wifi className="h-3 w-3 text-green-400" />
                             ) : (
                               <WifiOff className="h-3 w-3 text-red-400" />
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-1">
-                            <span className="font-medium">{player.name}</span>
-                            {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
-                            {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
-                          </div>
+                            )
+                          ) : (
+                            <WifiOff className="h-3 w-3 text-red-400" />
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {player.isReady ? (
-                          <Badge variant="secondary" className="bg-green-600 text-white">
-                            <UserCheck className="h-3 w-3 mr-1" />
-                            {t('ready')}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="border-gray-400 text-gray-400">
-                            <UserX className="h-3 w-3 mr-1" />
-                            {t('not_ready')}
-                          </Badge>
-                        )}
+                      <div>
+                        <div className="flex items-center space-x-1">
+                          <span className="font-medium">{player.name}</span>
+                          {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
+                          {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
+                        </div>
                       </div>
                     </div>
-                  );
-                })
+                    <div className="flex items-center space-x-2">
+                      {player.isReady ? (
+                        <Badge variant="secondary" className="bg-green-600 text-white">
+                          <UserCheck className="h-3 w-3 mr-1" />
+                          {t('ready')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-gray-400 text-gray-400">
+                          <UserX className="h-3 w-3 mr-1" />
+                          {t('not_ready')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </ScrollArea>

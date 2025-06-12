@@ -15,7 +15,7 @@ interface Player {
   isHost: boolean;
   isAI: boolean;
   role?: string;
-  user_id?: string;
+  user_id?: string; // Add user_id property for matching
 }
 
 interface PlayerStatusPanelProps {
@@ -27,24 +27,26 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
   const { getOnlinePlayers } = usePlayerPresence(roomId, null);
   const onlinePlayersList = getOnlinePlayers();
-  const onlinePlayerIds = onlinePlayersList.map(p => p.user_id);
 
   // 检查玩家是否在线 - 修正匹配逻辑
   const isPlayerOnline = (player: Player) => {
-    if (player.isAI) {
-      return true; // AI玩家总是在线
-    }
+    console.log('Checking online status for player:', player);
+    console.log('Online players list:', onlinePlayersList);
     
-    // 通过玩家ID或用户ID匹配在线状态
-    return onlinePlayerIds.some(onlineUserId => {
+    // 尝试多种匹配方式
+    return onlinePlayersList.some(onlinePlayer => {
       // 直接匹配用户ID
-      if (player.id === onlineUserId) {
+      if (onlinePlayer.user_id === (player as any).user_id) {
         return true;
       }
       
-      // 如果玩家有user_id属性，也进行匹配
-      const playerWithUserId = player as any;
-      if (playerWithUserId.user_id && playerWithUserId.user_id === onlineUserId) {
+      // 匹配玩家ID
+      if (onlinePlayer.user_id === player.id) {
+        return true;
+      }
+      
+      // 如果玩家名称包含用户ID
+      if (player.name && player.name.includes(onlinePlayer.user_id)) {
         return true;
       }
       
@@ -89,6 +91,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
+                    console.log(`Player ${player.name} online status:`, playerOnline);
                     
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
