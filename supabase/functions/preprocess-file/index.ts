@@ -86,14 +86,14 @@ serve(async (req) => {
       throw new Error('文件内容为空');
     }
 
-    // 限制文件内容长度以避免API限制
-    const maxContentLength = 8000;
+    // 限制文件内容长度 - QwenLong可以处理更长文本
+    const maxContentLength = 50000; // 增加到50k字符
     if (fileContent.length > maxContentLength) {
       fileContent = fileContent.substring(0, maxContentLength) + '...';
       console.log('文件内容过长，已截取前', maxContentLength, '个字符');
     }
 
-    // 使用DeepSeek R1模型进行文件预处理
+    // 使用QwenLong模型进行文件预处理
     console.log('调用硅基流动API进行预处理...');
     
     let preprocessResponse;
@@ -105,7 +105,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'deepseek-ai/DeepSeek-R1',
+          model: 'Tongyi-Zhiwen/QwenLong-L1-32B',
           messages: [
             {
               role: 'system',
@@ -123,7 +123,7 @@ serve(async (req) => {
             }
           ],
           temperature: 0.1,
-          max_tokens: 4000
+          max_tokens: 8000
         }),
       });
     } catch (error) {
@@ -167,6 +167,38 @@ serve(async (req) => {
     const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
+    // 创建预处理文件表（如果不存在）
+    console.log('检查preprocessed_files表是否存在...');
+    const { error: createTableError } = await supabase.rpc('exec', {
+      sql: `
+        CREATE TABLE IF NOT EXISTS public.preprocessed_files (
+          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+          original_file_path TEXT NOT NULL,
+          file_name TEXT NOT NULL,
+          preprocessed_content TEXT NOT NULL,
+          model_used TEXT NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+        );
+        
+        -- 启用RLS
+        ALTER TABLE public.preprocessed_files ENABLE ROW LEVEL SECURITY;
+        
+        -- 创建查看策略
+        CREATE POLICY IF NOT EXISTS "Allow authenticated users to view preprocessed files" 
+        ON public.preprocessed_files FOR SELECT 
+        USING (true);
+        
+        -- 创建插入策略
+        CREATE POLICY IF NOT EXISTS "Allow authenticated users to create preprocessed files" 
+        ON public.preprocessed_files FOR INSERT 
+        WITH CHECK (true);
+      `
+    });
+
+    if (createTableError) {
+      console.log('表可能已存在，继续执行...');
+    }
+
     // 将预处理结果保存到数据库
     console.log('保存预处理结果到数据库...');
     const { data: savedData, error: saveError } = await supabase
@@ -175,15 +207,20 @@ serve(async (req) => {
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
-        model_used: 'deepseek-ai/DeepSeek-R1',
+        model_used: 'Tongyi-Zhiwen/QwenLong-L1-32B',
         created_at: new Date().toISOString()
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (saveError) {
       console.error('保存预处理结果失败:', saveError);
       throw new Error(`保存失败: ${saveError.message || '数据库保存错误'}`);
+    }
+
+    if (!savedData) {
+      console.error('保存成功但未返回数据');
+      throw new Error('保存成功但未返回数据');
     }
 
     console.log('预处理结果已保存，ID:', savedData.id);
