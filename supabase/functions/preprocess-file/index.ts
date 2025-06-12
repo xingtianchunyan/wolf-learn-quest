@@ -38,7 +38,14 @@ serve(async (req) => {
       throw new Error('Supabase配置不完整');
     }
 
-    const requestBody = await req.json();
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (error) {
+      console.error('请求体解析失败:', error);
+      throw new Error('请求格式错误');
+    }
+
     const { filePath, fileName } = requestBody;
     
     console.log('请求参数:', { filePath, fileName });
@@ -65,58 +72,96 @@ serve(async (req) => {
     }
 
     // 读取文件内容
-    const fileContent = await fileData.text();
+    let fileContent;
+    try {
+      fileContent = await fileData.text();
+    } catch (error) {
+      console.error('文件内容读取失败:', error);
+      throw new Error('文件内容读取失败，请检查文件格式');
+    }
+    
     console.log('文件内容长度:', fileContent.length);
 
     if (!fileContent || fileContent.trim().length === 0) {
       throw new Error('文件内容为空');
     }
 
+    // 限制文件内容长度以避免API限制
+    const maxContentLength = 8000;
+    if (fileContent.length > maxContentLength) {
+      fileContent = fileContent.substring(0, maxContentLength) + '...';
+      console.log('文件内容过长，已截取前', maxContentLength, '个字符');
+    }
+
     // 使用DeepSeek R1模型进行文件预处理
     console.log('调用硅基流动API进行预处理...');
-    const preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'deepseek-ai/DeepSeek-R1',
-        messages: [
-          {
-            role: 'system',
-            content: `你是一个专业的文档预处理专家。请将用户提供的文档内容进行结构化整理，提取出：
+    
+    let preprocessResponse;
+    try {
+      preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-ai/DeepSeek-R1',
+          messages: [
+            {
+              role: 'system',
+              content: `你是一个专业的文档预处理专家。请将用户提供的文档内容进行结构化整理，提取出：
 1. 主要知识点和概念
 2. 重要定义和术语
 3. 关键信息和要点
 4. 可能的考试重点
 
 请将内容组织成清晰的结构化格式，便于后续生成考试题目。确保内容完整且逻辑清晰。`
-          },
-          {
-            role: 'user',
-            content: `请预处理以下文档内容，提取关键信息并结构化整理：\n\n${fileContent}`
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 4000
-      }),
-    });
+            },
+            {
+              role: 'user',
+              content: `请预处理以下文档内容，提取关键信息并结构化整理：\n\n${fileContent}`
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 4000
+        }),
+      });
+    } catch (error) {
+      console.error('API请求发送失败:', error);
+      throw new Error('无法连接到AI服务，请稍后重试');
+    }
 
     console.log('API响应状态:', preprocessResponse.status);
 
     if (!preprocessResponse.ok) {
       const errorText = await preprocessResponse.text();
-      console.error('硅基流动API错误:', errorText);
-      throw new Error(`API调用失败: ${preprocessResponse.status} - ${errorText}`);
+      console.error('硅基流动API错误:', preprocessResponse.status, errorText);
+      
+      let errorMessage = `API调用失败 (${preprocessResponse.status})`;
+      if (preprocessResponse.status === 401) {
+        errorMessage = 'API密钥无效，请检查配置';
+      } else if (preprocessResponse.status === 429) {
+        errorMessage = 'API调用频率限制，请稍后重试';
+      } else if (preprocessResponse.status >= 500) {
+        errorMessage = 'AI服务暂时不可用，请稍后重试';
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    const result = await preprocessResponse.json();
+    let result;
+    try {
+      result = await preprocessResponse.json();
+    } catch (error) {
+      console.error('API响应解析失败:', error);
+      throw new Error('AI服务响应格式错误');
+    }
+
     console.log('API返回结果结构:', Object.keys(result));
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
-      throw new Error('API返回数据格式错误');
+      throw new Error('AI服务返回数据格式错误');
     }
 
     const preprocessedContent = result.choices[0].message.content;

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -67,14 +68,26 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setError('');
   };
 
-  // 清理文件名以避免特殊字符问题
+  // 改进的文件名清理函数
   const sanitizeFileName = (fileName: string): string => {
-    // 移除或替换可能导致问题的字符
-    return fileName
-      .replace(/[^\w\s.-]/g, '') // 只保留字母、数字、空格、点和横线
-      .replace(/\s+/g, '_') // 将空格替换为下划线
-      .replace(/_{2,}/g, '_') // 将多个连续下划线替换为单个
-      .trim();
+    // 获取文件扩展名
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+    
+    // 清理文件名主体部分
+    const cleanName = name
+      .replace(/[^\w\s.-]/g, '') // 移除特殊字符，保留字母、数字、空格、点、横线
+      .replace(/\s+/g, '_') // 空格替换为下划线
+      .replace(/_{2,}/g, '_') // 多个下划线替换为单个
+      .replace(/[.-]+/g, '_') // 点和横线也替换为下划线
+      .trim()
+      .substring(0, 50); // 限制长度
+    
+    // 如果清理后的名称为空，使用默认名称
+    const finalName = cleanName || 'file';
+    
+    return `${finalName}${extension}`;
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,10 +127,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setStatus('文件上传中...');
 
     try {
-      // 清理文件名
+      // 使用改进的文件名清理
       const originalName = file.name;
       const sanitizedName = sanitizeFileName(originalName);
-      const fileName = `${Date.now()}-${sanitizedName}`;
+      const timestamp = Date.now();
+      const fileName = `${timestamp}_${sanitizedName}`;
       
       console.log('原始文件名:', originalName);
       console.log('清理后文件名:', fileName);
@@ -180,6 +194,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     try {
       console.log('调用预处理API:', selectedFile);
       
+      // 使用更详细的错误处理
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
           filePath: selectedFile,
@@ -191,11 +206,17 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       if (error) {
         console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
+        let errorMessage = `API调用失败: ${error.message}`;
+        if (error.message.includes('Failed to send a request')) {
+          errorMessage = '无法连接到AI处理服务，请稍后重试';
+        } else if (error.message.includes('network')) {
+          errorMessage = '网络连接错误，请检查网络后重试';
+        }
+        throw new Error(errorMessage);
       }
 
       if (!data || !data.success) {
-        const errorMsg = data?.error || '预处理失败';
+        const errorMsg = data?.error || '预处理失败，请重试';
         console.error('预处理失败:', errorMsg);
         throw new Error(errorMsg);
       }
@@ -258,7 +279,13 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       if (error) {
         console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
+        let errorMessage = `API调用失败: ${error.message}`;
+        if (error.message.includes('Failed to send a request')) {
+          errorMessage = '无法连接到AI生成服务，请稍后重试';
+        } else if (error.message.includes('network')) {
+          errorMessage = '网络连接错误，请检查网络后重试';
+        }
+        throw new Error(errorMessage);
       }
 
       if (!data || !data.success) {
