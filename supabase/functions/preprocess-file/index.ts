@@ -26,35 +26,37 @@ serve(async (req) => {
   try {
     console.log('开始处理预处理请求');
     
-    // 检查API密钥
     if (!SILICONFLOW_API_KEY) {
-      console.error('SILICONFLOW_API_KEY环境变量未设置');
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    // 检查Supabase配置
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Supabase配置不完整');
-      throw new Error('Supabase配置不完整');
-    }
-
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (error) {
-      console.error('请求体解析失败:', error);
-      throw new Error('请求格式错误');
-    }
-
-    const { filePath, fileName } = requestBody;
-    
+    const { filePath, fileName } = await req.json();
     console.log('请求参数:', { filePath, fileName });
 
-    if (!filePath || !fileName) {
-      throw new Error('缺少必要参数: filePath或fileName');
+    // 检查是否已经预处理过此文件
+    const { data: existingPreprocessed, error: checkError } = await supabase
+      .from('preprocessed_files')
+      .select('id, preprocessed_content')
+      .eq('original_file_path', filePath)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('检查已存在预处理文件失败:', checkError);
     }
 
-    console.log('开始预处理文件:', fileName, '路径:', filePath);
+    if (existingPreprocessed) {
+      console.log('文件已预处理过，返回现有结果');
+      return new Response(JSON.stringify({
+        success: true,
+        message: '文件已预处理过',
+        preprocessed_id: existingPreprocessed.id,
+        content_preview: existingPreprocessed.preprocessed_content.substring(0, 200) + '...'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // 从Supabase Storage下载文件
     console.log('正在下载文件...');
@@ -67,97 +69,62 @@ serve(async (req) => {
       throw new Error(`文件下载失败: ${downloadError.message}`);
     }
 
-    if (!fileData) {
-      throw new Error('文件下载返回空数据');
-    }
-
-    // 读取文件内容
-    let fileContent;
-    try {
-      fileContent = await fileData.text();
-    } catch (error) {
-      console.error('文件内容读取失败:', error);
-      throw new Error('文件内容读取失败，请检查文件格式');
-    }
-    
+    const fileContent = await fileData.text();
     console.log('文件内容长度:', fileContent.length);
 
     if (!fileContent || fileContent.trim().length === 0) {
       throw new Error('文件内容为空');
     }
 
-    // 限制文件内容长度 - QwenLong可以处理更长文本
-    const maxContentLength = 50000; // 增加到50k字符
+    // 限制文件内容长度
+    const maxContentLength = 50000;
+    let processedContent = fileContent;
     if (fileContent.length > maxContentLength) {
-      fileContent = fileContent.substring(0, maxContentLength) + '...';
+      processedContent = fileContent.substring(0, maxContentLength) + '...';
       console.log('文件内容过长，已截取前', maxContentLength, '个字符');
     }
 
-    // 使用QwenLong模型进行文件预处理
+    // 使用硅基流动API进行预处理
     console.log('调用硅基流动API进行预处理...');
     
-    let preprocessResponse;
-    try {
-      preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'Tongyi-Zhiwen/QwenLong-L1-32B',
-          messages: [
-            {
-              role: 'system',
-              content: `你是一个专业的文档预处理专家。请将用户提供的文档内容进行结构化整理，提取出：
+    const preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-32B-Instruct',
+        messages: [
+          {
+            role: 'system',
+            content: `你是一个专业的文档预处理专家。请将用户提供的文档内容进行结构化整理，提取出：
 1. 主要知识点和概念
 2. 重要定义和术语
 3. 关键信息和要点
 4. 可能的考试重点
 
 请将内容组织成清晰的结构化格式，便于后续生成考试题目。确保内容完整且逻辑清晰。`
-            },
-            {
-              role: 'user',
-              content: `请预处理以下文档内容，提取关键信息并结构化整理：\n\n${fileContent}`
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 8000
-        }),
-      });
-    } catch (error) {
-      console.error('API请求发送失败:', error);
-      throw new Error('无法连接到AI服务，请稍后重试');
-    }
+          },
+          {
+            role: 'user',
+            content: `请预处理以下文档内容，提取关键信息并结构化整理：\n\n${processedContent}`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 8000
+      }),
+    });
 
     console.log('API响应状态:', preprocessResponse.status);
 
     if (!preprocessResponse.ok) {
       const errorText = await preprocessResponse.text();
       console.error('硅基流动API错误:', preprocessResponse.status, errorText);
-      
-      let errorMessage = `API调用失败 (${preprocessResponse.status})`;
-      if (preprocessResponse.status === 401) {
-        errorMessage = 'API密钥无效，请检查配置';
-      } else if (preprocessResponse.status === 429) {
-        errorMessage = 'API调用频率限制，请稍后重试';
-      } else if (preprocessResponse.status >= 500) {
-        errorMessage = 'AI服务暂时不可用，请稍后重试';
-      }
-      
-      throw new Error(errorMessage);
+      throw new Error(`API调用失败 (${preprocessResponse.status}): ${errorText}`);
     }
 
-    let result;
-    try {
-      result = await preprocessResponse.json();
-    } catch (error) {
-      console.error('API响应解析失败:', error);
-      throw new Error('AI服务响应格式错误');
-    }
-
-    console.log('API返回结果结构:', Object.keys(result));
+    const result = await preprocessResponse.json();
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
@@ -167,7 +134,7 @@ serve(async (req) => {
     const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
-    // 将预处理结果保存到数据库
+    // 保存预处理结果到数据库
     console.log('保存预处理结果到数据库...');
     const { data: savedData, error: saveError } = await supabase
       .from('preprocessed_files')
@@ -175,20 +142,15 @@ serve(async (req) => {
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
-        model_used: 'Tongyi-Zhiwen/QwenLong-L1-32B',
+        model_used: 'Qwen/Qwen2.5-32B-Instruct',
         created_at: new Date().toISOString()
       })
       .select()
-      .maybeSingle();
+      .single();
 
     if (saveError) {
       console.error('保存预处理结果失败:', saveError);
-      throw new Error(`保存失败: ${saveError.message || '数据库保存错误'}`);
-    }
-
-    if (!savedData) {
-      console.error('保存成功但未返回数据');
-      throw new Error('保存成功但未返回数据');
+      throw new Error(`保存失败: ${saveError.message}`);
     }
 
     console.log('预处理结果已保存，ID:', savedData.id);
@@ -205,17 +167,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('预处理过程中发生错误:', error);
     
-    // 提供更详细的错误信息
-    let errorMessage = '未知错误';
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-
     return new Response(JSON.stringify({
       success: false,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : '未知错误',
       timestamp: new Date().toISOString()
     }), {
       status: 500,

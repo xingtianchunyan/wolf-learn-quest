@@ -19,10 +19,19 @@ interface UploadedFile {
   created_at: string;
 }
 
+interface PreprocessedFile {
+  id: string;
+  file_name: string;
+  original_file_path: string;
+  created_at: string;
+  model_used: string;
+}
+
 const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const [selectedFile, setSelectedFile] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [selectedPreprocessedFile, setSelectedPreprocessedFile] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [preprocessedFiles, setPreprocessedFiles] = useState<PreprocessedFile[]>([]);
   const [status, setStatus] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -35,6 +44,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   // 获取已上传的文件列表
   useEffect(() => {
     fetchUploadedFiles();
+    fetchPreprocessedFiles();
   }, []);
 
   const fetchUploadedFiles = async () => {
@@ -61,6 +71,28 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     } catch (error) {
       console.error('Error fetching uploaded files:', error);
       setError('获取文件列表时发生错误');
+    }
+  };
+
+  const fetchPreprocessedFiles = async () => {
+    try {
+      console.log('获取预处理文件列表...');
+      const { data, error } = await supabase
+        .from('preprocessed_files')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching preprocessed files:', error);
+        setError(`获取预处理文件列表失败: ${error.message}`);
+        return;
+      }
+
+      setPreprocessedFiles(data || []);
+      console.log('预处理文件列表获取成功:', data?.length || 0, '个文件');
+    } catch (error) {
+      console.error('Error fetching preprocessed files:', error);
+      setError('获取预处理文件列表时发生错误');
     }
   };
 
@@ -194,7 +226,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     try {
       console.log('调用预处理API:', selectedFile);
       
-      // 使用更详细的错误处理
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
           filePath: selectedFile,
@@ -206,13 +237,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       if (error) {
         console.error('Function invoke error:', error);
-        let errorMessage = `API调用失败: ${error.message}`;
-        if (error.message.includes('Failed to send a request')) {
-          errorMessage = '无法连接到AI处理服务，请稍后重试';
-        } else if (error.message.includes('network')) {
-          errorMessage = '网络连接错误，请检查网络后重试';
-        }
-        throw new Error(errorMessage);
+        throw new Error(`API调用失败: ${error.message}`);
       }
 
       if (!data || !data.success) {
@@ -225,6 +250,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         title: '预处理完成',
         description: `文件已通过QwenLong模型成功预处理为结构化格式`,
       });
+
+      // 刷新预处理文件列表
+      await fetchPreprocessedFiles();
 
       console.log('预处理结果:', data);
       
@@ -244,11 +272,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   };
 
   const handleGenerateQuestions = async () => {
-    if (!selectedFile || !selectedModel) {
-      const errorMsg = '请选择文件和AI模型';
+    if (!selectedPreprocessedFile) {
+      const errorMsg = '请选择已预处理的文件';
       setError(errorMsg);
       toast({
-        title: '请完善选择',
+        title: '请选择已预处理文件',
         description: errorMsg,
         variant: 'destructive',
       });
@@ -257,20 +285,14 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
     setIsGenerating(true);
-    const modelNames = {
-      'deepseek-r1': 'DeepSeek R1',
-      'qwen3-32b': 'Qwen2.5-32B'
-    };
-    setStatus(`使用${modelNames[selectedModel] || selectedModel}模型生成题目中...`);
+    setStatus('使用Qwen3-32B模型生成题目中...');
 
     try {
-      console.log('调用生成题目API:', { selectedFile, selectedModel });
+      console.log('调用生成题目API:', { selectedPreprocessedFile });
       
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
-          filePath: selectedFile,
-          fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown',
-          model: selectedModel,
+          preprocessedId: selectedPreprocessedFile,
           questionCount: 18
         }
       });
@@ -279,13 +301,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       if (error) {
         console.error('Function invoke error:', error);
-        let errorMessage = `API调用失败: ${error.message}`;
-        if (error.message.includes('Failed to send a request')) {
-          errorMessage = '无法连接到AI生成服务，请稍后重试';
-        } else if (error.message.includes('network')) {
-          errorMessage = '网络连接错误，请检查网络后重试';
-        }
-        throw new Error(errorMessage);
+        throw new Error(`API调用失败: ${error.message}`);
       }
 
       if (!data || !data.success) {
@@ -296,7 +312,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '生成完成',
-        description: `已通过${modelNames[selectedModel]}成功生成${data.questions?.length || 0}道题目`,
+        description: `已通过Qwen3-32B成功生成${data.questions?.length || 0}道题目`,
       });
 
       console.log('生成结果:', data);
@@ -382,18 +398,8 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </Select>
             </div>
 
-            {/* 硅基流动AI模型选择和操作按钮 */}
+            {/* AI操作按钮 */}
             <div className="space-y-3">
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择硅基流动AI模型" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectItem value="deepseek-r1">DeepSeek R1 (推理模型)</SelectItem>
-                  <SelectItem value="qwen3-32b">Qwen2.5-32B (通用模型)</SelectItem>
-                </SelectContent>
-              </Select>
-
               <div className="flex gap-2">
                 <Button
                   onClick={handlePreprocessFile}
@@ -406,13 +412,37 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
                 <Button
                   onClick={handleGenerateQuestions}
-                  disabled={isGenerating || !selectedFile || !selectedModel}
+                  disabled={isGenerating || !selectedPreprocessedFile}
                   className="bg-green-600 hover:bg-green-700 text-white flex-1"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   {isGenerating ? '生成中...' : 'AI生成题目'}
                 </Button>
               </div>
+
+              {/* 已预处理文件选择 */}
+              <Select value={selectedPreprocessedFile} onValueChange={setSelectedPreprocessedFile}>
+                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
+                  <SelectValue placeholder="选择已预处理文件" />
+                </SelectTrigger>
+                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
+                  <ScrollArea className="h-full">
+                    {preprocessedFiles.map((file) => (
+                      <SelectItem key={file.id} value={file.id}>
+                        <div className="flex items-center">
+                          <Database className="mr-2 h-4 w-4" />
+                          <div className="flex flex-col">
+                            <span>{file.file_name}</span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(file.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 状态显示 */}

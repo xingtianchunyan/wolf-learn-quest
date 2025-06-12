@@ -17,12 +17,6 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// 模型映射 - 硅基流动平台支持的模型
-const modelMapping = {
-  'deepseek-r1': 'deepseek-ai/DeepSeek-R1',
-  'qwen3-32b': 'Qwen/Qwen2.5-32B-Instruct'
-};
-
 serve(async (req) => {
   // 处理CORS预检请求
   if (req.method === 'OPTIONS') {
@@ -36,45 +30,31 @@ serve(async (req) => {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    const { filePath, fileName, model, questionCount = 18 } = await req.json();
-    console.log('开始生成题目:', { fileName, model, questionCount });
+    const { preprocessedId, questionCount = 18 } = await req.json();
+    console.log('开始生成题目:', { preprocessedId, questionCount });
 
     // 获取预处理后的内容
     const { data: preprocessedData, error: fetchError } = await supabase
       .from('preprocessed_files')
-      .select('preprocessed_content')
-      .eq('original_file_path', filePath)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .select('*')
+      .eq('id', preprocessedId)
+      .single();
 
-    let contentToUse = '';
-    
     if (fetchError || !preprocessedData) {
-      console.log('未找到预处理内容，使用原始文件');
-      // 如果没有预处理内容，直接使用原始文件
-      const { data: fileData, error: downloadError } = await supabase.storage
-        .from('question-files')
-        .download(filePath);
-
-      if (downloadError) {
-        throw new Error(`文件下载失败: ${downloadError.message}`);
-      }
-
-      contentToUse = await fileData.text();
-    } else {
-      contentToUse = preprocessedData.preprocessed_content;
+      console.error('获取预处理内容失败:', fetchError);
+      throw new Error('未找到指定的预处理文件');
     }
+
+    const contentToUse = preprocessedData.preprocessed_content;
 
     if (!contentToUse || contentToUse.trim().length === 0) {
-      throw new Error('学习材料内容为空');
+      throw new Error('预处理内容为空');
     }
 
-    // 获取对应的硅基流动模型名称
-    const siliconflowModel = modelMapping[model] || modelMapping['deepseek-r1'];
-    console.log('使用模型:', siliconflowModel);
+    console.log('使用预处理内容，长度:', contentToUse.length);
 
     // 使用硅基流动平台API生成题目
+    console.log('调用硅基流动API生成题目...');
     const generateResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -82,7 +62,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: siliconflowModel,
+        model: 'Qwen/Qwen3-32B',
         messages: [
           {
             role: 'system',
@@ -181,9 +161,9 @@ serve(async (req) => {
     const { data: savedQuestions, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
-        file_path: filePath,
-        file_name: fileName,
-        model_used: siliconflowModel,
+        file_path: preprocessedData.original_file_path,
+        file_name: preprocessedData.file_name,
+        model_used: 'Qwen/Qwen3-32B',
         questions: questions.questions || questions,
         question_count: questions.questions?.length || 1,
         created_at: new Date().toISOString()
@@ -212,7 +192,7 @@ serve(async (req) => {
     console.error('生成题目过程中发生错误:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message || '未知错误'
+      error: error instanceof Error ? error.message : '未知错误'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
