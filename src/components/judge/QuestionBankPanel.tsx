@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Upload, File, Database, Sparkles, Loader2 } from 'lucide-react';
+import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import QuestionBankDialog from './QuestionBankDialog';
@@ -28,6 +28,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
+  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -38,12 +39,14 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
   const fetchUploadedFiles = async () => {
     try {
+      console.log('获取文件列表...');
       const { data, error } = await supabase.storage
         .from('question-files')
         .list('uploads', { limit: 100 });
 
       if (error) {
         console.error('Error fetching files:', error);
+        setError(`获取文件列表失败: ${error.message}`);
         return;
       }
 
@@ -54,23 +57,45 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       })) || [];
 
       setUploadedFiles(files);
+      console.log('文件列表获取成功:', files.length, '个文件');
     } catch (error) {
       console.error('Error fetching uploaded files:', error);
+      setError('获取文件列表时发生错误');
     }
+  };
+
+  const clearError = () => {
+    setError('');
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    clearError();
+
     // 检查文件格式
     const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
     if (!allowedFormats.includes(fileExtension)) {
+      const errorMsg = '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
+      setError(errorMsg);
       toast({
         title: '文件格式不支持',
-        description: '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 检查文件大小 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      const errorMsg = '文件大小不能超过10MB';
+      setError(errorMsg);
+      toast({
+        title: '文件过大',
+        description: errorMsg,
         variant: 'destructive',
       });
       return;
@@ -81,14 +106,18 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     try {
       const fileName = `${Date.now()}-${file.name}`;
+      console.log('开始上传文件:', fileName);
+      
       const { data, error } = await supabase.storage
         .from('question-files')
         .upload(`uploads/${fileName}`, file);
 
       if (error) {
-        throw error;
+        console.error('Upload error:', error);
+        throw new Error(`上传失败: ${error.message}`);
       }
 
+      console.log('文件上传成功:', data);
       toast({
         title: '上传成功',
         description: '文件已成功上传',
@@ -99,9 +128,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       
     } catch (error) {
       console.error('Error uploading file:', error);
+      const errorMsg = error instanceof Error ? error.message : '文件上传失败';
+      setError(errorMsg);
       toast({
         title: '上传失败',
-        description: '文件上传失败，请重试',
+        description: errorMsg,
         variant: 'destructive',
       });
     } finally {
@@ -115,21 +146,23 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
   const handlePreprocessFile = async () => {
     if (!selectedFile) {
+      const errorMsg = '请先选择要预处理的文件';
+      setError(errorMsg);
       toast({
         title: '请选择文件',
-        description: '请先选择要预处理的文件',
+        description: errorMsg,
         variant: 'destructive',
       });
       return;
     }
 
+    clearError();
     setIsProcessing(true);
     setStatus('使用DeepSeek R1模型预处理文件中...');
 
     try {
       console.log('调用预处理API:', selectedFile);
       
-      // 调用硅基流动平台API进行文件预处理
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
           filePath: selectedFile,
@@ -137,12 +170,17 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         }
       });
 
+      console.log('预处理API响应:', data, error);
+
       if (error) {
-        throw new Error(error.message);
+        console.error('Function invoke error:', error);
+        throw new Error(`API调用失败: ${error.message}`);
       }
 
-      if (!data.success) {
-        throw new Error(data.error);
+      if (!data || !data.success) {
+        const errorMsg = data?.error || '预处理失败';
+        console.error('预处理失败:', errorMsg);
+        throw new Error(errorMsg);
       }
 
       toast({
@@ -154,9 +192,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       
     } catch (error) {
       console.error('Error preprocessing file:', error);
+      const errorMsg = error instanceof Error ? error.message : '文件预处理失败';
+      setError(`预处理失败: ${errorMsg}`);
       toast({
         title: '预处理失败',
-        description: `文件预处理失败: ${error.message}`,
+        description: errorMsg,
         variant: 'destructive',
       });
     } finally {
@@ -167,14 +207,17 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
   const handleGenerateQuestions = async () => {
     if (!selectedFile || !selectedModel) {
+      const errorMsg = '请选择文件和AI模型';
+      setError(errorMsg);
       toast({
         title: '请完善选择',
-        description: '请选择文件和AI模型',
+        description: errorMsg,
         variant: 'destructive',
       });
       return;
     }
 
+    clearError();
     setIsGenerating(true);
     const modelNames = {
       'deepseek-r1': 'DeepSeek R1',
@@ -185,7 +228,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     try {
       console.log('调用生成题目API:', { selectedFile, selectedModel });
       
-      // 调用硅基流动平台API生成题目
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           filePath: selectedFile,
@@ -195,12 +237,17 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         }
       });
 
+      console.log('生成题目API响应:', data, error);
+
       if (error) {
-        throw new Error(error.message);
+        console.error('Function invoke error:', error);
+        throw new Error(`API调用失败: ${error.message}`);
       }
 
-      if (!data.success) {
-        throw new Error(data.error);
+      if (!data || !data.success) {
+        const errorMsg = data?.error || '题目生成失败';
+        console.error('生成失败:', errorMsg);
+        throw new Error(errorMsg);
       }
 
       toast({
@@ -212,9 +259,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       
     } catch (error) {
       console.error('Error generating questions:', error);
+      const errorMsg = error instanceof Error ? error.message : '题目生成失败';
+      setError(`生成失败: ${errorMsg}`);
       toast({
         title: '生成失败',
-        description: `题目生成失败: ${error.message}`,
+        description: errorMsg,
         variant: 'destructive',
       });
     } finally {
@@ -234,6 +283,22 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         </CardHeader>
         <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
           <div className="space-y-4 h-full flex flex-col">
+            {/* 错误提示 */}
+            {error && (
+              <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-md">
+                <AlertCircle className="mr-2 h-4 w-4 text-red-400" />
+                <span className="text-red-400 text-sm">{error}</span>
+                <Button
+                  onClick={clearError}
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+
             {/* 文件上传区域 */}
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -332,7 +397,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       <QuestionBankDialog
         isOpen={showQuestionBank}
         onClose={() => setShowQuestionBank(false)}
-        roomId="current-room" // TODO: 从props获取实际roomId
+        roomId="current-room"
       />
     </>
   );

@@ -24,8 +24,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log('开始处理预处理请求');
+    
+    if (!SILICONFLOW_API_KEY) {
+      throw new Error('SILICONFLOW_API_KEY环境变量未设置');
+    }
+
     const { filePath, fileName } = await req.json();
-    console.log('开始预处理文件:', fileName);
+    console.log('开始预处理文件:', fileName, '路径:', filePath);
 
     // 从Supabase Storage下载文件
     const { data: fileData, error: downloadError } = await supabase.storage
@@ -33,12 +39,17 @@ serve(async (req) => {
       .download(filePath);
 
     if (downloadError) {
+      console.error('文件下载失败:', downloadError);
       throw new Error(`文件下载失败: ${downloadError.message}`);
     }
 
     // 读取文件内容
     const fileContent = await fileData.text();
     console.log('文件内容长度:', fileContent.length);
+
+    if (!fileContent || fileContent.trim().length === 0) {
+      throw new Error('文件内容为空');
+    }
 
     // 使用DeepSeek R1模型进行文件预处理
     const preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
@@ -58,7 +69,7 @@ serve(async (req) => {
 3. 关键信息和要点
 4. 可能的考试重点
 
-请将内容组织成清晰的结构化格式，便于后续生成考试题目。`
+请将内容组织成清晰的结构化格式，便于后续生成考试题目。确保内容完整且逻辑清晰。`
           },
           {
             role: 'user',
@@ -70,15 +81,22 @@ serve(async (req) => {
       }),
     });
 
+    console.log('API响应状态:', preprocessResponse.status);
+
     if (!preprocessResponse.ok) {
       const errorText = await preprocessResponse.text();
       console.error('硅基流动API错误:', errorText);
-      throw new Error(`API调用失败: ${preprocessResponse.status} ${errorText}`);
+      throw new Error(`API调用失败: ${preprocessResponse.status} - ${errorText}`);
     }
 
     const result = await preprocessResponse.json();
-    const preprocessedContent = result.choices[0].message.content;
+    
+    if (!result.choices || !result.choices[0] || !result.choices[0].message) {
+      console.error('API返回格式错误:', result);
+      throw new Error('API返回数据格式错误');
+    }
 
+    const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
     // 将预处理结果保存到数据库
@@ -99,6 +117,8 @@ serve(async (req) => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
+    console.log('预处理结果已保存，ID:', savedData.id);
+
     return new Response(JSON.stringify({
       success: true,
       message: '文件预处理完成',
@@ -112,7 +132,7 @@ serve(async (req) => {
     console.error('预处理过程中发生错误:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message || '未知错误'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -30,6 +30,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('开始处理生成题目请求');
+    
+    if (!SILICONFLOW_API_KEY) {
+      throw new Error('SILICONFLOW_API_KEY环境变量未设置');
+    }
+
     const { filePath, fileName, model, questionCount = 18 } = await req.json();
     console.log('开始生成题目:', { fileName, model, questionCount });
 
@@ -40,7 +46,7 @@ serve(async (req) => {
       .eq('original_file_path', filePath)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     let contentToUse = '';
     
@@ -60,6 +66,10 @@ serve(async (req) => {
       contentToUse = preprocessedData.preprocessed_content;
     }
 
+    if (!contentToUse || contentToUse.trim().length === 0) {
+      throw new Error('学习材料内容为空');
+    }
+
     // 获取对应的硅基流动模型名称
     const siliconflowModel = modelMapping[model] || modelMapping['deepseek-r1'];
     console.log('使用模型:', siliconflowModel);
@@ -76,29 +86,37 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `你是一个专业的考试题目生成专家。请根据提供的学习材料生成${questionCount}道高质量的考试题目。
+            content: `你是一个专业的考试题目生成专家。请根据提供的学习材料生成${questionCount}道考试题目。
 
 要求：
-1. 题目类型包括：选择题、判断题、简答题、论述题
-2. 难度分布：简单(30%)、中等(50%)、困难(20%)
-3. 每道题目必须包含：题目内容、选项(选择题)、正确答案、解析说明
+1. 题目类型只包括：选择题（4个选项）和判断题（2个选项：正确/错误）
+2. 选择题和判断题的比例大约为7:3
+3. 每道题目必须包含：题目内容、选项、正确答案、解析说明
 4. 题目应该全面覆盖学习材料的重点内容
-5. 返回JSON格式，结构如下：
+5. 返回严格的JSON格式，结构如下：
 
 {
   "questions": [
     {
       "id": 1,
-      "type": "choice|judgment|short_answer|essay",
-      "difficulty": "easy|medium|hard",
+      "type": "choice",
       "question": "题目内容",
-      "options": ["A选项", "B选项", "C选项", "D选项"], // 仅选择题需要
-      "correct_answer": "正确答案",
-      "explanation": "答案解析",
-      "points": 题目分值
+      "options": ["A选项", "B选项", "C选项", "D选项"],
+      "correct_answer": "A",
+      "explanation": "答案解析"
+    },
+    {
+      "id": 2,
+      "type": "judgment",
+      "question": "题目内容",
+      "options": ["正确", "错误"],
+      "correct_answer": "正确",
+      "explanation": "答案解析"
     }
   ]
-}`
+}
+
+请确保返回的是完整有效的JSON格式，不要包含任何markdown标记。`
           },
           {
             role: 'user',
@@ -110,40 +128,54 @@ serve(async (req) => {
       }),
     });
 
+    console.log('API响应状态:', generateResponse.status);
+
     if (!generateResponse.ok) {
       const errorText = await generateResponse.text();
       console.error('硅基流动API错误:', errorText);
-      throw new Error(`API调用失败: ${generateResponse.status} ${errorText}`);
+      throw new Error(`API调用失败: ${generateResponse.status} - ${errorText}`);
     }
 
     const result = await generateResponse.json();
-    const generatedContent = result.choices[0].message.content;
+    
+    if (!result.choices || !result.choices[0] || !result.choices[0].message) {
+      console.error('API返回格式错误:', result);
+      throw new Error('API返回数据格式错误');
+    }
 
-    console.log('题目生成完成');
+    const generatedContent = result.choices[0].message.content;
+    console.log('题目生成完成，内容长度:', generatedContent.length);
 
     // 尝试解析JSON格式的题目
     let questions;
     try {
-      // 提取JSON部分（处理可能的markdown格式）
-      const jsonMatch = generatedContent.match(/```json\n([\s\S]*?)\n```/) || 
-                       generatedContent.match(/\{[\s\S]*\}/);
-      const jsonContent = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : generatedContent;
-      questions = JSON.parse(jsonContent);
+      // 清理可能的markdown格式
+      const cleanContent = generatedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      questions = JSON.parse(cleanContent);
+      
+      if (!questions.questions || !Array.isArray(questions.questions)) {
+        throw new Error('题目格式不正确');
+      }
+      
     } catch (parseError) {
-      console.error('JSON解析失败，使用文本格式保存:', parseError);
+      console.error('JSON解析失败:', parseError);
+      console.log('原始内容:', generatedContent);
+      
+      // 如果解析失败，创建一个默认格式
       questions = {
         questions: [{
           id: 1,
           type: 'text',
-          difficulty: 'medium',
-          question: '生成的题目内容',
-          correct_answer: '请查看完整内容',
-          explanation: '详细解析请查看原始生成内容',
-          points: 5,
+          question: '题目生成格式错误，请重新生成',
+          options: ['查看原始内容'],
+          correct_answer: '查看原始内容',
+          explanation: '生成的内容格式不正确，请重新尝试',
           raw_content: generatedContent
         }]
       };
     }
+
+    console.log('解析后的题目数量:', questions.questions?.length || 0);
 
     // 保存生成的题目到数据库
     const { data: savedQuestions, error: saveError } = await supabase
@@ -164,6 +196,8 @@ serve(async (req) => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
+    console.log('题目已保存，ID:', savedQuestions.id);
+
     return new Response(JSON.stringify({
       success: true,
       message: `成功生成${questions.questions?.length || 1}道题目`,
@@ -178,7 +212,7 @@ serve(async (req) => {
     console.error('生成题目过程中发生错误:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message || '未知错误'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
