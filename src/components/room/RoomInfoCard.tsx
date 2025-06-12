@@ -3,9 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useAuth } from '@/providers/AuthProvider';
 
 interface RoomInfoCardProps {
   roomId: string;
@@ -16,19 +14,15 @@ interface RoomInfo {
   hostPlayerId: string;
   maxPlayers: number;
   currentPlayers: number;
-  onlinePlayers: number;
 }
 
 const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { currentUser } = useAuth();
   
-  // 获取玩家列表和在线状态
+  // 获取玩家列表
   const { players } = usePlayersRealtime(roomId);
-  const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
-  const onlinePlayersList = getOnlinePlayers();
 
   useEffect(() => {
     const fetchRoomInfo = async () => {
@@ -61,8 +55,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           roomId: roomData.room_id,
           hostPlayerId: roomData.users?.player_name || 'Unknown',
           maxPlayers: roomData.max_players,
-          currentPlayers: players.length,
-          onlinePlayers: onlinePlayersList.length
+          currentPlayers: players.length
         };
 
         setRoomInfo(roomInfo);
@@ -81,7 +74,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
     if (roomId) {
       fetchRoomInfo();
     }
-  }, [roomId, toast, players.length, onlinePlayersList.length]);
+  }, [roomId, toast, players.length]);
 
   if (loading) {
     return (
@@ -132,10 +125,6 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           <div>
             <p className="text-sm text-gray-400">房间人数</p>
             <p>{roomInfo.currentPlayers} / {roomInfo.maxPlayers}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">在线玩家</p>
-            <p>{roomInfo.onlinePlayers} / {roomInfo.currentPlayers}</p>
           </div>
           
           <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">

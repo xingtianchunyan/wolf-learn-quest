@@ -7,6 +7,8 @@ import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
+import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 
 interface Player {
   id: string;
@@ -29,6 +31,21 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
   const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
+
+  // 获取房间最大玩家数以确定角色配置
+  const maxPlayers = 8; // 可以从房间信息中获取，暂时使用默认值
+  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
+  
+  // 获取角色配置
+  const roleConfigs = getRoleConfiguration(maxPlayers);
+  const expandedRoles = expandRoles(roleConfigs);
+
+  // 根据角色ID获取角色名称
+  const getRoleName = (roleId: string | null) => {
+    if (!roleId) return '未选择';
+    const role = expandedRoles.find(r => r.instanceId === roleId);
+    return role ? role.name : '未知角色';
+  };
 
   // 检查玩家是否在线 - 修正匹配逻辑
   const isPlayerOnline = (player: Player) => {
@@ -82,6 +99,9 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
+                    // 获取玩家选择的角色
+                    const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
+                    const roleName = getRoleName(selectedRoleId);
                     
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
@@ -89,7 +109,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                           {player.name}
                         </TableCell>
                         <TableCell className="text-gray-300">
-                          {(player as any).role || '未选择'}
+                          {roleName}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
