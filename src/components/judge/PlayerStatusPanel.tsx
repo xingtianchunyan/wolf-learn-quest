@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface Player {
   id: string;
@@ -15,7 +16,7 @@ interface Player {
   isHost: boolean;
   isAI: boolean;
   role?: string;
-  user_id?: string; // Add user_id property for matching
+  userId?: string;
 }
 
 interface PlayerStatusPanelProps {
@@ -24,34 +25,24 @@ interface PlayerStatusPanelProps {
 }
 
 const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className }) => {
+  const { currentUser } = useAuth();
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
-  const { getOnlinePlayers } = usePlayerPresence(roomId, null);
+  const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
 
   // 检查玩家是否在线 - 修正匹配逻辑
   const isPlayerOnline = (player: Player) => {
-    console.log('Checking online status for player:', player);
-    console.log('Online players list:', onlinePlayersList);
-    
-    // 尝试多种匹配方式
-    return onlinePlayersList.some(onlinePlayer => {
-      // 直接匹配用户ID
-      if (onlinePlayer.user_id === (player as any).user_id) {
-        return true;
-      }
-      
-      // 匹配玩家ID
-      if (onlinePlayer.user_id === player.id) {
-        return true;
-      }
-      
-      // 如果玩家名称包含用户ID
-      if (player.name && player.name.includes(onlinePlayer.user_id)) {
-        return true;
-      }
-      
+    // AI玩家总是显示为"在线"
+    if (player.isAI) {
+      return true;
+    }
+
+    // 对于真实玩家，检查userId是否在在线列表中
+    if (!player.userId) {
       return false;
-    });
+    }
+
+    return onlinePlayersList.some(onlinePlayer => onlinePlayer.user_id === player.userId);
   };
 
   return (
@@ -91,7 +82,6 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
-                    console.log(`Player ${player.name} online status:`, playerOnline);
                     
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">

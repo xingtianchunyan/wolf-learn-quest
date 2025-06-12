@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface RoomInfoCardProps {
   roomId: string;
@@ -22,10 +23,11 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { currentUser } = useAuth();
   
   // 获取玩家列表和在线状态
   const { players } = usePlayersRealtime(roomId);
-  const { getOnlinePlayers } = usePlayerPresence(roomId, null);
+  const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
 
   useEffect(() => {
@@ -46,7 +48,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           .single();
 
         if (roomError) {
-          console.error('Error fetching room:', roomError);
+          console.error('Error fetching room data:', roomError);
           toast({
             title: '错误',
             description: '获取房间信息失败',
