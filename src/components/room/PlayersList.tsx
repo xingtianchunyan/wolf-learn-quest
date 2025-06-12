@@ -14,6 +14,7 @@ interface Player {
   isReady: boolean;
   isHost: boolean;
   isAI: boolean;
+  userId?: string; // 添加userId字段用于在线状态检查
 }
 
 interface PlayersListProps {
@@ -172,12 +173,8 @@ const PlayersList: React.FC<PlayersListProps> = ({
                         <div className="absolute -top-1 -right-1">
                           {player.isAI ? (
                             <Bot className="h-3 w-3 text-blue-400" />
-                          ) : onlinePlayers.length > 0 ? (
-                            onlinePlayers.some(id => player.name.includes(id) || id.includes(player.name)) ? (
-                              <Wifi className="h-3 w-3 text-green-400" />
-                            ) : (
-                              <WifiOff className="h-3 w-3 text-red-400" />
-                            )
+                          ) : player.userId && onlinePlayers.includes(player.userId) ? (
+                            <Wifi className="h-3 w-3 text-green-400" />
                           ) : (
                             <WifiOff className="h-3 w-3 text-red-400" />
                           )}
