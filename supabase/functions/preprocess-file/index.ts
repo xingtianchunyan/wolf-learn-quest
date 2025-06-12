@@ -32,6 +32,12 @@ serve(async (req) => {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
+    // 检查Supabase配置
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase配置不完整');
+      throw new Error('Supabase配置不完整');
+    }
+
     let requestBody;
     try {
       requestBody = await req.json();
@@ -40,118 +46,55 @@ serve(async (req) => {
       throw new Error('请求格式错误');
     }
 
-    const { filePath, fileName, roomId } = requestBody;
-    console.log('请求参数:', { filePath, fileName, roomId });
+    const { filePath, fileName } = requestBody;
+    
+    console.log('请求参数:', { filePath, fileName });
 
-    if (!filePath || !fileName || !roomId) {
-      throw new Error('缺少必要参数: filePath, fileName 或 roomId');
+    if (!filePath || !fileName) {
+      throw new Error('缺少必要参数: filePath或fileName');
     }
 
-    // 首先记录处理状态
-    console.log('记录处理状态到file_processing_status表...');
-    const { data: statusRecord, error: statusError } = await supabase
-      .from('file_processing_status')
-      .insert({
-        room_id: roomId,
-        file_name: fileName,
-        original_file_path: filePath,
-        status: 'processing'
-      })
-      .select()
-      .maybeSingle();
+    console.log('开始预处理文件:', fileName, '路径:', filePath);
 
-    if (statusError) {
-      console.error('记录处理状态失败:', statusError);
-      throw new Error(`记录处理状态失败: ${statusError.message}`);
-    }
-
-    console.log('处理状态已记录，ID:', statusRecord?.id);
-
-    // 检查是否已经预处理过此文件
-    console.log('检查是否已预处理...');
-    const { data: existingPreprocessed, error: checkError } = await supabase
-      .from('preprocessed_files')
-      .select('*')
-      .eq('original_file_path', filePath)
-      .limit(1)
-      .maybeSingle();
-
-    if (checkError) {
-      console.error('查询预处理记录失败:', checkError);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
-      throw new Error(`查询预处理记录失败: ${checkError.message}`);
-    }
-
-    if (existingPreprocessed) {
-      console.log('文件已预处理过，直接返回结果');
-      // 更新状态为完成
-      await supabase
-        .from('file_processing_status')
-        .update({ 
-          status: 'completed',
-          processed_file_path: `preprocessed_${fileName}`
-        })
-        .eq('id', statusRecord.id);
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: '文件已预处理过',
-        preprocessed_content: existingPreprocessed.preprocessed_content,
-        file_id: existingPreprocessed.id
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('开始下载文件...');
-    // 下载文件
+    // 从Supabase Storage下载文件
+    console.log('正在下载文件...');
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('question-files')
       .download(filePath);
 
-    if (downloadError || !fileData) {
+    if (downloadError) {
       console.error('文件下载失败:', downloadError);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
-      throw new Error(`文件下载失败: ${downloadError?.message || '文件为空'}`);
+      throw new Error(`文件下载失败: ${downloadError.message}`);
     }
 
+    if (!fileData) {
+      throw new Error('文件下载返回空数据');
+    }
+
+    // 读取文件内容
     let fileContent;
     try {
       fileContent = await fileData.text();
     } catch (error) {
       console.error('文件内容读取失败:', error);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('文件内容读取失败，请检查文件格式');
     }
+    
+    console.log('文件内容长度:', fileContent.length);
 
     if (!fileContent || fileContent.trim().length === 0) {
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('文件内容为空');
     }
 
-    console.log('文件内容长度:', fileContent.length);
+    // 限制文件内容长度 - QwenLong可以处理更长文本
+    const maxContentLength = 50000; // 增加到50k字符
+    if (fileContent.length > maxContentLength) {
+      fileContent = fileContent.substring(0, maxContentLength) + '...';
+      console.log('文件内容过长，已截取前', maxContentLength, '个字符');
+    }
 
-    // 使用硅基流动平台API预处理文件
-    const siliconflowModel = 'Tongyi-Zhiwen/QwenLong-L1-32B';
-    console.log('使用模型:', siliconflowModel);
-
-    console.log('调用硅基流动API预处理文件...');
+    // 使用QwenLong模型进行文件预处理
+    console.log('调用硅基流动API进行预处理...');
     
     let preprocessResponse;
     try {
@@ -162,28 +105,29 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: siliconflowModel,
+          model: 'Tongyi-Zhiwen/QwenLong-L1-32B',
           messages: [
             {
               role: 'system',
-              content: '你是一个专业的文档预处理专家。请对用户提供的学习材料进行预处理，提取关键信息，整理结构，去除冗余内容，使其更适合用于生成考试题目。保持原文的核心知识点和重要概念，但要使文本更加清晰和有条理。'
+              content: `你是一个专业的文档预处理专家。请将用户提供的文档内容进行结构化整理，提取出：
+1. 主要知识点和概念
+2. 重要定义和术语
+3. 关键信息和要点
+4. 可能的考试重点
+
+请将内容组织成清晰的结构化格式，便于后续生成考试题目。确保内容完整且逻辑清晰。`
             },
             {
               role: 'user',
-              content: `请预处理以下学习材料：\n\n${fileContent}`
+              content: `请预处理以下文档内容，提取关键信息并结构化整理：\n\n${fileContent}`
             }
           ],
-          temperature: 0.3,
-          max_tokens: 4000
+          temperature: 0.1,
+          max_tokens: 8000
         }),
       });
     } catch (error) {
       console.error('API请求发送失败:', error);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('无法连接到AI服务，请稍后重试');
     }
 
@@ -192,12 +136,6 @@ serve(async (req) => {
     if (!preprocessResponse.ok) {
       const errorText = await preprocessResponse.text();
       console.error('硅基流动API错误:', preprocessResponse.status, errorText);
-      
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       
       let errorMessage = `API调用失败 (${preprocessResponse.status})`;
       if (preprocessResponse.status === 401) {
@@ -216,11 +154,6 @@ serve(async (req) => {
       result = await preprocessResponse.json();
     } catch (error) {
       console.error('API响应解析失败:', error);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('AI服务响应格式错误');
     }
 
@@ -228,71 +161,43 @@ serve(async (req) => {
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('AI服务返回数据格式错误');
     }
 
     const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
-    // 保存预处理结果到数据库
+    // 将预处理结果保存到数据库
     console.log('保存预处理结果到数据库...');
-    const { data: savedPreprocessed, error: saveError } = await supabase
+    const { data: savedData, error: saveError } = await supabase
       .from('preprocessed_files')
       .insert({
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
-        model_used: siliconflowModel
+        model_used: 'Tongyi-Zhiwen/QwenLong-L1-32B',
+        created_at: new Date().toISOString()
       })
       .select()
       .maybeSingle();
 
     if (saveError) {
       console.error('保存预处理结果失败:', saveError);
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
-      throw new Error(`保存失败: ${saveError.message}`);
+      throw new Error(`保存失败: ${saveError.message || '数据库保存错误'}`);
     }
 
-    if (!savedPreprocessed) {
+    if (!savedData) {
       console.error('保存成功但未返回数据');
-      // 更新状态为失败
-      await supabase
-        .from('file_processing_status')
-        .update({ status: 'failed' })
-        .eq('id', statusRecord.id);
       throw new Error('保存成功但未返回数据');
     }
 
-    console.log('预处理结果已保存，ID:', savedPreprocessed.id);
-
-    // 更新处理状态为完成
-    const { error: updateStatusError } = await supabase
-      .from('file_processing_status')
-      .update({ 
-        status: 'completed',
-        processed_file_path: `preprocessed_${fileName}`
-      })
-      .eq('id', statusRecord.id);
-
-    if (updateStatusError) {
-      console.error('更新处理状态失败:', updateStatusError);
-    }
+    console.log('预处理结果已保存，ID:', savedData.id);
 
     return new Response(JSON.stringify({
       success: true,
       message: '文件预处理完成',
-      preprocessed_content: preprocessedContent,
-      file_id: savedPreprocessed.id,
-      preview: preprocessedContent.substring(0, 500) + '...'
+      preprocessed_id: savedData.id,
+      content_preview: preprocessedContent.substring(0, 200) + '...'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -300,6 +205,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('预处理过程中发生错误:', error);
     
+    // 提供更详细的错误信息
     let errorMessage = '未知错误';
     if (error instanceof Error) {
       errorMessage = error.message;
