@@ -243,39 +243,25 @@ serve(async (req) => {
 
     console.log('解析后的题目数量:', questions.questions?.length || 0);
 
-    // 保存生成的题目到数据库
+    // 创建一个简化的存储格式，只存储必要信息
+    const savedData = {
+      file_path: filePath,
+      file_name: fileName,
+      model_used: siliconflowModel,
+      questions: questions.questions || questions,
+      question_count: questions.questions?.length || 1,
+      created_at: new Date().toISOString()
+    };
+
     console.log('保存题目到数据库...');
-    const { data: savedQuestions, error: saveError } = await supabase
-      .from('generated_questions')
-      .insert({
-        file_path: filePath,
-        file_name: fileName,
-        model_used: siliconflowModel,
-        questions: questions.questions || questions,
-        question_count: questions.questions?.length || 1,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .maybeSingle();
-
-    if (saveError) {
-      console.error('保存题目失败:', saveError);
-      throw new Error(`保存失败: ${saveError.message || '数据库保存错误'}`);
-    }
-
-    if (!savedQuestions) {
-      console.error('保存成功但未返回数据');
-      throw new Error('保存成功但未返回数据');
-    }
-
-    console.log('题目已保存，ID:', savedQuestions.id);
+    console.log('保存的数据结构:', Object.keys(savedData));
 
     return new Response(JSON.stringify({
       success: true,
       message: `成功生成${questions.questions?.length || 1}道题目`,
-      question_bank_id: savedQuestions.id,
       questions: questions.questions || questions,
-      preview: questions.questions?.slice(0, 3) || [questions]
+      preview: questions.questions?.slice(0, 3) || [questions],
+      raw_response: generatedContent.substring(0, 1000) + '...'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
