@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -68,6 +67,16 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setError('');
   };
 
+  // 清理文件名以避免特殊字符问题
+  const sanitizeFileName = (fileName: string): string => {
+    // 移除或替换可能导致问题的字符
+    return fileName
+      .replace(/[^\w\s.-]/g, '') // 只保留字母、数字、空格、点和横线
+      .replace(/\s+/g, '_') // 将空格替换为下划线
+      .replace(/_{2,}/g, '_') // 将多个连续下划线替换为单个
+      .trim();
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -105,12 +114,20 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setStatus('文件上传中...');
 
     try {
-      const fileName = `${Date.now()}-${file.name}`;
-      console.log('开始上传文件:', fileName);
+      // 清理文件名
+      const originalName = file.name;
+      const sanitizedName = sanitizeFileName(originalName);
+      const fileName = `${Date.now()}-${sanitizedName}`;
+      
+      console.log('原始文件名:', originalName);
+      console.log('清理后文件名:', fileName);
       
       const { data, error } = await supabase.storage
         .from('question-files')
-        .upload(`uploads/${fileName}`, file);
+        .upload(`uploads/${fileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) {
         console.error('Upload error:', error);
@@ -120,7 +137,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       console.log('文件上传成功:', data);
       toast({
         title: '上传成功',
-        description: '文件已成功上传',
+        description: `文件 "${originalName}" 已成功上传`,
       });
 
       // 刷新文件列表

@@ -26,14 +26,31 @@ serve(async (req) => {
   try {
     console.log('开始处理预处理请求');
     
+    // 检查API密钥
     if (!SILICONFLOW_API_KEY) {
+      console.error('SILICONFLOW_API_KEY环境变量未设置');
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    const { filePath, fileName } = await req.json();
+    // 检查Supabase配置
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase配置不完整');
+      throw new Error('Supabase配置不完整');
+    }
+
+    const requestBody = await req.json();
+    const { filePath, fileName } = requestBody;
+    
+    console.log('请求参数:', { filePath, fileName });
+
+    if (!filePath || !fileName) {
+      throw new Error('缺少必要参数: filePath或fileName');
+    }
+
     console.log('开始预处理文件:', fileName, '路径:', filePath);
 
     // 从Supabase Storage下载文件
+    console.log('正在下载文件...');
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('question-files')
       .download(filePath);
@@ -41,6 +58,10 @@ serve(async (req) => {
     if (downloadError) {
       console.error('文件下载失败:', downloadError);
       throw new Error(`文件下载失败: ${downloadError.message}`);
+    }
+
+    if (!fileData) {
+      throw new Error('文件下载返回空数据');
     }
 
     // 读取文件内容
@@ -52,6 +73,7 @@ serve(async (req) => {
     }
 
     // 使用DeepSeek R1模型进行文件预处理
+    console.log('调用硅基流动API进行预处理...');
     const preprocessResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -90,6 +112,7 @@ serve(async (req) => {
     }
 
     const result = await preprocessResponse.json();
+    console.log('API返回结果结构:', Object.keys(result));
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
@@ -100,6 +123,7 @@ serve(async (req) => {
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
     // 将预处理结果保存到数据库
+    console.log('保存预处理结果到数据库...');
     const { data: savedData, error: saveError } = await supabase
       .from('preprocessed_files')
       .insert({
@@ -114,7 +138,7 @@ serve(async (req) => {
 
     if (saveError) {
       console.error('保存预处理结果失败:', saveError);
-      throw new Error(`保存失败: ${saveError.message}`);
+      throw new Error(`保存失败: ${saveError.message || '数据库保存错误'}`);
     }
 
     console.log('预处理结果已保存，ID:', savedData.id);
@@ -130,9 +154,19 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('预处理过程中发生错误:', error);
+    
+    // 提供更详细的错误信息
+    let errorMessage = '未知错误';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
     return new Response(JSON.stringify({
       success: false,
-      error: error.message || '未知错误'
+      error: errorMessage,
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
