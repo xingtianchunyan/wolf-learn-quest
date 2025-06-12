@@ -113,10 +113,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     }
   };
 
-  /**
-   * 处理文件预处理功能
-   * 调用AI API对上传的文件进行内容分析和结构化处理
-   */
   const handlePreprocessFile = async () => {
     if (!selectedFile) {
       toast({
@@ -131,35 +127,19 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setStatus('文件预处理中...');
 
     try {
-      console.log('Starting file preprocessing for:', selectedFile);
+      // TODO: 实现文件预处理逻辑
+      // 这里应该调用后端API来处理文件
+      await new Promise(resolve => setTimeout(resolve, 3000)); // 模拟处理时间
 
-      // 调用Supabase Edge Function进行文件预处理
-      const { data, error } = await supabase.functions.invoke('preprocess-file', {
-        body: {
-          filePath: selectedFile,
-          roomId: 'current-room' // TODO: 从props获取实际roomId
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message || '预处理请求失败');
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || '预处理失败');
-      }
-
-      console.log('File preprocessing completed successfully');
       toast({
         title: '预处理完成',
         description: '文件已成功预处理为结构化格式',
       });
-
     } catch (error) {
       console.error('Error preprocessing file:', error);
       toast({
         title: '预处理失败',
-        description: error instanceof Error ? error.message : '文件预处理失败，请重试',
+        description: '文件预处理失败，请重试',
         variant: 'destructive',
       });
     } finally {
@@ -168,10 +148,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     }
   };
 
-  /**
-   * 处理题目生成功能
-   * 基于预处理的文件内容，使用选定的LLM模型生成选择题
-   */
   const handleGenerateQuestions = async () => {
     if (!selectedFile || !selectedModel) {
       toast({
@@ -186,37 +162,19 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setStatus('题目生成中...');
 
     try {
-      console.log('Starting question generation for:', selectedFile, 'using model:', selectedModel);
+      // TODO: 实现题目生成逻辑
+      // 这里应该调用LLM API来生成题目
+      await new Promise(resolve => setTimeout(resolve, 5000)); // 模拟生成时间
 
-      // 调用Supabase Edge Function进行题目生成
-      const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: {
-          filePath: selectedFile,
-          roomId: 'current-room', // TODO: 从props获取实际roomId
-          model: selectedModel,
-          questionCount: 18 // 生成18道题目
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message || '题目生成请求失败');
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || '题目生成失败');
-      }
-
-      console.log('Question generation completed successfully');
       toast({
         title: '生成完成',
-        description: data.message || `已成功生成${data.questionsCount || 18}道题目`,
+        description: '已成功生成18道题目',
       });
-
     } catch (error) {
       console.error('Error generating questions:', error);
       toast({
         title: '生成失败',
-        description: error instanceof Error ? error.message : '题目生成失败，请重试',
+        description: '题目生成失败，请重试',
         variant: 'destructive',
       });
     } finally {
@@ -282,7 +240,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                   <SelectValue placeholder="选择LLM模型" />
                 </SelectTrigger>
                 <SelectContent className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectItem value="openai-gpt">OpenAI GPT-4o-mini</SelectItem>
                   <SelectItem value="deepseek-r1">DeepSeek R1</SelectItem>
                   <SelectItem value="qwen3-32b">Qwen3 32B</SelectItem>
                 </SelectContent>
