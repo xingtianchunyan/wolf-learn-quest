@@ -108,31 +108,33 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="flex flex-col flex-1 p-4 pt-0">
-        <ScrollArea className="flex-1 pr-4 mb-4" ref={scrollAreaRef}>
-          <div className="space-y-2">
-            {isLoading ? (
-              <div className="text-center text-gray-400 py-8">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
-                加载聊天记录...
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                暂无{getChannelDisplayName()}消息
-              </div>
-            ) : (
-              messages.map((message) => (
-                <ChatMessageComponent
-                  key={message.id}
-                  message={message}
-                  currentUserId={currentUser?.id}
-                  gamePhase={gamePhase}
-                  gameRound={gameRound}
-                />
-              ))
-            )}
-          </div>
-        </ScrollArea>
+      <CardContent className="flex flex-col flex-1 p-4 pt-0 overflow-hidden">
+        <div className="flex-1 mb-4 min-h-0">
+          <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
+            <div className="space-y-2">
+              {isLoading ? (
+                <div className="text-center text-gray-400 py-8">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
+                  加载聊天记录...
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  暂无{getChannelDisplayName()}消息
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <ChatMessageComponent
+                    key={message.id}
+                    message={message}
+                    currentUserId={currentUser?.id}
+                    gamePhase={gamePhase}
+                    gameRound={gameRound}
+                  />
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </div>
         
         <form onSubmit={handleSendMessage} className="flex-shrink-0">
           <div className="flex gap-2">
