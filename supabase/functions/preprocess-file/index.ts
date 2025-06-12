@@ -17,43 +17,55 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// 简化的DOCX文本提取函数
+// 解析DOCX文件内容的函数
 async function extractDocxContent(fileData: Uint8Array): Promise<string> {
   try {
-    // 将文件内容转换为字符串并尝试提取可读文本
-    const textContent = new TextDecoder('utf-8', { ignoreBOM: true }).decode(fileData);
+    // 导入解压库
+    const { unzip } = await import('https://deno.land/x/zip@v1.2.5/mod.ts');
     
-    // 尝试提取包含中文的可读文本
-    const chineseTextRegex = /[\u4e00-\u9fff\w\s\.,;:!?()[\]{}""'']+/g;
-    const matches = textContent.match(chineseTextRegex);
+    // 解压DOCX文件
+    const files = await unzip(fileData);
     
-    if (matches && matches.length > 0) {
-      // 过滤掉太短的匹配（可能是噪音）
-      const meaningfulText = matches
-        .filter(text => text.trim().length > 2)
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      if (meaningfulText.length > 50) {
-        console.log('从DOCX提取的文本长度:', meaningfulText.length);
-        console.log('文本预览:', meaningfulText.substring(0, 200));
-        return meaningfulText;
-      }
+    // 查找document.xml文件
+    const documentXml = files['word/document.xml'];
+    if (!documentXml) {
+      throw new Error('无法找到document.xml文件');
     }
     
-    // 如果正则提取失败，尝试更简单的方法
-    const simpleText = textContent
-      .replace(/[^\u4e00-\u9fff\w\s\.,;:!?()[\]{}""'']/g, ' ')
-      .replace(/\s+/g, ' ')
+    // 将Uint8Array转换为文本
+    const xmlContent = new TextDecoder().decode(documentXml);
+    
+    // 使用正则表达式提取文本内容
+    // 匹配 <w:t>文本内容</w:t> 标签中的文本
+    const textMatches = xmlContent.match(/<w:t[^>]*>(.*?)<\/w:t>/g);
+    
+    if (!textMatches) {
+      throw new Error('文档中未找到文本内容');
+    }
+    
+    // 提取并组合所有文本
+    const extractedText = textMatches
+      .map(match => {
+        // 移除标签，保留文本内容
+        const text = match.replace(/<w:t[^>]*>/, '').replace(/<\/w:t>/, '');
+        // 解码XML实体
+        return text
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&apos;/g, "'");
+      })
+      .join('')
       .trim();
     
-    console.log('简单提取的文本长度:', simpleText.length);
-    return simpleText.length > 10 ? simpleText : '无法提取有效文本内容';
+    console.log('提取的文本长度:', extractedText.length);
+    console.log('文本预览:', extractedText.substring(0, 200));
     
+    return extractedText;
   } catch (error) {
     console.error('DOCX解析错误:', error);
-    return '文档解析失败，但已收到文件内容';
+    throw new Error(`DOCX文件解析失败: ${error.message}`);
   }
 }
 
@@ -61,31 +73,25 @@ async function extractDocxContent(fileData: Uint8Array): Promise<string> {
 async function extractTextContent(fileData: Blob, fileName: string): Promise<string> {
   const fileExtension = fileName.split('.').pop()?.toLowerCase();
   
-  try {
-    switch (fileExtension) {
-      case 'txt':
-      case 'md':
-        return await fileData.text();
-      
-      case 'docx':
-        const arrayBuffer = await fileData.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        return await extractDocxContent(uint8Array);
-      
-      case 'doc':
-        // 对于老版本的DOC文件，尝试简单的文本提取
-        const docText = await fileData.text();
-        const cleanText = docText.replace(/[^\u4e00-\u9fff\w\s\.,;:!?()[\]{}""'']/g, ' ').trim();
-        return cleanText.length > 10 ? cleanText : '老版本DOC文件，建议转换为DOCX格式';
-      
-      default:
-        // 对于其他文件类型，尝试直接读取文本
-        const defaultText = await fileData.text();
-        return defaultText.length > 0 ? defaultText : '未知文件格式，已按文本处理';
-    }
-  } catch (error) {
-    console.error('文本提取错误:', error);
-    return `文件类型: ${fileExtension}, 提取失败但已接收文件`;
+  switch (fileExtension) {
+    case 'txt':
+    case 'md':
+      return await fileData.text();
+    
+    case 'docx':
+      const arrayBuffer = await fileData.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      return await extractDocxContent(uint8Array);
+    
+    case 'doc':
+      // 对于老版本的DOC文件，我们只能尝试读取文本
+      const docText = await fileData.text();
+      // 简单的文本清理
+      return docText.replace(/[^\x20-\x7E\u4e00-\u9fff]/g, ' ').trim();
+    
+    default:
+      // 对于其他文件类型，尝试直接读取文本
+      return await fileData.text();
   }
 }
 
@@ -160,8 +166,8 @@ serve(async (req) => {
       throw new Error('文件内容为空或无法读取');
     }
 
-    // 限制文件内容长度以适应API限制
-    const maxContentLength = 15000; // 减少长度以确保不超过token限制
+    // 限制文件内容长度
+    const maxContentLength = 50000;
     let processedContent = fileContent;
     if (fileContent.length > maxContentLength) {
       processedContent = fileContent.substring(0, maxContentLength) + '...';
@@ -178,7 +184,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen3-32B',
+        model: 'Qwen/Qwen2.5-32B-Instruct',
         messages: [
           {
             role: 'system',
@@ -196,7 +202,7 @@ serve(async (req) => {
           }
         ],
         temperature: 0.1,
-        max_tokens: 4000 // 减少到4000以确保不超过API限制
+        max_tokens: 8000
       }),
     });
 
@@ -226,7 +232,7 @@ serve(async (req) => {
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
-        model_used: 'Qwen/Qwen3-32B',
+        model_used: 'Qwen/Qwen2.5-32B-Instruct',
         created_at: new Date().toISOString()
       })
       .select()
