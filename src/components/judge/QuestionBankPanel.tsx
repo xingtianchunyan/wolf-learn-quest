@@ -21,7 +21,6 @@ interface UploadedFile {
 
 const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const [selectedFile, setSelectedFile] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [status, setStatus] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
@@ -244,11 +243,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   };
 
   const handleGenerateQuestions = async () => {
-    if (!selectedFile || !selectedModel) {
-      const errorMsg = '请选择文件和AI模型';
+    if (!selectedFile) {
+      const errorMsg = '请选择文件';
       setError(errorMsg);
       toast({
-        title: '请完善选择',
+        title: '请选择文件',
         description: errorMsg,
         variant: 'destructive',
       });
@@ -257,20 +256,15 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
     setIsGenerating(true);
-    const modelNames = {
-      'deepseek-r1': 'DeepSeek R1',
-      'qwen3-32b': 'Qwen2.5-32B'
-    };
-    setStatus(`使用${modelNames[selectedModel] || selectedModel}模型生成题目中...`);
+    setStatus('使用Qwen3-30B模型生成题目中...');
 
     try {
-      console.log('调用生成题目API:', { selectedFile, selectedModel });
+      console.log('调用生成题目API:', { selectedFile });
       
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           filePath: selectedFile,
           fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown',
-          model: selectedModel,
           questionCount: 18
         }
       });
@@ -296,7 +290,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '生成完成',
-        description: `已通过${modelNames[selectedModel]}成功生成${data.questions?.length || 0}道题目`,
+        description: `已通过Qwen3-30B成功生成${data.questions?.length || 0}道题目`,
       });
 
       console.log('生成结果:', data);
@@ -382,18 +376,8 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </Select>
             </div>
 
-            {/* 硅基流动AI模型选择和操作按钮 */}
+            {/* AI操作按钮 */}
             <div className="space-y-3">
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择硅基流动AI模型" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectItem value="deepseek-r1">DeepSeek R1 (推理模型)</SelectItem>
-                  <SelectItem value="qwen3-32b">Qwen2.5-32B (通用模型)</SelectItem>
-                </SelectContent>
-              </Select>
-
               <div className="flex gap-2">
                 <Button
                   onClick={handlePreprocessFile}
@@ -406,7 +390,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
                 <Button
                   onClick={handleGenerateQuestions}
-                  disabled={isGenerating || !selectedFile || !selectedModel}
+                  disabled={isGenerating || !selectedFile}
                   className="bg-green-600 hover:bg-green-700 text-white flex-1"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
