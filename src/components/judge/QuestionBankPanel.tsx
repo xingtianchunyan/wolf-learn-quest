@@ -222,7 +222,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
     setIsProcessing(true);
-    setStatus('使用QwenLong模型预处理文件中...');
+    setStatus('使用Qwen3-30B模型预处理文件中...');
 
     try {
       console.log('调用预处理API:', selectedFile);
@@ -249,7 +249,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '预处理完成',
-        description: `文件已通过QwenLong模型成功预处理为结构化格式`,
+        description: `文件已通过Qwen3-30B模型成功预处理为结构化格式`,
       });
 
       // 刷新预处理文件列表
@@ -286,7 +286,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
     setIsGenerating(true);
-    setStatus('使用Qwen3-32B模型生成题目中...');
+    setStatus('使用Qwen3-30B模型生成题目中...');
 
     try {
       console.log('调用生成题目API:', { selectedPreprocessedFile });
@@ -313,7 +313,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '生成完成',
-        description: `已通过Qwen3-32B成功生成${data.questions?.length || 0}道题目`,
+        description: `已通过Qwen3-30B成功生成${data.questions?.length || 0}道题目`,
       });
 
       console.log('生成结果:', data);

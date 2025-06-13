@@ -27,27 +27,46 @@ serve(async (req) => {
     console.log('开始处理生成题目请求');
     
     if (!SILICONFLOW_API_KEY) {
+      console.error('SILICONFLOW_API_KEY环境变量未设置');
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
     const { preprocessedId, questionCount = 18 } = await req.json();
     console.log('开始生成题目:', { preprocessedId, questionCount });
 
+    if (!preprocessedId) {
+      console.error('未提供preprocessedId');
+      throw new Error('未提供预处理文件ID');
+    }
+
     // 获取预处理后的内容
+    console.log('从数据库获取预处理内容，ID:', preprocessedId);
     const { data: preprocessedData, error: fetchError } = await supabase
       .from('preprocessed_files')
       .select('*')
       .eq('id', preprocessedId)
       .single();
 
-    if (fetchError || !preprocessedData) {
+    if (fetchError) {
       console.error('获取预处理内容失败:', fetchError);
+      throw new Error(`获取预处理内容失败: ${fetchError.message}`);
+    }
+
+    if (!preprocessedData) {
+      console.error('未找到指定的预处理文件');
       throw new Error('未找到指定的预处理文件');
     }
+
+    console.log('成功获取预处理数据:', {
+      id: preprocessedData.id,
+      fileName: preprocessedData.file_name,
+      contentLength: preprocessedData.preprocessed_content?.length
+    });
 
     const contentToUse = preprocessedData.preprocessed_content;
 
     if (!contentToUse || contentToUse.trim().length === 0) {
+      console.error('预处理内容为空');
       throw new Error('预处理内容为空');
     }
 
@@ -112,11 +131,12 @@ serve(async (req) => {
 
     if (!generateResponse.ok) {
       const errorText = await generateResponse.text();
-      console.error('硅基流动API错误:', errorText);
+      console.error('硅基流动API错误:', generateResponse.status, errorText);
       throw new Error(`API调用失败: ${generateResponse.status} - ${errorText}`);
     }
 
     const result = await generateResponse.json();
+    console.log('API响应结果:', result);
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
@@ -131,15 +151,19 @@ serve(async (req) => {
     try {
       // 清理可能的markdown格式
       const cleanContent = generatedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      console.log('清理后的内容:', cleanContent.substring(0, 200) + '...');
+      
       questions = JSON.parse(cleanContent);
       
       if (!questions.questions || !Array.isArray(questions.questions)) {
         throw new Error('题目格式不正确');
       }
       
+      console.log('成功解析题目，数量:', questions.questions.length);
+      
     } catch (parseError) {
       console.error('JSON解析失败:', parseError);
-      console.log('原始内容:', generatedContent);
+      console.log('原始内容前500字符:', generatedContent.substring(0, 500));
       
       // 如果解析失败，创建一个默认格式
       questions = {
@@ -158,6 +182,7 @@ serve(async (req) => {
     console.log('解析后的题目数量:', questions.questions?.length || 0);
 
     // 保存生成的题目到数据库
+    console.log('保存题目到数据库...');
     const { data: savedQuestions, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
