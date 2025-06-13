@@ -63,47 +63,6 @@ export type Database = {
           },
         ]
       }
-      file_processing_status: {
-        Row: {
-          created_at: string
-          file_name: string
-          id: string
-          original_file_path: string | null
-          processed_file_path: string | null
-          room_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          file_name: string
-          id?: string
-          original_file_path?: string | null
-          processed_file_path?: string | null
-          room_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          file_name?: string
-          id?: string
-          original_file_path?: string | null
-          processed_file_path?: string | null
-          room_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "file_processing_status_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       game_actions: {
         Row: {
           action_type: string
@@ -376,55 +335,37 @@ export type Database = {
       }
       generated_questions: {
         Row: {
-          correct_answer: string | null
           created_at: string
-          created_by: string | null
           file_name: string | null
           id: string
           model_used: string | null
-          option_a: string | null
-          option_b: string | null
-          option_c: string | null
-          option_d: string | null
+          original_file_path: string | null
           question_count: number | null
-          question_text: string | null
           questions: Json | null
           room_id: string | null
-          source_file: string | null
+          uploaded_file_id: string | null
         }
         Insert: {
-          correct_answer?: string | null
           created_at?: string
-          created_by?: string | null
           file_name?: string | null
           id?: string
           model_used?: string | null
-          option_a?: string | null
-          option_b?: string | null
-          option_c?: string | null
-          option_d?: string | null
+          original_file_path?: string | null
           question_count?: number | null
-          question_text?: string | null
           questions?: Json | null
           room_id?: string | null
-          source_file?: string | null
+          uploaded_file_id?: string | null
         }
         Update: {
-          correct_answer?: string | null
           created_at?: string
-          created_by?: string | null
           file_name?: string | null
           id?: string
           model_used?: string | null
-          option_a?: string | null
-          option_b?: string | null
-          option_c?: string | null
-          option_d?: string | null
+          original_file_path?: string | null
           question_count?: number | null
-          question_text?: string | null
           questions?: Json | null
           room_id?: string | null
-          source_file?: string | null
+          uploaded_file_id?: string | null
         }
         Relationships: [
           {
@@ -432,6 +373,13 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_questions_uploaded_file_id_fkey"
+            columns: ["uploaded_file_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_files"
             referencedColumns: ["id"]
           },
         ]
@@ -535,6 +483,7 @@ export type Database = {
           model_used: string
           original_file_path: string
           preprocessed_content: string
+          uploaded_file_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -543,6 +492,7 @@ export type Database = {
           model_used: string
           original_file_path: string
           preprocessed_content: string
+          uploaded_file_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -551,8 +501,17 @@ export type Database = {
           model_used?: string
           original_file_path?: string
           preprocessed_content?: string
+          uploaded_file_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "preprocessed_files_uploaded_file_id_fkey"
+            columns: ["uploaded_file_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
@@ -560,38 +519,59 @@ export type Database = {
           correct_option: number
           difficulty: number | null
           explanation: string | null
+          generated_questions_id: string | null
           id: string
           option_a: string
           option_b: string
           option_c: string
           option_d: string
           question: string
+          room_id: string | null
         }
         Insert: {
           category?: string | null
           correct_option: number
           difficulty?: number | null
           explanation?: string | null
+          generated_questions_id?: string | null
           id?: string
           option_a: string
           option_b: string
           option_c: string
           option_d: string
           question: string
+          room_id?: string | null
         }
         Update: {
           category?: string | null
           correct_option?: number
           difficulty?: number | null
           explanation?: string | null
+          generated_questions_id?: string | null
           id?: string
           option_a?: string
           option_b?: string
           option_c?: string
           option_d?: string
           question?: string
+          room_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "questions_generated_questions_id_fkey"
+            columns: ["generated_questions_id"]
+            isOneToOne: false
+            referencedRelation: "generated_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_selections: {
         Row: {
@@ -731,6 +711,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      uploaded_files: {
+        Row: {
+          file_name: string
+          file_path: string
+          id: string
+          room_id: string | null
+          uploaded_at: string | null
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          id?: string
+          room_id?: string | null
+          uploaded_at?: string | null
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          id?: string
+          room_id?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_files_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {

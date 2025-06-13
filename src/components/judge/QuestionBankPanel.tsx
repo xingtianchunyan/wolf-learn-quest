@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import QuestionBankDialog from './QuestionBankDialog';
@@ -15,9 +15,12 @@ interface QuestionBankPanelProps {
 }
 
 interface UploadedFile {
-  name: string;
-  path: string;
-  created_at: string;
+  id: string;
+  file_name: string;
+  file_path: string;
+  uploaded_at: string;
+  is_preprocessed?: boolean;
+  is_generated?: boolean;
 }
 
 interface PreprocessedFile {
@@ -26,6 +29,7 @@ interface PreprocessedFile {
   original_file_path: string;
   created_at: string;
   model_used: string;
+  is_generated?: boolean;
 }
 
 const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
@@ -42,7 +46,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // 获取已上传的文件列表
   useEffect(() => {
     fetchUploadedFiles();
     fetchPreprocessedFiles();
@@ -51,24 +54,40 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const fetchUploadedFiles = async () => {
     try {
       console.log('获取文件列表...');
-      const { data, error } = await supabase.storage
-        .from('question-files')
-        .list('uploads', { limit: 100 });
+      
+      // 获取已上传的文件
+      const { data: uploadedData, error: uploadedError } = await supabase
+        .from('uploaded_files')
+        .select('*')
+        .order('uploaded_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching files:', error);
-        setError(`获取文件列表失败: ${error.message}`);
+      if (uploadedError) {
+        console.error('Error fetching uploaded files:', uploadedError);
+        setError(`获取文件列表失败: ${uploadedError.message}`);
         return;
       }
 
-      const files: UploadedFile[] = data?.map(file => ({
-        name: file.name,
-        path: `uploads/${file.name}`,
-        created_at: file.created_at
-      })) || [];
+      // 检查哪些文件已经预处理过
+      const { data: preprocessedData } = await supabase
+        .from('preprocessed_files')
+        .select('original_file_path');
 
-      setUploadedFiles(files);
-      console.log('文件列表获取成功:', files.length, '个文件');
+      // 检查哪些文件已经生成过题目
+      const { data: generatedData } = await supabase
+        .from('generated_questions')
+        .select('original_file_path');
+
+      const preprocessedPaths = new Set(preprocessedData?.map(p => p.original_file_path) || []);
+      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
+
+      const filesWithStatus = (uploadedData || []).map(file => ({
+        ...file,
+        is_preprocessed: preprocessedPaths.has(file.file_path),
+        is_generated: generatedPaths.has(file.file_path)
+      }));
+
+      setUploadedFiles(filesWithStatus);
+      console.log('文件列表获取成功:', filesWithStatus.length, '个文件');
     } catch (error) {
       console.error('Error fetching uploaded files:', error);
       setError('获取文件列表时发生错误');
@@ -78,7 +97,8 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const fetchPreprocessedFiles = async () => {
     try {
       console.log('获取预处理文件列表...');
-      const { data, error } = await supabase
+      
+      const { data: preprocessedData, error } = await supabase
         .from('preprocessed_files')
         .select('*')
         .order('created_at', { ascending: false });
@@ -89,8 +109,20 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         return;
       }
 
-      setPreprocessedFiles(data || []);
-      console.log('预处理文件列表获取成功:', data?.length || 0, '个文件');
+      // 检查哪些预处理文件已经生成过题目
+      const { data: generatedData } = await supabase
+        .from('generated_questions')
+        .select('original_file_path');
+
+      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
+
+      const filesWithStatus = (preprocessedData || []).map(file => ({
+        ...file,
+        is_generated: generatedPaths.has(file.original_file_path)
+      }));
+
+      setPreprocessedFiles(filesWithStatus);
+      console.log('预处理文件列表获取成功:', filesWithStatus.length, '个文件');
     } catch (error) {
       console.error('Error fetching preprocessed files:', error);
       setError('获取预处理文件列表时发生错误');
@@ -101,25 +133,20 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     setError('');
   };
 
-  // 改进的文件名清理函数
   const sanitizeFileName = (fileName: string): string => {
-    // 获取文件扩展名
     const lastDotIndex = fileName.lastIndexOf('.');
     const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
     const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
     
-    // 清理文件名主体部分
     const cleanName = name
-      .replace(/[^\w\s.-]/g, '') // 移除特殊字符，保留字母、数字、空格、点、横线
-      .replace(/\s+/g, '_') // 空格替换为下划线
-      .replace(/_{2,}/g, '_') // 多个下划线替换为单个
-      .replace(/[.-]+/g, '_') // 点和横线也替换为下划线
+      .replace(/[^\w\s.-]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/_{2,}/g, '_')
+      .replace(/[.-]+/g, '_')
       .trim()
-      .substring(0, 50); // 限制长度
+      .substring(0, 50);
     
-    // 如果清理后的名称为空，使用默认名称
     const finalName = cleanName || 'file';
-    
     return `${finalName}${extension}`;
   };
 
@@ -129,7 +156,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
     clearError();
 
-    // 检查文件格式
     const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
@@ -144,7 +170,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
-    // 检查文件大小 (10MB)
     if (file.size > 10 * 1024 * 1024) {
       const errorMsg = '文件大小不能超过10MB';
       setError(errorMsg);
@@ -156,11 +181,23 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
+    // 检查是否已经上传过同名文件
+    const existingFile = uploadedFiles.find(f => f.file_name === file.name);
+    if (existingFile) {
+      const errorMsg = '该文件已经上传过了';
+      setError(errorMsg);
+      toast({
+        title: '文件重复',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsUploading(true);
     setStatus('文件上传中...');
 
     try {
-      // 使用改进的文件名清理
       const originalName = file.name;
       const sanitizedName = sanitizeFileName(originalName);
       const timestamp = Date.now();
@@ -181,13 +218,25 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         throw new Error(`上传失败: ${error.message}`);
       }
 
+      // 将文件信息保存到数据库
+      const { error: dbError } = await supabase
+        .from('uploaded_files')
+        .insert({
+          file_name: originalName,
+          file_path: `uploads/${fileName}`
+        });
+
+      if (dbError) {
+        console.error('Database insert error:', dbError);
+        throw new Error(`保存文件信息失败: ${dbError.message}`);
+      }
+
       console.log('文件上传成功:', data);
       toast({
         title: '上传成功',
         description: `文件 "${originalName}" 已成功上传`,
       });
 
-      // 刷新文件列表
       await fetchUploadedFiles();
       
     } catch (error) {
@@ -220,17 +269,29 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
+    // 防止重复处理
+    if (isProcessing) {
+      console.log('正在处理中，忽略重复请求');
+      return;
+    }
+
     clearError();
     setIsProcessing(true);
-    setStatus('使用Qwen3-30B模型预处理文件中...');
+    setStatus('使用Qwen2.5-72B模型预处理文件中...');
 
     try {
-      console.log('调用预处理API:', selectedFile);
+      const selectedFileData = uploadedFiles.find(f => f.id === selectedFile);
+      if (!selectedFileData) {
+        throw new Error('选择的文件不存在');
+      }
+
+      console.log('调用预处理API:', selectedFileData);
       
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
-          filePath: selectedFile,
-          fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown'
+          filePath: selectedFileData.file_path,
+          fileName: selectedFileData.file_name,
+          roomId: 'current-room'
         }
       });
 
@@ -249,11 +310,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '预处理完成',
-        description: `文件已通过Qwen3-30B模型成功预处理为结构化格式`,
+        description: `文件已通过Qwen2.5-72B模型成功预处理为结构化格式`,
       });
 
-      // 刷新预处理文件列表
       await fetchPreprocessedFiles();
+      await fetchUploadedFiles(); // 更新文件状态
 
       console.log('预处理结果:', data);
       
@@ -284,9 +345,15 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
+    // 防止重复生成
+    if (isGenerating) {
+      console.log('正在生成中，忽略重复请求');
+      return;
+    }
+
     clearError();
     setIsGenerating(true);
-    setStatus('使用Qwen3-30B模型生成题目中...');
+    setStatus('使用Qwen2.5-72B模型生成题目中...');
 
     try {
       console.log('调用生成题目API:', { selectedPreprocessedFile });
@@ -294,7 +361,8 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           preprocessedId: selectedPreprocessedFile,
-          questionCount: 18
+          questionCount: 18,
+          roomId: 'current-room'
         }
       });
 
@@ -313,8 +381,11 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       toast({
         title: '生成完成',
-        description: `已通过Qwen3-30B成功生成${data.questions?.length || 0}道题目`,
+        description: `已通过Qwen2.5-72B成功生成${data.question_count || 0}道题目`,
       });
+
+      await fetchPreprocessedFiles(); // 更新预处理文件状态
+      await fetchUploadedFiles(); // 更新上传文件状态
 
       console.log('生成结果:', data);
       
@@ -347,7 +418,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         </CardHeader>
         <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
           <div className="space-y-4 h-full flex flex-col">
-            {/* 错误提示 */}
             {error && (
               <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-md">
                 <AlertCircle className="mr-2 h-4 w-4 text-red-400" />
@@ -363,7 +433,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </div>
             )}
 
-            {/* 文件上传区域 */}
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Button
@@ -390,10 +459,26 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                 <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
                   <ScrollArea className="h-full">
                     {uploadedFiles.map((file) => (
-                      <SelectItem key={file.path} value={file.path}>
-                        <div className="flex items-center">
-                          <File className="mr-2 h-4 w-4" />
-                          {file.name}
+                      <SelectItem key={file.id} value={file.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <File className="mr-2 h-4 w-4" />
+                            {file.file_name}
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            {file.is_preprocessed && (
+                              <span className="text-green-400 text-xs bg-green-900/20 px-2 py-1 rounded">
+                                <CheckCircle className="inline-block w-3 h-3 mr-1" />
+                                已预处理
+                              </span>
+                            )}
+                            {file.is_generated && (
+                              <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded">
+                                <Sparkles className="inline-block w-3 h-3 mr-1" />
+                                已生成题目
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -402,7 +487,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </Select>
             </div>
 
-            {/* AI操作按钮 */}
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Button
@@ -424,7 +508,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                 </Button>
               </div>
 
-              {/* 已预处理文件选择 */}
               <Select value={selectedPreprocessedFile} onValueChange={setSelectedPreprocessedFile}>
                 <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
                   <SelectValue placeholder="选择已预处理文件" />
@@ -433,14 +516,22 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
                   <ScrollArea className="h-full">
                     {preprocessedFiles.map((file) => (
                       <SelectItem key={file.id} value={file.id}>
-                        <div className="flex items-center">
-                          <Database className="mr-2 h-4 w-4" />
-                          <div className="flex flex-col">
-                            <span>{file.file_name}</span>
-                            <span className="text-xs text-gray-400">
-                              {new Date(file.created_at).toLocaleDateString()}
-                            </span>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <Database className="mr-2 h-4 w-4" />
+                            <div className="flex flex-col">
+                              <span>{file.file_name}</span>
+                              <span className="text-xs text-gray-400">
+                                {new Date(file.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
                           </div>
+                          {file.is_generated && (
+                            <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded ml-4">
+                              <Sparkles className="inline-block w-3 h-3 mr-1" />
+                              已生成题目
+                            </span>
+                          )}
                         </div>
                       </SelectItem>
                     ))}
@@ -449,7 +540,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </Select>
             </div>
 
-            {/* 状态显示 */}
             {status && (
               <div className="flex items-center justify-center p-4 bg-werewolf-dark/20 rounded-md">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin text-werewolf-purple" />
@@ -457,7 +547,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               </div>
             )}
 
-            {/* 打开题库按钮 */}
             <div className="mt-auto">
               <Button
                 onClick={() => setShowQuestionBank(true)}
@@ -471,7 +560,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         </CardContent>
       </Card>
 
-      {/* 题库弹窗 */}
       <QuestionBankDialog
         isOpen={showQuestionBank}
         onClose={() => setShowQuestionBank(false)}

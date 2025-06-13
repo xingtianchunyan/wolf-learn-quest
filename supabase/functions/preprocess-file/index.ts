@@ -2,11 +2,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// 引入JSZip来处理DOCX文件
 import JSZip from 'https://esm.sh/jszip@3.10.1';
 
-// 硅基流动平台API配置
 const SILICONFLOW_API_KEY = Deno.env.get('SILICONFLOW_API_KEY');
 const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
 
@@ -15,12 +12,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// 初始化Supabase客户端
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// 提取DOCX文件文本内容
 async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
   try {
     console.log('开始解析DOCX文件，大小:', fileBuffer.byteLength);
@@ -28,7 +23,6 @@ async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
     const zip = new JSZip();
     const zipFile = await zip.loadAsync(fileBuffer);
     
-    // 读取document.xml文件
     const documentFile = zipFile.file('word/document.xml');
     if (!documentFile) {
       throw new Error('无法找到document.xml文件');
@@ -37,17 +31,13 @@ async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
     const xmlContent = await documentFile.async('string');
     console.log('成功读取document.xml，长度:', xmlContent.length);
     
-    // 简单的XML标签清理，提取文本内容
     let text = xmlContent
-      // 移除所有XML标签
       .replace(/<[^>]*>/g, ' ')
-      // 解码XML实体
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
       .replace(/&apos;/g, "'")
-      // 清理多余空白
       .replace(/\s+/g, ' ')
       .trim();
     
@@ -59,7 +49,6 @@ async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
   }
 }
 
-// 读取文本文件内容
 async function readTextFile(fileBuffer: ArrayBuffer): Promise<string> {
   try {
     const decoder = new TextDecoder('utf-8');
@@ -71,7 +60,6 @@ async function readTextFile(fileBuffer: ArrayBuffer): Promise<string> {
 }
 
 serve(async (req) => {
-  // 处理CORS预检请求
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -83,8 +71,55 @@ serve(async (req) => {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    const { filePath, fileName } = await req.json();
-    console.log('预处理文件:', { filePath, fileName });
+    const { filePath, fileName, roomId } = await req.json();
+    console.log('预处理文件:', { filePath, fileName, roomId });
+
+    // 检查是否已经预处理过
+    const { data: existingPreprocessed } = await supabase
+      .from('preprocessed_files')
+      .select('*')
+      .eq('original_file_path', filePath)
+      .single();
+
+    if (existingPreprocessed) {
+      console.log('文件已预处理过，返回现有结果');
+      return new Response(JSON.stringify({
+        success: true,
+        message: '文件已预处理完成',
+        preprocessed_id: existingPreprocessed.id,
+        content_length: existingPreprocessed.preprocessed_content.length
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 记录或获取文件信息
+    let uploadedFileId;
+    const { data: existingFile } = await supabase
+      .from('uploaded_files')
+      .select('*')
+      .eq('file_path', filePath)
+      .single();
+
+    if (existingFile) {
+      uploadedFileId = existingFile.id;
+    } else {
+      const { data: newFile, error: fileError } = await supabase
+        .from('uploaded_files')
+        .insert({
+          file_name: fileName,
+          file_path: filePath,
+          room_id: roomId
+        })
+        .select()
+        .single();
+
+      if (fileError) {
+        console.error('文件记录创建失败:', fileError);
+        throw new Error(`文件记录失败: ${fileError.message}`);
+      }
+      uploadedFileId = newFile.id;
+    }
 
     // 从存储桶下载文件
     const { data: fileData, error: downloadError } = await supabase.storage
@@ -98,14 +133,11 @@ serve(async (req) => {
 
     console.log('文件下载成功，大小:', fileData.size);
 
-    // 获取文件扩展名
     const fileExtension = fileName.toLowerCase().split('.').pop();
     let fileContent = '';
 
-    // 将Blob转换为ArrayBuffer
     const fileBuffer = await fileData.arrayBuffer();
 
-    // 根据文件类型处理
     if (fileExtension === 'docx') {
       fileContent = await extractDocxText(fileBuffer);
     } else if (['txt', 'md'].includes(fileExtension || '')) {
@@ -129,7 +161,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen3-30B-A3B',
+        model: 'Qwen/Qwen2.5-72B-Instruct',
         messages: [
           {
             role: 'system',
@@ -180,7 +212,8 @@ serve(async (req) => {
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
-        model_used: 'Qwen/Qwen3-30B-A3B'
+        model_used: 'Qwen/Qwen2.5-72B-Instruct',
+        uploaded_file_id: uploadedFileId
       })
       .select()
       .single();

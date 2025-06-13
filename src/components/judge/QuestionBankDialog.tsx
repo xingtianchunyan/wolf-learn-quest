@@ -8,20 +8,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface Question {
   id: string;
-  question_text: string;
+  question: string;
   option_a: string;
   option_b: string;
   option_c: string;
   option_d: string;
-  correct_answer: string;
-  source_file?: string;
+  correct_option: number;
+  explanation?: string;
   selected?: boolean;
+  source_file?: string;
 }
 
 interface QuestionBankDialogProps {
@@ -41,19 +42,18 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const [activeTab, setActiveTab] = useState('generated');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // 手动编辑题目的状态
   const [manualQuestion, setManualQuestion] = useState({
-    question_text: '',
+    question: '',
     option_a: '',
     option_b: '',
     option_c: '',
     option_d: '',
-    correct_answer: 'A'
+    correct_option: 1
   });
 
   // 拖动处理函数
@@ -92,7 +92,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     };
   }, [isDragging, dragStart]);
 
-  // 获取已生成的题目
   useEffect(() => {
     if (isOpen) {
       fetchGeneratedQuestions();
@@ -102,17 +101,34 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const fetchGeneratedQuestions = async () => {
     setLoading(true);
     try {
+      // 从questions表获取所有题目
       const { data, error } = await supabase
-        .from('generated_questions')
-        .select('*')
+        .from('questions')
+        .select(`
+          *,
+          generated_questions!inner(file_name)
+        `)
         .eq('room_id', roomId)
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: true });
 
       if (error) {
         throw error;
       }
 
-      setQuestions(data || []);
+      // 转换数据格式以匹配组件期望的格式
+      const formattedQuestions = (data || []).map(q => ({
+        id: q.id,
+        question: q.question,
+        option_a: q.option_a,
+        option_b: q.option_b,
+        option_c: q.option_c,
+        option_d: q.option_d,
+        correct_option: q.correct_option,
+        explanation: q.explanation,
+        source_file: q.generated_questions?.file_name || '未知来源'
+      }));
+
+      setQuestions(formattedQuestions);
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
@@ -125,7 +141,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
-  // 选择/取消选择题目
   const toggleQuestionSelection = (question: Question) => {
     const isSelected = selectedQuestions.some(q => q.id === question.id);
     
@@ -144,9 +159,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
-  // 提交手动编辑的题目
   const handleSubmitManualQuestion = async () => {
-    if (!manualQuestion.question_text.trim() || 
+    if (!manualQuestion.question.trim() || 
         !manualQuestion.option_a.trim() || 
         !manualQuestion.option_b.trim()) {
       toast({
@@ -159,16 +173,16 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
     try {
       const { data, error } = await supabase
-        .from('generated_questions')
+        .from('questions')
         .insert({
           room_id: roomId,
-          question_text: manualQuestion.question_text,
+          question: manualQuestion.question,
           option_a: manualQuestion.option_a,
           option_b: manualQuestion.option_b,
           option_c: manualQuestion.option_c || '',
           option_d: manualQuestion.option_d || '',
-          correct_answer: manualQuestion.correct_answer,
-          source_file: '手动编辑'
+          correct_option: manualQuestion.correct_option,
+          category: '手动编辑'
         })
         .select()
         .single();
@@ -177,17 +191,15 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         throw error;
       }
 
-      // 清空表单
       setManualQuestion({
-        question_text: '',
+        question: '',
         option_a: '',
         option_b: '',
         option_c: '',
         option_d: '',
-        correct_answer: 'A'
+        correct_option: 1
       });
 
-      // 刷新题目列表
       await fetchGeneratedQuestions();
 
       toast({
@@ -195,7 +207,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         description: '手动编辑的题目已添加到题库中',
       });
 
-      // 切换到已生成题目页面
       setActiveTab('generated');
     } catch (error) {
       console.error('Error adding manual question:', error);
@@ -207,11 +218,14 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
-  // 生成游戏阶段标签
   const getPhaseLabel = (index: number) => {
     const round = Math.floor(index / 2) + 1;
     const phase = index % 2 === 0 ? '傍晚' : '黎明';
     return `第${round}轮 ${phase}阶段`;
+  };
+
+  const getCorrectAnswerLetter = (correctOption: number) => {
+    return ['A', 'B', 'C', 'D'][correctOption - 1] || 'A';
   };
 
   if (!isOpen) return null;
@@ -255,7 +269,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               </TabsTrigger>
             </TabsList>
 
-            {/* 已生成题目页面 */}
             <TabsContent value="generated" className="h-[calc(100%-60px)] mt-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
@@ -284,36 +297,41 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                                 题目 {index + 1}
                               </CardTitle>
                               {selectedQuestions.some(q => q.id === question.id) && (
-                                <Check className="h-5 w-5 text-green-400" />
+                                <span className="text-green-400">✓</span>
                               )}
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div>
                               <h3 className="text-white font-medium mb-2">题干：</h3>
-                              <p className="text-gray-300 text-sm">{question.question_text}</p>
+                              <p className="text-gray-300 text-sm">{question.question}</p>
                             </div>
                             <div className="space-y-2">
                               <h4 className="text-white font-medium">选项：</h4>
                               <div className="space-y-1 text-sm">
-                                <p className={`text-gray-300 ${question.correct_answer === 'A' ? 'text-green-400 font-medium' : ''}`}>
+                                <p className={`text-gray-300 ${question.correct_option === 1 ? 'text-green-400 font-medium' : ''}`}>
                                   A. {question.option_a}
                                 </p>
-                                <p className={`text-gray-300 ${question.correct_answer === 'B' ? 'text-green-400 font-medium' : ''}`}>
+                                <p className={`text-gray-300 ${question.correct_option === 2 ? 'text-green-400 font-medium' : ''}`}>
                                   B. {question.option_b}
                                 </p>
                                 {question.option_c && (
-                                  <p className={`text-gray-300 ${question.correct_answer === 'C' ? 'text-green-400 font-medium' : ''}`}>
+                                  <p className={`text-gray-300 ${question.correct_option === 3 ? 'text-green-400 font-medium' : ''}`}>
                                     C. {question.option_c}
                                   </p>
                                 )}
                                 {question.option_d && (
-                                  <p className={`text-gray-300 ${question.correct_answer === 'D' ? 'text-green-400 font-medium' : ''}`}>
+                                  <p className={`text-gray-300 ${question.correct_option === 4 ? 'text-green-400 font-medium' : ''}`}>
                                     D. {question.option_d}
                                   </p>
                                 )}
                               </div>
                             </div>
+                            {question.explanation && (
+                              <div className="text-xs text-gray-400">
+                                解释：{question.explanation}
+                              </div>
+                            )}
                             {question.source_file && (
                               <div className="text-xs text-gray-500">
                                 来源：{question.source_file}
@@ -337,8 +355,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                   <div>
                     <label className="text-white font-medium mb-2 block">题干</label>
                     <Textarea
-                      value={manualQuestion.question_text}
-                      onChange={(e) => setManualQuestion(prev => ({ ...prev, question_text: e.target.value }))}
+                      value={manualQuestion.question}
+                      onChange={(e) => setManualQuestion(prev => ({ ...prev, question: e.target.value }))}
                       placeholder="请输入题目内容..."
                       className="bg-werewolf-dark border-werewolf-purple/30 text-white resize-none"
                       rows={3}
@@ -349,9 +367,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          checked={manualQuestion.correct_answer === 'A'}
+                          checked={manualQuestion.correct_option === 1}
                           onCheckedChange={(checked) => {
-                            if (checked) setManualQuestion(prev => ({ ...prev, correct_answer: 'A' }));
+                            if (checked) setManualQuestion(prev => ({ ...prev, correct_option: 1 }));
                           }}
                         />
                         <label className="text-white font-medium">选项 A</label>
@@ -367,9 +385,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          checked={manualQuestion.correct_answer === 'B'}
+                          checked={manualQuestion.correct_option === 2}
                           onCheckedChange={(checked) => {
-                            if (checked) setManualQuestion(prev => ({ ...prev, correct_answer: 'B' }));
+                            if (checked) setManualQuestion(prev => ({ ...prev, correct_option: 2 }));
                           }}
                         />
                         <label className="text-white font-medium">选项 B</label>
@@ -385,9 +403,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          checked={manualQuestion.correct_answer === 'C'}
+                          checked={manualQuestion.correct_option === 3}
                           onCheckedChange={(checked) => {
-                            if (checked) setManualQuestion(prev => ({ ...prev, correct_answer: 'C' }));
+                            if (checked) setManualQuestion(prev => ({ ...prev, correct_option: 3 }));
                           }}
                         />
                         <label className="text-white font-medium">选项 C（可选）</label>
@@ -403,9 +421,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          checked={manualQuestion.correct_answer === 'D'}
+                          checked={manualQuestion.correct_option === 4}
                           onCheckedChange={(checked) => {
-                            if (checked) setManualQuestion(prev => ({ ...prev, correct_answer: 'D' }));
+                            if (checked) setManualQuestion(prev => ({ ...prev, correct_option: 4 }));
                           }}
                         />
                         <label className="text-white font-medium">选项 D（可选）</label>
@@ -462,7 +480,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                                   </span>
                                 </div>
                                 <p className="text-gray-300 text-sm">
-                                  {question.question_text}
+                                  {question.question}
                                 </p>
                               </div>
                             </div>
