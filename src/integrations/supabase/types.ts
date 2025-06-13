@@ -63,47 +63,6 @@ export type Database = {
           },
         ]
       }
-      file_processing_status: {
-        Row: {
-          created_at: string
-          file_name: string
-          id: string
-          original_file_path: string | null
-          processed_file_path: string | null
-          room_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          file_name: string
-          id?: string
-          original_file_path?: string | null
-          processed_file_path?: string | null
-          room_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          file_name?: string
-          id?: string
-          original_file_path?: string | null
-          processed_file_path?: string | null
-          room_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "file_processing_status_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       game_actions: {
         Row: {
           action_type: string

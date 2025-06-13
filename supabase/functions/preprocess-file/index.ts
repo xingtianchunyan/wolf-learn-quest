@@ -80,20 +80,51 @@ serve(async (req) => {
     console.log('开始处理预处理文件请求');
     
     if (!SILICONFLOW_API_KEY) {
+      console.error('SILICONFLOW_API_KEY环境变量未设置');
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
     const { filePath, fileName } = await req.json();
     console.log('预处理文件:', { filePath, fileName });
 
+    if (!filePath || !fileName) {
+      throw new Error('缺少必要的文件信息');
+    }
+
+    // 检查是否已经预处理过该文件
+    console.log('检查文件是否已预处理:', filePath);
+    const { data: existingFile, error: checkError } = await supabase
+      .from('preprocessed_files')
+      .select('id, created_at')
+      .eq('original_file_path', filePath)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('检查文件状态失败:', checkError);
+      throw new Error(`检查文件状态失败: ${checkError.message}`);
+    }
+
+    if (existingFile) {
+      console.log('文件已预处理，返回现有结果:', existingFile.id);
+      return new Response(JSON.stringify({
+        success: true,
+        message: '文件已经预处理过',
+        preprocessed_id: existingFile.id,
+        is_existing: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // 从存储桶下载文件
+    console.log('下载文件:', filePath);
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('question-files')
       .download(filePath);
 
     if (downloadError || !fileData) {
       console.error('文件下载失败:', downloadError);
-      throw new Error('文件下载失败');
+      throw new Error(`文件下载失败: ${downloadError?.message || '未知错误'}`);
     }
 
     console.log('文件下载成功，大小:', fileData.size);
@@ -159,7 +190,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('硅基流动API错误:', errorText);
+      console.error('硅基流动API错误:', response.status, errorText);
       throw new Error(`API调用失败: ${response.status} - ${errorText}`);
     }
 
@@ -173,14 +204,18 @@ serve(async (req) => {
     const preprocessedContent = result.choices[0].message.content;
     console.log('预处理完成，内容长度:', preprocessedContent.length);
 
-    // 保存预处理结果到数据库
+    // 保存预处理结果到数据库，使用upsert防止重复
+    console.log('保存预处理结果到数据库...');
     const { data: savedData, error: saveError } = await supabase
       .from('preprocessed_files')
-      .insert({
+      .upsert({
         original_file_path: filePath,
         file_name: fileName,
         preprocessed_content: preprocessedContent,
         model_used: 'Qwen/Qwen3-30B-A3B'
+      }, {
+        onConflict: 'original_file_path',
+        ignoreDuplicates: false
       })
       .select()
       .single();
