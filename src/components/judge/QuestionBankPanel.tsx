@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,11 @@ interface PreprocessedFile {
   preprocessedAt: string;
 }
 
-const QuestionBankPanel: React.FC = () => {
+interface QuestionBankPanelProps {
+  roomId?: string;
+}
+
+const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ roomId = 'default-room' }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isPreprocessing, setIsPreprocessing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -171,6 +174,7 @@ const QuestionBankPanel: React.FC = () => {
         body: {
           preprocessedId: selectedPreprocessed.id,
           questionCount: questionCount,
+          roomId: roomId,
         },
       });
 
@@ -371,6 +375,7 @@ const QuestionBankPanel: React.FC = () => {
         <QuestionBankDialog
           isOpen={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}
+          roomId={roomId}
         />
       </CardContent>
     </Card>

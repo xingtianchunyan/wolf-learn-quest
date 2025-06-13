@@ -124,7 +124,9 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           <div className="col-span-8 flex flex-col gap-4">
             {/* 题库管理 */}
             <div className="flex-1">
-              <QuestionBankPanel className="h-full" />
+              <div className="h-full">
+                <QuestionBankPanel />
+              </div>
             </div>
 
             {/* 玩家状态 */}
