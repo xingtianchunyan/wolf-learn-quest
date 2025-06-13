@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,7 +48,56 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   useEffect(() => {
     fetchUploadedFiles();
     fetchPreprocessedFiles();
-  }, []);
+    
+    // 设置实时监听 preprocessed_files 表的变化
+    const preprocessedChannel = supabase
+      .channel('preprocessed-files-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'preprocessed_files'
+        },
+        (payload) => {
+          console.log('检测到新的预处理文件:', payload);
+          toast({
+            title: '预处理完成',
+            description: '文件预处理已完成，页面数据已更新',
+          });
+          fetchPreprocessedFiles();
+          fetchUploadedFiles();
+        }
+      )
+      .subscribe();
+
+    // 设置实时监听 generated_questions 表的变化
+    const generatedChannel = supabase
+      .channel('generated-questions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'generated_questions'
+        },
+        (payload) => {
+          console.log('检测到新的生成题目:', payload);
+          toast({
+            title: '题目生成完成',
+            description: 'AI题目生成已完成，页面数据已更新',
+          });
+          fetchPreprocessedFiles();
+          fetchUploadedFiles();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(preprocessedChannel);
+      supabase.removeChannel(generatedChannel);
+    };
+  }, [toast]);
 
   const fetchUploadedFiles = async () => {
     try {
