@@ -1,479 +1,379 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Upload, Database, FileText, Brain, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import QuestionBankDialog from './QuestionBankDialog';
-
-interface QuestionBankPanelProps {
-  className?: string;
-}
+import QuestionBankTooltip from './QuestionBankTooltip';
 
 interface UploadedFile {
-  name: string;
   path: string;
-  created_at: string;
+  name: string;
+  uploadedAt: string;
 }
 
 interface PreprocessedFile {
   id: string;
-  file_name: string;
-  original_file_path: string;
-  created_at: string;
-  model_used: string;
+  fileName: string;
+  originalPath: string;
+  preprocessedAt: string;
 }
 
-const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
-  const [selectedFile, setSelectedFile] = useState<string>('');
-  const [selectedPreprocessedFile, setSelectedPreprocessedFile] = useState<string>('');
+const QuestionBankPanel: React.FC = () => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isPreprocessing, setIsPreprocessing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [preprocessedFiles, setPreprocessedFiles] = useState<PreprocessedFile[]>([]);
-  const [status, setStatus] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showQuestionBank, setShowQuestionBank] = useState(false);
-  const [error, setError] = useState<string>('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null);
+  const [selectedPreprocessed, setSelectedPreprocessed] = useState<PreprocessedFile | null>(null);
+  const [questionCount, setQuestionCount] = useState(10);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // 获取已上传的文件列表
-  useEffect(() => {
-    fetchUploadedFiles();
-    fetchPreprocessedFiles();
-  }, []);
-
-  const fetchUploadedFiles = async () => {
-    try {
-      console.log('获取文件列表...');
-      const { data, error } = await supabase.storage
-        .from('question-files')
-        .list('uploads', { limit: 100 });
-
-      if (error) {
-        console.error('Error fetching files:', error);
-        setError(`获取文件列表失败: ${error.message}`);
-        return;
-      }
-
-      const files: UploadedFile[] = data?.map(file => ({
-        name: file.name,
-        path: `uploads/${file.name}`,
-        created_at: file.created_at
-      })) || [];
-
-      setUploadedFiles(files);
-      console.log('文件列表获取成功:', files.length, '个文件');
-    } catch (error) {
-      console.error('Error fetching uploaded files:', error);
-      setError('获取文件列表时发生错误');
-    }
-  };
-
-  const fetchPreprocessedFiles = async () => {
-    try {
-      console.log('获取预处理文件列表...');
-      const { data, error } = await supabase
-        .from('preprocessed_files')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching preprocessed files:', error);
-        setError(`获取预处理文件列表失败: ${error.message}`);
-        return;
-      }
-
-      setPreprocessedFiles(data || []);
-      console.log('预处理文件列表获取成功:', data?.length || 0, '个文件');
-    } catch (error) {
-      console.error('Error fetching preprocessed files:', error);
-      setError('获取预处理文件列表时发生错误');
-    }
-  };
-
-  const clearError = () => {
-    setError('');
-  };
-
-  // 改进的文件名清理函数
-  const sanitizeFileName = (fileName: string): string => {
-    // 获取文件扩展名
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
-    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
-    
-    // 清理文件名主体部分
-    const cleanName = name
-      .replace(/[^\w\s.-]/g, '') // 移除特殊字符，保留字母、数字、空格、点、横线
-      .replace(/\s+/g, '_') // 空格替换为下划线
-      .replace(/_{2,}/g, '_') // 多个下划线替换为单个
-      .replace(/[.-]+/g, '_') // 点和横线也替换为下划线
-      .trim()
-      .substring(0, 50); // 限制长度
-    
-    // 如果清理后的名称为空，使用默认名称
-    const finalName = cleanName || 'file';
-    
-    return `${finalName}${extension}`;
-  };
-
+  // 文件上传处理
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    clearError();
-
-    // 检查文件格式
-    const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
+    // 检查文件类型
+    const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown'];
+    const allowedExtensions = ['.docx', '.txt', '.md'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
-    if (!allowedFormats.includes(fileExtension)) {
-      const errorMsg = '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
-      setError(errorMsg);
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       toast({
-        title: '文件格式不支持',
-        description: errorMsg,
+        title: '文件格式错误',
+        description: '请上传 DOCX、TXT 或 MD 格式的文件',
         variant: 'destructive',
       });
       return;
     }
 
-    // 检查文件大小 (10MB)
+    // 检查文件大小（10MB）
     if (file.size > 10 * 1024 * 1024) {
-      const errorMsg = '文件大小不能超过10MB';
-      setError(errorMsg);
       toast({
         title: '文件过大',
-        description: errorMsg,
+        description: '文件大小不能超过10MB',
         variant: 'destructive',
       });
       return;
     }
 
     setIsUploading(true);
-    setStatus('文件上传中...');
-
     try {
-      // 使用改进的文件名清理
-      const originalName = file.name;
-      const sanitizedName = sanitizeFileName(originalName);
-      const timestamp = Date.now();
-      const fileName = `${timestamp}_${sanitizedName}`;
-      
-      console.log('原始文件名:', originalName);
-      console.log('清理后文件名:', fileName);
-      
-      const { data, error } = await supabase.storage
+      const fileName = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
         .from('question-files')
-        .upload(`uploads/${fileName}`, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
-      if (error) {
-        console.error('Upload error:', error);
-        throw new Error(`上传失败: ${error.message}`);
+      if (uploadError) {
+        throw uploadError;
       }
 
-      console.log('文件上传成功:', data);
-      toast({
-        title: '上传成功',
-        description: `文件 "${originalName}" 已成功上传`,
-      });
+      const newFile: UploadedFile = {
+        path: fileName,
+        name: file.name,
+        uploadedAt: new Date().toISOString(),
+      };
 
-      // 刷新文件列表
-      await fetchUploadedFiles();
-      
+      setUploadedFiles(prev => [newFile, ...prev]);
+      toast({
+        title: '文件上传成功',
+        description: `${file.name} 已成功上传`,
+      });
     } catch (error) {
-      console.error('Error uploading file:', error);
-      const errorMsg = error instanceof Error ? error.message : '文件上传失败';
-      setError(errorMsg);
+      console.error('文件上传失败:', error);
       toast({
         title: '上传失败',
-        description: errorMsg,
+        description: '文件上传过程中出现错误',
         variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
-      setStatus('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      event.target.value = '';
     }
   };
 
-  const handlePreprocessFile = async () => {
+  // 预处理文件
+  const handlePreprocess = async () => {
     if (!selectedFile) {
-      const errorMsg = '请先选择要预处理的文件';
-      setError(errorMsg);
       toast({
         title: '请选择文件',
-        description: errorMsg,
+        description: '请先选择要预处理的文件',
         variant: 'destructive',
       });
       return;
     }
 
-    clearError();
-    setIsProcessing(true);
-    setStatus('使用QwenLong模型预处理文件中...');
-
+    setIsPreprocessing(true);
     try {
-      console.log('调用预处理API:', selectedFile);
-      
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
-          filePath: selectedFile,
-          fileName: uploadedFiles.find(f => f.path === selectedFile)?.name || 'unknown'
-        }
+          filePath: selectedFile.path,
+          fileName: selectedFile.name,
+        },
       });
-
-      console.log('预处理API响应:', data, error);
 
       if (error) {
-        console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
+        throw error;
       }
 
-      if (!data || !data.success) {
-        const errorMsg = data?.error || '预处理失败，请重试';
-        console.error('预处理失败:', errorMsg);
-        throw new Error(errorMsg);
+      if (!data.success) {
+        throw new Error(data.error || '预处理失败');
       }
-
-      toast({
-        title: '预处理完成',
-        description: `文件已通过QwenLong模型成功预处理为结构化格式`,
-      });
 
       // 刷新预处理文件列表
-      await fetchPreprocessedFiles();
-
-      console.log('预处理结果:', data);
+      await loadPreprocessedFiles();
       
+      toast({
+        title: '预处理完成',
+        description: '文件预处理已完成，可以进行题目生成',
+      });
     } catch (error) {
-      console.error('Error preprocessing file:', error);
-      const errorMsg = error instanceof Error ? error.message : '文件预处理失败';
-      setError(`预处理失败: ${errorMsg}`);
+      console.error('预处理失败:', error);
       toast({
         title: '预处理失败',
-        description: errorMsg,
+        description: error.message || '文件预处理过程中出现错误',
         variant: 'destructive',
       });
     } finally {
-      setIsProcessing(false);
-      setStatus('');
+      setIsPreprocessing(false);
     }
   };
 
+  // 生成题目
   const handleGenerateQuestions = async () => {
-    if (!selectedPreprocessedFile) {
-      const errorMsg = '请选择已预处理的文件';
-      setError(errorMsg);
+    if (!selectedPreprocessed) {
       toast({
-        title: '请选择已预处理文件',
-        description: errorMsg,
+        title: '请选择预处理文件',
+        description: '请先选择已预处理的文件',
         variant: 'destructive',
       });
       return;
     }
 
-    clearError();
-    setIsGenerating(true);
-    setStatus('使用Qwen3-32B模型生成题目中...');
+    if (questionCount < 1 || questionCount > 50) {
+      toast({
+        title: '题目数量错误',
+        description: '题目数量应该在1-50之间',
+        variant: 'destructive',
+      });
+      return;
+    }
 
+    setIsGenerating(true);
     try {
-      console.log('调用生成题目API:', { selectedPreprocessedFile });
-      
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
-          preprocessedId: selectedPreprocessedFile,
-          questionCount: 18
-        }
+          preprocessedId: selectedPreprocessed.id,
+          questionCount: questionCount,
+        },
       });
-
-      console.log('生成题目API响应:', data, error);
 
       if (error) {
-        console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
+        throw error;
       }
 
-      if (!data || !data.success) {
-        const errorMsg = data?.error || '题目生成失败';
-        console.error('生成失败:', errorMsg);
-        throw new Error(errorMsg);
+      if (!data.success) {
+        throw new Error(data.error || '生成失败');
       }
 
       toast({
-        title: '生成完成',
-        description: `已通过Qwen3-32B成功生成${data.questions?.length || 0}道题目`,
+        title: '题目生成完成',
+        description: `成功生成 ${data.question_count} 道题目`,
       });
-
-      console.log('生成结果:', data);
-      
     } catch (error) {
-      console.error('Error generating questions:', error);
-      const errorMsg = error instanceof Error ? error.message : '题目生成失败';
-      setError(`生成失败: ${errorMsg}`);
+      console.error('生成题目失败:', error);
       toast({
         title: '生成失败',
-        description: errorMsg,
+        description: error.message || '题目生成过程中出现错误',
         variant: 'destructive',
       });
     } finally {
       setIsGenerating(false);
-      setStatus('');
     }
   };
 
+  // 加载预处理文件列表
+  const loadPreprocessedFiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('preprocessed_files')
+        .select('id, file_name, original_file_path, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const files: PreprocessedFile[] = data.map(item => ({
+        id: item.id,
+        fileName: item.file_name,
+        originalPath: item.original_file_path,
+        preprocessedAt: item.created_at || '',
+      }));
+
+      setPreprocessedFiles(files);
+    } catch (error) {
+      console.error('加载预处理文件失败:', error);
+    }
+  };
+
+  // 组件挂载时加载预处理文件
+  React.useEffect(() => {
+    loadPreprocessedFiles();
+  }, []);
+
   return (
-    <>
-      <Card className={`bg-werewolf-dark/40 border-werewolf-purple/30 ${className}`}>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-werewolf-purple flex items-center text-lg">
-            <BookOpen className="mr-2 h-5 w-5" />
-            题库管理 (硅基流动AI)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
-          <div className="space-y-4 h-full flex flex-col">
-            {/* 错误提示 */}
-            {error && (
-              <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-md">
-                <AlertCircle className="mr-2 h-4 w-4 text-red-400" />
-                <span className="text-red-400 text-sm">{error}</span>
-                <Button
-                  onClick={clearError}
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto h-6 w-6 p-0 text-red-400 hover:text-red-300"
-                >
-                  ×
-                </Button>
-              </div>
-            )}
+    <Card className="bg-werewolf-card border-werewolf-purple/30">
+      <CardHeader>
+        <CardTitle className="text-werewolf-purple flex items-center">
+          题库管理
+          <QuestionBankTooltip />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* 文件上传 */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">1. 上传文件</label>
+          <div className="flex items-center space-x-2">
+            <Input
+              type="file"
+              accept=".docx,.txt,.md"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="flex-1"
+            />
+            <Button disabled={isUploading} size="sm">
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
 
-            {/* 文件上传区域 */}
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="bg-werewolf-purple hover:bg-werewolf-light text-white flex-1"
+        {/* 已上传文件列表 */}
+        {uploadedFiles.length > 0 && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">2. 选择文件进行预处理</label>
+            <div className="max-h-32 overflow-y-auto space-y-1">
+              {uploadedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className={`p-2 rounded cursor-pointer text-sm ${
+                    selectedFile?.path === file.path
+                      ? 'bg-werewolf-purple/20 border border-werewolf-purple'
+                      : 'bg-werewolf-dark/20 hover:bg-werewolf-dark/30'
+                  }`}
+                  onClick={() => setSelectedFile(file)}
                 >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {isUploading ? '上传中...' : '上传文件'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.doc,.docx,.xls,.xlsx,.pptx,.md"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-              </div>
-
-              <Select value={selectedFile} onValueChange={setSelectedFile}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择已上传文件" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
-                  <ScrollArea className="h-full">
-                    {uploadedFiles.map((file) => (
-                      <SelectItem key={file.path} value={file.path}>
-                        <div className="flex items-center">
-                          <File className="mr-2 h-4 w-4" />
-                          {file.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </ScrollArea>
-                </SelectContent>
-              </Select>
+                  <FileText className="inline h-3 w-3 mr-1" />
+                  {file.name}
+                </div>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* AI操作按钮 */}
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Button
-                  onClick={handlePreprocessFile}
-                  disabled={isProcessing || !selectedFile}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
-                >
-                  <Database className="mr-2 h-4 w-4" />
-                  {isProcessing ? '处理中...' : 'AI预处理'}
-                </Button>
-
-                <Button
-                  onClick={handleGenerateQuestions}
-                  disabled={isGenerating || !selectedPreprocessedFile}
-                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {isGenerating ? '生成中...' : 'AI生成题目'}
-                </Button>
-              </div>
-
-              {/* 已预处理文件选择 */}
-              <Select value={selectedPreprocessedFile} onValueChange={setSelectedPreprocessedFile}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择已预处理文件" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
-                  <ScrollArea className="h-full">
-                    {preprocessedFiles.map((file) => (
-                      <SelectItem key={file.id} value={file.id}>
-                        <div className="flex items-center">
-                          <Database className="mr-2 h-4 w-4" />
-                          <div className="flex flex-col">
-                            <span>{file.file_name}</span>
-                            <span className="text-xs text-gray-400">
-                              {new Date(file.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </ScrollArea>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 状态显示 */}
-            {status && (
-              <div className="flex items-center justify-center p-4 bg-werewolf-dark/20 rounded-md">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin text-werewolf-purple" />
-                <span className="text-werewolf-purple text-sm">{status}</span>
-              </div>
+        {/* 预处理按钮 */}
+        {selectedFile && (
+          <Button
+            onClick={handlePreprocess}
+            disabled={isPreprocessing}
+            className="w-full"
+            variant="outline"
+          >
+            {isPreprocessing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                AI预处理中...
+              </>
+            ) : (
+              <>
+                <Brain className="h-4 w-4 mr-2" />
+                3. AI预处理文件
+              </>
             )}
+          </Button>
+        )}
 
-            {/* 打开题库按钮 */}
-            <div className="mt-auto">
+        {/* 预处理文件列表 */}
+        {preprocessedFiles.length > 0 && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">4. 选择预处理文件</label>
+            <div className="max-h-32 overflow-y-auto space-y-1">
+              {preprocessedFiles.map((file) => (
+                <div
+                  key={file.id}
+                  className={`p-2 rounded cursor-pointer text-sm ${
+                    selectedPreprocessed?.id === file.id
+                      ? 'bg-werewolf-purple/20 border border-werewolf-purple'
+                      : 'bg-werewolf-dark/20 hover:bg-werewolf-dark/30'
+                  }`}
+                  onClick={() => setSelectedPreprocessed(file)}
+                >
+                  <Database className="inline h-3 w-3 mr-1" />
+                  {file.fileName}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 题目生成 */}
+        {selectedPreprocessed && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">5. 生成题目</label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Number(e.target.value))}
+                min={1}
+                max={50}
+                className="w-20"
+              />
+              <span className="text-sm">道题目</span>
               <Button
-                onClick={() => setShowQuestionBank(true)}
-                className="w-full bg-werewolf-purple hover:bg-werewolf-light text-white"
+                onClick={handleGenerateQuestions}
+                disabled={isGenerating}
+                className="flex-1"
               >
-                <BookOpen className="mr-2 h-4 w-4" />
-                打开题库
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    AI生成中...
+                  </>
+                ) : (
+                  'AI生成题目'
+                )}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* 题库弹窗 */}
-      <QuestionBankDialog
-        isOpen={showQuestionBank}
-        onClose={() => setShowQuestionBank(false)}
-        roomId="current-room"
-      />
-    </>
+        {/* 打开题库 */}
+        <Button
+          onClick={() => setIsDialogOpen(true)}
+          className="w-full"
+          variant="default"
+        >
+          <Database className="h-4 w-4 mr-2" />
+          6. 打开题库
+        </Button>
+
+        <QuestionBankDialog
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
+      </CardContent>
+    </Card>
   );
 };
 

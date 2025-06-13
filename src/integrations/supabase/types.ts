@@ -376,42 +376,54 @@ export type Database = {
       }
       generated_questions: {
         Row: {
-          correct_answer: string
+          correct_answer: string | null
           created_at: string
           created_by: string | null
+          file_name: string | null
           id: string
-          option_a: string
-          option_b: string
-          option_c: string
-          option_d: string
-          question_text: string
-          room_id: string
+          model_used: string | null
+          option_a: string | null
+          option_b: string | null
+          option_c: string | null
+          option_d: string | null
+          question_count: number | null
+          question_text: string | null
+          questions: Json | null
+          room_id: string | null
           source_file: string | null
         }
         Insert: {
-          correct_answer: string
+          correct_answer?: string | null
           created_at?: string
           created_by?: string | null
+          file_name?: string | null
           id?: string
-          option_a: string
-          option_b: string
-          option_c: string
-          option_d: string
-          question_text: string
-          room_id: string
+          model_used?: string | null
+          option_a?: string | null
+          option_b?: string | null
+          option_c?: string | null
+          option_d?: string | null
+          question_count?: number | null
+          question_text?: string | null
+          questions?: Json | null
+          room_id?: string | null
           source_file?: string | null
         }
         Update: {
-          correct_answer?: string
+          correct_answer?: string | null
           created_at?: string
           created_by?: string | null
+          file_name?: string | null
           id?: string
-          option_a?: string
-          option_b?: string
-          option_c?: string
-          option_d?: string
-          question_text?: string
-          room_id?: string
+          model_used?: string | null
+          option_a?: string | null
+          option_b?: string | null
+          option_c?: string | null
+          option_d?: string | null
+          question_count?: number | null
+          question_text?: string | null
+          questions?: Json | null
+          room_id?: string | null
           source_file?: string | null
         }
         Relationships: [
