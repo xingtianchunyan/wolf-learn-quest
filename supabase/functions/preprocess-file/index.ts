@@ -59,6 +59,16 @@ async function readTextFile(fileBuffer: ArrayBuffer): Promise<string> {
   }
 }
 
+// 截断文本以适配API限制
+function truncateContentForAPI(content: string, maxLength: number = 6000): string {
+  if (content.length <= maxLength) {
+    return content;
+  }
+  
+  console.log(`内容过长 (${content.length} 字符)，截断到 ${maxLength} 字符`);
+  return content.substring(0, maxLength) + '\n\n[内容已截断，仅处理前半部分]';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -152,6 +162,9 @@ serve(async (req) => {
 
     console.log('文件内容提取成功，长度:', fileContent.length);
 
+    // 截断内容以适配API限制
+    const truncatedContent = truncateContentForAPI(fileContent);
+
     // 使用硅基流动平台API进行预处理
     console.log('调用硅基流动API进行预处理...');
     const response = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
@@ -179,11 +192,11 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `请对以下学习材料进行预处理和结构化整理：\n\n${fileContent}`
+            content: `请对以下学习材料进行预处理和结构化整理：\n\n${truncatedContent}`
           }
         ],
         temperature: 0.3,
-        max_tokens: 8000
+        max_tokens: 4000  // 修改为4000以符合API限制
       }),
     });
 
