@@ -39,11 +39,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
   const [error, setError] = useState<string>('');
-  
-  // 添加ref来跟踪处理状态，防止重复调用
-  const processingRef = useRef(false);
-  const generatingRef = useRef(false);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -225,27 +220,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
-    // 防止重复调用
-    if (processingRef.current || isProcessing) {
-      console.log('预处理已在进行中，跳过重复调用');
-      return;
-    }
-
-    // 检查是否已经预处理过该文件
-    const existingPreprocessed = preprocessedFiles.find(f => f.original_file_path === selectedFile);
-    if (existingPreprocessed) {
-      const errorMsg = '该文件已经预处理过，请直接选择预处理结果';
-      setError(errorMsg);
-      toast({
-        title: '文件已预处理',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
     clearError();
-    processingRef.current = true;
     setIsProcessing(true);
     setStatus('使用Qwen3-30B模型预处理文件中...');
 
@@ -292,7 +267,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         variant: 'destructive',
       });
     } finally {
-      processingRef.current = false;
       setIsProcessing(false);
       setStatus('');
     }
@@ -310,14 +284,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       return;
     }
 
-    // 防止重复调用
-    if (generatingRef.current || isGenerating) {
-      console.log('题目生成已在进行中，跳过重复调用');
-      return;
-    }
-
     clearError();
-    generatingRef.current = true;
     setIsGenerating(true);
     setStatus('使用Qwen3-30B模型生成题目中...');
 
@@ -361,7 +328,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         variant: 'destructive',
       });
     } finally {
-      generatingRef.current = false;
       setIsGenerating(false);
       setStatus('');
     }
@@ -441,7 +407,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
               <div className="flex gap-2">
                 <Button
                   onClick={handlePreprocessFile}
-                  disabled={isProcessing || !selectedFile || processingRef.current}
+                  disabled={isProcessing || !selectedFile}
                   className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
                 >
                   <Database className="mr-2 h-4 w-4" />
@@ -450,7 +416,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
                 <Button
                   onClick={handleGenerateQuestions}
-                  disabled={isGenerating || !selectedPreprocessedFile || generatingRef.current}
+                  disabled={isGenerating || !selectedPreprocessedFile}
                   className="bg-green-600 hover:bg-green-700 text-white flex-1"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
