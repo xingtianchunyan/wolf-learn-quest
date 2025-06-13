@@ -8,6 +8,7 @@ import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import QuestionBankDialog from './QuestionBankDialog';
+import QuestionBankTooltip from './QuestionBankTooltip';
 
 interface QuestionBankPanelProps {
   className?: string;
@@ -336,9 +337,12 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
     <>
       <Card className={`bg-werewolf-dark/40 border-werewolf-purple/30 ${className}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-werewolf-purple flex items-center text-lg">
-            <BookOpen className="mr-2 h-5 w-5" />
-            题库管理 (硅基流动AI)
+          <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
+            <div className="flex items-center">
+              <BookOpen className="mr-2 h-5 w-5" />
+              题库管理 (硅基流动AI)
+            </div>
+            <QuestionBankTooltip />
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">

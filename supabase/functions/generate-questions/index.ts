@@ -62,7 +62,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen3-32B',
+        model: 'Qwen/Qwen3-30B-A3B',
         messages: [
           {
             role: 'system',
@@ -161,9 +161,8 @@ serve(async (req) => {
     const { data: savedQuestions, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
-        file_path: preprocessedData.original_file_path,
         file_name: preprocessedData.file_name,
-        model_used: 'Qwen/Qwen3-32B',
+        model_used: 'Qwen/Qwen3-30B-A3B',
         questions: questions.questions || questions,
         question_count: questions.questions?.length || 1,
         created_at: new Date().toISOString()
