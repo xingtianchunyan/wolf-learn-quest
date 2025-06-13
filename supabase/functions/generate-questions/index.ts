@@ -30,152 +30,142 @@ serve(async (req) => {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    const { preprocessedId, questionCount = 10, roomId } = await req.json();
-    console.log('开始生成题目:', { preprocessedId, questionCount, roomId });
+    const { preprocessedId, questionCount = 18 } = await req.json();
+    console.log('开始生成题目:', { preprocessedId, questionCount });
 
-    if (!preprocessedId) {
-      throw new Error('缺少预处理文件ID');
-    }
-
-    // 检查是否已经为此预处理文件生成过题目
-    const { data: existingQuestions, error: checkError } = await supabase
-      .from('generated_questions')
-      .select('id, questions, question_count')
-      .eq('source_file', preprocessedId)
-      .maybeSingle();
-
-    if (checkError) {
-      console.error('检查已存在题目失败:', checkError);
-    }
-
-    if (existingQuestions && existingQuestions.questions) {
-      console.log('该文件已生成过题目，返回现有结果');
-      return new Response(JSON.stringify({
-        success: true,
-        message: '题目已生成过',
-        question_id: existingQuestions.id,
-        question_count: existingQuestions.question_count || 0
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // 获取预处理内容
+    // 获取预处理后的内容
     const { data: preprocessedData, error: fetchError } = await supabase
       .from('preprocessed_files')
-      .select('preprocessed_content, file_name')
+      .select('*')
       .eq('id', preprocessedId)
       .single();
 
     if (fetchError || !preprocessedData) {
       console.error('获取预处理内容失败:', fetchError);
-      throw new Error('未找到预处理内容');
+      throw new Error('未找到指定的预处理文件');
     }
 
-    console.log('使用预处理内容，长度:', preprocessedData.preprocessed_content.length);
+    const contentToUse = preprocessedData.preprocessed_content;
 
-    // 使用硅基流动API生成题目
+    if (!contentToUse || contentToUse.trim().length === 0) {
+      throw new Error('预处理内容为空');
+    }
+
+    console.log('使用预处理内容，长度:', contentToUse.length);
+
+    // 使用硅基流动平台API生成题目
     console.log('调用硅基流动API生成题目...');
-    
-    const questionsResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
+    const generateResponse = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen3-30B-A3B',
+        model: 'Qwen/Qwen3-32B',
         messages: [
           {
             role: 'system',
-            content: `你是一个专业的题目生成专家。请根据提供的文档内容生成高质量的选择题。
+            content: `你是一个专业的考试题目生成专家。请根据提供的学习材料生成${questionCount}道考试题目。
 
 要求：
-1. 生成${questionCount}道选择题
-2. 每题包含4个选项（A、B、C、D）
-3. 题目应覆盖文档的主要知识点
-4. 难度适中，既有基础题也有提高题
-5. 答案解析要详细准确
+1. 题目类型只包括：选择题（4个选项）和判断题（2个选项：正确/错误）
+2. 选择题和判断题的比例大约为7:3
+3. 每道题目必须包含：题目内容、选项、正确答案、解析说明
+4. 题目应该全面覆盖学习材料的重点内容
+5. 返回严格的JSON格式，结构如下：
 
-请严格按照以下JSON格式输出：
 {
   "questions": [
     {
+      "id": 1,
+      "type": "choice",
       "question": "题目内容",
-      "option_a": "选项A",
-      "option_b": "选项B", 
-      "option_c": "选项C",
-      "option_d": "选项D",
+      "options": ["A选项", "B选项", "C选项", "D选项"],
       "correct_answer": "A",
+      "explanation": "答案解析"
+    },
+    {
+      "id": 2,
+      "type": "judgment",
+      "question": "题目内容",
+      "options": ["正确", "错误"],
+      "correct_answer": "正确",
       "explanation": "答案解析"
     }
   ]
 }
 
-确保输出的是有效的JSON格式。`
+请确保返回的是完整有效的JSON格式，不要包含任何markdown标记。`
           },
           {
             role: 'user',
-            content: `请根据以下内容生成${questionCount}道选择题：\n\n${preprocessedData.preprocessed_content}`
+            content: `请基于以下学习材料生成${questionCount}道考试题目：\n\n${contentToUse}`
           }
         ],
-        temperature: 0.3,
-        max_tokens: 12000,
-        top_p: 0.8
+        temperature: 0.7,
+        max_tokens: 6000
       }),
     });
 
-    console.log('API响应状态:', questionsResponse.status);
+    console.log('API响应状态:', generateResponse.status);
 
-    if (!questionsResponse.ok) {
-      const errorText = await questionsResponse.text();
-      console.error('硅基流动API错误:', questionsResponse.status, errorText);
-      throw new Error(`API调用失败 (${questionsResponse.status}): ${errorText}`);
+    if (!generateResponse.ok) {
+      const errorText = await generateResponse.text();
+      console.error('硅基流动API错误:', errorText);
+      throw new Error(`API调用失败: ${generateResponse.status} - ${errorText}`);
     }
 
-    const result = await questionsResponse.json();
+    const result = await generateResponse.json();
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
-      throw new Error('AI服务返回数据格式错误');
+      throw new Error('API返回数据格式错误');
     }
 
-    const questionsContent = result.choices[0].message.content;
-    console.log('题目生成完成，内容长度:', questionsContent.length);
+    const generatedContent = result.choices[0].message.content;
+    console.log('题目生成完成，内容长度:', generatedContent.length);
 
-    // 解析生成的题目
-    let parsedQuestions;
+    // 尝试解析JSON格式的题目
+    let questions;
     try {
-      // 尝试提取JSON部分
-      const jsonMatch = questionsContent.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsedQuestions = JSON.parse(jsonMatch[0]);
-      } else {
-        parsedQuestions = JSON.parse(questionsContent);
+      // 清理可能的markdown格式
+      const cleanContent = generatedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      questions = JSON.parse(cleanContent);
+      
+      if (!questions.questions || !Array.isArray(questions.questions)) {
+        throw new Error('题目格式不正确');
       }
+      
     } catch (parseError) {
-      console.error('题目JSON解析失败:', parseError);
-      console.log('原始内容:', questionsContent);
-      throw new Error('生成的题目格式无效');
+      console.error('JSON解析失败:', parseError);
+      console.log('原始内容:', generatedContent);
+      
+      // 如果解析失败，创建一个默认格式
+      questions = {
+        questions: [{
+          id: 1,
+          type: 'text',
+          question: '题目生成格式错误，请重新生成',
+          options: ['查看原始内容'],
+          correct_answer: '查看原始内容',
+          explanation: '生成的内容格式不正确，请重新尝试',
+          raw_content: generatedContent
+        }]
+      };
     }
 
-    if (!parsedQuestions.questions || !Array.isArray(parsedQuestions.questions)) {
-      throw new Error('生成的题目结构无效');
-    }
+    console.log('解析后的题目数量:', questions.questions?.length || 0);
 
-    console.log('解析后的题目数量:', parsedQuestions.questions.length);
-
-    // 保存题目到数据库
-    console.log('保存题目到数据库...');
-    const { data: savedData, error: saveError } = await supabase
+    // 保存生成的题目到数据库
+    const { data: savedQuestions, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
-        room_id: roomId || null,
-        source_file: preprocessedId,
+        file_path: preprocessedData.original_file_path,
         file_name: preprocessedData.file_name,
-        questions: parsedQuestions.questions,
-        question_count: parsedQuestions.questions.length,
-        model_used: 'Qwen/Qwen3-30B-A3B',
+        model_used: 'Qwen/Qwen3-32B',
+        questions: questions.questions || questions,
+        question_count: questions.questions?.length || 1,
         created_at: new Date().toISOString()
       })
       .select()
@@ -186,24 +176,23 @@ serve(async (req) => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
-    console.log('题目已保存，ID:', savedData.id);
+    console.log('题目已保存，ID:', savedQuestions.id);
 
     return new Response(JSON.stringify({
       success: true,
-      message: '题目生成完成',
-      question_id: savedData.id,
-      question_count: parsedQuestions.questions.length
+      message: `成功生成${questions.questions?.length || 1}道题目`,
+      question_bank_id: savedQuestions.id,
+      questions: questions.questions || questions,
+      preview: questions.questions?.slice(0, 3) || [questions]
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('生成题目过程中发生错误:', error);
-    
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : '未知错误',
-      timestamp: new Date().toISOString()
+      error: error instanceof Error ? error.message : '未知错误'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
