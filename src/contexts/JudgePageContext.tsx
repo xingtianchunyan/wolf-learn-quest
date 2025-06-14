@@ -103,7 +103,7 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
         toast({
           title: '担任法官失败',
           description: '您可能没有权限成为此房间的法官。',
-          variant: 'warning',
+          variant: 'destructive',
         });
       }
       
