@@ -164,23 +164,25 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       // Build question sources
       const sourceMap = new Map<string, QuestionSource>();
       
+      // Always include "手动编辑" source
+      sourceMap.set('manual', {
+        id: 'manual',
+        name: '手动编辑',
+        count: 0, // Initialize count to 0
+        type: 'manual'
+      });
+      
       formattedQuestions.forEach(q => {
         if (q.category === '手动编辑') {
-          const existing = sourceMap.get('manual');
-          if (existing) {
-            existing.count++;
-          } else {
-            sourceMap.set('manual', {
-              id: 'manual',
-              name: '手动编辑',
-              count: 1,
-              type: 'manual'
-            });
+          const existingManual = sourceMap.get('manual');
+          if (existingManual) { // Should always exist now
+            existingManual.count++;
           }
+          // No 'else' needed as it's pre-added
         } else if (q.generated_questions_id) {
-          const existing = sourceMap.get(q.generated_questions_id);
-          if (existing) {
-            existing.count++;
+          const existingFileSource = sourceMap.get(q.generated_questions_id);
+          if (existingFileSource) {
+            existingFileSource.count++;
           } else {
             sourceMap.set(q.generated_questions_id, {
               id: q.generated_questions_id,
@@ -435,17 +437,19 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                               <Checkbox
                                 checked={selectedSources.includes(source.id)}
                                 onCheckedChange={() => toggleSourceSelection(source.id)}
+                                id={`source-${source.id}`}
                               />
-                              <div>
+                              <label htmlFor={`source-${source.id}`} className="cursor-pointer">
                                 <p className="text-white font-medium">{source.name}</p>
                                 <p className="text-gray-400 text-sm">{source.count} 道题目</p>
-                              </div>
+                              </label>
                             </div>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => selectAllFromSource(source.id)}
                               className="border-werewolf-purple/30 text-werewolf-purple hover:bg-werewolf-purple hover:text-white"
+                              disabled={source.count === 0} // Disable if no questions for this source
                             >
                               快速全选
                             </Button>
