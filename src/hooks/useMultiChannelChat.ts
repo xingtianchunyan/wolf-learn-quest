@@ -1,29 +1,26 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ChatChannel } from '@/components/chat/ChatChannelSelector';
+import { useGameState } from './useGameState';
 
 interface UseMultiChannelChatProps {
   roomId: string | null;
   currentUser: any;
-  gamePhase?: string;
-  gameRound?: number;
   userRole?: string;
 }
 
 export const useMultiChannelChat = ({
   roomId,
   currentUser,
-  gamePhase,
-  gameRound,
   userRole
 }: UseMultiChannelChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChatChannel>('public');
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { gameState } = useGameState(roomId);
 
   // 确定可用频道
   const getAvailableChannels = (): ChatChannel[] => {
@@ -163,15 +160,6 @@ export const useMultiChannelChat = ({
         });
         return false;
       }
-
-      console.log('Sending message with data:', {
-        chat_type: chatType,
-        room_id: roomId,
-        sender_id: user.id, // 直接使用认证用户ID
-        message: messageText.trim(),
-        game_round: gameRound,
-        game_phase: gamePhase
-      });
       
       const { error } = await supabase
         .from('chat_messages')
@@ -180,8 +168,9 @@ export const useMultiChannelChat = ({
           room_id: roomId,
           sender_id: user.id, // 使用认证用户ID，与RLS策略一致
           message: messageText.trim(),
-          game_round: gameRound,
-          game_phase: gamePhase
+          game_round: gameState?.currentRound,
+          game_phase: gameState?.currentPhase,
+          game_id: gameState?.id
         });
 
       if (error) {

@@ -51,7 +51,7 @@ export type Database = {
             foreignKeyName: "chat_messages_game_id_fkey"
             columns: ["game_id"]
             isOneToOne: false
-            referencedRelation: "game_sessions"
+            referencedRelation: "game_states"
             referencedColumns: ["id"]
           },
           {
@@ -109,7 +109,7 @@ export type Database = {
             foreignKeyName: "game_actions_game_id_fkey"
             columns: ["game_id"]
             isOneToOne: false
-            referencedRelation: "game_sessions"
+            referencedRelation: "game_states"
             referencedColumns: ["id"]
           },
           {
@@ -233,31 +233,37 @@ export type Database = {
       }
       game_sessions: {
         Row: {
-          active_role: string | null
-          created_at: string | null
-          current_phase: string | null
-          current_round: number | null
+          end_reason: string | null
+          end_time: string | null
+          final_round: number | null
           id: string
-          room_id: string | null
-          status: string | null
+          room_id: string
+          start_time: string
+          status: string
+          total_duration_seconds: number | null
+          winner_faction: string | null
         }
         Insert: {
-          active_role?: string | null
-          created_at?: string | null
-          current_phase?: string | null
-          current_round?: number | null
+          end_reason?: string | null
+          end_time?: string | null
+          final_round?: number | null
           id?: string
-          room_id?: string | null
-          status?: string | null
+          room_id: string
+          start_time?: string
+          status?: string
+          total_duration_seconds?: number | null
+          winner_faction?: string | null
         }
         Update: {
-          active_role?: string | null
-          created_at?: string | null
-          current_phase?: string | null
-          current_round?: number | null
+          end_reason?: string | null
+          end_time?: string | null
+          final_round?: number | null
           id?: string
-          room_id?: string | null
-          status?: string | null
+          room_id?: string
+          start_time?: string
+          status?: string
+          total_duration_seconds?: number | null
+          winner_faction?: string | null
         }
         Relationships: [
           {

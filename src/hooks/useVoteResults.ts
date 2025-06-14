@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGameState } from './useGameState';
@@ -40,7 +39,7 @@ export const useVoteResults = (roomId: string) => {
   const { gameState } = useGameState(roomId);
 
   const fetchVoteResults = useCallback(async () => {
-    if (!roomId || !gameState || gameState.status === 'waiting') {
+    if (!roomId || !gameState || gameState.status === 'waiting' || gameState.status === 'ended') {
       setVoteRecords([]);
       setLoading(false);
       return;
@@ -48,35 +47,14 @@ export const useVoteResults = (roomId: string) => {
     setLoading(true);
 
     try {
-      // 1. 获取游戏会话以拿到 game_id
-      const { data: gameSessionData, error: gameSessionError } = await supabase
-        .from('game_sessions')
-        .select('id')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (gameSessionError) {
-        console.error('获取游戏会话失败:', gameSessionError);
-        setVoteRecords([]);
-        setLoading(false);
-        return;
-      }
-      
-      if (!gameSessionData) {
-        setVoteRecords([]);
-        setLoading(false);
-        return;
-      }
-      const gameId = gameSessionData.id;
+      // 使用 gameState.id 作为 game_id 来查询
+      const gameId = gameState.id;
 
-      // 2. 获取当前回合和阶段的投票动作
+      // 获取当前回合和阶段的投票动作
       const { data: voteActions, error: actionsError } = await supabase
         .from('game_actions')
         .select('actor_id, target_id')
         .eq('game_id', gameId)
-        .eq('action_type', 'vote')
         .eq('round', gameState.currentRound)
         .eq('phase', gameState.currentPhase);
       
@@ -93,7 +71,7 @@ export const useVoteResults = (roomId: string) => {
         return;
       }
 
-      // 3. 聚合投票结果并收集所有玩家ID
+      // 聚合投票结果并收集所有玩家ID
       const allPlayerIds = new Set<string>();
       const voteCounts: Record<string, {voters: string[]}> = {};
       
@@ -108,10 +86,10 @@ export const useVoteResults = (roomId: string) => {
         }
       });
       
-      // 4. 获取玩家名称
+      // 获取玩家名称
       const playerNamesMap = await getPlayerNames(Array.from(allPlayerIds));
 
-      // 5. 格式化投票记录
+      // 格式化投票记录
       const formattedRecords: VoteRecord[] = Object.entries(voteCounts).map(([votedPlayerId, {voters}]) => {
         return {
           votedPlayerId: votedPlayerId,
@@ -137,7 +115,7 @@ export const useVoteResults = (roomId: string) => {
     fetchVoteResults();
   }, [fetchVoteResults]);
 
-  // 6. 设置实时订阅
+  // 设置实时订阅
   useEffect(() => {
     const channel = supabase
       .channel(`game-actions-votes-${roomId}`)

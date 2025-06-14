@@ -323,23 +323,75 @@ export const useGameState = (roomId: string) => {
     if (!gameState) return false;
 
     try {
-      const { error } = await supabase
+      // Step 1: Update game state to 'ended'
+      const { error: updateError } = await supabase
         .from('game_states')
         .update({ status: 'ended' })
         .eq('id', gameState.id);
 
-      if (error) {
-        console.error('Error ending game:', error);
+      if (updateError) {
+        console.error('Error ending game (updating state):', updateError);
+        toast({
+          title: '结束游戏失败',
+          description: updateError.message,
+          variant: 'destructive',
+        });
         return false;
+      }
+
+      // Step 2: Get game start time from history to calculate duration
+      const { data: historyData, error: historyError } = await supabase
+        .from('game_phase_history')
+        .select('started_at')
+        .eq('game_state_id', gameState.id)
+        .order('started_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      let startTime = new Date(gameState.created_at); // Fallback to state creation time
+      if (historyData?.started_at) {
+        startTime = new Date(historyData.started_at);
+      } else if (historyError) {
+        console.error('Error fetching game start time:', historyError);
+      }
+      
+      const endTime = new Date();
+      const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+
+      // Step 3: Create a game session record for the archive
+      const { error: sessionError } = await supabase
+        .from('game_sessions')
+        .insert({
+          room_id: gameState.roomId,
+          status: 'completed',
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          final_round: gameState.currentRound,
+          total_duration_seconds: duration,
+          end_reason: '法官结束游戏',
+        });
+
+      if (sessionError) {
+        console.error('Error creating game session archive:', sessionError);
+        toast({
+          title: '游戏已结束',
+          description: `但归档时出错: ${sessionError.message}`,
+          variant: 'destructive'
+        });
+        return true; // Game is ended anyway
       }
 
       toast({
         title: '游戏结束',
-        description: '游戏已结束',
+        description: '游戏已结束并成功归档。',
       });
       return true;
     } catch (error) {
       console.error('Error ending game:', error);
+      toast({
+        title: '结束游戏时发生未知错误',
+        variant: 'destructive',
+      });
       return false;
     }
   };
