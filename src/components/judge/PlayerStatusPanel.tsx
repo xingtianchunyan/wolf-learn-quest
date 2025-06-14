@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,6 +9,7 @@ import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
   id: string;
@@ -32,9 +33,28 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
 
+  const [maxPlayers, setMaxPlayers] = useState(8);
+
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      if (!roomId) return;
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('max_players')
+        .eq('id', roomId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching max players for PlayerStatusPanel:', error);
+      } else if (data && data.max_players) {
+        setMaxPlayers(data.max_players);
+      }
+    };
+    fetchRoomData();
+  }, [roomId]);
+
   // 获取房间最大玩家数以确定角色配置
-  const maxPlayers = 8; // 可以从房间信息中获取，暂时使用默认值
-  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
+  const { getSelectedRoleByUser, roleSelections } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   
   // 获取角色配置
   const roleConfigs = getRoleConfiguration(maxPlayers);
