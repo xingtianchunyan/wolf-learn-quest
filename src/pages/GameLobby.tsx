@@ -80,7 +80,6 @@ const GameLobby = () => {
           host_id,
           judge_user_id,
           users!rooms_host_id_fkey(player_name),
-          judge:users!rooms_judge_user_id_fkey(player_name),
           room_players(id)
         `)
         .eq('status', 'waiting');
@@ -92,22 +91,39 @@ const GameLobby = () => {
 
       console.log('Fetched rooms data:', data);
 
-      const formattedRooms: GameRoom[] = data?.map(room => ({
-        id: room.id,
-        roomId: room.room_id,
-        name: `Game Room ${room.room_id}`,
-        host: room.users?.player_name || 'Unknown',
-        players: room.room_players?.length || 0,
-        maxPlayers: room.max_players || 8,
-        hasAI: !room.human_judge,
-        isPrivate: false,
-        status: room.status,
-        judgeUserId: room.judge_user_id,
-        judgeName: room.judge?.player_name
-      })) || [];
+      // Get judge names separately if needed
+      const roomsWithJudges = await Promise.all(
+        (data || []).map(async (room) => {
+          let judgeName = null;
+          
+          if (room.judge_user_id) {
+            const { data: judgeData } = await supabase
+              .from('users')
+              .select('player_name')
+              .eq('user_id', room.judge_user_id)
+              .single();
+            
+            judgeName = judgeData?.player_name;
+          }
 
-      console.log('Formatted rooms:', formattedRooms);
-      setGameRooms(formattedRooms);
+          return {
+            id: room.id,
+            roomId: room.room_id,
+            name: `Game Room ${room.room_id}`,
+            host: room.users?.player_name || 'Unknown',
+            players: room.room_players?.length || 0,
+            maxPlayers: room.max_players || 8,
+            hasAI: !room.human_judge,
+            isPrivate: false,
+            status: room.status,
+            judgeUserId: room.judge_user_id,
+            judgeName: judgeName
+          };
+        })
+      );
+
+      console.log('Formatted rooms:', roomsWithJudges);
+      setGameRooms(roomsWithJudges);
     } catch (error) {
       console.error('Error fetching rooms:', error);
     }
