@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X } from 'lucide-react';
@@ -35,7 +34,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { setLinkedQuestions, isSystemLinked, setIsSystemLinked } = useJudgePage();
+  const { linkedQuestions, saveLinkedQuestions, isSystemLinked } = useJudgePage();
 
   const [manualQuestion, setManualQuestion] = useState<ManualQuestionForm>({
     question: '',
@@ -87,8 +86,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchGeneratedQuestions();
+      setSelectedQuestions(linkedQuestions);
     }
-  }, [isOpen, roomId]);
+  }, [isOpen, linkedQuestions]);
 
   useEffect(() => {
     if (selectedSources.length === 0) {
@@ -312,13 +312,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     setSelectedQuestions(items);
   };
 
-  const handleLinkSystem = () => {
-    setLinkedQuestions(selectedQuestions);
-    setIsSystemLinked(true);
-    toast({
-      title: '链接成功',
-      description: `已将 ${selectedQuestions.length} 道题目同步至教师系统。`,
-    });
+  const handleLinkSystem = async () => {
+    await saveLinkedQuestions(selectedQuestions);
     onClose();
   };
 

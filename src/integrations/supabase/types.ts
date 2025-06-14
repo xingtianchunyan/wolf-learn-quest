@@ -192,45 +192,6 @@ export type Database = {
           },
         ]
       }
-      game_questions: {
-        Row: {
-          created_at: string
-          game_id: string
-          id: string
-          question_id: string
-          question_order: number
-        }
-        Insert: {
-          created_at?: string
-          game_id: string
-          id?: string
-          question_id: string
-          question_order: number
-        }
-        Update: {
-          created_at?: string
-          game_id?: string
-          id?: string
-          question_id?: string
-          question_order?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "game_questions_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "game_states"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "game_questions_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       game_sessions: {
         Row: {
           end_reason: string | null
@@ -673,6 +634,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "room_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_questions: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          question_order: number
+          room_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          question_order: number
+          room_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          question_order?: number
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_questions_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"

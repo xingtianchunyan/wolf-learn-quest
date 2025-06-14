@@ -33,7 +33,7 @@ const JudgePage = () => {
     );
   }
   return (
-    <JudgePageProvider>
+    <JudgePageProvider roomId={roomId}>
       <PageLayout>
         <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
           {/* Navigation */}
