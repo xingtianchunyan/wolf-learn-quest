@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,8 +11,11 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings } from 'lucide-react';
+import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, Stop } from 'lucide-react';
 import PreparationPhaseDialog from './PreparationPhaseDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface JudgeActionPanelProps {
   roomId: string;
@@ -31,6 +33,10 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isSemiAuto, setIsSemiAuto] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
+  const [isLeavingJudge, setIsLeavingJudge] = useState(false);
+
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   // Mock voting data
   const voteRecords: VoteRecord[] = [
@@ -91,6 +97,31 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
     console.log('游戏结算');
   };
 
+  // ====== 新增：停止扮演法官 ======
+  const handleQuitJudge = async () => {
+    if (!roomId || !currentUser) return;
+    setIsLeavingJudge(true);
+    try {
+      // 将 judge_user_id 置空
+      const { error } = await supabase
+        .from('rooms')
+        .update({ judge_user_id: null })
+        .eq('id', roomId);
+
+      if (error) {
+        alert('退出法官失败: ' + error.message);
+        setIsLeavingJudge(false);
+        return;
+      }
+      // 返回大厅
+      navigate('/lobby');
+    } catch (err) {
+      alert('退出法官时发生错误');
+    } finally {
+      setIsLeavingJudge(false);
+    }
+  };
+
   return (
     <>
       <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
@@ -100,15 +131,27 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               <Gavel className="mr-2 h-5 w-5" />
               法官行动
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPreparationDialogOpen(true)}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              准备阶段
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPreparationDialogOpen(true)}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                准备阶段
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleQuitJudge}
+                className="border-werewolf-purple/50 hover:bg-red-700/40"
+                loading={isLeavingJudge}
+              >
+                <Stop className="h-4 w-4 mr-2" />
+                {isLeavingJudge ? "正在退出..." : "停止扮演法官"}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         

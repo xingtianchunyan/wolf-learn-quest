@@ -604,7 +604,7 @@ const GameLobby = () => {
                                 <span className="text-blue-400">AI {t('judge')}</span>
                               ) : room.judgeUserId ? (
                                 <span className="text-green-400">
-                                  {room.judgeName || '已有法官'}
+                                  已有法官
                                 </span>
                               ) : (
                                 <Button 
