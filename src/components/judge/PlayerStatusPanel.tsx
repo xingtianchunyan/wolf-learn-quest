@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,7 +41,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
       const { data, error } = await supabase
         .from('rooms')
         .select('max_players')
-        .eq('room_id', roomId)
+        .eq('id', roomId)
         .single();
       
       if (error) {

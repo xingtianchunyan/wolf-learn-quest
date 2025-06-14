@@ -23,7 +23,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
       const { data } = await supabase
         .from('rooms')
         .select('max_players')
-        .eq('room_id', roomId)
+        .eq('id', roomId)
         .single();
       if (data && data.max_players) {
         setMaxPlayers(data.max_players);

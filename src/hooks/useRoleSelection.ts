@@ -13,93 +13,65 @@ interface RoleSelection {
 export const useRoleSelection = (roomId: string, currentUserId: string | null, currentPlayerCount: number, maxPlayers: number) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [roomDbId, setRoomDbId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!roomId) {
-        setLoading(false);
-        return;
-    };
+    if (!roomId) return;
 
-    let channel: any;
+    // 初始获取角色选择
+    const fetchRoleSelections = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('role_selections')
+          .select('*')
+          .eq('room_id', roomId);
 
-    const fetchRoleSelections = async (dbId: string) => {
-        try {
-            const { data, error } = await supabase
-                .from('role_selections')
-                .select('*')
-                .eq('room_id', dbId);
-
-            if (error) {
-                console.error('Error fetching role selections:', error);
-                setRoleSelections([]);
-                return;
-            }
-
-            setRoleSelections(data || []);
-        } catch (error) {
-            console.error('Error fetching role selections:', error);
-            setRoleSelections([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const initialize = async () => {
-      setLoading(true);
-      const { data: roomData, error: roomError } = await supabase
-          .from('rooms')
-          .select('id')
-          .eq('room_id', roomId) // Use text ID to get DB UUID
-          .single();
-
-      if (roomError || !roomData) {
-          console.error("Error fetching room's database ID in useRoleSelection:", roomError);
-          setLoading(false);
-          setRoomDbId(null);
-          setRoleSelections([]);
+        if (error) {
+          console.error('Error fetching role selections:', error);
           return;
+        }
+
+        setRoleSelections(data || []);
+      } catch (error) {
+        console.error('Error fetching role selections:', error);
+      } finally {
+        setLoading(false);
       }
-      
-      const dbId = roomData.id;
-      setRoomDbId(dbId);
-
-      await fetchRoleSelections(dbId);
-
-      channel = supabase
-          .channel(`role_selections_${dbId}`)
-          .on(
-              'postgres_changes',
-              {
-                  event: '*',
-                  schema: 'public',
-                  table: 'role_selections',
-                  filter: `room_id=eq.${dbId}`
-              },
-              () => {
-                  fetchRoleSelections(dbId);
-              }
-          )
-          .subscribe();
     };
 
-    initialize();
+    fetchRoleSelections();
+
+    // 订阅角色选择变化
+    const channel = supabase
+      .channel(`role_selections_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'role_selections',
+          filter: `room_id=eq.${roomId}`
+        },
+        (payload) => {
+          console.log('Role selection update received:', payload);
+          fetchRoleSelections();
+        }
+      )
+      .subscribe();
 
     return () => {
-        if (channel) {
-            supabase.removeChannel(channel);
-        }
+      supabase.removeChannel(channel);
     };
   }, [roomId]);
 
+  // 当最大玩家数变化时，清除所有角色选择
   const clearAllRoleSelections = async () => {
-    if (!roomDbId) return false;
+    if (!roomId) return false;
 
     try {
       const { error } = await supabase
         .from('role_selections')
         .delete()
-        .eq('room_id', roomDbId);
+        .eq('room_id', roomId);
 
       if (error) {
         console.error('Error clearing role selections:', error);
@@ -114,13 +86,13 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
   };
 
   const selectRole = async (roleId: string) => {
-    if (!currentUserId || !roomDbId) return false;
+    if (!currentUserId || !roomId) return false;
 
     try {
       const { error } = await supabase
         .from('role_selections')
         .upsert({
-          room_id: roomDbId,
+          room_id: roomId,
           user_id: currentUserId,
           role_id: roleId
         });
@@ -138,13 +110,13 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
   };
 
   const unselectRole = async () => {
-    if (!currentUserId || !roomDbId) return false;
+    if (!currentUserId || !roomId) return false;
 
     try {
       const { error } = await supabase
         .from('role_selections')
         .delete()
-        .eq('room_id', roomDbId)
+        .eq('room_id', roomId)
         .eq('user_id', currentUserId);
 
       if (error) {
@@ -172,10 +144,12 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     return getSelectedRoleByUser(currentUserId);
   };
 
+  // 检查是否可以选择角色（当前玩家数等于最大玩家数）
   const canSelectRoles = () => {
     return currentPlayerCount >= maxPlayers;
   };
 
+  // 检查是否所有玩家都已选择角色
   const allPlayersSelectedRoles = () => {
     return roleSelections.length >= currentPlayerCount;
   };
