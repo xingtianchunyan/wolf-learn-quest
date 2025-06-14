@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,7 @@ const GameRoom = () => {
   const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
+  const [judgeName, setJudgeName] = useState<string | null>(null);
   
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
@@ -149,7 +149,9 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
-              users!rooms_host_id_fkey(player_name),
+              judge_user_id,
+              host_info:users!rooms_host_id_fkey(player_name),
+              judge_info:users!rooms_judge_user_id_fkey(player_name),
               room_players(id, user_id)
             `)
             .eq('id', id)
@@ -170,10 +172,10 @@ const GameRoom = () => {
             setRoomData({
               id: roomData.id,
               roomId: roomData.room_id,
-              hostPlayerId: roomData.users?.player_name || 'Unknown',
-              topic: '元素周期表',
+              hostPlayerId: (roomData.host_info as any)?.player_name || 'Unknown',
               maxPlayers: roomData.max_players,
             });
+            setJudgeName((roomData.judge_info as any)?.player_name || null);
             setPreviousMaxPlayers(roomData.max_players);
           } else {
             console.log('No room found with ID:', id);
@@ -192,7 +194,9 @@ const GameRoom = () => {
                 room_id,
                 max_players,
                 host_id,
-                users!rooms_host_id_fkey(player_name)
+                judge_user_id,
+                host_info:users!rooms_host_id_fkey(player_name),
+                judge_info:users!rooms_judge_user_id_fkey(player_name)
               )
             `)
             .eq('user_id', session.user.id)
@@ -201,14 +205,14 @@ const GameRoom = () => {
             .maybeSingle();
 
           if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms;
+            const room = roomPlayerData.rooms as any;
             setRoomData({
               id: room.id,
               roomId: room.room_id,
-              hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: '元素周期表',
+              hostPlayerId: room.host_info?.player_name || 'Unknown',
               maxPlayers: room.max_players,
             });
+            setJudgeName(room.judge_info?.player_name || null);
             setPreviousMaxPlayers(room.max_players);
           }
         }
@@ -226,6 +230,34 @@ const GameRoom = () => {
 
     fetchData();
   }, [toast, id]);
+
+  useEffect(() => {
+    if (realtimeRoomData?.judge_user_id) {
+      const fetchJudgeName = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('player_name')
+            .eq('user_id', realtimeRoomData.judge_user_id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching judge name:', error);
+            setJudgeName(null);
+          } else {
+            setJudgeName(data.player_name);
+          }
+        } catch (error) {
+          console.error('Error fetching judge name:', error);
+        }
+      };
+      
+      fetchJudgeName();
+    } else if (realtimeRoomData) {
+      // If judge_user_id is null in realtime data, clear the name
+      setJudgeName(null);
+    }
+  }, [realtimeRoomData?.judge_user_id]);
 
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
@@ -480,8 +512,8 @@ const GameRoom = () => {
                       <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">{t('learning_topic')}</p>
-                      <p>{roomData.topic}</p>
+                      <p className="text-sm text-gray-400">本局法官</p>
+                      <p>{judgeName || '等待法官加入'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-400">在线玩家</p>
