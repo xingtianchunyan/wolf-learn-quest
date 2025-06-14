@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -281,23 +280,37 @@ export const useGameState = (roomId: string) => {
   };
 
   // Update game settings
-  const updateGameSettings = async (settings: Partial<GameSettings>) => {
+  const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>) => {
     if (!roomId) return false;
+
+    const dbUpdates: { [key: string]: any } = {};
+    if (settings.isAutoAdvance !== undefined) dbUpdates.is_auto_advance = settings.isAutoAdvance;
+    if (settings.dayDuration !== undefined) dbUpdates.day_duration = settings.dayDuration;
+    if (settings.eveningDuration !== undefined) dbUpdates.evening_duration = settings.eveningDuration;
+    if (settings.nightDuration !== undefined) dbUpdates.night_duration = settings.nightDuration;
+    if (settings.dawnDuration !== undefined) dbUpdates.dawn_duration = settings.dawnDuration;
+
+    if (Object.keys(dbUpdates).length === 0) return true;
 
     try {
       const { error } = await supabase
         .from('game_settings')
-        .upsert({
-          room_id: roomId,
-          ...settings,
-          updated_at: new Date().toISOString(),
-        });
+        .update(dbUpdates)
+        .eq('room_id', roomId);
 
       if (error) {
         console.error('Error updating game settings:', error);
+        toast({
+          title: '设置更新失败',
+          description: error.message,
+          variant: 'destructive',
+        });
         return false;
       }
-
+      
+      toast({
+        title: '游戏设置已更新',
+      });
       return true;
     } catch (error) {
       console.error('Error updating game settings:', error);
