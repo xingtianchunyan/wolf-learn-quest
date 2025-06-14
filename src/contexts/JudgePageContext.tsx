@@ -90,9 +90,11 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
         console.error('Failed to take over as judge:', error);
         toast({
           title: '担任法官失败',
-          description: '无法将您设置为当前房间的法官。',
+          description: `无法将您设置为当前房间的法官。原因: ${error.message}`,
           variant: 'destructive',
         });
+        setIsLoading(false);
+        return;
       }
       
       // 成为法官后，获取链接的题目
@@ -104,9 +106,23 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
   }, [roomId, currentUser, fetchLinkedQuestions, toast]);
 
   const saveLinkedQuestions = async (questions: Question[]) => {
-    if (!roomId) return;
+    if (!roomId || !currentUser) return;
 
     try {
+      // 在保存前，首先确保当前用户是法官。
+      // 使用 .select() 有助于确保数据库更改已传播。
+      const { error: judgeError } = await supabase
+        .from('rooms')
+        .update({ judge_user_id: currentUser.id })
+        .eq('id', roomId)
+        .select('id')
+        .single();
+
+      if (judgeError) {
+        console.error('Failed to assert judgeship before saving:', judgeError);
+        throw new Error(`无法确认法官权限，保存失败。原因: ${judgeError.message}`);
+      }
+      
       const { error: deleteError } = await supabase
         .from('room_questions')
         .delete()
