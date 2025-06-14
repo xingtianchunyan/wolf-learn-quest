@@ -15,6 +15,7 @@ import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
+import RoomInfoCard from '@/components/room/RoomInfoCard';
 
 const GameRoom = () => {
   const navigate = useNavigate();
@@ -463,59 +464,32 @@ const GameRoom = () => {
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
             <div className="space-y-6">
-              {/* Room Info Card */}
-              <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader>
-                  <CardTitle className="text-werewolf-purple">{t('room_info')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-400">{t('room_id')}</p>
-                      <p className="font-bold">{roomData.roomId}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">{t('host_player_id')}</p>
-                      <p>{roomData.hostPlayerId}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">{t('learning_topic')}</p>
-                      <p>{roomData.topic}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">在线玩家</p>
-                      <p>{onlinePlayers.length} / {players.length}</p>
-                    </div>
-                    
-                    <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
-                      <p className="text-xs text-gray-400 text-center">
-                        {t('auto_close_warning')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Players List */}
-              <div>
-                <PlayersList
-                  players={players}
-                  maxPlayers={currentMaxPlayers}
-                  isReady={isReady}
-                  allReady={allReady}
-                  selectedCharacter={selectedCharacter}
-                  loading={playersLoading}
-                  onReadyToggle={handleReadyToggle}
-                  onLeaveRoom={handleLeaveRoom}
-                  onStartGame={handleStartGame}
-                  onAddAIPlayer={handleAddAIPlayer}
-                  onMaxPlayersChange={handleMaxPlayersChange}
-                  onlinePlayers={onlinePlayers}
-                  allPlayersSelectedRoles={allPlayersSelectedRoles()}
-                  canSelectRoles={canSelectRoles()}
-                  currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
-                />
-              </div>
+              <RoomInfoCard
+                roomId={roomData.roomId}
+                hostPlayerId={roomData.hostPlayerId}
+                topic={roomData.topic}
+                onlinePlayersCount={onlinePlayers.length}
+                playersCount={players.length}
+                maxPlayers={currentMaxPlayers}
+                t={t}
+              />
+              <PlayersList
+                players={players}
+                maxPlayers={currentMaxPlayers}
+                isReady={isReady}
+                allReady={allReady}
+                selectedCharacter={selectedCharacter}
+                loading={playersLoading}
+                onReadyToggle={handleReadyToggle}
+                onLeaveRoom={handleLeaveRoom}
+                onStartGame={handleStartGame}
+                onAddAIPlayer={handleAddAIPlayer}
+                onMaxPlayersChange={handleMaxPlayersChange}
+                onlinePlayers={onlinePlayers}
+                allPlayersSelectedRoles={allPlayersSelectedRoles()}
+                canSelectRoles={canSelectRoles()}
+                currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
+              />
             </div>
           </div>
           
