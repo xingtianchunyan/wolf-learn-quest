@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -142,36 +141,34 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         </CardHeader>
         
         <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-          <div className="space-y-4 pr-4">
+          <div className="space-y-4">
             {/* 投票结果表格 */}
-            <div>
-              <div className="flex justify-end items-center mb-2 pr-2">
-                <h3 className="font-semibold text-white">最新投票结果</h3>
+            <div className="border border-werewolf-purple/30 rounded-md">
+              <div className="flex justify-end items-center p-2 border-b border-b-werewolf-purple/30">
+                <h3 className="font-semibold text-white text-sm">最新投票结果</h3>
               </div>
-              <div className="border border-werewolf-purple/30 rounded-md">
-                <ScrollArea className="h-32">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-b-werewolf-purple/30 hover:bg-transparent">
-                        <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
-                        <TableHead className="text-werewolf-purple text-center">得票数</TableHead>
-                        <TableHead className="text-werewolf-purple">投票玩家</TableHead>
+              <ScrollArea className="h-32">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-werewolf-purple/30 hover:bg-transparent">
+                      <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
+                      <TableHead className="text-werewolf-purple text-center">得票数</TableHead>
+                      <TableHead className="text-werewolf-purple">投票玩家</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {voteRecords.map((record) => (
+                      <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 hover:bg-werewolf-purple/10 last:border-b-0">
+                        <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
+                        <TableCell className="text-gray-300 text-center">{record.voteCount}</TableCell>
+                        <TableCell className="text-gray-300 text-sm">
+                          {record.voters.join(', ')}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {voteRecords.map((record) => (
-                        <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 hover:bg-werewolf-purple/10 last:border-b-0">
-                          <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
-                          <TableCell className="text-gray-300 text-center">{record.voteCount}</TableCell>
-                          <TableCell className="text-gray-300 text-sm">
-                            {record.voters.join(', ')}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             </div>
 
             {/* 自动化设置 */}
@@ -239,4 +236,3 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 };
 
 export default JudgeActionPanel;
-
