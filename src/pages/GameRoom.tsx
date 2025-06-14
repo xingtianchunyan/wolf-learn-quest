@@ -25,6 +25,7 @@ const GameRoom = () => {
   const [isReady, setIsReady] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
+  const [judgeName, setJudgeName] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
@@ -93,6 +94,32 @@ const GameRoom = () => {
       fetchCurrentPlayerRecord();
     }
   }, [currentUserId, players.length, roomData?.id]);
+  
+  // 监听法官变化并更新法官名字
+  useEffect(() => {
+    const judgeUserId = realtimeRoomData?.judge_user_id;
+
+    const fetchJudgeName = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('player_name')
+        .eq('user_id', userId)
+        .single();
+      
+      if (!error && data) {
+        setJudgeName(data.player_name);
+      } else {
+        console.error("Error fetching judge name for realtime update", error);
+        setJudgeName('未知');
+      }
+    };
+
+    if (judgeUserId) {
+      fetchJudgeName(judgeUserId);
+    } else {
+      setJudgeName(null); // No judge
+    }
+  }, [realtimeRoomData?.judge_user_id]);
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
@@ -150,6 +177,7 @@ const GameRoom = () => {
               max_players,
               host_id,
               users!rooms_host_id_fkey(player_name),
+              judge_user_id,
               room_players(id, user_id)
             `)
             .eq('id', id)
@@ -171,9 +199,19 @@ const GameRoom = () => {
               id: roomData.id,
               roomId: roomData.room_id,
               hostPlayerId: roomData.users?.player_name || 'Unknown',
-              topic: '元素周期表',
               maxPlayers: roomData.max_players,
+              judge_user_id: roomData.judge_user_id,
             });
+            if (roomData.judge_user_id) {
+              const { data: judgeData } = await supabase
+                .from('users')
+                .select('player_name')
+                .eq('user_id', roomData.judge_user_id)
+                .single();
+              if(judgeData) setJudgeName(judgeData.player_name);
+            } else {
+              setJudgeName(null);
+            }
             setPreviousMaxPlayers(roomData.max_players);
           } else {
             console.log('No room found with ID:', id);
@@ -192,7 +230,8 @@ const GameRoom = () => {
                 room_id,
                 max_players,
                 host_id,
-                users!rooms_host_id_fkey(player_name)
+                users!rooms_host_id_fkey(player_name),
+                judge_user_id
               )
             `)
             .eq('user_id', session.user.id)
@@ -206,9 +245,19 @@ const GameRoom = () => {
               id: room.id,
               roomId: room.room_id,
               hostPlayerId: room.users?.player_name || 'Unknown',
-              topic: '元素周期表',
               maxPlayers: room.max_players,
+              judge_user_id: room.judge_user_id,
             });
+             if (room.judge_user_id) {
+               const { data: judgeData } = await supabase
+                .from('users')
+                .select('player_name')
+                .eq('user_id', room.judge_user_id)
+                .single();
+              if(judgeData) setJudgeName(judgeData.player_name);
+            } else {
+              setJudgeName(null);
+            }
             setPreviousMaxPlayers(room.max_players);
           }
         }
@@ -480,8 +529,8 @@ const GameRoom = () => {
                       <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">{t('learning_topic')}</p>
-                      <p>{roomData.topic}</p>
+                      <p className="text-sm text-gray-400">法官状态</p>
+                      <p>{judgeName || '等待法官加入'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-400">在线玩家</p>
