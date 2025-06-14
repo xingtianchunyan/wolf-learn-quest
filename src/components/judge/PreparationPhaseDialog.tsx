@@ -70,20 +70,6 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // 临时翻译函数
-  const t = (key: string) => key;
-
-  // 获取房主名（从玩家列表找 isHost 为 true 的玩家）
-  const hostPlayer = players.find(p => p.isHost);
-  const hostPlayerId = hostPlayer?.name || "Host";
-  // 固定房间主题（如需要动态可后续再改）
-  const topic = "元素周期表";
-  // 实时统计在线人数（排除 AI）
-  const onlinePlayersCount = players.filter(p => !p.isAI).length;
-  const playersCount = players.length;
-  // 推荐写死，或后续从后端获取
-  const maxPlayers = 8;
-
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
@@ -112,17 +98,9 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
         <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
           {/* 左侧 - 房间信息和开始游戏按钮 */}
           <div className="col-span-4 flex flex-col gap-4">
-            {/* 复用游戏房间的房间信息组件 */}
+            {/* 房间信息 */}
             <div className="flex-shrink-0">
-              <RoomInfoCard 
-                roomId={roomId}
-                hostPlayerId={hostPlayerId}
-                topic={topic}
-                onlinePlayersCount={onlinePlayersCount}
-                playersCount={playersCount}
-                maxPlayers={maxPlayers}
-                t={t}
-              />
+              <RoomInfoCard roomId={roomId} />
             </div>
             
             {/* 开始游戏按钮 */}

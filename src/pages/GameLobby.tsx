@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Brain, Plus, User, Users, Gavel, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
-import PlayerInfoPanel from '@/components/lobby/PlayerInfoPanel';
-import LobbyActionButtons from '@/components/lobby/LobbyActionButtons';
-import RoomListTable from '@/components/lobby/RoomListTable';
+import PlayerInfo from '@/components/lobby/PlayerInfo';
 import { 
   Table, 
   TableBody, 
@@ -521,38 +519,172 @@ const GameLobby = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Player Info or Auth Notice - Left Side */}
           <div className="w-full lg:w-1/4">
-            <PlayerInfoPanel
-              currentUser={currentUser}
-              playerRoom={playerRoom}
-              navigate={navigate}
-              handleLeaveCurrentRoom={handleLeaveCurrentRoom}
-              isLeavingRoom={isLeavingRoom}
-              t={t}
-            />
+            {currentUser ? (
+              <div className="space-y-4">
+                <PlayerInfo currentUser={currentUser} />
+                
+                {/* Current Room Status */}
+                {playerRoom.roomDbId && (
+                  <Card className="bg-amber-900/20 border-amber-700/30">
+                    <CardHeader>
+                      <CardTitle className="text-amber-200 text-sm">{t('current_room')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-amber-200 text-sm mb-3">
+                        {t('room_id')}: {playerRoom.roomId}
+                      </p>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => navigate(`/room/${playerRoom.roomDbId}`)}
+                          className="w-full bg-werewolf-purple hover:bg-werewolf-light"
+                          size="sm"
+                        >
+                          {t('return_to_room')}
+                        </Button>
+                        <Button
+                          onClick={handleLeaveCurrentRoom}
+                          variant="outline"
+                          className="w-full border-amber-700/30 hover:bg-amber-900/40"
+                          size="sm"
+                          disabled={isLeavingRoom}
+                        >
+                          <LogOut className="mr-2 h-3 w-3" />
+                          {isLeavingRoom ? t('leaving') : t('leave_room')}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="bg-amber-900/20 border-amber-700/30 h-full">
+                <CardContent className="pt-6 h-full flex items-center justify-center">
+                  <p className="text-amber-200 text-center">
+                    {t('sign_in_required')}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Main Content - Right Side */}
           <div className="w-full lg:w-3/4">
             {/* Action Buttons Row */}
-            <LobbyActionButtons
-              handleCreateAIJudge={handleCreateAIJudge}
-              handleCreateRoom={handleCreateRoom}
-              currentUser={currentUser}
-              isCreatingAIRoom={isCreatingAIRoom}
-              isCreatingRoom={isCreatingRoom}
-              playerRoom={playerRoom}
-              t={t}
-            />
-
+            <div className="flex justify-between mb-4">
+              <Button 
+                onClick={handleCreateAIJudge}
+                className="bg-werewolf-purple hover:bg-werewolf-light"
+                disabled={!currentUser || isCreatingAIRoom || !!playerRoom.roomDbId}
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                {isCreatingAIRoom ? t('creating') : t('create_ai_judge')}
+              </Button>
+              
+              <Button 
+                onClick={handleCreateRoom}
+                className="bg-werewolf-purple hover:bg-werewolf-light"
+                disabled={!currentUser || isCreatingRoom || !!playerRoom.roomDbId}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {isCreatingRoom ? t('creating') : t('create_room')}
+              </Button>
+            </div>
+            
             {/* Game Room List */}
-            <RoomListTable
-              gameRooms={gameRooms}
-              playerRoom={playerRoom}
-              t={t}
-              joinRoom={joinRoom}
-              playAsJudge={playAsJudge}
-              currentUser={currentUser}
-            />
+            <Card className="bg-werewolf-card border-werewolf-purple/30">
+              <CardHeader>
+                <CardTitle>{t('game_rooms')}</CardTitle>
+                <CardDescription>
+                  {playerRoom.roomDbId 
+                    ? t('leave_first')
+                    : t('join_existing')
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border border-werewolf-purple/20">
+                  <Table>
+                    <TableHeader className="bg-werewolf-dark/60">
+                      <TableRow>
+                        <TableHead className="text-werewolf-purple w-[180px]">{t('room_id')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('players')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('max_players')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('status')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('judge')}</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">{t('action')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {/* Empty spacer row for aesthetics */}
+                      <TableRow className="h-2 border-transparent">
+                        <TableCell colSpan={6}></TableCell>
+                      </TableRow>
+                      
+                      {gameRooms.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                            {t('no_rooms')}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        gameRooms.map((room) => (
+                          <TableRow key={room.id} className="border-b border-werewolf-purple/10">
+                            <TableCell className="font-medium">{room.roomId}</TableCell>
+                            <TableCell className="text-center">{room.players}</TableCell>
+                            <TableCell className="text-center">{room.maxPlayers}</TableCell>
+                            <TableCell className="text-center">
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                room.status === 'waiting' 
+                                  ? 'bg-green-900/40 text-green-300' 
+                                  : 'bg-amber-900/40 text-amber-300'
+                              }`}>
+                                {room.status === 'waiting' ? t('waiting') : t('started')}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {room.hasAI ? (
+                                <span className="text-blue-400">AI {t('judge')}</span>
+                              ) : room.judgeUserId ? (
+                                <span className="text-green-400">
+                                  已有法官
+                                </span>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => playAsJudge(room.id)}
+                                  className="bg-werewolf-dark/40 border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+                                  disabled={!currentUser}
+                                >
+                                  <Gavel className="h-3 w-3 mr-1" />
+                                  {t('play_judge')}
+                                </Button>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {room.players < room.maxPlayers && room.status === 'waiting' ? (
+                                <Button 
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => joinRoom(room.id)}
+                                  className="bg-werewolf-purple hover:bg-werewolf-light"
+                                  disabled={!currentUser || !!playerRoom.roomDbId}
+                                >
+                                  <User className="h-3 w-3 mr-1" />
+                                  {t('join')}
+                                </Button>
+                              ) : (
+                                <span className="text-gray-400">{t('full')}</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
