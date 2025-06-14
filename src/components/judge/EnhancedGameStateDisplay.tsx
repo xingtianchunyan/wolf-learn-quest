@@ -27,7 +27,7 @@ interface DisplayPlayer {
 const PlayerCard: React.FC<{ player: DisplayPlayer }> = ({ player }) => {
   const getStatusInfo = (status: DisplayPlayer['status']) => {
     if (player.isPlaceholder) {
-      return { color: 'border-white/30', icon: <User className="h-4 w-4 text-white/70" />, text: '等待加入' };
+      return { color: 'border-white', icon: <User className="h-4 w-4 text-white" />, text: '等待加入' };
     }
     switch (status) {
       case 'normal':
@@ -44,7 +44,7 @@ const PlayerCard: React.FC<{ player: DisplayPlayer }> = ({ player }) => {
       <Avatar className="h-10 w-10 mb-2">
         {!player.isPlaceholder && <AvatarImage src={player.avatar} />}
         <AvatarFallback className="bg-werewolf-dark">
-          {player.isPlaceholder ? <User className="h-5 w-5 text-white/70" /> : player.name.charAt(0)}
+          {player.isPlaceholder ? <User className="h-5 w-5 text-white" /> : player.name.charAt(0)}
         </AvatarFallback>
       </Avatar>
       <p className="font-semibold text-sm text-gray-200 truncate w-full">{player.name}</p>
@@ -120,8 +120,12 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
     return [...players, ...placeholders];
   }, [roomPlayers, maxPlayers, getSelectedRoleByUser]);
 
-  const displayPhase = gameState?.status === 'waiting' || !gameState ? "等待中" : getPhaseDisplayName(gameState.currentPhase);
-  const displayRound = gameState?.status === 'waiting' || !gameState ? "准备阶段" : `第${gameState.currentRound}轮`;
+  const gameStatusText = useMemo(() => {
+    if (gameState?.status === 'waiting' || !gameState) {
+      return "准备阶段等待中";
+    }
+    return `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}`;
+  }, [gameState, getPhaseDisplayName]);
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
@@ -135,7 +139,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
       <CardContent className="space-y-4">
         <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">
           <h2 className="text-xl font-bold text-werewolf-purple">
-            {displayRound} - {displayPhase}
+            {gameStatusText}
           </h2>
         </div>
 
