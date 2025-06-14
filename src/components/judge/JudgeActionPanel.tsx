@@ -150,10 +150,10 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4">
           {/* 投票结果表格 */}
           <div className="border border-werewolf-purple/30 rounded-md">
-            <ScrollArea className="h-40">
+            <ScrollArea className="h-52">
               <Table>
-                <TableHeader>
-                  <TableRow className="border-werewolf-purple/30">
+                <TableHeader className="sticky top-0 bg-werewolf-card z-10">
+                  <TableRow className="border-b border-werewolf-purple/30 hover:bg-transparent">
                     <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
                     <TableHead className="text-werewolf-purple">得票数</TableHead>
                     <TableHead className="text-werewolf-purple">投票玩家</TableHead>
@@ -161,7 +161,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                 </TableHeader>
                 <TableBody>
                   {voteRecords.map((record) => (
-                    <TableRow key={record.votedPlayerId} className="border-werewolf-purple/30">
+                    <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 last:border-b-0">
                       <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
                       <TableCell className="text-gray-300">{record.voteCount}</TableCell>
                       <TableCell className="text-gray-300 text-sm">
