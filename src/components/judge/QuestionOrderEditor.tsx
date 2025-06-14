@@ -6,15 +6,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { GripVertical } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Question } from './types/questionBank';
+import { Button } from '@/components/ui/button';
 
 interface QuestionOrderEditorProps {
   selectedQuestions: Question[];
   onDragEnd: (result: any) => void;
+  onLinkSystem: () => void;
+  isSystemLinked: boolean;
 }
 
 const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
   selectedQuestions,
-  onDragEnd
+  onDragEnd,
+  onLinkSystem,
+  isSystemLinked,
 }) => {
   const getPhaseLabel = (index: number) => {
     const round = Math.floor(index / 2) + 1;
@@ -47,7 +52,17 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
   return (
     <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-werewolf-purple">已选择题目顺序</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-werewolf-purple">已选择题目顺序</CardTitle>
+          <Button
+            onClick={onLinkSystem}
+            disabled={selectedQuestions.length === 0}
+            size="sm"
+            className="bg-werewolf-purple hover:bg-werewolf-light text-white"
+          >
+            {isSystemLinked ? '更新教师系统' : '链接教师系统'}
+          </Button>
+        </div>
         <p className="text-gray-400 text-sm">
           已选择 {selectedQuestions.length}/18 道题目 - 拖动题目可调整顺序
         </p>

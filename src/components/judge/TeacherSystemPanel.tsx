@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Clock } from 'lucide-react';
+import { useJudgePage } from '@/contexts/JudgePageContext';
 
 interface TeacherSystemPanelProps {
   roomId: string;
@@ -20,24 +21,24 @@ interface CurrentQuestion {
 }
 
 const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
+  const { linkedQuestions, isSystemLinked } = useJudgePage();
   const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes default
   const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion | null>(null);
   const [displayRound, setDisplayRound] = useState(1);
   const [displayPhase, setDisplayPhase] = useState('傍晚');
 
-  // Mock data for demonstration
   useEffect(() => {
-    setCurrentQuestion({
-      id: '1',
-      question: '在狼人杀游戏中，预言家的主要作用是什么？',
-      option_a: '每晚可以查验一名玩家的身份',
-      option_b: '每晚可以毒死一名玩家',
-      option_c: '每晚可以保护一名玩家',
-      option_d: '每晚可以与狼人队友交流',
-      correct_option: 1,
-      explanation: '预言家是神民阵营的重要角色，每晚可以查验一名玩家的身份（好人或狼人），是好人阵营获取信息的重要途径。'
-    });
-  }, []);
+    if (isSystemLinked) {
+      const questionIndex = (displayRound - 1) * 2 + (displayPhase === '傍晚' ? 0 : 1);
+      if (linkedQuestions && linkedQuestions.length > questionIndex) {
+        setCurrentQuestion(linkedQuestions[questionIndex]);
+      } else {
+        setCurrentQuestion(null);
+      }
+    } else {
+      setCurrentQuestion(null);
+    }
+  }, [isSystemLinked, linkedQuestions, displayRound, displayPhase]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -127,8 +128,10 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                 </div>
               </>
             ) : (
-              <div className="text-center text-gray-400 py-8">
-                暂无题目信息
+              <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
+                {isSystemLinked
+                  ? '当前阶段无题目信息或题目已用尽'
+                  : '请先在 准备阶段管理 -> 题库管理 中链接题目'}
               </div>
             )}
           </div>
