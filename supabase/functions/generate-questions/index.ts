@@ -104,7 +104,7 @@ serve(async (req) => {
           }
         ],
         temperature: 0.7,
-        max_tokens: 4000  // 修复：改为4000以符合API限制
+        max_tokens: 4000
       }),
     });
 
@@ -147,7 +147,7 @@ serve(async (req) => {
 
     console.log('成功解析题目数据，题目数量:', questionsData.questions.length);
 
-    // 保存生成的题目集合
+    // 保存生成的题目集合 - 修复：不传入room_id，让数据库使用默认值或设为NULL
     const { data: savedQuestionSet, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
@@ -156,7 +156,6 @@ serve(async (req) => {
         model_used: 'Qwen/Qwen2.5-72B-Instruct',
         question_count: questionsData.questions.length,
         questions: questionsData.questions,
-        room_id: roomId,
         uploaded_file_id: preprocessedData.uploaded_file_id
       })
       .select()
@@ -167,7 +166,7 @@ serve(async (req) => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
-    // 将每道题目单独保存到questions表
+    // 将每道题目单独保存到questions表 - 修复：不传入room_id
     const individualQuestions = questionsData.questions.map((q: any, index: number) => ({
       question: q.question,
       option_a: q.option_a,
@@ -177,7 +176,6 @@ serve(async (req) => {
       correct_option: q.correct_answer === 'A' ? 1 : q.correct_answer === 'B' ? 2 : q.correct_answer === 'C' ? 3 : 4,
       explanation: q.explanation,
       generated_questions_id: savedQuestionSet.id,
-      room_id: roomId,
       difficulty: Math.floor(index / 6) + 1, // 分为3个难度等级
       category: '综合题目'
     }));

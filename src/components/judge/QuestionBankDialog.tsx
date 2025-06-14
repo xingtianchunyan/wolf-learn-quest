@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -101,14 +100,13 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const fetchGeneratedQuestions = async () => {
     setLoading(true);
     try {
-      // 从questions表获取所有题目
+      // 修复：从questions表获取所有题目，不再过滤room_id
       const { data, error } = await supabase
         .from('questions')
         .select(`
           *,
           generated_questions!inner(file_name)
         `)
-        .eq('room_id', roomId)
         .order('id', { ascending: true });
 
       if (error) {
@@ -172,10 +170,10 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
 
     try {
+      // 修复：不传入room_id到questions表
       const { data, error } = await supabase
         .from('questions')
         .insert({
-          room_id: roomId,
           question: manualQuestion.question,
           option_a: manualQuestion.option_a,
           option_b: manualQuestion.option_b,
@@ -348,7 +346,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               )}
             </TabsContent>
 
-            {/* 手动编辑题目页面 */}
             <TabsContent value="manual" className="h-[calc(100%-60px)] mt-4">
               <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
                 <CardContent className="p-6 h-full flex flex-col space-y-4">
@@ -447,7 +444,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               </Card>
             </TabsContent>
 
-            {/* 题目顺序编辑页面 */}
             <TabsContent value="order" className="h-[calc(100%-60px)] mt-4">
               <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
                 <CardHeader className="pb-3">
