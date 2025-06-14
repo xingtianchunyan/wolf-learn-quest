@@ -11,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, Stop } from 'lucide-react';
+import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings } from 'lucide-react';
 import PreparationPhaseDialog from './PreparationPhaseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -148,7 +148,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                 className="border-werewolf-purple/50 hover:bg-red-700/40"
                 loading={isLeavingJudge}
               >
-                <Stop className="h-4 w-4 mr-2" />
+                <Square className="h-4 w-4 mr-2" />
                 {isLeavingJudge ? "正在退出..." : "停止扮演法官"}
               </Button>
             </div>
