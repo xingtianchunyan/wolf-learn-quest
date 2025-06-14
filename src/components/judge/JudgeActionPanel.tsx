@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,6 @@ interface VoteRecord {
 
 const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isAutoAdvance, setIsAutoAdvance] = useState(true);
-  const [isSemiAuto, setIsSemiAuto] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
@@ -59,26 +59,6 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
       voters: ['玩家7']
     }
   ];
-
-  const handleAutoAdvanceToggle = (checked: boolean) => {
-    setIsAutoAdvance(checked);
-    if (checked) {
-      setIsSemiAuto(false);
-    } else {
-      // 如果关闭全自动，则自动开启半自动
-      setIsSemiAuto(true);
-    }
-  };
-
-  const handleSemiAutoToggle = (checked: boolean) => {
-    setIsSemiAuto(checked);
-    if (checked) {
-      setIsAutoAdvance(false);
-    } else {
-      // 如果关闭半自动，则自动开启全自动
-      setIsAutoAdvance(true);
-    }
-  };
 
   const handleNextPhase = () => {
     console.log('进入下个阶段');
@@ -186,22 +166,14 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               </div>
 
               {/* 自动化设置 */}
-              <div className="space-y-3 p-4 bg-werewolf-dark/40 rounded-md">
-                <h3 className="font-semibold text-werewolf-purple mb-3">游戏阶段控制</h3>
-                
+              <div className="p-4 bg-werewolf-dark/40 rounded-md">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300">全自动切换游戏阶段</span>
+                  <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
                   <Switch
                     checked={isAutoAdvance}
-                    onCheckedChange={handleAutoAdvanceToggle}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">半自动切换游戏阶段</span>
-                  <Switch
-                    checked={isSemiAuto}
-                    onCheckedChange={handleSemiAutoToggle}
+                    onCheckedChange={setIsAutoAdvance}
+                    checkedLabel="全自动"
+                    uncheckedLabel="半自动"
                   />
                 </div>
               </div>
