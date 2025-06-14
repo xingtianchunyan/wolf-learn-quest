@@ -5,8 +5,8 @@ import { User } from 'lucide-react';
 interface Player {
   id: string;
   name: string;
-  role: string;
-  status: 'normal' | 'dying' | 'weak' | 'eliminated';
+  role?: string;
+  status: 'normal' | 'dying' | 'weak' | 'eliminated' | 'waiting';
   avatar?: string;
 }
 
@@ -23,6 +23,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) =>
       case 'dying': return 'border-red-400 animate-pulse';
       case 'weak': return 'border-yellow-400';
       case 'eliminated': return 'border-gray-500';
+      case 'waiting': return 'border-white/30';
       default: return 'border-green-400';
     }
   };
@@ -33,6 +34,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) =>
       case 'dying': return 'text-red-400 border-red-400 animate-pulse';
       case 'weak': return 'text-yellow-400 border-yellow-400';
       case 'eliminated': return 'text-gray-500 border-gray-500';
+      case 'waiting': return 'text-white/30 border-white/30';
       default: return 'text-green-400 border-green-400';
     }
   };
@@ -75,22 +77,27 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) =>
           <div className="w-3 h-3 rounded border border-gray-500 bg-gray-500/20"></div>
           淘汰
         </span>
+        <span className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded border border-white/30 bg-white/20"></div>
+          等待加入
+        </span>
       </div>
 
       {/* 玩家卡片 */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {players.map((player) => {
           const isFlipped = flippedCards.has(player.id);
+          const isWaiting = player.status === 'waiting';
           return (
             <div 
               key={player.id}
               className="relative h-24 perspective-1000 cursor-pointer"
-              onClick={() => handleCardClick(player.id)}
+              onClick={() => !isWaiting && handleCardClick(player.id)}
             >
               <div 
                 className={`
                   relative w-full h-full transition-transform duration-500 transform-style-preserve-3d
-                  ${isFlipped ? 'rotate-y-180' : ''}
+                  ${isFlipped && !isWaiting ? 'rotate-y-180' : ''}
                 `}
               >
                 {/* 正面 */}
@@ -101,13 +108,17 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) =>
                   `}
                 >
                   <div className="flex items-center justify-center mb-2">
-                    <User 
-                      className={`h-8 w-8 border-2 rounded-full p-1 ${getStatusIconColor(player.status)}`}
-                    />
+                    {player.avatar ? (
+                      <img src={player.avatar} alt={player.name} className={`h-8 w-8 rounded-full border-2 object-cover ${getStatusColor(player.status)}`} />
+                    ) : (
+                      <User 
+                        className={`h-8 w-8 border-2 rounded-full p-1 ${getStatusIconColor(player.status)}`}
+                      />
+                    )}
                   </div>
                   <div className="text-center">
                     <div className="font-medium text-gray-300 text-sm">{player.name}</div>
-                    <div className="text-xs text-werewolf-purple">{player.role}</div>
+                    {player.role && <div className="text-xs text-werewolf-purple">{player.role}</div>}
                   </div>
                 </div>
 
@@ -120,7 +131,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) =>
                 >
                   <div className="flex flex-col items-center justify-center h-full">
                     <img 
-                      src={getRoleImage(player.role)} 
+                      src={getRoleImage(player.role || '')} 
                       alt={player.role}
                       className="w-12 h-12 rounded object-cover mb-2"
                     />

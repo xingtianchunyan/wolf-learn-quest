@@ -10,6 +10,7 @@ interface Player {
   isHost: boolean;
   isAI: boolean;
   userId?: string; // 添加userId字段用于在线状态检查  
+  role?: string;
 }
 
 export const usePlayersRealtime = (roomId: string) => {
@@ -81,7 +82,8 @@ export const usePlayersRealtime = (roomId: string) => {
                 isReady: player.is_ready || false,
                 isHost: false,
                 isAI: true,
-                userId: undefined // AI玩家没有userId                
+                userId: undefined, // AI玩家没有userId                
+                role: player.role,
               };
             } else {
               const userData = usersData.find(user => user.user_id === player.user_id);
@@ -92,7 +94,8 @@ export const usePlayersRealtime = (roomId: string) => {
                 isReady: player.is_ready || false,
                 isHost: roomData?.host_id === player.user_id,
                 isAI: false,
-                userId: player.user_id // 添加userId字段
+                userId: player.user_id, // 添加userId字段
+                role: player.role,
               };
             }
           });
