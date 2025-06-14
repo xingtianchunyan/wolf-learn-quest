@@ -67,6 +67,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
+          // 停止预处理状态
+          setIsProcessing(false);
+          setStatus('');
         }
       )
       .subscribe();
@@ -89,6 +92,10 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
+          // 停止生成状态
+          setIsGenerating(false);
+          setStatus('');
+          clearError(); // 清除可能的错误提示
         }
       )
       .subscribe();
@@ -356,15 +363,8 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         throw new Error(errorMsg);
       }
 
-      toast({
-        title: '预处理完成',
-        description: `文件已通过Qwen2.5-72B模型成功预处理为结构化格式`,
-      });
-
-      await fetchPreprocessedFiles();
-      await fetchUploadedFiles(); // 更新文件状态
-
-      console.log('预处理结果:', data);
+      // 不要立即设置成功状态，等待实时监听来处理
+      console.log('预处理请求已发送，等待数据库更新...');
       
     } catch (error) {
       console.error('Error preprocessing file:', error);
@@ -375,7 +375,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         description: errorMsg,
         variant: 'destructive',
       });
-    } finally {
       setIsProcessing(false);
       setStatus('');
     }
@@ -418,24 +417,50 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
 
       if (error) {
         console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
+        // 不立即抛出错误，先等待实时监听检测数据库变化
+        console.log('API调用可能失败，但等待数据库实时更新检测...');
+        
+        // 设置一个超时，如果30秒内没有检测到数据库更新，则显示错误
+        setTimeout(() => {
+          if (isGenerating) {
+            setIsGenerating(false);
+            setStatus('');
+            const errorMsg = `API调用失败: ${error.message}`;
+            setError(`生成失败: ${errorMsg}`);
+            toast({
+              title: '生成失败',
+              description: errorMsg,
+              variant: 'destructive',
+            });
+          }
+        }, 30000);
+        
+        return; // 不立即返回错误，等待实时监听
       }
 
       if (!data || !data.success) {
         const errorMsg = data?.error || '题目生成失败';
         console.error('生成失败:', errorMsg);
-        throw new Error(errorMsg);
+        
+        // 同样不立即抛出错误，等待实时监听
+        setTimeout(() => {
+          if (isGenerating) {
+            setIsGenerating(false);
+            setStatus('');
+            setError(`生成失败: ${errorMsg}`);
+            toast({
+              title: '生成失败',
+              description: errorMsg,
+              variant: 'destructive',
+            });
+          }
+        }, 30000);
+        
+        return;
       }
 
-      toast({
-        title: '生成完成',
-        description: `已通过Qwen2.5-72B成功生成${data.question_count || 0}道题目`,
-      });
-
-      await fetchPreprocessedFiles(); // 更新预处理文件状态
-      await fetchUploadedFiles(); // 更新上传文件状态
-
-      console.log('生成结果:', data);
+      // 请求成功，但仍然等待实时监听来确认数据库更新
+      console.log('生成题目请求已发送，等待数据库更新...');
       
     } catch (error) {
       console.error('Error generating questions:', error);
@@ -446,7 +471,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         description: errorMsg,
         variant: 'destructive',
       });
-    } finally {
       setIsGenerating(false);
       setStatus('');
     }
