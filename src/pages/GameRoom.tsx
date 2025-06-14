@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,12 @@ const GameRoom = () => {
   const [isReady, setIsReady] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<any>(null);
+  const [judgeName, setJudgeName] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
-  const [judgeName, setJudgeName] = useState<string | null>(null);
   
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
@@ -93,6 +94,32 @@ const GameRoom = () => {
       fetchCurrentPlayerRecord();
     }
   }, [currentUserId, players.length, roomData?.id]);
+  
+  // 监听法官变化并更新法官名字
+  useEffect(() => {
+    const judgeUserId = realtimeRoomData?.judge_user_id;
+
+    const fetchJudgeName = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('player_name')
+        .eq('user_id', userId)
+        .single();
+      
+      if (!error && data) {
+        setJudgeName(data.player_name);
+      } else {
+        console.error("Error fetching judge name for realtime update", error);
+        setJudgeName('未知');
+      }
+    };
+
+    if (judgeUserId) {
+      fetchJudgeName(judgeUserId);
+    } else {
+      setJudgeName(null); // No judge
+    }
+  }, [realtimeRoomData?.judge_user_id]);
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
@@ -149,9 +176,8 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
+              users!rooms_host_id_fkey(player_name),
               judge_user_id,
-              host_info:users!rooms_host_id_fkey(player_name),
-              judge_info:users!rooms_judge_user_id_fkey(player_name),
               room_players(id, user_id)
             `)
             .eq('id', id)
@@ -172,10 +198,20 @@ const GameRoom = () => {
             setRoomData({
               id: roomData.id,
               roomId: roomData.room_id,
-              hostPlayerId: (roomData.host_info as any)?.player_name || 'Unknown',
+              hostPlayerId: roomData.users?.player_name || 'Unknown',
               maxPlayers: roomData.max_players,
+              judge_user_id: roomData.judge_user_id,
             });
-            setJudgeName((roomData.judge_info as any)?.player_name || null);
+            if (roomData.judge_user_id) {
+              const { data: judgeData } = await supabase
+                .from('users')
+                .select('player_name')
+                .eq('user_id', roomData.judge_user_id)
+                .single();
+              if(judgeData) setJudgeName(judgeData.player_name);
+            } else {
+              setJudgeName(null);
+            }
             setPreviousMaxPlayers(roomData.max_players);
           } else {
             console.log('No room found with ID:', id);
@@ -194,9 +230,8 @@ const GameRoom = () => {
                 room_id,
                 max_players,
                 host_id,
-                judge_user_id,
-                host_info:users!rooms_host_id_fkey(player_name),
-                judge_info:users!rooms_judge_user_id_fkey(player_name)
+                users!rooms_host_id_fkey(player_name),
+                judge_user_id
               )
             `)
             .eq('user_id', session.user.id)
@@ -205,14 +240,24 @@ const GameRoom = () => {
             .maybeSingle();
 
           if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms as any;
+            const room = roomPlayerData.rooms;
             setRoomData({
               id: room.id,
               roomId: room.room_id,
-              hostPlayerId: room.host_info?.player_name || 'Unknown',
+              hostPlayerId: room.users?.player_name || 'Unknown',
               maxPlayers: room.max_players,
+              judge_user_id: room.judge_user_id,
             });
-            setJudgeName(room.judge_info?.player_name || null);
+             if (room.judge_user_id) {
+               const { data: judgeData } = await supabase
+                .from('users')
+                .select('player_name')
+                .eq('user_id', room.judge_user_id)
+                .single();
+              if(judgeData) setJudgeName(judgeData.player_name);
+            } else {
+              setJudgeName(null);
+            }
             setPreviousMaxPlayers(room.max_players);
           }
         }
@@ -230,34 +275,6 @@ const GameRoom = () => {
 
     fetchData();
   }, [toast, id]);
-
-  useEffect(() => {
-    if (realtimeRoomData?.judge_user_id) {
-      const fetchJudgeName = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('users')
-            .select('player_name')
-            .eq('user_id', realtimeRoomData.judge_user_id)
-            .single();
-          
-          if (error) {
-            console.error('Error fetching judge name:', error);
-            setJudgeName(null);
-          } else {
-            setJudgeName(data.player_name);
-          }
-        } catch (error) {
-          console.error('Error fetching judge name:', error);
-        }
-      };
-      
-      fetchJudgeName();
-    } else if (realtimeRoomData) {
-      // If judge_user_id is null in realtime data, clear the name
-      setJudgeName(null);
-    }
-  }, [realtimeRoomData?.judge_user_id]);
 
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
@@ -512,7 +529,7 @@ const GameRoom = () => {
                       <p>{roomData.hostPlayerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">本局法官</p>
+                      <p className="text-sm text-gray-400">法官状态</p>
                       <p>{judgeName || '等待法官加入'}</p>
                     </div>
                     <div>
