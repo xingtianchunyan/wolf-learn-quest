@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/providers/AuthProvider';
@@ -68,6 +67,18 @@ export const usePlayerRoom = () => {
       if (leaveError) {
         console.error('Error leaving room:', leaveError);
         return false;
+      }
+
+      // Also remove player's role selection
+      const { error: roleSelectionError } = await supabase
+        .from('role_selections')
+        .delete()
+        .eq('room_id', playerRoom.roomDbId)
+        .eq('user_id', currentUser.id);
+
+      if (roleSelectionError) {
+        // Log the error but don't block the rest of the leave process
+        console.error('Error deleting role selection on leave:', roleSelectionError);
       }
 
       // Check if room is now empty and delete it
