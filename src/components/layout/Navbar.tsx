@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Gamepad, Home, Menu, X, ExternalLink, Users, Book } from 'lucide-react';
@@ -25,7 +26,7 @@ const Navbar: React.FC = () => {
               {t('navbar_title')}
             </Link>
             <span className="text-sm text-gray-400 hidden md:block">
-              {t('navbar_subtitle')}
+              老带新狼人杀
             </span>
           </div>
         </div>
