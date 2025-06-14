@@ -57,6 +57,12 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
       votedPlayerName: '玩家3',
       voteCount: 1,
       voters: ['玩家7']
+    },
+    {
+      votedPlayerId: 'player4',
+      votedPlayerName: '玩家4',
+      voteCount: 1,
+      voters: ['玩家8']
     }
   ];
 
@@ -136,25 +142,27 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         </CardHeader>
         
         <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="space-y-4 pr-4">
-              {/* 投票结果表格 */}
-              <div className="space-y-2">
-                <h3 className="font-semibold text-werewolf-purple">最新投票结果</h3>
-                <div className="border border-werewolf-purple/30 rounded-md">
+          <div className="space-y-4 pr-4">
+            {/* 投票结果表格 */}
+            <div>
+              <div className="flex justify-end items-center mb-2 pr-2">
+                <h3 className="font-semibold text-white">最新投票结果</h3>
+              </div>
+              <div className="border border-werewolf-purple/30 rounded-md">
+                <ScrollArea className="h-32">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-werewolf-purple/30">
+                      <TableRow className="border-b-werewolf-purple/30 hover:bg-transparent">
                         <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
-                        <TableHead className="text-werewolf-purple">得票数</TableHead>
+                        <TableHead className="text-werewolf-purple text-center">得票数</TableHead>
                         <TableHead className="text-werewolf-purple">投票玩家</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {voteRecords.map((record) => (
-                        <TableRow key={record.votedPlayerId} className="border-werewolf-purple/30">
+                        <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 hover:bg-werewolf-purple/10 last:border-b-0">
                           <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
-                          <TableCell className="text-gray-300">{record.voteCount}</TableCell>
+                          <TableCell className="text-gray-300 text-center">{record.voteCount}</TableCell>
                           <TableCell className="text-gray-300 text-sm">
                             {record.voters.join(', ')}
                           </TableCell>
@@ -162,62 +170,62 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
-              </div>
-
-              {/* 自动化设置 */}
-              <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
-                  <Switch
-                    checked={isAutoAdvance}
-                    onCheckedChange={setIsAutoAdvance}
-                    checkedLabel="全自动"
-                    uncheckedLabel="半自动"
-                  />
-                </div>
-              </div>
-
-              {/* 游戏控制按钮 */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleNextPhase}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                >
-                  <SkipForward className="h-4 w-4 mr-2" />
-                  进入下个阶段
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={handlePauseGame}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                >
-                  {isPaused ? <Play className="h-4 w-4 mr-2" /> : <Pause className="h-4 w-4 mr-2" />}
-                  {isPaused ? '恢复游戏' : '暂停游戏'}
-                </Button>
-                
-                <Button
-                  variant="destructive"
-                  onClick={handleEndGame}
-                  className="hover:bg-red-600"
-                >
-                  <Square className="h-4 w-4 mr-2" />
-                  结束游戏
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={handleGameSettlement}
-                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                >
-                  <Calculator className="h-4 w-4 mr-2" />
-                  游戏结算
-                </Button>
+                </ScrollArea>
               </div>
             </div>
-          </ScrollArea>
+
+            {/* 自动化设置 */}
+            <div className="p-4 bg-werewolf-dark/40 rounded-md">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
+                <Switch
+                  checked={isAutoAdvance}
+                  onCheckedChange={setIsAutoAdvance}
+                  checkedLabel="全自动"
+                  uncheckedLabel="半自动"
+                />
+              </div>
+            </div>
+
+            {/* 游戏控制按钮 */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={handleNextPhase}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+              >
+                <SkipForward className="h-4 w-4 mr-2" />
+                进入下个阶段
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handlePauseGame}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+              >
+                {isPaused ? <Play className="h-4 w-4 mr-2" /> : <Pause className="h-4 w-4 mr-2" />}
+                {isPaused ? '恢复游戏' : '暂停游戏'}
+              </Button>
+              
+              <Button
+                variant="destructive"
+                onClick={handleEndGame}
+                className="hover:bg-red-600"
+              >
+                <Square className="h-4 w-4 mr-2" />
+                结束游戏
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleGameSettlement}
+                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+              >
+                <Calculator className="h-4 w-4 mr-2" />
+                游戏结算
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -231,3 +239,4 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 };
 
 export default JudgeActionPanel;
+
