@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Clock } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { Question } from './types/questionBank';
+import { useGameState } from '@/hooks/useGameState';
 
 interface TeacherSystemPanelProps {
   roomId: string;
@@ -11,38 +13,28 @@ interface TeacherSystemPanelProps {
 
 const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const { linkedQuestions, isSystemLinked } = useJudgePage();
-  const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes default
+  const { gameState, timeRemaining, formatTime, getPhaseDisplayName } = useGameState(roomId);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [displayRound, setDisplayRound] = useState(1);
-  const [displayPhase, setDisplayPhase] = useState('傍晚');
 
   useEffect(() => {
-    if (isSystemLinked) {
-      const questionIndex = (displayRound - 1) * 2 + (displayPhase === '傍晚' ? 0 : 1);
-      if (linkedQuestions && linkedQuestions.length > questionIndex) {
-        setCurrentQuestion(linkedQuestions[questionIndex]);
+    if (isSystemLinked && gameState) {
+      const { currentRound, currentPhase } = gameState;
+      const phaseIndex = currentPhase === 'evening' ? 0 : currentPhase === 'dawn' ? 1 : -1;
+
+      if (phaseIndex !== -1) {
+        const questionIndex = (currentRound - 1) * 2 + phaseIndex;
+        if (linkedQuestions && linkedQuestions.length > questionIndex) {
+          setCurrentQuestion(linkedQuestions[questionIndex]);
+        } else {
+          setCurrentQuestion(null);
+        }
       } else {
         setCurrentQuestion(null);
       }
     } else {
       setCurrentQuestion(null);
     }
-  }, [isSystemLinked, linkedQuestions, displayRound, displayPhase]);
-
-  // Timer countdown effect
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeRemaining(prev => prev > 0 ? prev - 1 : 0);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, [isSystemLinked, linkedQuestions, gameState]);
 
   const getOptionLabel = (index: number) => {
     return ['A', 'B', 'C', 'D'][index];
@@ -58,13 +50,18 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
       default: return '';
     }
   };
+  
+  const roundNumber = gameState?.currentRound ?? 1;
+  const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
+  const isAnsweringPhase = gameState && (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn');
+  const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GraduationCap className="mr-2 h-5 w-5" />
-          教师系统 - 第{displayRound}轮 {displayPhase}阶段
+          教师系统 - 第{roundNumber}轮 {phaseName}阶段
         </CardTitle>
       </CardHeader>
       
@@ -72,12 +69,20 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
             {/* 剩余答题时间 */}
-            <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
-              <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
-              <span className="text-lg font-bold text-werewolf-purple">
-                剩余时间: {formatTime(timeRemaining)}
-              </span>
-            </div>
+            {showTimer && (
+              <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
+                <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
+                <span className="text-lg font-bold text-werewolf-purple">
+                  剩余时间: {formatTime(timeRemaining)}
+                </span>
+              </div>
+            )}
+             {gameState?.isPaused && isAnsweringPhase && (
+                <div className="flex items-center justify-center p-3 bg-yellow-900/30 rounded-md">
+                    <span className="text-lg font-bold text-yellow-400">游戏已暂停</span>
+                </div>
+            )}
+
 
             {currentQuestion ? (
               <>
@@ -119,7 +124,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
             ) : (
               <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
                 {isSystemLinked
-                  ? '当前阶段无题目信息或题目已用尽'
+                  ? (gameState && !isAnsweringPhase ? '当前非答题阶段' : '当前阶段无题目信息或题目已用尽')
                   : '请先在 准备阶段管理 -> 题库管理 中链接题目'}
               </div>
             )}
