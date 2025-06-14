@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,16 +16,10 @@ import PreparationPhaseDialog from './PreparationPhaseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
+import { useVoteResults, VoteRecord } from '@/hooks/useVoteResults';
 
 interface JudgeActionPanelProps {
   roomId: string;
-}
-
-interface VoteRecord {
-  votedPlayerId: string;
-  votedPlayerName: string;
-  voteCount: number;
-  voters: string[];
 }
 
 const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
@@ -34,43 +27,10 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
+  const { voteRecords, loading: votesLoading } = useVoteResults(roomId);
 
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-
-  // Mock voting data
-  const voteRecords: VoteRecord[] = [
-    {
-      votedPlayerId: 'player1',
-      votedPlayerName: '玩家1',
-      voteCount: 3,
-      voters: ['玩家2', '玩家3', '玩家4']
-    },
-    {
-      votedPlayerId: 'player2',
-      votedPlayerName: '玩家2',
-      voteCount: 2,
-      voters: ['玩家5', '玩家6']
-    },
-    {
-      votedPlayerId: 'player3',
-      votedPlayerName: '玩家3',
-      voteCount: 1,
-      voters: ['玩家7']
-    },
-    {
-      votedPlayerId: 'player4',
-      votedPlayerName: '玩家4',
-      voteCount: 1,
-      voters: ['玩家1']
-    },
-    {
-      votedPlayerId: 'player5',
-      votedPlayerName: '玩家5',
-      voteCount: 0,
-      voters: []
-    },
-  ];
 
   const handleNextPhase = () => {
     console.log('进入下个阶段');
@@ -160,15 +120,29 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {voteRecords.map((record) => (
-                    <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 last:border-b-0">
-                      <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
-                      <TableCell className="text-gray-300">{record.voteCount}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">
-                        {record.voters.join(', ')}
+                  {votesLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-gray-400">
+                        正在加载投票数据...
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : voteRecords.length > 0 ? (
+                    voteRecords.map((record) => (
+                      <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 last:border-b-0">
+                        <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
+                        <TableCell className="text-gray-300">{record.voteCount}</TableCell>
+                        <TableCell className="text-gray-300 text-sm">
+                          {record.voters.join(', ')}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-gray-400">
+                        当前阶段无投票记录
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </ScrollArea>
