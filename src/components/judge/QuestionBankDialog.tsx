@@ -2,26 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
+// 题目类型
 interface Question {
   id: string;
   question: string;
   option_a: string;
   option_b: string;
-  option_c: string;
-  option_d: string;
+  option_c?: string;
+  option_d?: string;
   correct_option: number;
   explanation?: string;
+  difficulty?: number;
   selected?: boolean;
-  source_file?: string;
+  source_file?: string; // 文件名
+  category?: string; // 是否“手动编辑”
 }
 
 interface QuestionBankDialogProps {
@@ -30,20 +32,35 @@ interface QuestionBankDialogProps {
   roomId: string;
 }
 
+type SourceGroup = {
+  id: string;
+  label: string;
+  isManual: boolean;
+};
+
+const getPhaseLabel = (index: number) => {
+  const round = Math.floor(index / 2) + 1;
+  const phase = index % 2 === 0 ? '傍晚' : '黎明';
+  return `第${round}轮 ${phase}阶段`;
+};
+
+const getDifficultyLabel = (difficulty: number | undefined) => {
+  if (!difficulty || difficulty <= 1) return '难度1';
+  if (difficulty === 2) return '难度2';
+  if (difficulty === 3) return '难度3';
+  return `难度${difficulty}`;
+};
+
 const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   isOpen,
   onClose,
   roomId
 }) => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // 筛选、题目与选中等状态
   const [activeTab, setActiveTab] = useState('generated');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   // 手动编辑题目的状态
   const [manualQuestion, setManualQuestion] = useState({
@@ -55,42 +72,14 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     correct_option: 1
   });
 
-  // 拖动处理函数
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
-    }
-  };
+  // 分组（文件名/手动编辑）
+  const [sourceGroups, setSourceGroups] = useState<SourceGroup[]>([]);
+  const [selectedSources, setSelectedSources] = useState<string[]>([]); // 当前左侧勾选分组
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setPosition({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y
-        });
-      }
-    };
+  const { toast } = useToast();
 
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragStart]);
-
+  // fetch all questions, and build group info
   useEffect(() => {
     if (isOpen) {
       fetchGeneratedQuestions();
@@ -100,21 +89,17 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const fetchGeneratedQuestions = async () => {
     setLoading(true);
     try {
-      // 修复：从questions表获取所有题目，不再过滤room_id
       const { data, error } = await supabase
         .from('questions')
         .select(`
           *,
-          generated_questions!inner(file_name)
+          generated_questions(file_name)
         `)
         .order('id', { ascending: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // 转换数据格式以匹配组件期望的格式
-      const formattedQuestions = (data || []).map(q => ({
+      const formattedQuestions: Question[] = (data || []).map((q: any) => ({
         id: q.id,
         question: q.question,
         option_a: q.option_a,
@@ -123,10 +108,30 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         option_d: q.option_d,
         correct_option: q.correct_option,
         explanation: q.explanation,
-        source_file: q.generated_questions?.file_name || '未知来源'
+        difficulty: q.difficulty || 1,
+        source_file: q?.generated_questions?.file_name || (q.category === '手动编辑' ? '手动编辑' : '未知'),
+        category: q.category
       }));
 
       setQuestions(formattedQuestions);
+
+      // 分组逻辑
+      const manual = formattedQuestions.find(q => q.category === '手动编辑');
+      // 文件名唯一
+      const fileNames = Array.from(new Set(
+        formattedQuestions
+          .filter(q => q.category !== '手动编辑')
+          .map(q => q.source_file || '未知')
+      ));
+      const groups: SourceGroup[] = [];
+      if (manual) groups.push({ id: '手动编辑', label: '手动编辑', isManual: true });
+      groups.push(...fileNames.map(x => ({ id: x, label: x, isManual: false })));
+      setSourceGroups(groups);
+
+      // 默认选中全部分组
+      setSelectedSources(groups.map(g => g.id));
+      setCarouselIndex(0);
+
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
@@ -139,9 +144,45 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
-  const toggleQuestionSelection = (question: Question) => {
+  // 过滤后题目
+  const filteredQuestions = questions.filter(q =>
+    selectedSources.includes(q.source_file || q.category || '未知')
+  );
+
+  // --------- 多选/全选/按照来源分组逻辑 ----------
+  const handleSourceCheckbox = (id: string) => {
+    setSelectedSources(prev =>
+      prev.includes(id)
+        ? prev.filter(gid => gid !== id)
+        : [...prev, id]
+    );
+    setCarouselIndex(0);
+  };
+
+  // 全选某一分组题目
+  const handleQuickSelect = (sourceId: string) => {
+    const allOfThisSource = questions.filter(q =>
+      (q.source_file === sourceId || (sourceId === '手动编辑' && q.category === '手动编辑'))
+    );
+    // 新选题并去重
+    setSelectedQuestions(prev => {
+      // 全部都已选 → 全部取消
+      const allIds = allOfThisSource.map(q => q.id);
+      const alreadyAllSelected = allIds.every(id => prev.some(q => q.id === id));
+      if (alreadyAllSelected) {
+        return prev.filter(q => !allIds.includes(q.id));
+      }
+      // 否则全部加入
+      // 判断不超18
+      const addNum = 18 - prev.length;
+      if (addNum <= 0) return prev;
+      const toAdd = allOfThisSource.filter(q => !prev.some(sq => sq.id === q.id)).slice(0, addNum);
+      return prev.concat(toAdd.map(q => ({ ...q, selected: true })));
+    });
+  };
+
+  const handleToggleQuestion = (question: Question) => {
     const isSelected = selectedQuestions.some(q => q.id === question.id);
-    
     if (isSelected) {
       setSelectedQuestions(prev => prev.filter(q => q.id !== question.id));
     } else {
@@ -157,10 +198,192 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
+  // 轮次/阶段辅助
+  const getQuestionIndex = (qid: string) => {
+    return selectedQuestions.findIndex(q => q.id === qid);
+  };
+
+  // ------------------- 组件拆分 --------------------
+  // 分组菜单（checkbox+全选按钮）
+  const QuestionSourceMenu: React.FC = () => (
+    <div className="flex flex-col h-full justify-between pb-4">
+      <div>
+        <div className="mb-2 text-werewolf-purple font-bold">已生成题目文件</div>
+        <div className="flex flex-col gap-1">
+          {sourceGroups.map(src => (
+            <div key={src.id} className="flex items-center justify-between py-1">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedSources.includes(src.id)}
+                  onCheckedChange={() => handleSourceCheckbox(src.id)}
+                  className="border-werewolf-purple text-werewolf-purple"
+                />
+                <span className={`text-white ${src.isManual ? '' : ''}`}>{src.label}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="border border-werewolf-purple text-werewolf-purple px-2 py-1 text-xs ml-2"
+                onClick={() => handleQuickSelect(src.id)}
+                tabIndex={-1}
+              >
+                快速全选
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // 题目小卡片组件
+  const QuestionCard: React.FC<{
+    question: Question;
+    index: number;
+    isSelected: boolean;
+    onSelect: (q: Question) => void;
+    phaseLabel?: string | null;
+  }> = ({ question, index, isSelected, onSelect, phaseLabel }) => (
+    <div
+      className={`relative w-[380px] min-w-[360px] max-w-[400px] bg-werewolf-dark/40 border rounded-lg mb-2 border-werewolf-purple/30 px-4 py-3 cursor-pointer transition-colors duration-150 ${
+        isSelected ? 'border-werewolf-purple bg-werewolf-purple/20 shadow' : 'hover:bg-werewolf-dark/70'
+      }`}
+      onClick={() => onSelect(question)}
+      tabIndex={0}
+    >
+      <div className="flex items-center space-x-2 mb-2">
+        <span className="text-werewolf-purple font-bold text-base">
+          题目 {index + 1}
+        </span>
+        <span
+          className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+            !question.difficulty || question.difficulty === 1
+              ? 'bg-gray-700 text-white'
+              : question.difficulty === 2
+                ? 'bg-werewolf-light text-white'
+                : 'bg-werewolf-purple/80 text-white'
+          }`}
+        >
+          {getDifficultyLabel(question.difficulty)}
+        </span>
+        {isSelected && (
+          <span className="ml-2 text-green-400 font-bold">✓</span>
+        )}
+      </div>
+      <div className="mb-2">
+        <span className="text-white font-medium">题干：</span>
+        <span className="text-gray-300 ml-2">{question.question}</span>
+      </div>
+      <div>
+        <span className="text-white font-medium">选项：</span>
+        <div className="pl-2 mt-1 text-sm">
+          <p className={`${question.correct_option === 1 ? 'text-green-400 font-medium' : 'text-gray-300'}`}>A. {question.option_a}</p>
+          <p className={`${question.correct_option === 2 ? 'text-green-400 font-medium' : 'text-gray-300'}`}>B. {question.option_b}</p>
+          {question.option_c && (
+            <p className={`${question.correct_option === 3 ? 'text-green-400 font-medium' : 'text-gray-300'}`}>C. {question.option_c}</p>
+          )}
+          {question.option_d && (
+            <p className={`${question.correct_option === 4 ? 'text-green-400 font-medium' : 'text-gray-300'}`}>D. {question.option_d}</p>
+          )}
+        </div>
+      </div>
+      {question.explanation && (
+        <div className="mt-2 text-xs text-gray-400">
+          解析：{question.explanation}
+        </div>
+      )}
+      {question.source_file && (
+        <div className="mt-1 text-xs text-gray-500">
+          来源：{question.source_file}
+        </div>
+      )}
+      {isSelected && typeof phaseLabel === 'string' && (
+        <div className="absolute top-2 right-3 px-2 py-0.5 rounded bg-werewolf-purple text-white text-xs font-semibold">
+          {phaseLabel}
+        </div>
+      )}
+    </div>
+  );
+
+  // 横向scroll+左右切换按钮+题目卡片集合
+  const QuestionCardList: React.FC = () => {
+    // 控制当前横向滚动的索引和滚动
+    const scrollRef = useRef<HTMLDivElement>(null);
+    // 最多每页5题
+    const cardsPerPage = 5;
+    const total = filteredQuestions.length;
+    const maxIndex = Math.max(0, total - cardsPerPage);
+
+    useEffect(() => {
+      if (!scrollRef.current) return;
+      scrollRef.current.scrollLeft = carouselIndex * 400; // 卡片宽/间距约400px
+    }, [carouselIndex]);
+
+    const handlePrev = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setCarouselIndex(idx => Math.max(0, idx - 1));
+    };
+    const handleNext = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setCarouselIndex(idx => Math.min(maxIndex, idx + 1));
+    };
+
+    return (
+      <div className="relative flex items-center">
+        {/* 左按钮 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute z-10 left-0 top-1/2 -translate-y-1/2 bg-werewolf-dark/80"
+          disabled={carouselIndex === 0}
+          onClick={handlePrev}
+        >
+          <span className="sr-only">前一题</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" className="text-werewolf-purple"><polyline points="13 15 8 10 13 5" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+        </Button>
+
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto flex-1 scrollbar-thin scrollbar-thumb-werewolf-purple scrollbar-track-transparent px-12"
+          style={{ scrollBehavior: "smooth" }}
+        >
+          <div className="flex gap-4 min-w-max py-2">
+            {filteredQuestions.map((q, i) => (
+              <QuestionCard
+                key={q.id}
+                question={q}
+                index={i}
+                isSelected={selectedQuestions.some(sel => sel.id === q.id)}
+                onSelect={handleToggleQuestion}
+                phaseLabel={
+                  getQuestionIndex(q.id) !== -1
+                    ? getPhaseLabel(getQuestionIndex(q.id))
+                    : null
+                }
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 右按钮 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute z-10 right-0 top-1/2 -translate-y-1/2 bg-werewolf-dark/80"
+          disabled={carouselIndex === maxIndex}
+          onClick={handleNext}
+        >
+          <span className="sr-only">后一题</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" className="text-werewolf-purple"><polyline points="7 5 12 10 7 15" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+        </Button>
+      </div>
+    );
+  };
+
   const handleSubmitManualQuestion = async () => {
-    if (!manualQuestion.question.trim() || 
-        !manualQuestion.option_a.trim() || 
-        !manualQuestion.option_b.trim()) {
+    if (!manualQuestion.question.trim() ||
+      !manualQuestion.option_a.trim() ||
+      !manualQuestion.option_b.trim()) {
       toast({
         title: '题目信息不完整',
         description: '请至少填写题干和两个选项',
@@ -216,32 +439,20 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
-  const getPhaseLabel = (index: number) => {
-    const round = Math.floor(index / 2) + 1;
-    const phase = index % 2 === 0 ? '傍晚' : '黎明';
-    return `第${round}轮 ${phase}阶段`;
-  };
-
-  const getCorrectAnswerLetter = (correctOption: number) => {
-    return ['A', 'B', 'C', 'D'][correctOption - 1] || 'A';
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
-        ref={dialogRef}
         className="absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl"
         style={{
-          left: `${position.x + 150}px`,
-          top: `${position.y + 100}px`,
+          left: `250px`,
+          top: `100px`,
           width: '900px',
           height: '600px'
         }}
-        onMouseDown={handleMouseDown}
       >
-        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
+        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30 relative">
           <h2 className="text-werewolf-purple text-xl font-semibold leading-none tracking-tight">
             题库管理
           </h2>
@@ -252,13 +463,13 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
-        
         <div className="p-4 h-[calc(100%-80px)]">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
             <TabsList className="grid w-full grid-cols-3 bg-werewolf-dark/40">
               <TabsTrigger value="generated" className="data-[state=active]:bg-werewolf-purple data-[state=active]:text-white">
                 已生成题目
               </TabsTrigger>
+              {/* 其余标签页省略 */}
               <TabsTrigger value="manual" className="data-[state=active]:bg-werewolf-purple data-[state=active]:text-white">
                 手动编辑题目
               </TabsTrigger>
@@ -266,86 +477,28 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                 题目顺序编辑
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="generated" className="h-[calc(100%-60px)] mt-4">
+            {/* --- 已生成题目优化实现 --- */}
+            <TabsContent value="generated" className="h-full mt-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <p className="text-gray-400">加载中...</p>
                 </div>
-              ) : questions.length === 0 ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-400">暂无生成的题目</p>
-                </div>
               ) : (
-                <Carousel className="w-full h-full">
-                  <CarouselContent className="h-full">
-                    {questions.map((question, index) => (
-                      <CarouselItem key={question.id} className="h-full">
-                        <Card 
-                          className={`h-full cursor-pointer transition-all duration-200 ${
-                            selectedQuestions.some(q => q.id === question.id)
-                              ? 'bg-werewolf-purple/20 border-werewolf-purple'
-                              : 'bg-werewolf-dark/40 border-werewolf-purple/30 hover:bg-werewolf-dark/60'
-                          }`}
-                          onClick={() => toggleQuestionSelection(question)}
-                        >
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-werewolf-purple text-lg">
-                                题目 {index + 1}
-                              </CardTitle>
-                              {selectedQuestions.some(q => q.id === question.id) && (
-                                <span className="text-green-400">✓</span>
-                              )}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div>
-                              <h3 className="text-white font-medium mb-2">题干：</h3>
-                              <p className="text-gray-300 text-sm">{question.question}</p>
-                            </div>
-                            <div className="space-y-2">
-                              <h4 className="text-white font-medium">选项：</h4>
-                              <div className="space-y-1 text-sm">
-                                <p className={`text-gray-300 ${question.correct_option === 1 ? 'text-green-400 font-medium' : ''}`}>
-                                  A. {question.option_a}
-                                </p>
-                                <p className={`text-gray-300 ${question.correct_option === 2 ? 'text-green-400 font-medium' : ''}`}>
-                                  B. {question.option_b}
-                                </p>
-                                {question.option_c && (
-                                  <p className={`text-gray-300 ${question.correct_option === 3 ? 'text-green-400 font-medium' : ''}`}>
-                                    C. {question.option_c}
-                                  </p>
-                                )}
-                                {question.option_d && (
-                                  <p className={`text-gray-300 ${question.correct_option === 4 ? 'text-green-400 font-medium' : ''}`}>
-                                    D. {question.option_d}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            {question.explanation && (
-                              <div className="text-xs text-gray-400">
-                                解释：{question.explanation}
-                              </div>
-                            )}
-                            {question.source_file && (
-                              <div className="text-xs text-gray-500">
-                                来源：{question.source_file}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-4" />
-                  <CarouselNext className="right-4" />
-                </Carousel>
+                <div className="flex h-full gap-5">
+                  {/* 左侧菜单 */}
+                  <div className="w-[220px] h-full border rounded-lg border-werewolf-purple/30 bg-werewolf-dark/40 p-4 flex-shrink-0">
+                    <QuestionSourceMenu />
+                  </div>
+                  {/* 右侧题目卡片区域 */}
+                  <div className="flex-1 flex flex-col h-full min-w-0">
+                    <div className="flex-1 overflow-y-auto">
+                      <QuestionCardList />
+                    </div>
+                  </div>
+                </div>
               )}
             </TabsContent>
-
+            {/* 其余标签页原实现不变 */}
             <TabsContent value="manual" className="h-[calc(100%-60px)] mt-4">
               <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
                 <CardContent className="p-6 h-full flex flex-col space-y-4">
@@ -443,7 +596,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="order" className="h-[calc(100%-60px)] mt-4">
               <Card className="bg-werewolf-dark/40 border-werewolf-purple/30 h-full">
                 <CardHeader className="pb-3">
