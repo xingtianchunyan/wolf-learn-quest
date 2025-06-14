@@ -1,29 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Clock } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
+import { Question } from './types/questionBank';
 
 interface TeacherSystemPanelProps {
   roomId: string;
 }
 
-interface CurrentQuestion {
-  id: string;
-  question: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
-  correct_option: number;
-  explanation: string;
-}
-
 const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const { linkedQuestions, isSystemLinked } = useJudgePage();
   const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes default
-  const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [displayRound, setDisplayRound] = useState(1);
   const [displayPhase, setDisplayPhase] = useState('傍晚');
 
