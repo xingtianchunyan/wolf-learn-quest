@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useCa
 import { Question } from '@/components/judge/types/questionBank';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface JudgePageContextType {
   linkedQuestions: Question[];
@@ -13,10 +14,11 @@ interface JudgePageContextType {
 
 const JudgePageContext = createContext<JudgePageContextType | undefined>(undefined);
 
-export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; roomId: string }) => {
+export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; roomId:string }) => {
   const [linkedQuestions, setLinkedQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { currentUser } = useAuth();
 
   const fetchLinkedQuestions = useCallback(async () => {
     if (!roomId) {
@@ -67,10 +69,37 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
       setIsLoading(false);
     }
   }, [roomId, toast]);
-
+  
   useEffect(() => {
-    fetchLinkedQuestions();
-  }, [fetchLinkedQuestions]);
+    const takeOverJudgeshipAndFetch = async () => {
+      if (!roomId || !currentUser) {
+        if (!isLoading) setIsLoading(true);
+        fetchLinkedQuestions().finally(() => setIsLoading(false));
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from('rooms')
+        .update({ judge_user_id: currentUser.id })
+        .eq('id', roomId);
+        
+      if (error) {
+        console.error('Failed to take over as judge:', error);
+        toast({
+          title: '担任法官失败',
+          description: '无法将您设置为当前房间的法官。',
+          variant: 'destructive',
+        });
+      }
+      
+      await fetchLinkedQuestions();
+      setIsLoading(false);
+    };
+
+    takeOverJudgeshipAndFetch();
+  }, [roomId, currentUser, fetchLinkedQuestions, toast]);
 
   const saveLinkedQuestions = async (questions: Question[]) => {
     if (!roomId) return;
