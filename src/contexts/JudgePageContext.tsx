@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { Question } from '@/components/judge/types/questionBank';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,7 +49,7 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
       
       if (questionsError) throw questionsError;
 
-      const questionsMap = new Map(questionsData.map(q => [q.id, q]));
+      const questionsMap = new Map(questionsData.map(q => [q.id, q,]));
       const orderedQuestions = questionIds
         .map(id => questionsMap.get(id))
         .filter((q): q is Question => !!q);
@@ -72,14 +71,16 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
   
   useEffect(() => {
     const takeOverJudgeshipAndFetch = async () => {
+      // 如果没有房间ID或当前用户信息，则显示加载中并等待。
+      // 当用户信息加载后，此效果将重新运行。
       if (!roomId || !currentUser) {
-        if (!isLoading) setIsLoading(true);
-        fetchLinkedQuestions().finally(() => setIsLoading(false));
+        setIsLoading(true);
         return;
       }
       
       setIsLoading(true);
       
+      // 尝试获取房间的法官权限
       const { error } = await supabase
         .from('rooms')
         .update({ judge_user_id: currentUser.id })
@@ -94,6 +95,7 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
         });
       }
       
+      // 成为法官后，获取链接的题目
       await fetchLinkedQuestions();
       setIsLoading(false);
     };
