@@ -1,20 +1,37 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useJudgePage } from '@/contexts/JudgePageContext';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useGameState } from '@/hooks/useGameState';
+import { supabase } from '@/integrations/supabase/client';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface AnswerRecordPanelProps {
   roomId: string;
 }
 
+// 从数据库 player_answers 表获取的原始数据结构
+interface PlayerAnswerRecord {
+  id: string;
+  game_id: string | null;
+  question_id: string | null;
+  player_id: string | null;
+  selected_option: number | null;
+  is_correct: boolean | null;
+  response_time: number | null;
+}
+
+// 用于在组件中渲染的玩家答案数据结构
 interface PlayerAnswer {
   playerId: string;
   playerName: string;
-  selectedOption: number;
-  remainingTime: number;
-  isCorrect: boolean;
+  selectedOption: number | null;
+  responseTime: number | null;
+  isCorrect: boolean | null;
 }
 
 interface AnswerRecord {
@@ -27,34 +44,112 @@ interface AnswerRecord {
 
 const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  
-  // Mock data for demonstration
-  const answerRecords: AnswerRecord[] = [
-    {
-      round: 1,
-      phase: '傍晚',
-      questionText: '在狼人杀游戏中，预言家的主要作用是什么？',
-      correctOption: 1,
-      answers: [
-        { playerId: 'player1', playerName: '玩家1', selectedOption: 1, remainingTime: 45, isCorrect: true },
-        { playerId: 'player2', playerName: '玩家2', selectedOption: 2, remainingTime: 32, isCorrect: false },
-        { playerId: 'player3', playerName: '玩家3', selectedOption: 1, remainingTime: 28, isCorrect: true },
-        { playerId: 'player4', playerName: '玩家4', selectedOption: 3, remainingTime: 15, isCorrect: false },
-      ]
-    },
-    {
-      round: 1,
-      phase: '黎明',
-      questionText: '女巫的解药可以救活谁？',
-      correctOption: 2,
-      answers: [
-        { playerId: 'player1', playerName: '玩家1', selectedOption: 2, remainingTime: 50, isCorrect: true },
-        { playerId: 'player2', playerName: '玩家2', selectedOption: 1, remainingTime: 40, isCorrect: false },
-        { playerId: 'player3', playerName: '玩家3', selectedOption: 2, remainingTime: 35, isCorrect: true },
-        { playerId: 'player4', playerName: '玩家4', selectedOption: 4, remainingTime: 20, isCorrect: false },
-      ]
+  const { linkedQuestions } = useJudgePage();
+  const { players } = usePlayersRealtime(roomId);
+  const { gameState } = useGameState(roomId);
+  const [playerAnswers, setPlayerAnswers] = useState<PlayerAnswerRecord[]>([]);
+
+  useEffect(() => {
+    const gameId = gameState?.id;
+    if (!gameId) {
+      setPlayerAnswers([]);
+      return;
     }
-  ];
+
+    const fetchAnswers = async () => {
+      const { data, error } = await supabase
+        .from('player_answers')
+        .select('*')
+        .eq('game_id', gameId);
+      
+      if (error) {
+        console.error('Error fetching player answers:', error);
+      } else if (data) {
+        setPlayerAnswers(data as PlayerAnswerRecord[]);
+      }
+    };
+
+    fetchAnswers();
+
+    const channel = supabase
+      .channel(`player_answers_for_game_${gameId}`)
+      .on<PlayerAnswerRecord>(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'player_answers',
+          filter: `game_id=eq.${gameId}`,
+        },
+        (payload: RealtimePostgresChangesPayload<PlayerAnswerRecord>) => {
+          if (payload.new && typeof payload.new === 'object') {
+            const newAnswer = payload.new as PlayerAnswerRecord;
+            if (payload.eventType === 'INSERT') {
+              setPlayerAnswers(currentAnswers => {
+                if (currentAnswers.some(a => a.id === newAnswer.id)) {
+                  return currentAnswers;
+                }
+                return [...currentAnswers, newAnswer];
+              });
+            } else if (payload.eventType === 'UPDATE') {
+              setPlayerAnswers(currentAnswers =>
+                currentAnswers.map(ans =>
+                  ans.id === newAnswer.id ? newAnswer : ans
+                )
+              );
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [gameState?.id]);
+
+  const answerRecords: AnswerRecord[] = useMemo(() => {
+    if (!linkedQuestions || linkedQuestions.length === 0) {
+      return [];
+    }
+
+    return linkedQuestions.map((question, index) => {
+      const round = Math.floor(index / 2) + 1;
+      const phase = index % 2 === 0 ? '傍晚' : '黎明';
+
+      const answersForQuestion: PlayerAnswer[] = players.map(player => {
+        const playerAnswerData = playerAnswers.find(
+          pa => pa.player_id === player.id && pa.question_id === question.id
+        );
+
+        if (playerAnswerData) {
+          return {
+            playerId: player.id,
+            playerName: player.name,
+            selectedOption: playerAnswerData.selected_option,
+            responseTime: playerAnswerData.response_time,
+            isCorrect: playerAnswerData.is_correct,
+          };
+        } else {
+          return {
+            playerId: player.id,
+            playerName: player.name,
+            selectedOption: null,
+            responseTime: null,
+            isCorrect: null,
+          };
+        }
+      });
+
+      return {
+        round,
+        phase,
+        questionText: question.question,
+        correctOption: question.correct_option,
+        answers: answersForQuestion,
+      };
+    });
+  }, [linkedQuestions, players, playerAnswers]);
 
   const totalPages = Math.max(1, answerRecords.length);
   const currentRecord = answerRecords[currentPage];
@@ -74,7 +169,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -90,19 +185,19 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
               variant="outline"
               size="sm"
               onClick={handlePrevPage}
-              disabled={currentPage === 0}
+              disabled={currentPage === 0 || answerRecords.length === 0}
               className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-gray-400">
-              {currentPage + 1} / {totalPages}
+              {answerRecords.length > 0 ? currentPage + 1 : 0} / {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={handleNextPage}
-              disabled={currentPage === totalPages - 1}
+              disabled={currentPage >= totalPages - 1 || answerRecords.length === 0}
               className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
             >
               <ChevronRight className="h-4 w-4" />
@@ -113,7 +208,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         {currentRecord ? (
-          <div className="space-y-4 h-full">
+          <div className="space-y-4 h-full flex flex-col">
             {/* 题目信息 */}
             <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
               <div className="flex justify-between items-center mb-2">
@@ -131,7 +226,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="space-y-2 pr-4">
-                  {currentRecord.answers.map((answer, index) => (
+                  {currentRecord.answers.map((answer) => (
                     <div 
                       key={answer.playerId}
                       className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
@@ -141,22 +236,30 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                           <span className="font-medium text-gray-300">
                             {answer.playerName}
                           </span>
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            answer.isCorrect 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-red-500/20 text-red-400'
-                          }`}>
-                            {getOptionLabel(answer.selectedOption)}
-                          </span>
+                          {answer.selectedOption !== null && (
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                              answer.isCorrect 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {getOptionLabel(answer.selectedOption)}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-400">
-                            剩余: {formatTime(answer.remainingTime)}
-                          </span>
-                          {answer.isCorrect ? (
-                            <span className="text-green-400">✓</span>
+                          {answer.isCorrect !== null ? (
+                            <>
+                              <span className="text-sm text-gray-400">
+                                用时: {formatTime(answer.responseTime!)}
+                              </span>
+                              {answer.isCorrect ? (
+                                <span className="text-green-400">✓</span>
+                              ) : (
+                                <span className="text-red-400">✗</span>
+                              )}
+                            </>
                           ) : (
-                            <span className="text-red-400">✗</span>
+                            <span className="text-sm text-gray-500">等待答题...</span>
                           )}
                         </div>
                       </div>
@@ -167,8 +270,8 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             </div>
           </div>
         ) : (
-          <div className="text-center text-gray-400 py-8">
-            暂无答题记录
+          <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
+            {linkedQuestions.length > 0 ? '正在加载玩家数据...' : '请先在准备阶段链接题目'}
           </div>
         )}
       </CardContent>
