@@ -92,23 +92,23 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30 rounded-t-lg">
+        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
           <h2 className="text-werewolf-purple text-xl font-semibold leading-none tracking-tight">
             准备阶段管理
           </h2>
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-full opacity-70 hover:opacity-100 text-werewolf-purple"
+            className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple"
           >
             ✕
           </button>
         </div>
         
-        <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)] items-end">
+        <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
           {/* 左侧 - 房间信息和开始游戏按钮 */}
-          <div className="col-span-4 flex flex-col gap-4 h-full justify-end">
+          <div className="col-span-4 flex flex-col gap-4">
             {/* 房间信息 */}
-            <div className="flex-shrink-0 min-h-0 flex-1 flex flex-col justify-end">
+            <div className="flex-shrink-0">
               <RoomInfoCard 
                 roomId={roomId}
                 hostPlayerId={hostPlayerId}
@@ -117,7 +117,6 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                 playersCount={playersCount}
                 maxPlayers={maxPlayers}
                 t={t}
-                className="rounded-lg"
               />
             </div>
             
@@ -126,7 +125,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
               <Button
                 onClick={handleStartGame}
                 disabled={!allPlayersReady || players.length === 0}
-                className={`w-full px-4 py-3 text-lg rounded-lg ${
+                className={`w-full px-4 py-3 text-lg ${
                   allPlayersReady && players.length > 0
                     ? 'bg-werewolf-purple hover:bg-werewolf-light'
                     : 'bg-gray-600 cursor-not-allowed'
@@ -139,13 +138,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           </div>
 
           {/* 右侧 - 题库和玩家状态 */}
-          <div className="col-span-8 flex flex-col gap-4 h-full justify-end">
+          <div className="col-span-8 flex flex-col gap-4">
             {/* 题库管理 */}
-            <div className="flex-1 min-h-0 flex flex-col justify-end overflow-auto rounded-lg">
+            <div className="flex-1">
               <QuestionBankPanel className="h-full" />
             </div>
+
             {/* 玩家状态 */}
-            <div className="flex-1 min-h-0 flex flex-col justify-end overflow-auto rounded-lg">
+            <div className="flex-1">
               <PlayerStatusPanel roomId={roomId} className="h-full" />
             </div>
           </div>

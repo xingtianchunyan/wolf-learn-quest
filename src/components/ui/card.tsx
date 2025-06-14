@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -10,7 +9,6 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      // 强制全局圆角
       "rounded-lg border bg-card text-card-foreground shadow-sm",
       className
     )}
@@ -25,8 +23,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    // 顶部也统一圆角
-    className={cn("flex flex-col space-y-1.5 p-6 rounded-t-lg", className)}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
     {...props}
   />
 ))
@@ -63,11 +60,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("p-6 pt-0 overflow-auto rounded-b-lg", className)} // 内容溢出出现滚动条 + 底部圆角
-    {...props}
-  />
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -77,7 +70,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0 rounded-b-lg", className)}
+    className={cn("flex items-center p-6 pt-0", className)}
     {...props}
   />
 ))

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -460,11 +459,11 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)] flex flex-col justify-end">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
-          {/* 左侧 - Room Info & Players */}
-          <div className="lg:col-span-3 flex flex-col gap-6 h-full justify-end">
-            <div className="space-y-6 flex-1 min-h-0 flex flex-col justify-end">
+      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - Room Info & Players */}
+          <div className="lg:col-span-3">
+            <div className="space-y-6">
               <RoomInfoCard
                 roomId={roomData.roomId}
                 hostPlayerId={roomData.hostPlayerId}
@@ -473,7 +472,6 @@ const GameRoom = () => {
                 playersCount={players.length}
                 maxPlayers={currentMaxPlayers}
                 t={t}
-                className="rounded-lg"
               />
               <PlayersList
                 players={players}
@@ -491,12 +489,12 @@ const GameRoom = () => {
                 allPlayersSelectedRoles={allPlayersSelectedRoles()}
                 canSelectRoles={canSelectRoles()}
                 currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
-                className="rounded-lg flex-1 min-h-0 overflow-auto"
               />
             </div>
           </div>
-          {/* 中间 - Character Selection */}
-          <div className="lg:col-span-5 flex flex-col h-full justify-end">
+          
+          {/* Middle Column - Character Selection */}
+          <div className="lg:col-span-5">
             <RoleSelection
               maxPlayers={currentMaxPlayers}
               currentPlayerCount={players.length}
@@ -505,18 +503,17 @@ const GameRoom = () => {
               roomId={roomData?.id || ''}
               currentPlayerId={currentUserId}
               isReady={isReady}
-              className="rounded-lg flex-1 min-h-0 overflow-auto"
             />
           </div>
-          {/* 右侧 - Chat */}
-          <div className="lg:col-span-4 flex flex-col h-full justify-end">
+          
+          {/* Right Column - Chat */}
+          <div className="lg:col-span-4">
             <MultiChannelChat
               roomId={roomData?.id || null}
               currentUser={currentUser}
               isGameRoom={true}
               title={t('room_chat')}
-              className="h-full rounded-lg flex-1 min-h-0 overflow-auto"
-              height="100%"
+              height="calc(100vh - 200px)"
             />
           </div>
         </div>
