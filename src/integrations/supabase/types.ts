@@ -192,6 +192,45 @@ export type Database = {
           },
         ]
       }
+      game_questions: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          question_id: string
+          question_order: number
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          question_id: string
+          question_order: number
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          question_id?: string
+          question_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_questions_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           active_role: string | null
@@ -420,7 +459,7 @@ export type Database = {
             foreignKeyName: "player_answers_game_id_fkey"
             columns: ["game_id"]
             isOneToOne: false
-            referencedRelation: "game_sessions"
+            referencedRelation: "game_states"
             referencedColumns: ["id"]
           },
           {
@@ -808,9 +847,17 @@ export type Database = {
         Args: { p_room_id: string; p_phase: string }
         Returns: number
       }
+      get_room_judge_id: {
+        Args: { p_room_id: string }
+        Returns: string
+      }
       initialize_game_state: {
         Args: { p_room_id: string }
         Returns: string
+      }
+      is_room_participant: {
+        Args: { p_room_id: string; p_user_id: string }
+        Returns: boolean
       }
       start_game: {
         Args: { p_room_id: string }

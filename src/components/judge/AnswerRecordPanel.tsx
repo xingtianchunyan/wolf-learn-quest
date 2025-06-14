@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -7,12 +6,13 @@ import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
-import { supabase } from '@/integrations/supabase/client';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { usePlayerAnswers } from '@/hooks/usePlayerAnswers';
 
 interface AnswerRecordPanelProps {
   roomId: string;
 }
+
+// PlayerAnswerRecord interface is now imported from the hook
 
 // 从数据库 player_answers 表获取的原始数据结构
 interface PlayerAnswerRecord {
@@ -47,66 +47,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const { linkedQuestions } = useJudgePage();
   const { players } = usePlayersRealtime(roomId);
   const { gameState } = useGameState(roomId);
-  const [playerAnswers, setPlayerAnswers] = useState<PlayerAnswerRecord[]>([]);
-
-  useEffect(() => {
-    const gameId = gameState?.id;
-    if (!gameId) {
-      setPlayerAnswers([]);
-      return;
-    }
-
-    const fetchAnswers = async () => {
-      const { data, error } = await supabase
-        .from('player_answers')
-        .select('*')
-        .eq('game_id', gameId);
-      
-      if (error) {
-        console.error('Error fetching player answers:', error);
-      } else if (data) {
-        setPlayerAnswers(data as PlayerAnswerRecord[]);
-      }
-    };
-
-    fetchAnswers();
-
-    const channel = supabase
-      .channel(`player_answers_for_game_${gameId}`)
-      .on<PlayerAnswerRecord>(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'player_answers',
-          filter: `game_id=eq.${gameId}`,
-        },
-        (payload: RealtimePostgresChangesPayload<PlayerAnswerRecord>) => {
-          if (payload.new && typeof payload.new === 'object') {
-            const newAnswer = payload.new as PlayerAnswerRecord;
-            if (payload.eventType === 'INSERT') {
-              setPlayerAnswers(currentAnswers => {
-                if (currentAnswers.some(a => a.id === newAnswer.id)) {
-                  return currentAnswers;
-                }
-                return [...currentAnswers, newAnswer];
-              });
-            } else if (payload.eventType === 'UPDATE') {
-              setPlayerAnswers(currentAnswers =>
-                currentAnswers.map(ans =>
-                  ans.id === newAnswer.id ? newAnswer : ans
-                )
-              );
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [gameState?.id]);
+  const { playerAnswers } = usePlayerAnswers(gameState?.id);
 
   const answerRecords: AnswerRecord[] = useMemo(() => {
     if (!linkedQuestions || linkedQuestions.length === 0) {
