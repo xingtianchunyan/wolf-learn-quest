@@ -70,6 +70,16 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   if (!isOpen) return null;
 
+  // 临时翻译函数
+  const t = (key: string) => key;
+
+  // 临时房主名和房间主题
+  const hostPlayerId = players[0]?.playerName || "Host";
+  const topic = "元素周期表";
+  const onlinePlayersCount = players.filter(p => !p.isAI).length;
+  const playersCount = players.length;
+  const maxPlayers = 8;
+
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
@@ -100,7 +110,15 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           <div className="col-span-4 flex flex-col gap-4">
             {/* 房间信息 */}
             <div className="flex-shrink-0">
-              <RoomInfoCard roomId={roomId} />
+              <RoomInfoCard 
+                roomId={roomId}
+                hostPlayerId={hostPlayerId}
+                topic={topic}
+                onlinePlayersCount={onlinePlayersCount}
+                playersCount={playersCount}
+                maxPlayers={maxPlayers}
+                t={t}
+              />
             </div>
             
             {/* 开始游戏按钮 */}
