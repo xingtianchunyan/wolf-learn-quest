@@ -12,23 +12,12 @@ interface AnswerRecordPanelProps {
   roomId: string;
 }
 
-// PlayerAnswerRecord interface is now imported from the hook
-
-// 从数据库 player_answers 表获取的原始数据结构
-interface PlayerAnswerRecord {
-  id: string;
-  game_id: string | null;
-  question_id: string | null;
-  player_id: string | null;
-  selected_option: number | null;
-  is_correct: boolean | null;
-  response_time: number | null;
-}
+// PlayerAnswerRecord 类型现在由 usePlayerAnswers hook 内部处理。
 
 // 用于在组件中渲染的玩家答案数据结构
 interface PlayerAnswer {
   playerId: string;
-  playerName: string;
+  playerName:string;
   selectedOption: number | null;
   responseTime: number | null;
   isCorrect: boolean | null;
@@ -108,6 +97,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   const formatTime = (seconds: number) => {
+    if (typeof seconds !== 'number' || seconds < 0) {
+      return '00:00';
+    }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
