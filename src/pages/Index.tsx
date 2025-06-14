@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Users, Brain, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,7 +15,7 @@ const Index = () => {
       <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-4 px-4">
         <div className="container max-w-4xl mx-auto text-center">
           <h1 className="text-4xl text-werewolf-purple mb-6 font-bold text-center md:text-6xl">
-            {t('welcome')}
+            欢迎来到老带新狼人杀
           </h1>
           
           <p className="text-xl mb-10 max-w-3xl mx-auto">
