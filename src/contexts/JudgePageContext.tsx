@@ -81,10 +81,14 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
       setIsLoading(true);
       
       // 尝试获取房间的法官权限
-      const { error } = await supabase
+      // 使用 .select() 和 .maybeSingle() 来检查更新是否成功。
+      // 如果RLS策略阻止了更新，它将返回null而不是抛出错误。
+      const { data, error } = await supabase
         .from('rooms')
         .update({ judge_user_id: currentUser.id })
-        .eq('id', roomId);
+        .eq('id', roomId)
+        .select('id')
+        .maybeSingle();
         
       if (error) {
         console.error('Failed to take over as judge:', error);
@@ -93,8 +97,14 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
           description: `无法将您设置为当前房间的法官。原因: ${error.message}`,
           variant: 'destructive',
         });
-        setIsLoading(false);
-        return;
+      } else if (!data) {
+        // 这种情况很可能意味着RLS策略阻止了更新。
+        console.warn('Could not take over judgeship, possibly due to RLS.');
+        toast({
+          title: '担任法官失败',
+          description: '您可能没有权限成为此房间的法官。',
+          variant: 'warning',
+        });
       }
       
       // 成为法官后，获取链接的题目
@@ -119,6 +129,26 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
       if (judgeError) {
         console.error('Failed to assert judgeship before saving:', judgeError);
         throw new Error(`无法确认法官权限，保存失败。原因: ${judgeError.message}`);
+      }
+
+      // 尝试设置法官后，立即进行验证以防止RLS问题。
+      const { data: room, error: verificationError } = await supabase
+        .from('rooms')
+        .select('judge_user_id')
+        .eq('id', roomId)
+        .single();
+
+      if (verificationError) {
+        throw new Error(`验证法官权限时出错: ${verificationError.message}`);
+      }
+
+      if (room.judge_user_id !== currentUser.id) {
+        toast({
+          title: '保存失败',
+          description: '权限验证失败。您可能已不是当前法官。',
+          variant: 'destructive',
+        });
+        return;
       }
       
       const { error: deleteError } = await supabase
