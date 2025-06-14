@@ -1,3 +1,4 @@
+
 export interface Question {
   id: string;
   question: string;
@@ -6,13 +7,13 @@ export interface Question {
   option_c: string;
   option_d: string;
   correct_option: number;
-  explanation?: string;
-  difficulty?: number;
+  explanation: string | null;
+  difficulty: number | null;
   selected?: boolean;
   source_file?: string;
-  category?: string;
-  generated_questions_id?: string;
-  room_id?: string | null;
+  category: string | null;
+  generated_questions_id: string | null;
+  room_id: string | null;
 }
 
 export interface QuestionSource {
