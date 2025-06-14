@@ -511,7 +511,7 @@ const GameRoom = () => {
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Room Info & Players */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <div className="space-y-6">
               {/* Room Info Card */}
               <Card className="bg-werewolf-card border-werewolf-purple/30">
@@ -583,7 +583,7 @@ const GameRoom = () => {
           </div>
           
           {/* Right Column - Chat */}
-          <div className="lg:col-span-3 flex flex-col">
+          <div className="lg:col-span-4 flex flex-col">
             <MultiChannelChat
               roomId={roomData?.id || null}
               currentUser={currentUser}
