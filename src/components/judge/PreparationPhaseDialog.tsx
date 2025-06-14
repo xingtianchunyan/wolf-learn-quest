@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
@@ -74,7 +73,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   const t = (key: string) => key;
 
   // 临时房主名和房间主题
-  const hostPlayerId = players[0]?.playerName || "Host";
+  const hostPlayerId = players[0]?.name || "Host";
   const topic = "元素周期表";
   const onlinePlayersCount = players.filter(p => !p.isAI).length;
   const playersCount = players.length;
