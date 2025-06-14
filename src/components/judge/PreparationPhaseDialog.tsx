@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
@@ -6,9 +5,6 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import RoomInfoCard from '@/components/room/RoomInfoCard';
 import QuestionBankPanel from './QuestionBankPanel';
 import PlayerStatusPanel from './PlayerStatusPanel';
-import { useRoomRealtime } from '@/hooks/useRoomRealtime';
-// 假设有 LanguageSwitcher 中的 useLanguage，如果没有可以用临时实现
-import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface PreparationPhaseDialogProps {
   isOpen: boolean;
@@ -19,33 +15,24 @@ interface PreparationPhaseDialogProps {
 const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   isOpen,
   onClose,
-  roomId,
+  roomId
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // 读取国际化
-  const { t } = useLanguage ? useLanguage() : { t: (x: string) => x };
-
-  // 获取房间实时数据（含主题、人数等）
-  const { roomData: realtimeRoomData } = useRoomRealtime(roomId);
-
-  // 获取玩家状态
+  // 使用真实数据
   const { players } = usePlayersRealtime(roomId);
-  const allPlayersReady = players.every((player) => player.isReady);
+  const allPlayersReady = players.every(player => player.isReady);
 
-  // 拖动处理
+  // 拖动处理函数
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (
-      e.target === e.currentTarget ||
-      (e.target as HTMLElement).closest('.dialog-header')
-    ) {
+    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - position.x,
-        y: e.clientY - position.y,
+        y: e.clientY - position.y
       });
     }
   };
@@ -55,7 +42,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
       if (isDragging) {
         setPosition({
           x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
+          y: e.clientY - dragStart.y
         });
       }
     };
@@ -82,14 +69,15 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // ---------关键信息聚合---------
-  const hostPlayerId =
-    realtimeRoomData?.hostPlayerId || players[0]?.name || 'Host';
-  const topic = realtimeRoomData?.topic || '元素周期表';
-  const onlinePlayersCount = players.filter((p) => !p.isAI).length;
+  // 临时翻译函数
+  const t = (key: string) => key;
+
+  // 临时房主名和房间主题
+  const hostPlayerId = players[0]?.name || "Host";
+  const topic = "元素周期表";
+  const onlinePlayersCount = players.filter(p => !p.isAI).length;
   const playersCount = players.length;
-  // 优先取 roomData 的 maxPlayers，否则默认 8
-  const maxPlayers = realtimeRoomData?.maxPlayers || 8;
+  const maxPlayers = 8;
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
@@ -100,7 +88,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           left: `${position.x + 100}px`,
           top: `${position.y + 50}px`,
           width: '900px',
-          height: '600px',
+          height: '600px'
         }}
         onMouseDown={handleMouseDown}
       >
@@ -115,13 +103,13 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
             ✕
           </button>
         </div>
-
+        
         <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
           {/* 左侧 - 房间信息和开始游戏按钮 */}
           <div className="col-span-4 flex flex-col gap-4">
-            {/* 房间信息，完全复用 GameRoom 页面的组件和数据结构 */}
+            {/* 房间信息 */}
             <div className="flex-shrink-0">
-              <RoomInfoCard
+              <RoomInfoCard 
                 roomId={roomId}
                 hostPlayerId={hostPlayerId}
                 topic={topic}
@@ -131,7 +119,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                 t={t}
               />
             </div>
-
+            
             {/* 开始游戏按钮 */}
             <div className="flex-shrink-0">
               <Button
@@ -149,11 +137,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
             </div>
           </div>
 
-          {/* 右侧 - 题库管理和玩家状态 */}
+          {/* 右侧 - 题库和玩家状态 */}
           <div className="col-span-8 flex flex-col gap-4">
+            {/* 题库管理 */}
             <div className="flex-1">
               <QuestionBankPanel className="h-full" />
             </div>
+
+            {/* 玩家状态 */}
             <div className="flex-1">
               <PlayerStatusPanel roomId={roomId} className="h-full" />
             </div>
