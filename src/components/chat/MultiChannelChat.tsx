@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -45,8 +44,6 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
   } = useMultiChannelChat({
     roomId,
     currentUser,
-    gamePhase,
-    gameRound,
     userRole
   });
 

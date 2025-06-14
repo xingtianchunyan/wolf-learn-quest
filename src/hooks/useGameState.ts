@@ -15,6 +15,7 @@ export interface GameState {
   totalPausedDuration: number;
   autoAdvance: boolean;
   phaseDuration: number;
+  createdAt: string;
 }
 
 export interface GameSettings {
@@ -78,6 +79,7 @@ export const useGameState = (roomId: string) => {
             totalPausedDuration: stateData.total_paused_duration,
             autoAdvance: stateData.auto_advance,
             phaseDuration: stateData.phase_duration,
+            createdAt: stateData.created_at,
           });
         }
 
@@ -133,6 +135,7 @@ export const useGameState = (roomId: string) => {
               totalPausedDuration: newData.total_paused_duration,
               autoAdvance: newData.auto_advance,
               phaseDuration: newData.phase_duration,
+              createdAt: newData.created_at,
             });
           }
         }
@@ -348,7 +351,7 @@ export const useGameState = (roomId: string) => {
         .limit(1)
         .maybeSingle();
 
-      let startTime = new Date(gameState.created_at); // Fallback to state creation time
+      let startTime = new Date(gameState.createdAt); // Fallback to state creation time
       if (historyData?.started_at) {
         startTime = new Date(historyData.started_at);
       } else if (historyError) {
