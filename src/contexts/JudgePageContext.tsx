@@ -110,13 +110,11 @@ export const JudgePageProvider = ({ children, roomId }: { children: ReactNode; r
 
     try {
       // 在保存前，首先确保当前用户是法官。
-      // 使用 .select() 有助于确保数据库更改已传播。
+      // 这可以防止因数据库延迟而导致 room_questions 的 RLS 策略失败。
       const { error: judgeError } = await supabase
         .from('rooms')
         .update({ judge_user_id: currentUser.id })
-        .eq('id', roomId)
-        .select('id')
-        .single();
+        .eq('id', roomId);
 
       if (judgeError) {
         console.error('Failed to assert judgeship before saving:', judgeError);
