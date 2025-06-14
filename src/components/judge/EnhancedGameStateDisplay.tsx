@@ -1,134 +1,48 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GamepadIcon, User, Heart } from 'lucide-react';
-import { useGameState } from '@/hooks/useGameState';
-import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useAuth } from '@/providers/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
-import { Skeleton } from '@/components/ui/skeleton';
-
+import { GamepadIcon } from 'lucide-react';
+import PlayerStatusDisplay from './PlayerStatusDisplay';
 interface EnhancedGameStateDisplayProps {
   roomId: string;
 }
-
-interface DisplayPlayer {
-  id: string;
-  name: string;
-  avatar: string;
-  role?: string;
-  status: 'normal' | 'placeholder';
-  isPlaceholder: boolean;
-}
-
-const PlayerCard: React.FC<{ player: DisplayPlayer }> = ({ player }) => {
-  const getStatusInfo = (status: DisplayPlayer['status']) => {
-    if (player.isPlaceholder) {
-      return { color: 'border-white', icon: <User className="h-4 w-4 text-white" />, text: '等待加入' };
-    }
-    switch (status) {
-      case 'normal':
-        return { color: 'border-green-500', icon: <Heart className="h-4 w-4 text-green-400" />, text: '正常' };
-      default:
-        return { color: 'border-gray-500', icon: <User className="h-4 w-4" />, text: '未知' };
-    }
-  };
-
-  const statusInfo = getStatusInfo(player.status);
-
-  return (
-    <div className={`p-3 rounded-lg border-2 ${statusInfo.color} bg-werewolf-dark/40 flex flex-col items-center justify-center text-center h-32`}>
-      <Avatar className="h-10 w-10 mb-2">
-        {!player.isPlaceholder && <AvatarImage src={player.avatar} />}
-        <AvatarFallback className="bg-werewolf-dark">
-          {player.isPlaceholder ? <User className="h-5 w-5 text-white" /> : player.name.charAt(0)}
-        </AvatarFallback>
-      </Avatar>
-      <p className="font-semibold text-sm text-gray-200 truncate w-full">{player.name}</p>
-      {player.role && <p className="text-xs text-werewolf-purple mt-1">{player.role}</p>}
-    </div>
-  );
-};
-
-const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roomId }) => {
-  const { gameState, getPhaseDisplayName } = useGameState(roomId);
-  const { players: roomPlayers } = usePlayersRealtime(roomId);
-  const { currentUser } = useAuth();
-
-  const [maxPlayers, setMaxPlayers] = useState(8);
-  const [loadingRoom, setLoadingRoom] = useState(true);
-
-  useEffect(() => {
-    const fetchRoomData = async () => {
-      setLoadingRoom(true);
-      const { data, error } = await supabase
-        .from('rooms')
-        .select('max_players')
-        .eq('id', roomId)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching room data:", error);
-      } else if (data) {
-        setMaxPlayers(data.max_players || 8);
-      }
-      setLoadingRoom(false);
-    };
-    fetchRoomData();
-  }, [roomId]);
-  
-  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, roomPlayers.length, maxPlayers);
-  
-  const displayPlayers: DisplayPlayer[] = useMemo(() => {
-    const roleConfigs = getRoleConfiguration(maxPlayers);
-    const expandedRoles = expandRoles(roleConfigs);
-    const getRoleName = (roleId: string | null): string | undefined => {
-      if (!roleId) return undefined;
-      const role = expandedRoles.find(r => r.instanceId === roleId);
-      return role ? role.name : undefined;
-    };
-
-    const players: DisplayPlayer[] = roomPlayers.map(p => {
-      const selectedRoleId = p.userId ? getSelectedRoleByUser(p.userId) : null;
-      return {
-        id: p.id,
-        name: p.name,
-        avatar: p.avatar,
-        role: getRoleName(selectedRoleId),
-        status: 'normal',
-        isPlaceholder: false,
-      };
-    });
-
-    const placeholderCount = maxPlayers - players.length;
-    const placeholders: DisplayPlayer[] = [];
-    if (placeholderCount > 0) {
-      for (let i = 0; i < placeholderCount; i++) {
-        placeholders.push({
-          id: `placeholder-${i}`,
-          name: '等待玩家',
-          avatar: '',
-          role: undefined,
-          status: 'placeholder',
-          isPlaceholder: true,
-        });
-      }
-    }
-    return [...players, ...placeholders];
-  }, [roomPlayers, maxPlayers, getSelectedRoleByUser]);
-
-  const gameStatusText = useMemo(() => {
-    if (gameState?.status === 'waiting' || !gameState) {
-      return "准备阶段等待中";
-    }
-    return `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}`;
-  }, [gameState, getPhaseDisplayName]);
-
-  return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
+  roomId
+}) => {
+  // Mock data for demonstration
+  const currentRound = 2;
+  const currentPhase = '白天';
+  const players = [{
+    id: 'player1',
+    name: '玩家1',
+    role: '预言家',
+    status: 'normal' as const
+  }, {
+    id: 'player2',
+    name: '玩家2',
+    role: '狼人',
+    status: 'weak' as const
+  }, {
+    id: 'player3',
+    name: '玩家3',
+    role: '村民',
+    status: 'dying' as const
+  }, {
+    id: 'player4',
+    name: '玩家4',
+    role: '女巫',
+    status: 'normal' as const
+  }, {
+    id: 'player5',
+    name: '玩家5',
+    role: '猎人',
+    status: 'eliminated' as const
+  }, {
+    id: 'player6',
+    name: '玩家6',
+    role: '狼人',
+    status: 'normal' as const
+  }];
+  return <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GamepadIcon className="mr-2 h-5 w-5" />
@@ -137,29 +51,19 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* 当前游戏轮次和阶段 */}
         <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">
           <h2 className="text-xl font-bold text-werewolf-purple">
-            {gameStatusText}
+            第{currentRound}轮 - {currentPhase}阶段
           </h2>
         </div>
 
+        {/* 玩家角色和状态 */}
         <div className="space-y-3">
           <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
-          {loadingRoom ? (
-             <div className="grid grid-cols-4 gap-3">
-              {[...Array(maxPlayers)].map((_, i) => <Skeleton key={i} className="h-32 w-full bg-werewolf-dark/40" />)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-4 gap-3">
-              {displayPlayers.map((player) => (
-                <PlayerCard key={player.id} player={player} />
-              ))}
-            </div>
-          )}
+          <PlayerStatusDisplay players={players} />
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default EnhancedGameStateDisplay;
