@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface RoomRealtimeData {
   maxPlayers: number;
   status: string;
+  judge_user_id?: string | null;
   lastUpdate: Date;
 }
 
@@ -33,6 +34,7 @@ export const useRoomRealtime = (roomId: string) => {
               setRoomData({
                 maxPlayers: newData.max_players,
                 status: newData.status,
+                judge_user_id: newData.judge_user_id,
                 lastUpdate: new Date()
               });
             }
