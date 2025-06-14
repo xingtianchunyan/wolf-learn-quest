@@ -808,9 +808,17 @@ export type Database = {
         Args: { p_room_id: string; p_phase: string }
         Returns: number
       }
+      get_room_judge_id: {
+        Args: { p_room_id: string }
+        Returns: string
+      }
       initialize_game_state: {
         Args: { p_room_id: string }
         Returns: string
+      }
+      is_room_participant: {
+        Args: { p_room_id: string; p_user_id: string }
+        Returns: boolean
       }
       start_game: {
         Args: { p_room_id: string }
