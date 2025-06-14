@@ -149,8 +149,8 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4">
           {/* 投票结果表格 */}
-          <div className="border border-werewolf-purple/30 rounded-md flex-1 min-h-0">
-            <ScrollArea className="h-full">
+          <div className="border border-werewolf-purple/30 rounded-md">
+            <ScrollArea className="h-40">
               <Table>
                 <TableHeader>
                   <TableRow className="border-werewolf-purple/30">
@@ -238,4 +238,3 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 };
 
 export default JudgeActionPanel;
-
