@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -533,13 +534,13 @@ const GameRoom = () => {
           </div>
           
           {/* Right Column - Chat */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 flex flex-col">
             <MultiChannelChat
               roomId={roomData?.id || null}
               currentUser={currentUser}
               isGameRoom={true}
               title={t('room_chat')}
-              height="calc(100vh - 200px)"
+              height="100%"
             />
           </div>
         </div>
