@@ -150,7 +150,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4">
           {/* 投票结果表格 */}
           <div className="border border-werewolf-purple/30 rounded-md">
-            <ScrollArea className="h-64">
+            <ScrollArea className="h-52">
               <Table>
                 <TableHeader className="sticky top-0 bg-werewolf-card z-10">
                   <TableRow className="border-b border-werewolf-purple/30 hover:bg-transparent">
