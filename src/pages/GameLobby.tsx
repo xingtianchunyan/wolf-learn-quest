@@ -30,6 +30,8 @@ interface GameRoom {
   hasAI: boolean;
   isPrivate: boolean;
   status: string;
+  judgeUserId?: string;
+  judgeName?: string;
 }
 
 const GameLobby = () => {
@@ -76,7 +78,9 @@ const GameLobby = () => {
           status,
           human_judge,
           host_id,
+          judge_user_id,
           users!rooms_host_id_fkey(player_name),
+          judge:users!rooms_judge_user_id_fkey(player_name),
           room_players(id)
         `)
         .eq('status', 'waiting');
@@ -97,7 +101,9 @@ const GameLobby = () => {
         maxPlayers: room.max_players || 8,
         hasAI: !room.human_judge,
         isPrivate: false,
-        status: room.status
+        status: room.status,
+        judgeUserId: room.judge_user_id,
+        judgeName: room.judge?.player_name
       })) || [];
 
       console.log('Formatted rooms:', formattedRooms);
@@ -401,8 +407,29 @@ const GameLobby = () => {
 
     try {
       console.log('Playing as judge in room:', roomId);
+      
+      // Update the room to set current user as judge
+      const { error } = await supabase
+        .from('rooms')
+        .update({ judge_user_id: currentUser.id })
+        .eq('id', roomId)
+        .is('judge_user_id', null); // Only update if no judge is currently assigned
+
+      if (error) {
+        console.error('Error setting judge:', error);
+        toast({
+          title: "Failed to become judge",
+          description: "Another player may have already become the judge",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // 直接导航到对应房间的法官页面
       navigate(`/room/${roomId}/judge`);
+      
+      // Refresh room list to update UI
+      fetchRooms();
     } catch (error) {
       console.error('Error playing as judge:', error);
       toast({
@@ -559,6 +586,10 @@ const GameLobby = () => {
                             <TableCell className="text-center">
                               {room.hasAI ? (
                                 <span className="text-blue-400">AI {t('judge')}</span>
+                              ) : room.judgeUserId ? (
+                                <span className="text-green-400">
+                                  {room.judgeName || '已有法官'}
+                                </span>
                               ) : (
                                 <Button 
                                   variant="outline" 

@@ -641,6 +641,7 @@ export type Database = {
           host_id: string | null
           human_judge: boolean | null
           id: string
+          judge_user_id: string | null
           last_human_activity: string | null
           max_players: number | null
           room_id: string
@@ -651,6 +652,7 @@ export type Database = {
           host_id?: string | null
           human_judge?: boolean | null
           id?: string
+          judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
           room_id: string
@@ -661,6 +663,7 @@ export type Database = {
           host_id?: string | null
           human_judge?: boolean | null
           id?: string
+          judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
           room_id?: string
