@@ -45,6 +45,9 @@ const GameLobby = () => {
   const { currentUser, initializing, setIsLoginOpen } = useAuth();
   const { playerRoom, leaveCurrentRoom } = usePlayerRoom();
 
+  // 新增：保存 judgeRoomId
+  const [judgeRoomId, setJudgeRoomId] = useState<string | null>(null);
+
   // Add room cleanup functionality
   useRoomCleanup();
 
@@ -55,6 +58,45 @@ const GameLobby = () => {
       navigate(`/room/${playerRoom.roomDbId}`);
     }
   }, [initializing, currentUser, playerRoom, navigate]);
+
+  // 新增：检测当前用户是否是 judge，并且在哪个房间
+  useEffect(() => {
+    const fetchJudgeRoom = async () => {
+      if (!currentUser) {
+        setJudgeRoomId(null);
+        return;
+      }
+      // 查找 rooms 表，这个人是不是 judge
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('id')
+        .eq('judge_user_id', currentUser.id)
+        .eq('status', 'waiting')
+        .maybeSingle();
+      if (error || !data) {
+        setJudgeRoomId(null);
+        return;
+      }
+      setJudgeRoomId(data.id);
+    };
+
+    if (!initializing && currentUser && !playerRoom.isLoading) {
+      fetchJudgeRoom();
+    }
+  }, [initializing, currentUser, playerRoom.isLoading]);
+
+  // 修改原有的 useEffect：优先重定向法官，再是普通玩家
+  useEffect(() => {
+    if (!initializing && currentUser && !playerRoom.isLoading) {
+      if (judgeRoomId) {
+        // 如果当前为 judge，自动跳转 judge 页面
+        navigate(`/room/${judgeRoomId}/judge`);
+      } else if (playerRoom.roomDbId) {
+        // 玩家在房间，跳转回普通房间
+        navigate(`/room/${playerRoom.roomDbId}`);
+      }
+    }
+  }, [initializing, currentUser, playerRoom, playerRoom.roomDbId, judgeRoomId, navigate]);
 
   // Initialize authentication and fetch data
   useEffect(() => {
