@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -6,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useGameState } from '@/hooks/useGameState';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Tables } from '@/integrations/supabase/types';
 
 interface AnswerRecordPanelProps {
   roomId: string;
@@ -46,11 +45,50 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const { linkedQuestions } = useJudgePage();
   const { players } = usePlayersRealtime(roomId);
-  const { gameState } = useGameState(roomId);
   const [playerAnswers, setPlayerAnswers] = useState<PlayerAnswerRecord[]>([]);
+  const [gameId, setGameId] = useState<string | null>(null);
 
   useEffect(() => {
-    const gameId = gameState?.id;
+    if (!roomId) return;
+
+    const fetchGameSession = async () => {
+      const { data, error } = await supabase
+        .from('game_sessions')
+        .select('id')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching game session for answer panel:', error);
+      } else {
+        setGameId(data?.id ?? null);
+      }
+    };
+
+    fetchGameSession();
+    
+    const channel = supabase
+      .channel(`game_session_for_room_${roomId}`)
+      .on<Tables<'game_sessions'>>(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `room_id=eq.${roomId}`,
+        },
+        () => fetchGameSession()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
+
+  useEffect(() => {
     if (!gameId) {
       setPlayerAnswers([]);
       return;
@@ -65,7 +103,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       if (error) {
         console.error('Error fetching player answers:', error);
       } else if (data) {
-        setPlayerAnswers(data as PlayerAnswerRecord[]);
+        setPlayerAnswers(data);
       }
     };
 
@@ -106,7 +144,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameState?.id]);
+  }, [gameId]);
 
   const answerRecords: AnswerRecord[] = useMemo(() => {
     if (!linkedQuestions || linkedQuestions.length === 0) {

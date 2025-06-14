@@ -192,6 +192,45 @@ export type Database = {
           },
         ]
       }
+      game_questions: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          question_id: string
+          question_order: number
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          question_id: string
+          question_order: number
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          question_id?: string
+          question_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_questions_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           active_role: string | null
