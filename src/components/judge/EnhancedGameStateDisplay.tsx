@@ -6,9 +6,6 @@ import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { supabase } from '@/integrations/supabase/client';
-import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
-import { useAuth } from '@/providers/AuthProvider';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
@@ -20,18 +17,6 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   const { gameState, getPhaseDisplayName } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
   const [maxPlayers, setMaxPlayers] = useState(8);
-  const { currentUser } = useAuth();
-  
-  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, realPlayers.length, maxPlayers);
-  
-  const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleConfigs);
-
-  const getRoleName = (roleId: string | null) => {
-    if (!roleId) return '未分配';
-    const role = expandedRoles.find(r => r.instanceId === roleId);
-    return role ? role.name : '未知角色';
-  };
 
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -52,13 +37,10 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
-      const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
-      const roleName = getRoleName(selectedRoleId);
-
       return {
         id: player.id,
         name: player.name,
-        role: player.role || (roleName !== '未分配' ? roleName : ''),
+        role: player.role,
         status: 'normal' as const,
         avatar: player.avatar,
       };
