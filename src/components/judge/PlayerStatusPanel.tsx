@@ -8,6 +8,7 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
@@ -52,12 +53,18 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     fetchRoomData();
   }, [roomId]);
 
-  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
+  // 获取房间最大玩家数以确定角色配置
+  const { getSelectedRoleByUser, roleSelections } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
+  
+  // 获取角色配置
+  const roleConfigs = getRoleConfiguration(maxPlayers);
+  const expandedRoles = expandRoles(roleConfigs);
 
-  // 根据角色ID获取角色名称（在恢复的结构中，role_id就是角色名称）
+  // 根据角色ID获取角色名称
   const getRoleName = (roleId: string | null) => {
     if (!roleId) return '未选择';
-    return roleId;
+    const role = expandedRoles.find(r => r.instanceId === roleId);
+    return role ? role.name : '未知角色';
   };
 
   // 检查玩家是否在线 - 修正匹配逻辑
