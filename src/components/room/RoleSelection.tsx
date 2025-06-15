@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useAvailableRoles } from '@/hooks/useAvailableRoles';
 import { useToast } from '@/components/ui/use-toast';
 
 interface RoleSelectionProps {
@@ -28,8 +28,6 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const {
@@ -40,6 +38,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     canSelectRoles,
     loading: roleSelectionLoading
   } = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
+
+  const { availableRoles, loading: rolesLoading } = useAvailableRoles(roomId);
 
   // 获取当前玩家选择的角色
   const currentSelection = getCurrentPlayerSelection();
@@ -69,7 +69,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     });
   };
 
-  const handleRoleSelect = async (roleId: string) => {
+  const handleRoleSelect = async (roleCharacterId: string) => {
     // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
@@ -91,7 +91,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(roleId) && currentSelection !== roleId) {
+    if (isRoleSelected(roleCharacterId) && currentSelection !== roleCharacterId) {
       toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
@@ -101,7 +101,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果当前玩家已选择这个角色，则取消选择
-    if (currentSelection === roleId) {
+    if (currentSelection === roleCharacterId) {
       const success = await unselectRole();
       if (success) {
         onCharacterSelect(null);
@@ -120,12 +120,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 选择新角色
-    const success = await selectRole(roleId);
+    const success = await selectRole(roleCharacterId);
     if (success) {
-      onCharacterSelect(roleId);
+      onCharacterSelect(roleCharacterId);
+      const selectedRole = availableRoles.find(r => r.role_id === roleCharacterId);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${t(expandedRoles.find(r => r.instanceId === roleId)?.name || '')}`,
+        description: `已选择角色：${selectedRole?.character_name || ''}`,
       });
     } else {
       toast({
@@ -138,13 +139,26 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   const isFlipped = (roleId: string) => flippedCards.has(roleId);
 
+  if (roleSelectionLoading || rolesLoading) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-gray-400">加载角色中...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
         <div className="space-y-2">
           <p className="text-sm text-gray-400">
-            {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
+            {t('current_config')}: {maxPlayers}{t('players_game')} ({availableRoles.length}{t('roles')})
           </p>
           <p className="text-sm text-gray-400">
             当前玩家数: {currentPlayerCount} / {maxPlayers}
@@ -156,7 +170,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           )}
           {canSelectRoles() && currentSelection && (
             <p className="text-sm text-werewolf-purple">
-              当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
+              当前选择：{availableRoles.find(r => r.role_id === currentSelection)?.character_name || ''}
             </p>
           )}
         </div>
@@ -164,16 +178,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       <CardContent className="flex-1 flex flex-col">
         <ScrollArea className="flex-1 pr-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]">
-            {expandedRoles.map((role) => {
-              const flipped = isFlipped(role.instanceId);
-              const skill = skillDetails[role.description as keyof typeof skillDetails];
-              const isSelected = isRoleSelected(role.instanceId);
-              const isCurrentSelection = currentSelection === role.instanceId;
+            {availableRoles.map((role) => {
+              const flipped = isFlipped(role.role_id);
+              const skill = skillDetails[role.skill_key as keyof typeof skillDetails];
+              const isSelected = role.is_selected;
+              const isCurrentSelection = currentSelection === role.role_id;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
               
               return (
                 <div 
-                  key={role.instanceId}
+                  key={role.role_id}
                   className={`relative transition-all duration-300 transform hover:scale-105 ${
                     isCurrentSelection
                       ? 'ring-2 ring-werewolf-purple' 
@@ -216,21 +230,22 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center ${
                             canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                           }`}
-                          onClick={() => canSelect && handleRoleSelect(role.instanceId)}
+                          onClick={() => canSelect && handleRoleSelect(role.role_id)}
                         >
-                          <img 
-                            src={role.image} 
-                            alt={t(role.name)} 
-                            className="max-h-full max-w-full object-contain p-2"
-                          />
+                          <div className="text-6xl">
+                            {role.character_name === '村民' && '👨‍🌾'}
+                            {role.character_name === '狼人' && '🐺'}
+                            {role.character_name === '预言家' && '🔮'}
+                            {role.character_name === '女巫' && '🧙‍♀️'}
+                          </div>
                         </div>
                         {/* 名称区域 - 点击翻面 */}
                         <div 
                           className="text-center cursor-pointer"
-                          onClick={() => handleCardFlip(role.instanceId)}
+                          onClick={() => handleCardFlip(role.role_id)}
                         >
                           <h3 className="font-bold text-lg text-white mb-2">
-                            {t(role.name)}
+                            {role.character_name}
                           </h3>
                           <div className="text-xs text-gray-400">
                             单击图片选中，单击名称翻面
@@ -257,16 +272,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                         {/* 阵营信息 */}
                         <div className="text-center mb-4">
                           <h3 className="font-bold text-lg text-white mb-2">
-                            {t(role.name)}
+                            {role.character_name}
                           </h3>
                           <span 
                             className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                              role.team === 'Village' ? 'bg-green-900/60 text-green-200' : 
-                              role.team === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
+                              role.faction === 'Village' ? 'bg-green-900/60 text-green-200' : 
+                              role.faction === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
                               'bg-purple-900/60 text-purple-200'
                             }`}
                           >
-                            {t(role.team.toLowerCase())}阵营
+                            {role.faction === 'Village' ? '村民' : role.faction === 'Werewolves' ? '狼人' : '第三方'}阵营
                           </span>
                         </div>
 
@@ -278,7 +293,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                                 技能名称
                               </h4>
                               <p className="text-xs text-gray-300">
-                                {t(skill?.name || role.description)}
+                                {role.skill_name}
                               </p>
                             </div>
                             
@@ -305,7 +320,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                         {/* 返回提示 - 点击翻面 */}
                         <div 
                           className="text-center mt-3 cursor-pointer"
-                          onClick={() => handleCardFlip(role.instanceId)}
+                          onClick={() => handleCardFlip(role.role_id)}
                         >
                           <div className="text-xs text-gray-400">
                             单击返回正面

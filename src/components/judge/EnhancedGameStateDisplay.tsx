@@ -5,7 +5,10 @@ import { GamepadIcon } from 'lucide-react';
 import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useAvailableRoles } from '@/hooks/useAvailableRoles';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
@@ -16,7 +19,11 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
 }) => {
   const { gameState, getPhaseDisplayName } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
+  const { currentUser } = useAuth();
   const [maxPlayers, setMaxPlayers] = useState(8);
+
+  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, realPlayers.length, maxPlayers);
+  const { availableRoles } = useAvailableRoles(roomId);
 
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -34,13 +41,22 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   }, [roomId]);
 
+  const getRoleName = (roleCharacterId: string | null) => {
+    if (!roleCharacterId) return '';
+    const role = availableRoles.find(r => r.role_id === roleCharacterId);
+    return role ? role.character_name : '';
+  };
+
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
+      const selectedRoleCharacterId = player.userId ? getSelectedRoleByUser(player.userId) : null;
+      const roleName = getRoleName(selectedRoleCharacterId);
+      
       return {
         id: player.id,
         name: player.name,
-        role: player.role,
+        role: roleName,
         status: 'normal' as const,
         avatar: player.avatar,
       };
@@ -84,4 +100,5 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     </Card>
   );
 };
+
 export default EnhancedGameStateDisplay;

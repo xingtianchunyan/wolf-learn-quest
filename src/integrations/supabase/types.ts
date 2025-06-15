@@ -582,26 +582,41 @@ export type Database = {
       role_selections: {
         Row: {
           id: string
-          role_id: string
+          role_character_id: string
           room_id: string
           selected_at: string
           user_id: string
         }
         Insert: {
           id?: string
-          role_id: string
+          role_character_id: string
           room_id: string
           selected_at?: string
           user_id: string
         }
         Update: {
           id?: string
-          role_id?: string
+          role_character_id?: string
           room_id?: string
           selected_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "role_selections_role_character_id_fkey"
+            columns: ["role_character_id"]
+            isOneToOne: false
+            referencedRelation: "available_roles_for_room"
+            referencedColumns: ["role_id"]
+          },
+          {
+            foreignKeyName: "role_selections_role_character_id_fkey"
+            columns: ["role_character_id"]
+            isOneToOne: false
+            referencedRelation: "game_characters"
+            referencedColumns: ["Role ID"]
+          },
+        ]
       }
       room_players: {
         Row: {
@@ -830,7 +845,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      available_roles_for_room: {
+        Row: {
+          character_name: string | null
+          faction: string | null
+          is_selected: boolean | null
+          role_id: string | null
+          room_id: string | null
+          selected_by_user: string | null
+          skill_key: string | null
+          skill_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       advance_game_phase: {

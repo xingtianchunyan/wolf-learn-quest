@@ -6,7 +6,7 @@ interface RoleSelection {
   id: string;
   room_id: string;
   user_id: string;
-  role_id: string;
+  role_character_id: string;
   selected_at: string;
 }
 
@@ -85,7 +85,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     }
   };
 
-  const selectRole = async (roleId: string) => {
+  const selectRole = async (roleCharacterId: string) => {
     if (!currentUserId || !roomId) return false;
 
     try {
@@ -94,7 +94,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
         .upsert({
           room_id: roomId,
           user_id: currentUserId,
-          role_id: roleId
+          role_character_id: roleCharacterId
         });
 
       if (error) {
@@ -132,11 +132,11 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
   };
 
   const getSelectedRoleByUser = (userId: string) => {
-    return roleSelections.find(selection => selection.user_id === userId)?.role_id || null;
+    return roleSelections.find(selection => selection.user_id === userId)?.role_character_id || null;
   };
 
-  const isRoleSelected = (roleId: string) => {
-    return roleSelections.some(selection => selection.role_id === roleId);
+  const isRoleSelected = (roleCharacterId: string) => {
+    return roleSelections.some(selection => selection.role_character_id === roleCharacterId);
   };
 
   const getCurrentPlayerSelection = () => {
