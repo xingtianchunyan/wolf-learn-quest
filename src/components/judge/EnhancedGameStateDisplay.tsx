@@ -14,25 +14,32 @@ interface EnhancedGameStateDisplayProps {
 const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   roomId
 }) => {
-  const { gameState, getPhaseDisplayName } = useGameState(roomId);
-  const { players: realPlayers } = usePlayersRealtime(roomId);
+  const [roomUuid, setRoomUuid] = useState<string | null>(null);
   const [maxPlayers, setMaxPlayers] = useState(8);
 
   useEffect(() => {
     const fetchRoomData = async () => {
-      const { data } = await supabase
+      if (!roomId) return;
+      const { data, error } = await supabase
         .from('rooms')
-        .select('max_players')
-        .eq('id', roomId)
+        .select('id, max_players')
+        .eq('room_id', roomId)
         .single();
-      if (data && data.max_players) {
-        setMaxPlayers(data.max_players);
+        
+      if (error) {
+        console.error('Error fetching room data for EnhancedGameStateDisplay:', error);
+      } else if (data) {
+        setRoomUuid(data.id);
+        if (data.max_players) {
+          setMaxPlayers(data.max_players);
+        }
       }
     };
-    if (roomId) {
-      fetchRoomData();
-    }
+    fetchRoomData();
   }, [roomId]);
+  
+  const { gameState, getPhaseDisplayName } = useGameState(roomUuid || '');
+  const { players: realPlayers } = usePlayersRealtime(roomUuid || '');
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
