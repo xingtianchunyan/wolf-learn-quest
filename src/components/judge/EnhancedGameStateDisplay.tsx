@@ -6,9 +6,6 @@ import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { supabase } from '@/integrations/supabase/client';
-import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { useAuth } from '@/providers/AuthProvider';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
@@ -17,53 +14,33 @@ interface EnhancedGameStateDisplayProps {
 const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   roomId
 }) => {
-  const [roomUuid, setRoomUuid] = useState<string | null>(null);
+  const { gameState, getPhaseDisplayName } = useGameState(roomId);
+  const { players: realPlayers } = usePlayersRealtime(roomId);
   const [maxPlayers, setMaxPlayers] = useState(8);
-  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchRoomData = async () => {
-      if (!roomId) return;
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('rooms')
-        .select('id, max_players')
-        .eq('room_id', roomId)
+        .select('max_players')
+        .eq('id', roomId)
         .single();
-        
-      if (error) {
-        console.error('Error fetching room data for EnhancedGameStateDisplay:', error);
-      } else if (data) {
-        setRoomUuid(data.id);
-        if (data.max_players) {
-          setMaxPlayers(data.max_players);
-        }
+      if (data && data.max_players) {
+        setMaxPlayers(data.max_players);
       }
     };
-    fetchRoomData();
+    if (roomId) {
+      fetchRoomData();
+    }
   }, [roomId]);
-  
-  const { gameState, getPhaseDisplayName } = useGameState(roomUuid || '');
-  const { players: realPlayers } = usePlayersRealtime(roomUuid || '');
-  const { getSelectedRoleByUser } = useRoleSelection(roomUuid || '', currentUser?.id || null, realPlayers.length, maxPlayers);
-
-  const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleConfigs);
-
-  const getRoleName = (roleId: string | null) => {
-    if (!roleId) return '';
-    const role = expandedRoles.find(r => r.instanceId === roleId);
-    return role ? role.name : '未知角色';
-  };
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
-      const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
-      const roleName = getRoleName(selectedRoleId);
       return {
         id: player.id,
         name: player.name,
-        role: roleName,
+        role: player.role,
         status: 'normal' as const,
         avatar: player.avatar,
       };

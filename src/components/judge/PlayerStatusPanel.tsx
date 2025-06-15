@@ -29,36 +29,32 @@ interface PlayerStatusPanelProps {
 
 const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className }) => {
   const { currentUser } = useAuth();
-  const [roomUuid, setRoomUuid] = useState<string | null>(null);
-  const [maxPlayers, setMaxPlayers] = useState(8);
-
-  const { players, loading: playersLoading } = usePlayersRealtime(roomUuid || '');
-  const { getOnlinePlayers } = usePlayerPresence(roomUuid || '', currentUser);
+  const { players, loading: playersLoading } = usePlayersRealtime(roomId);
+  const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
+
+  const [maxPlayers, setMaxPlayers] = useState(8);
 
   useEffect(() => {
     const fetchRoomData = async () => {
       if (!roomId) return;
       const { data, error } = await supabase
         .from('rooms')
-        .select('id, max_players')
-        .eq('room_id', roomId)
+        .select('max_players')
+        .eq('id', roomId)
         .single();
       
       if (error) {
-        console.error('Error fetching room UUID for PlayerStatusPanel:', error);
-      } else if (data) {
-        setRoomUuid(data.id);
-        if (data.max_players) {
-          setMaxPlayers(data.max_players);
-        }
+        console.error('Error fetching max players for PlayerStatusPanel:', error);
+      } else if (data && data.max_players) {
+        setMaxPlayers(data.max_players);
       }
     };
     fetchRoomData();
   }, [roomId]);
 
   // 获取房间最大玩家数以确定角色配置
-  const { getSelectedRoleByUser } = useRoleSelection(roomUuid || '', currentUser?.id || null, players.length, maxPlayers);
+  const { getSelectedRoleByUser, roleSelections } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   
   // 获取角色配置
   const roleConfigs = getRoleConfiguration(maxPlayers);
