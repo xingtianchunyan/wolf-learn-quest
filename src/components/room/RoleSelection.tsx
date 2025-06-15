@@ -69,7 +69,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     });
   };
 
-  const handleRoleSelect = async (roleCharacterId: string) => {
+  const handleRoleSelect = async (characterName: string) => {
     // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
@@ -91,7 +91,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(roleCharacterId) && currentSelection !== roleCharacterId) {
+    if (isRoleSelected(characterName) && currentSelection !== characterName) {
       toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
@@ -101,7 +101,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果当前玩家已选择这个角色，则取消选择
-    if (currentSelection === roleCharacterId) {
+    if (currentSelection === characterName) {
       const success = await unselectRole();
       if (success) {
         onCharacterSelect(null);
@@ -119,14 +119,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
-    // 选择新角色
-    const success = await selectRole(roleCharacterId);
+    // 选择新角色（使用角色名称作为role_id）
+    const success = await selectRole(characterName);
     if (success) {
-      onCharacterSelect(roleCharacterId);
-      const selectedRole = availableRoles.find(r => r.role_id === roleCharacterId);
+      onCharacterSelect(characterName);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${selectedRole?.character_name || ''}`,
+        description: `已选择角色：${characterName}`,
       });
     } else {
       toast({
@@ -170,7 +169,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           )}
           {canSelectRoles() && currentSelection && (
             <p className="text-sm text-werewolf-purple">
-              当前选择：{availableRoles.find(r => r.role_id === currentSelection)?.character_name || ''}
+              当前选择：{currentSelection}
             </p>
           )}
         </div>
@@ -182,7 +181,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const flipped = isFlipped(role.role_id);
               const skill = skillDetails[role.skill_key as keyof typeof skillDetails];
               const isSelected = role.is_selected;
-              const isCurrentSelection = currentSelection === role.role_id;
+              const isCurrentSelection = currentSelection === role.character_name;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
               
               return (
@@ -230,7 +229,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center ${
                             canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                           }`}
-                          onClick={() => canSelect && handleRoleSelect(role.role_id)}
+                          onClick={() => canSelect && handleRoleSelect(role.character_name)}
                         >
                           <div className="text-6xl">
                             {role.character_name === '村民' && '👨‍🌾'}

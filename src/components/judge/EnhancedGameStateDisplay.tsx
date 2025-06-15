@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GamepadIcon } from 'lucide-react';
@@ -41,17 +40,17 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   }, [roomId]);
 
-  const getRoleName = (roleCharacterId: string | null) => {
-    if (!roleCharacterId) return '';
-    const role = availableRoles.find(r => r.role_id === roleCharacterId);
-    return role ? role.character_name : '';
+  const getRoleName = (roleId: string | null) => {
+    if (!roleId) return '';
+    // 在恢复的结构中，role_id存储的是角色名称
+    return roleId;
   };
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
-      const selectedRoleCharacterId = player.userId ? getSelectedRoleByUser(player.userId) : null;
-      const roleName = getRoleName(selectedRoleCharacterId);
+      const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
+      const roleName = getRoleName(selectedRoleId);
       
       return {
         id: player.id,

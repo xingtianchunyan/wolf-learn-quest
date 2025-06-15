@@ -22,17 +22,43 @@ export const useAvailableRoles = (roomId: string) => {
 
     const fetchAvailableRoles = async () => {
       try {
-        const { data, error } = await supabase
-          .from('available_roles_for_room')
-          .select('*')
-          .or(`room_id.is.null,room_id.eq.${roomId}`);
+        // 直接从game_characters获取角色数据
+        const { data: charactersData, error: charactersError } = await supabase
+          .from('game_characters')
+          .select('*');
 
-        if (error) {
-          console.error('Error fetching available roles:', error);
+        if (charactersError) {
+          console.error('Error fetching characters:', charactersError);
           return;
         }
 
-        setAvailableRoles(data || []);
+        // 获取当前房间的角色选择
+        const { data: selectionsData, error: selectionsError } = await supabase
+          .from('role_selections')
+          .select('*')
+          .eq('room_id', roomId);
+
+        if (selectionsError) {
+          console.error('Error fetching role selections:', selectionsError);
+          return;
+        }
+
+        // 合并数据
+        const roles = charactersData?.map(character => {
+          const selection = selectionsData?.find(s => s.role_id === character.character_name);
+          return {
+            role_id: character["Role ID"],
+            character_name: character.character_name,
+            faction: character.faction,
+            skill_name: character.skill_name || '',
+            skill_key: character.description || '',
+            is_selected: !!selection,
+            selected_by_user: selection?.user_id || null,
+            room_id: selection ? roomId : null
+          };
+        }) || [];
+
+        setAvailableRoles(roles);
       } catch (error) {
         console.error('Error fetching available roles:', error);
       } finally {

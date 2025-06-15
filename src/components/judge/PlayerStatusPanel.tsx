@@ -8,7 +8,6 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { useAvailableRoles } from '@/hooks/useAvailableRoles';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
@@ -53,14 +52,12 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     fetchRoomData();
   }, [roomId]);
 
-  const { getSelectedRoleByUser, roleSelections } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
-  const { availableRoles } = useAvailableRoles(roomId);
+  const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
 
-  // 根据角色character_id获取角色名称
-  const getRoleName = (roleCharacterId: string | null) => {
-    if (!roleCharacterId) return '未选择';
-    const role = availableRoles.find(r => r.role_id === roleCharacterId);
-    return role ? role.character_name : '未知角色';
+  // 根据角色ID获取角色名称（在恢复的结构中，role_id就是角色名称）
+  const getRoleName = (roleId: string | null) => {
+    if (!roleId) return '未选择';
+    return roleId;
   };
 
   // 检查玩家是否在线 - 修正匹配逻辑
@@ -116,8 +113,8 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
                     // 获取玩家选择的角色
-                    const selectedRoleCharacterId = player.userId ? getSelectedRoleByUser(player.userId) : null;
-                    const roleName = getRoleName(selectedRoleCharacterId);
+                    const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
+                    const roleName = getRoleName(selectedRoleId);
                     
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
