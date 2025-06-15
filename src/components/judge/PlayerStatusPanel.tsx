@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +9,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
 interface Player {
   id: string;
@@ -53,28 +53,28 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     fetchRoomData();
   }, [roomId]);
 
-  // 获取房间最大玩家数以确定角色配置
-  const { getSelectedRoleByUser, roleSelections } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
-  
-  // 获取角色配置
-  const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleConfigs);
+  const { roleDesigns, loading: rolesLoading } = useRoleDesigns();
+  const { getSelectedRoleByUser } = useRoleSelection(
+    roomId,
+    currentUser?.id || null,
+    players.length,
+    maxPlayers
+  );
 
-  // 根据角色ID获取角色名称
+  const roleCountConfigs = getRoleConfiguration(maxPlayers);
+  const expandedRoles = expandRoles(roleCountConfigs);
+
   const getRoleName = (roleId: string | null) => {
     if (!roleId) return '未选择';
     const role = expandedRoles.find(r => r.instanceId === roleId);
-    return role ? role.name : '未知角色';
+    return role ? role.displayName : '未知角色';
   };
 
-  // 检查玩家是否在线 - 修正匹配逻辑
   const isPlayerOnline = (player: Player) => {
-    // AI玩家总是显示为"在线"
     if (player.isAI) {
       return true;
     }
 
-    // 对于真实玩家，检查userId是否在在线列表中
     if (!player.userId) {
       return false;
     }
@@ -104,7 +104,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {playersLoading ? (
+                {playersLoading || rolesLoading ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-gray-400 py-4">
                       加载中...
@@ -119,18 +119,15 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
-                    // 获取玩家选择的角色
                     const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
                     const roleName = getRoleName(selectedRoleId);
-                    
+
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
                         <TableCell className="text-gray-300 font-medium">
                           {player.name}
                         </TableCell>
-                        <TableCell className="text-gray-300">
-                          {roleName}
-                        </TableCell>
+                        <TableCell className="text-gray-300">{roleName}</TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             {playerOnline ? (

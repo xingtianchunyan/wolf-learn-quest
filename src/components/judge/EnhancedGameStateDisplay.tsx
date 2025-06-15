@@ -6,13 +6,14 @@ import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { supabase } from '@/integrations/supabase/client';
+import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
 }
 
 const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
-  roomId
+  roomId,
 }) => {
   const { gameState, getPhaseDisplayName } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
@@ -34,13 +35,22 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   }, [roomId]);
 
+  const roleCountConfigs = getRoleConfiguration(maxPlayers);
+  const expandedRoles = expandRoles(roleCountConfigs);
+
+  const getRoleDisplayName = (roleId: string | null | undefined) => {
+    if (!roleId) return '';
+    const role = expandedRoles.find(r => r.instanceId === roleId);
+    return role ? role.displayName : '';
+  };
+
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
       return {
         id: player.id,
         name: player.name,
-        role: player.role,
+        role: getRoleDisplayName(player.role),
         status: 'normal' as const,
         avatar: player.avatar,
       };
@@ -63,7 +73,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
           游戏信息
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* 当前游戏轮次和阶段 */}
         <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">

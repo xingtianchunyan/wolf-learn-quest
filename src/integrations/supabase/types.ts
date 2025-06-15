@@ -121,36 +121,6 @@ export type Database = {
           },
         ]
       }
-      game_characters: {
-        Row: {
-          character_name: string
-          description: string | null
-          faction: string
-          "Role ID": string
-          skill_description: string | null
-          skill_name: string | null
-          skill_usage: number | null
-        }
-        Insert: {
-          character_name: string
-          description?: string | null
-          faction: string
-          "Role ID"?: string
-          skill_description?: string | null
-          skill_name?: string | null
-          skill_usage?: number | null
-        }
-        Update: {
-          character_name?: string
-          description?: string | null
-          faction?: string
-          "Role ID"?: string
-          skill_description?: string | null
-          skill_name?: string | null
-          skill_usage?: number | null
-        }
-        Relationships: []
-      }
       game_phase_history: {
         Row: {
           created_at: string
@@ -578,6 +548,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_design: {
+        Row: {
+          faction: boolean
+          id: string
+          role_description: string | null
+          role_name: string
+          skill_description: string | null
+          skill_name: string | null
+          skill_type: Json | null
+          skill_usage: number | null
+        }
+        Insert: {
+          faction: boolean
+          id?: string
+          role_description?: string | null
+          role_name: string
+          skill_description?: string | null
+          skill_name?: string | null
+          skill_type?: Json | null
+          skill_usage?: number | null
+        }
+        Update: {
+          faction?: boolean
+          id?: string
+          role_description?: string | null
+          role_name?: string
+          skill_description?: string | null
+          skill_name?: string | null
+          skill_type?: Json | null
+          skill_usage?: number | null
+        }
+        Relationships: []
       }
       role_selections: {
         Row: {
