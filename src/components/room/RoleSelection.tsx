@@ -6,6 +6,7 @@ import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useToast } from '@/components/ui/use-toast';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
 interface RoleSelectionProps {
   maxPlayers: number;
@@ -28,6 +29,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { roleDesigns, loading: roleDesignsLoading } = useRoleDesigns();
   const roleConfigs = getRoleConfiguration(maxPlayers);
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -43,19 +45,6 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   // 获取当前玩家选择的角色
   const currentSelection = getCurrentPlayerSelection();
-
-  // 技能详细信息映射
-  const skillDetails = {
-    skill_night_attack: { name: 'skill_night_attack', effect: 'effect_night_attack', uses: 'usage_unlimited', type: 'type_attack' },
-    skill_prophecy: { name: 'skill_prophecy', effect: 'effect_prophecy', uses: 'usage_unlimited', type: 'type_view' },
-    skill_magic_potion: { name: 'skill_magic_potion', effect: 'effect_magic_potion', uses: 'usage_2', type: 'type_protect_or_attack' },
-    skill_dying_shot: { name: 'skill_dying_shot', effect: 'effect_dying_shot', uses: 'usage_1', type: 'type_attack' },
-    skill_vigil: { name: 'skill_vigil', effect: 'effect_vigil', uses: 'usage_unlimited', type: 'type_protect' },
-    skill_sleep: { name: 'skill_sleep', effect: 'effect_none', uses: 'usage_unlimited', type: 'type_none' },
-    skill_self_destruct: { name: 'skill_self_destruct', effect: 'effect_self_destruct', uses: 'usage_1', type: 'type_attack' },
-    skill_voodoo: { name: 'skill_voodoo', effect: 'effect_voodoo', uses: 'usage_1', type: 'type_protect' },
-    skill_demon_eye: { name: 'skill_demon_eye', effect: 'effect_demon_eye', uses: 'usage_unlimited', type: 'type_view' }
-  };
 
   const handleCardFlip = (roleId: string) => {
     setFlippedCards(prev => {
@@ -125,7 +114,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       onCharacterSelect(roleId);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${t(expandedRoles.find(r => r.instanceId === roleId)?.name || '')}`,
+        description: `已选择角色：${expandedRoles.find(r => r.instanceId === roleId)?.displayName || ''}`,
       });
     } else {
       toast({
@@ -137,6 +126,24 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   };
 
   const isFlipped = (roleId: string) => flippedCards.has(roleId);
+
+  // 根据角色名称获取角色设计信息
+  const getRoleDesign = (roleName: string) => {
+    return roleDesigns.find(design => design.role_name === roleName);
+  };
+
+  if (roleDesignsLoading) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
@@ -156,7 +163,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           )}
           {canSelectRoles() && currentSelection && (
             <p className="text-sm text-werewolf-purple">
-              当前选择：{t(expandedRoles.find(r => r.instanceId === currentSelection)?.name || '')}
+              当前选择：{expandedRoles.find(r => r.instanceId === currentSelection)?.displayName || ''}
             </p>
           )}
         </div>
@@ -166,7 +173,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]">
             {expandedRoles.map((role) => {
               const flipped = isFlipped(role.instanceId);
-              const skill = skillDetails[role.description as keyof typeof skillDetails];
+              const roleDesign = getRoleDesign(role.roleName);
               const isSelected = isRoleSelected(role.instanceId);
               const isCurrentSelection = currentSelection === role.instanceId;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
@@ -218,11 +225,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           }`}
                           onClick={() => canSelect && handleRoleSelect(role.instanceId)}
                         >
-                          <img 
-                            src={role.image} 
-                            alt={t(role.name)} 
-                            className="max-h-full max-w-full object-contain p-2"
-                          />
+                          <div className="text-6xl">🎭</div>
                         </div>
                         {/* 名称区域 - 点击翻面 */}
                         <div 
@@ -230,7 +233,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           onClick={() => handleCardFlip(role.instanceId)}
                         >
                           <h3 className="font-bold text-lg text-white mb-2">
-                            {t(role.name)}
+                            {role.displayName}
                           </h3>
                           <div className="text-xs text-gray-400">
                             单击图片选中，单击名称翻面
@@ -257,16 +260,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                         {/* 阵营信息 */}
                         <div className="text-center mb-4">
                           <h3 className="font-bold text-lg text-white mb-2">
-                            {t(role.name)}
+                            {role.displayName}
                           </h3>
                           <span 
                             className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                              role.team === 'Village' ? 'bg-green-900/60 text-green-200' : 
-                              role.team === 'Werewolves' ? 'bg-red-900/60 text-red-200' :
+                              roleDesign?.faction === false ? 'bg-green-900/60 text-green-200' : 
+                              roleDesign?.faction === true ? 'bg-red-900/60 text-red-200' :
                               'bg-purple-900/60 text-purple-200'
                             }`}
                           >
-                            {t(role.team.toLowerCase())}阵营
+                            {roleDesign?.faction === false ? '村民' : roleDesign?.faction === true ? '狼人' : '未知'}阵营
                           </span>
                         </div>
 
@@ -278,7 +281,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                                 技能名称
                               </h4>
                               <p className="text-xs text-gray-300">
-                                {t(skill?.name || role.description)}
+                                {roleDesign?.skill_name || '无技能'}
                               </p>
                             </div>
                             
@@ -287,7 +290,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                                 技能效果
                               </h4>
                               <p className="text-xs text-gray-300 leading-tight">
-                                {skill ? t(skill.effect) : '暂无详细说明'}
+                                {roleDesign?.skill_description || '暂无详细说明'}
                               </p>
                             </div>
                             
@@ -296,7 +299,19 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                                 使用次数
                               </h4>
                               <p className="text-sm text-gray-300">
-                                {skill ? t(skill.uses) : '无限制'}
+                                {roleDesign?.skill_usage === -1 ? '无限制' : roleDesign?.skill_usage || 0}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
+                                技能类型
+                              </h4>
+                              <p className="text-sm text-gray-300">
+                                {roleDesign?.skill_type ? 
+                                  (Array.isArray(roleDesign.skill_type) ? roleDesign.skill_type.join(', ') : JSON.stringify(roleDesign.skill_type))
+                                  : '无'
+                                }
                               </p>
                             </div>
                           </div>
