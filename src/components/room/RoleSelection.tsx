@@ -29,7 +29,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { roleDesigns, loading: roleDesignsLoading } = useRoleDesigns();
+  const { roleDesigns, loading: roleDesignsLoading, getRoleImageUrl } = useRoleDesigns();
   const roleConfigs = getRoleConfiguration(maxPlayers);
   const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -177,6 +177,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const isSelected = isRoleSelected(role.instanceId);
               const isCurrentSelection = currentSelection === role.instanceId;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
+              const imageUrl = getRoleImageUrl(role.roleName);
               
               return (
                 <div 
@@ -220,12 +221,26 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       <div className="h-full flex flex-col">
                         {/* 图片区域 - 点击选择角色 */}
                         <div 
-                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center ${
+                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden ${
                             canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                           }`}
                           onClick={() => canSelect && handleRoleSelect(role.instanceId)}
                         >
-                          <div className="text-6xl">🎭</div>
+                          {imageUrl ? (
+                            <img 
+                              src={imageUrl} 
+                              alt={role.displayName}
+                              className="w-full h-full object-cover rounded-md"
+                              onError={(e) => {
+                                // 如果图片加载失败，显示默认图标
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling!.style.display = 'flex';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-6xl">🎭</div>
+                          )}
+                          <div className="hidden text-6xl items-center justify-center w-full h-full">🎭</div>
                         </div>
                         {/* 名称区域 - 点击翻面 */}
                         <div 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,9 +8,9 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { supabase } from '@/integrations/supabase/client';
-import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
 interface Player {
   id: string;
@@ -31,6 +32,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const { currentUser } = useAuth();
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
   const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
+  const { getRoleImageUrl } = useRoleDesigns();
   const onlinePlayersList = getOnlinePlayers();
 
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -121,13 +123,28 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                     const playerOnline = isPlayerOnline(player);
                     const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
                     const roleName = getRoleName(selectedRoleId);
+                    const roleImageUrl = selectedRoleId ? getRoleImageUrl(selectedRoleId.replace(/_\d+$/, '')) : null;
 
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
                         <TableCell className="text-gray-300 font-medium">
                           {player.name}
                         </TableCell>
-                        <TableCell className="text-gray-300">{roleName}</TableCell>
+                        <TableCell className="text-gray-300">
+                          <div className="flex items-center space-x-2">
+                            {roleImageUrl && (
+                              <img 
+                                src={roleImageUrl} 
+                                alt={roleName}
+                                className="w-6 h-6 rounded-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <span>{roleName}</span>
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             {playerOnline ? (

@@ -5,6 +5,7 @@ import { GamepadIcon } from 'lucide-react';
 import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { supabase } from '@/integrations/supabase/client';
 import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 
@@ -17,6 +18,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
 }) => {
   const { gameState, getPhaseDisplayName } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
+  const { getRoleImageUrl } = useRoleDesigns();
   const [maxPlayers, setMaxPlayers] = useState(8);
 
   useEffect(() => {
@@ -47,12 +49,15 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
+      const roleImageUrl = player.role ? getRoleImageUrl(player.role.replace(/_\d+$/, '')) : null;
+      
       return {
         id: player.id,
         name: player.name,
         role: getRoleDisplayName(player.role),
         status: 'normal' as const,
         avatar: player.avatar,
+        roleImageUrl,
       };
     } else {
       return {
@@ -61,6 +66,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         role: '',
         status: 'waiting' as const,
         avatar: '',
+        roleImageUrl: null,
       };
     }
   });
@@ -94,4 +100,5 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     </Card>
   );
 };
+
 export default EnhancedGameStateDisplay;

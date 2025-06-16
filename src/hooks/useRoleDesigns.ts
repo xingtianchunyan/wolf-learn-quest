@@ -28,5 +28,18 @@ export const useRoleDesigns = () => {
     return roleDesigns.find(r => r.role_name === name);
   };
 
-  return { roleDesigns, loading, getRoleByName };
+  const getRoleImageUrl = (roleName: string) => {
+    const role = getRoleByName(roleName);
+    if (!role || !role.role_image) {
+      return null;
+    }
+    
+    const { data } = supabase.storage
+      .from('role-design')
+      .getPublicUrl(role.role_image);
+    
+    return data.publicUrl;
+  };
+
+  return { roleDesigns, loading, getRoleByName, getRoleImageUrl };
 };

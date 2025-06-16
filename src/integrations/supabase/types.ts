@@ -554,6 +554,7 @@ export type Database = {
           faction: boolean
           id: string
           role_description: string | null
+          role_image: string | null
           role_name: string
           skill_description: string | null
           skill_name: string | null
@@ -564,6 +565,7 @@ export type Database = {
           faction: boolean
           id?: string
           role_description?: string | null
+          role_image?: string | null
           role_name: string
           skill_description?: string | null
           skill_name?: string | null
@@ -574,6 +576,7 @@ export type Database = {
           faction?: boolean
           id?: string
           role_description?: string | null
+          role_image?: string | null
           role_name?: string
           skill_description?: string | null
           skill_name?: string | null

@@ -1,13 +1,14 @@
 
-import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Player {
   id: string;
   name: string;
-  role?: string;
-  status: 'normal' | 'dying' | 'weak' | 'eliminated' | 'waiting';
-  avatar?: string;
+  role: string;
+  status: 'normal' | 'waiting';
+  avatar: string;
+  roleImageUrl?: string | null;
 }
 
 interface PlayerStatusDisplayProps {
@@ -15,134 +16,52 @@ interface PlayerStatusDisplayProps {
 }
 
 const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players }) => {
-  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'normal': return 'border-green-400';
-      case 'dying': return 'border-red-400 animate-pulse';
-      case 'weak': return 'border-yellow-400';
-      case 'eliminated': return 'border-gray-500';
-      case 'waiting': return 'border-white/30';
-      default: return 'border-green-400';
-    }
-  };
-
-  const getStatusIconColor = (status: string) => {
-    switch (status) {
-      case 'normal': return 'text-green-400 border-green-400';
-      case 'dying': return 'text-red-400 border-red-400 animate-pulse';
-      case 'weak': return 'text-yellow-400 border-yellow-400';
-      case 'eliminated': return 'text-gray-500 border-gray-500';
-      case 'waiting': return 'text-white/30 border-white/30';
-      default: return 'text-green-400 border-green-400';
-    }
-  };
-
-  const handleCardClick = (playerId: string) => {
-    setFlippedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(playerId)) {
-        newSet.delete(playerId);
-      } else {
-        newSet.add(playerId);
-      }
-      return newSet;
-    });
-  };
-
-  const getRoleImage = (role: string) => {
-    // 这里应该返回对应角色的图片路径
-    // 暂时使用占位图
-    return '/placeholder.svg';
-  };
-
   return (
-    <div className="space-y-3">
-      {/* 状态说明 */}
-      <div className="text-xs text-gray-400 flex flex-wrap gap-4">
-        <span className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded border border-green-400 bg-green-400/20"></div>
-          正常
-        </span>
-        <span className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded border border-yellow-400 bg-yellow-400/20"></div>
-          虚弱
-        </span>
-        <span className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded border border-red-400 bg-red-400/20 animate-pulse"></div>
-          濒死
-        </span>
-        <span className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded border border-gray-500 bg-gray-500/20"></div>
-          淘汰
-        </span>
-        <span className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded border border-white/30 bg-white/20"></div>
-          等待加入
-        </span>
-      </div>
-
-      {/* 玩家卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {players.map((player) => {
-          const isFlipped = flippedCards.has(player.id);
-          const isWaiting = player.status === 'waiting';
-          return (
-            <div 
-              key={player.id}
-              className="relative h-24 perspective-1000 cursor-pointer"
-              onClick={() => !isWaiting && handleCardClick(player.id)}
-            >
-              <div 
-                className={`
-                  relative w-full h-full transition-transform duration-500 transform-style-preserve-3d
-                  ${isFlipped && !isWaiting ? 'rotate-y-180' : ''}
-                `}
-              >
-                {/* 正面 */}
-                <div 
-                  className={`
-                    absolute inset-0 p-3 bg-werewolf-dark/40 rounded-md border-2 backface-hidden
-                    ${getStatusColor(player.status)}
-                  `}
-                >
-                  <div className="flex items-center justify-center mb-2">
-                    {player.avatar ? (
-                      <img src={player.avatar} alt={player.name} className={`h-8 w-8 rounded-full border-2 object-cover ${getStatusColor(player.status)}`} />
-                    ) : (
-                      <User 
-                        className={`h-8 w-8 border-2 rounded-full p-1 ${getStatusIconColor(player.status)}`}
-                      />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-gray-300 text-sm">{player.name}</div>
-                    {player.role && <div className="text-xs text-werewolf-purple">{player.role}</div>}
-                  </div>
-                </div>
-
-                {/* 背面 */}
-                <div 
-                  className={`
-                    absolute inset-0 p-3 bg-werewolf-dark/40 rounded-md border-2 backface-hidden rotate-y-180
-                    ${getStatusColor(player.status)}
-                  `}
-                >
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <img 
-                      src={getRoleImage(player.role || '')} 
-                      alt={player.role}
-                      className="w-12 h-12 rounded object-cover mb-2"
-                    />
-                    <div className="text-xs text-werewolf-purple text-center">{player.role}</div>
-                  </div>
-                </div>
-              </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      {players.map((player) => (
+        <div
+          key={player.id}
+          className={`p-3 rounded-lg border transition-all ${
+            player.status === 'waiting'
+              ? 'border-gray-600 bg-gray-800/40 opacity-50'
+              : 'border-werewolf-purple/30 bg-werewolf-dark/40 hover:border-werewolf-purple/50'
+          }`}
+        >
+          <div className="flex flex-col items-center space-y-2">
+            {/* 玩家头像 */}
+            <Avatar className="w-12 h-12">
+              <AvatarImage src={player.avatar} alt={player.name} />
+              <AvatarFallback className="bg-werewolf-purple/20 text-werewolf-purple">
+                {player.name ? player.name.charAt(0).toUpperCase() : '?'}
+              </AvatarFallback>
+            </Avatar>
+            
+            {/* 玩家名称 */}
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-300 truncate max-w-full">
+                {player.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate max-w-full">
+                {player.role || '未分配角色'}
+              </p>
             </div>
-          );
-        })}
-      </div>
+
+            {/* 角色图片 */}
+            {player.roleImageUrl && (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-werewolf-purple/30">
+                <img 
+                  src={player.roleImageUrl} 
+                  alt={player.role}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
