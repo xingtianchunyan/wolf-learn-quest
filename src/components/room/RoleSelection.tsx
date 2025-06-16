@@ -233,8 +233,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                               className="w-full h-full object-cover rounded-md"
                               onError={(e) => {
                                 // 如果图片加载失败，显示默认图标
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextElementSibling!.style.display = 'flex';
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const nextElement = target.nextElementSibling as HTMLElement;
+                                if (nextElement) {
+                                  nextElement.style.display = 'flex';
+                                }
                               }}
                             />
                           ) : (
