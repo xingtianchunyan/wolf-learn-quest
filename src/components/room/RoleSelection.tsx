@@ -221,30 +221,34 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                       <div className="h-full flex flex-col">
                         {/* 图片区域 - 点击选择角色 */}
                         <div 
-                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden ${
+                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
                             canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                           }`}
                           onClick={() => canSelect && handleRoleSelect(role.instanceId)}
                         >
                           {imageUrl ? (
-                            <img 
-                              src={imageUrl} 
-                              alt={role.displayName}
-                              className="w-full h-full object-cover rounded-md"
-                              onError={(e) => {
-                                // 如果图片加载失败，显示默认图标
-                                const target = e.currentTarget as HTMLImageElement;
-                                target.style.display = 'none';
-                                const nextElement = target.nextElementSibling as HTMLElement;
-                                if (nextElement) {
-                                  nextElement.style.display = 'flex';
-                                }
-                              }}
-                            />
+                            <>
+                              <img 
+                                src={imageUrl} 
+                                alt={role.displayName}
+                                className="w-full h-full object-cover rounded-md"
+                                onError={(e) => {
+                                  // 如果图片加载失败，显示默认图标
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                                  if (fallback) {
+                                    fallback.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                              <div className="fallback-icon hidden absolute inset-0 text-6xl items-center justify-center w-full h-full">
+                                🎭
+                              </div>
+                            </>
                           ) : (
                             <div className="text-6xl">🎭</div>
                           )}
-                          <div className="hidden text-6xl items-center justify-center w-full h-full">🎭</div>
                         </div>
                         {/* 名称区域 - 点击翻面 */}
                         <div 
