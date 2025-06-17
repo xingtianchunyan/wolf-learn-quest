@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
+import { getRoleConfiguration, expandRolesWithDesigns } from '@/utils/roleConfiguration';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useToast } from '@/components/ui/use-toast';
@@ -30,8 +30,6 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const { t } = useLanguage();
   const { toast } = useToast();
   const { roleDesigns, loading: roleDesignsLoading, getRoleImageUrl } = useRoleDesigns();
-  const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleConfigs);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const {
@@ -43,22 +41,26 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     loading: roleSelectionLoading
   } = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
 
-  // 获取当前玩家选择的角色
+  // 获取角色配置并与设计数据结合
+  const roleConfigs = getRoleConfiguration(maxPlayers);
+  const expandedRoles = expandRolesWithDesigns(roleConfigs, roleDesigns);
+
+  // 获取当前玩家选择的角色（现在是 role_design 的 uuid）
   const currentSelection = getCurrentPlayerSelection();
 
-  const handleCardFlip = (roleId: string) => {
+  const handleCardFlip = (roleInstanceId: string) => {
     setFlippedCards(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(roleId)) {
-        newSet.delete(roleId);
+      if (newSet.has(roleInstanceId)) {
+        newSet.delete(roleInstanceId);
       } else {
-        newSet.add(roleId);
+        newSet.add(roleInstanceId);
       }
       return newSet;
     });
   };
 
-  const handleRoleSelect = async (roleId: string) => {
+  const handleRoleSelect = async (role: any) => {
     // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
@@ -79,8 +81,18 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
+    // 如果没有 roleDesignId，无法选择
+    if (!role.roleDesignId) {
+      toast({
+        title: t('error'),
+        description: '角色设计数据缺失，无法选择此角色',
+        variant: "destructive",
+      });
+      return;
+    }
+
     // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(roleId) && currentSelection !== roleId) {
+    if (isRoleSelected(role.roleDesignId) && currentSelection !== role.roleDesignId) {
       toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
@@ -90,7 +102,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果当前玩家已选择这个角色，则取消选择
-    if (currentSelection === roleId) {
+    if (currentSelection === role.roleDesignId) {
       const success = await unselectRole();
       if (success) {
         onCharacterSelect(null);
@@ -109,12 +121,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 选择新角色
-    const success = await selectRole(roleId);
+    const success = await selectRole(role.roleDesignId);
     if (success) {
-      onCharacterSelect(roleId);
+      onCharacterSelect(role.roleDesignId);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${expandedRoles.find(r => r.instanceId === roleId)?.displayName || ''}`,
+        description: `已选择角色：${role.displayName}`,
       });
     } else {
       toast({
@@ -125,7 +137,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
   };
 
-  const isFlipped = (roleId: string) => flippedCards.has(roleId);
+  const isFlipped = (roleInstanceId: string) => flippedCards.has(roleInstanceId);
 
   // 根据角色名称获取角色设计信息
   const getRoleDesign = (roleName: string) => {
@@ -163,7 +175,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           )}
           {canSelectRoles() && currentSelection && (
             <p className="text-sm text-werewolf-purple">
-              当前选择：{expandedRoles.find(r => r.instanceId === currentSelection)?.displayName || ''}
+              当前选择：{expandedRoles.find(r => r.roleDesignId === currentSelection)?.displayName || ''}
             </p>
           )}
         </div>
@@ -174,9 +186,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             {expandedRoles.map((role) => {
               const flipped = isFlipped(role.instanceId);
               const roleDesign = getRoleDesign(role.roleName);
-              const isSelected = isRoleSelected(role.instanceId);
-              const isCurrentSelection = currentSelection === role.instanceId;
-              const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection);
+              const isSelected = role.roleDesignId ? isRoleSelected(role.roleDesignId) : false;
+              const isCurrentSelection = currentSelection === role.roleDesignId;
+              const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
               const imageUrl = getRoleImageUrl(role.roleName);
               
               return (
@@ -224,7 +236,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
                             canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                           }`}
-                          onClick={() => canSelect && handleRoleSelect(role.instanceId)}
+                          onClick={() => canSelect && handleRoleSelect(role)}
                         >
                           {imageUrl ? (
                             <>

@@ -6,7 +6,7 @@ interface RoleSelection {
   id: string;
   room_id: string;
   user_id: string;
-  role_id: string;
+  role_id: string; // 现在是 uuid 类型，关联到 role_design.id
   selected_at: string;
 }
 
@@ -85,7 +85,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     }
   };
 
-  const selectRole = async (roleId: string) => {
+  const selectRole = async (roleDesignId: string) => {
     if (!currentUserId || !roomId) return false;
 
     try {
@@ -94,7 +94,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
         .upsert({
           room_id: roomId,
           user_id: currentUserId,
-          role_id: roleId
+          role_id: roleDesignId // 现在使用 role_design 的 uuid
         });
 
       if (error) {
@@ -135,8 +135,8 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     return roleSelections.find(selection => selection.user_id === userId)?.role_id || null;
   };
 
-  const isRoleSelected = (roleId: string) => {
-    return roleSelections.some(selection => selection.role_id === roleId);
+  const isRoleSelected = (roleDesignId: string) => {
+    return roleSelections.some(selection => selection.role_id === roleDesignId);
   };
 
   const getCurrentPlayerSelection = () => {

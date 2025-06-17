@@ -607,7 +607,15 @@ export type Database = {
           selected_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_role_selections_role_design"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "role_design"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       room_players: {
         Row: {
