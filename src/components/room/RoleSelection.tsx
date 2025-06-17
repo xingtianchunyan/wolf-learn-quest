@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,7 +28,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { roleDesigns, loading: roleDesignsLoading, getRoleImageUrl } = useRoleDesigns();
+  const { roleDesigns, loading: roleDesignsLoading, getLocalImageByDesignId } = useRoleDesigns();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const {
@@ -191,10 +190,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const isCurrentSelection = currentSelection === role.roleDesignId;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
               
-              // 使用 roleDesign 中的 role_image 来获取图片 URL
-              const imageUrl = roleDesign?.role_image ? 
-                `https://your-project.supabase.co/storage/v1/object/public/role-design/${roleDesign.role_image}` : 
-                null;
+              // 使用本地图片URL
+              const imageUrl = role.roleDesignId ? getLocalImageByDesignId(role.roleDesignId) : null;
               
               return (
                 <div 
@@ -244,28 +241,25 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                           onClick={() => canSelect && handleRoleSelect(role)}
                         >
                           {imageUrl ? (
-                            <>
-                              <img 
-                                src={imageUrl} 
-                                alt={role.displayName}
-                                className="w-full h-full object-cover rounded-md"
-                                onError={(e) => {
-                                  // 如果图片加载失败，显示默认图标
-                                  const target = e.currentTarget as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-                                  if (fallback) {
-                                    fallback.style.display = 'flex';
-                                  }
-                                }}
-                              />
-                              <div className="fallback-icon hidden absolute inset-0 text-6xl items-center justify-center w-full h-full">
-                                🎭
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-6xl">🎭</div>
-                          )}
+                            <img 
+                              src={imageUrl} 
+                              alt={role.displayName}
+                              className="w-full h-full object-cover rounded-md"
+                              onError={(e) => {
+                                console.error('Image failed to load:', imageUrl);
+                                // 如果图片加载失败，显示默认图标
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div className={`fallback-icon ${imageUrl ? 'hidden' : 'flex'} absolute inset-0 text-6xl items-center justify-center w-full h-full`}>
+                            🎭
+                          </div>
                         </div>
                         {/* 名称区域 - 点击翻面 */}
                         <div 
