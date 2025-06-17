@@ -7,9 +7,9 @@ export interface RoleCountConfig {
 // 扩展后的角色信息，包含 role_design 的 uuid
 export interface ExpandedRole {
   roleName: string;
-  instanceId: string; // 保持兼容性的实例标识符
+  instanceId: string;
   displayName: string;
-  roleDesignId?: string; // role_design 表中的 uuid
+  roleDesignId?: string;
 }
 
 export const getRoleConfiguration = (playerCount: number): RoleCountConfig[] => {
@@ -84,7 +84,7 @@ export const getRoleConfiguration = (playerCount: number): RoleCountConfig[] => 
   return configs[playerCount] || configs[6];
 };
 
-// 新增：根据角色设计数据扩展角色
+// 根据角色设计数据扩展角色，确保每个角色实例都对应一个具体的 role_design 记录
 export const expandRolesWithDesigns = (
   roleConfigs: RoleCountConfig[],
   roleDesigns: Array<{ id: string; role_name: string }>
@@ -92,19 +92,37 @@ export const expandRolesWithDesigns = (
   const expandedRoles: ExpandedRole[] = [];
 
   roleConfigs.forEach(role => {
-    // 找到匹配的角色设计
-    const matchingDesigns = roleDesigns.filter(design => design.role_name === role.roleName);
+    // 查找匹配的角色设计，优先匹配带序号的角色名
+    const baseDesigns = roleDesigns.filter(design => 
+      design.role_name === role.roleName || 
+      design.role_name.startsWith(role.roleName + '_')
+    );
+    
+    // 如果没有找到带序号的设计，使用基础角色设计
+    const availableDesigns = baseDesigns.length > 0 ? baseDesigns : 
+      roleDesigns.filter(design => design.role_name === role.roleName);
     
     for (let i = 1; i <= role.count; i++) {
-      // 如果有多个相同角色，按顺序分配给不同的设计（如果有的话）
-      const designIndex = Math.min(i - 1, matchingDesigns.length - 1);
-      const roleDesign = matchingDesigns[designIndex];
+      // 优先使用带序号的角色设计
+      const numberedRoleName = `${role.roleName}_${i}`;
+      let roleDesign = roleDesigns.find(design => design.role_name === numberedRoleName);
+      
+      // 如果没有找到带序号的设计，使用基础角色设计
+      if (!roleDesign) {
+        roleDesign = roleDesigns.find(design => design.role_name === role.roleName);
+      }
+      
+      // 如果仍然没有找到，跳过这个角色
+      if (!roleDesign) {
+        console.warn(`No role design found for ${role.roleName} instance ${i}`);
+        continue;
+      }
       
       expandedRoles.push({
         roleName: role.roleName,
         instanceId: `${role.roleName}_${i}`,
         displayName: role.count > 1 ? `${role.roleName} ${i}` : role.roleName,
-        roleDesignId: roleDesign?.id
+        roleDesignId: roleDesign.id
       });
     }
   });

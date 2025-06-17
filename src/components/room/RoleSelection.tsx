@@ -139,9 +139,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   const isFlipped = (roleInstanceId: string) => flippedCards.has(roleInstanceId);
 
-  // 根据角色名称获取角色设计信息
-  const getRoleDesign = (roleName: string) => {
-    return roleDesigns.find(design => design.role_name === roleName);
+  // 根据 roleDesignId 获取角色设计信息
+  const getRoleDesignById = (roleDesignId: string | undefined) => {
+    if (!roleDesignId) return null;
+    return roleDesigns.find(design => design.id === roleDesignId);
   };
 
   if (roleDesignsLoading) {
@@ -185,11 +186,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]">
             {expandedRoles.map((role) => {
               const flipped = isFlipped(role.instanceId);
-              const roleDesign = getRoleDesign(role.roleName);
+              const roleDesign = getRoleDesignById(role.roleDesignId);
               const isSelected = role.roleDesignId ? isRoleSelected(role.roleDesignId) : false;
               const isCurrentSelection = currentSelection === role.roleDesignId;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
-              const imageUrl = getRoleImageUrl(role.roleName);
+              
+              // 使用 roleDesign 中的 role_image 来获取图片 URL
+              const imageUrl = roleDesign?.role_image ? 
+                `https://your-project.supabase.co/storage/v1/object/public/role-design/${roleDesign.role_image}` : 
+                null;
               
               return (
                 <div 
