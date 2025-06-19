@@ -6,8 +6,9 @@ import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
+import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
@@ -19,6 +20,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   const { gameState, getPhaseDisplayName } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
   const { getRoleImageUrl } = useRoleDesigns();
+  const { currentUser } = useAuth();
   const [maxPlayers, setMaxPlayers] = useState(8);
 
   useEffect(() => {
@@ -37,24 +39,24 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   }, [roomId]);
 
-  const roleCountConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleCountConfigs);
-
-  const getRoleDisplayName = (roleId: string | null | undefined) => {
-    if (!roleId) return '';
-    const role = expandedRoles.find(r => r.instanceId === roleId);
-    return role ? role.displayName : '';
-  };
+  const { getSelectedRoleByUser } = useRoleSelection(
+    roomId,
+    currentUser?.id || null,
+    realPlayers.length,
+    maxPlayers
+  );
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
-      const roleImageUrl = player.role ? getRoleImageUrl(player.role.replace(/_\d+$/, '')) : null;
+      const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
+      const roleName = selectedRole?.roleName || '';
+      const roleImageUrl = selectedRole?.roleDesign?.role_name ? getRoleImageUrl(selectedRole.roleDesign.role_name) : null;
       
       return {
         id: player.id,
         name: player.name,
-        role: getRoleDisplayName(player.role),
+        role: roleName,
         status: 'normal' as const,
         avatar: player.avatar,
         roleImageUrl,

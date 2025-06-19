@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
 interface RoleSelection {
   id: string;
@@ -8,21 +9,37 @@ interface RoleSelection {
   user_id: string;
   role_id: string; // 现在是 uuid 类型，关联到 role_design.id
   selected_at: string;
+  // 添加角色设计信息
+  role_design?: {
+    id: string;
+    role_name: string;
+    faction: boolean;
+    role_description: string | null;
+  };
 }
 
 export const useRoleSelection = (roomId: string, currentUserId: string | null, currentPlayerCount: number, maxPlayers: number) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { roleDesigns } = useRoleDesigns();
 
   useEffect(() => {
     if (!roomId) return;
 
-    // 初始获取角色选择
+    // 初始获取角色选择，包含角色设计信息
     const fetchRoleSelections = async () => {
       try {
         const { data, error } = await supabase
           .from('role_selections')
-          .select('*')
+          .select(`
+            *,
+            role_design:role_id (
+              id,
+              role_name,
+              faction,
+              role_description
+            )
+          `)
           .eq('room_id', roomId);
 
         if (error) {
@@ -30,6 +47,7 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
           return;
         }
 
+        console.log('Role selections with design data:', data);
         setRoleSelections(data || []);
       } catch (error) {
         console.error('Error fetching role selections:', error);
@@ -132,7 +150,12 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
   };
 
   const getSelectedRoleByUser = (userId: string) => {
-    return roleSelections.find(selection => selection.user_id === userId)?.role_id || null;
+    const selection = roleSelections.find(selection => selection.user_id === userId);
+    return selection ? {
+      roleId: selection.role_id,
+      roleName: selection.role_design?.role_name || '未知角色',
+      roleDesign: selection.role_design
+    } : null;
   };
 
   const isRoleSelected = (roleDesignId: string) => {

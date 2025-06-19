@@ -9,7 +9,6 @@ import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
-import { getRoleConfiguration, expandRoles } from '@/utils/roleConfiguration';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
@@ -55,22 +54,12 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     fetchRoomData();
   }, [roomId]);
 
-  const { roleDesigns, loading: rolesLoading } = useRoleDesigns();
-  const { getSelectedRoleByUser } = useRoleSelection(
+  const { getSelectedRoleByUser, loading: roleSelectionLoading } = useRoleSelection(
     roomId,
     currentUser?.id || null,
     players.length,
     maxPlayers
   );
-
-  const roleCountConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRoles(roleCountConfigs);
-
-  const getRoleName = (roleId: string | null) => {
-    if (!roleId) return '未选择';
-    const role = expandedRoles.find(r => r.instanceId === roleId);
-    return role ? role.displayName : '未知角色';
-  };
 
   const isPlayerOnline = (player: Player) => {
     if (player.isAI) {
@@ -106,7 +95,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {playersLoading || rolesLoading ? (
+                {playersLoading || roleSelectionLoading ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-gray-400 py-4">
                       加载中...
@@ -121,9 +110,9 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
-                    const selectedRoleId = player.userId ? getSelectedRoleByUser(player.userId) : null;
-                    const roleName = getRoleName(selectedRoleId);
-                    const roleImageUrl = selectedRoleId ? getRoleImageUrl(selectedRoleId.replace(/_\d+$/, '')) : null;
+                    const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
+                    const roleName = selectedRole?.roleName || '未选择';
+                    const roleImageUrl = selectedRole?.roleDesign?.role_name ? getRoleImageUrl(selectedRole.roleDesign.role_name) : null;
 
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
