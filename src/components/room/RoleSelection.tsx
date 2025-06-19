@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,6 +47,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   // 获取当前玩家选择的角色（现在是 role_design 的 uuid）
   const currentSelection = getCurrentPlayerSelection();
+  const currentSelectedRoleId = currentSelection?.roleId || null;
 
   const handleCardFlip = (roleInstanceId: string) => {
     setFlippedCards(prev => {
@@ -91,7 +93,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(role.roleDesignId) && currentSelection !== role.roleDesignId) {
+    if (isRoleSelected(role.roleDesignId) && currentSelectedRoleId !== role.roleDesignId) {
       toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
@@ -101,7 +103,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
 
     // 如果当前玩家已选择这个角色，则取消选择
-    if (currentSelection === role.roleDesignId) {
+    if (currentSelectedRoleId === role.roleDesignId) {
       const success = await unselectRole();
       if (success) {
         onCharacterSelect(null);
@@ -175,7 +177,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           )}
           {canSelectRoles() && currentSelection && (
             <p className="text-sm text-werewolf-purple">
-              当前选择：{expandedRoles.find(r => r.roleDesignId === currentSelection)?.displayName || ''}
+              当前选择：{currentSelection.roleName}
             </p>
           )}
         </div>
@@ -187,7 +189,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               const flipped = isFlipped(role.instanceId);
               const roleDesign = getRoleDesignById(role.roleDesignId);
               const isSelected = role.roleDesignId ? isRoleSelected(role.roleDesignId) : false;
-              const isCurrentSelection = currentSelection === role.roleDesignId;
+              const isCurrentSelection = currentSelectedRoleId === role.roleDesignId;
               const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
               
               // 使用本地图片URL
