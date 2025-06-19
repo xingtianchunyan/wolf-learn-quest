@@ -875,6 +875,10 @@ export type Database = {
         Args: { p_room_id: string }
         Returns: string
       }
+      is_room_judge: {
+        Args: { p_room_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_room_participant: {
         Args: { p_room_id: string; p_user_id: string }
         Returns: boolean
