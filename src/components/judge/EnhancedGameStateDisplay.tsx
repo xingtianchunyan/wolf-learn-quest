@@ -60,6 +60,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         status: 'normal' as const,
         avatar: player.avatar,
         roleImageUrl,
+        userId: player.userId,
       };
     } else {
       return {
@@ -69,6 +70,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         status: 'waiting' as const,
         avatar: '',
         roleImageUrl: null,
+        userId: undefined,
       };
     }
   });
@@ -96,7 +98,11 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         {/* 玩家角色和状态 */}
         <div className="space-y-3">
           <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
-          <PlayerStatusDisplay players={displayPlayers} />
+          <PlayerStatusDisplay 
+            players={displayPlayers} 
+            roomId={roomId} 
+            maxPlayers={maxPlayers} 
+          />
         </div>
       </CardContent>
     </Card>
