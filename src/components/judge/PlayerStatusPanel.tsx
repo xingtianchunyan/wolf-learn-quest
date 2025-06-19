@@ -8,7 +8,6 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
@@ -31,7 +30,6 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
   const { currentUser } = useAuth();
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
   const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
-  const { getRoleImageUrl } = useRoleDesigns();
   const onlinePlayersList = getOnlinePlayers();
 
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -112,7 +110,6 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                     const playerOnline = isPlayerOnline(player);
                     const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
                     const roleName = selectedRole?.roleName || '未选择';
-                    const roleImageUrl = selectedRole?.roleDesign?.role_name ? getRoleImageUrl(selectedRole.roleDesign.role_name) : null;
 
                     return (
                       <TableRow key={player.id} className="border-werewolf-purple/30">
@@ -120,19 +117,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                           {player.name}
                         </TableCell>
                         <TableCell className="text-gray-300">
-                          <div className="flex items-center space-x-2">
-                            {roleImageUrl && (
-                              <img 
-                                src={roleImageUrl} 
-                                alt={roleName}
-                                className="w-6 h-6 rounded-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            )}
-                            <span>{roleName}</span>
-                          </div>
+                          {roleName}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
