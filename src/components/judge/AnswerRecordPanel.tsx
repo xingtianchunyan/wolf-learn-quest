@@ -91,9 +91,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   const getOptionLabel = (index: number) => {
-    return ['A',
-
-].length; 'B', 'C', 'D'][index - 1];
+    return ['A', 'B', 'C', 'D'][index - 1];
   };
 
   const formatTime = (seconds: number) => {
