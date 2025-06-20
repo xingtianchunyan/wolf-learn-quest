@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
@@ -6,6 +5,8 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import RoomInfoCard from '@/components/room/RoomInfoCard';
 import QuestionBankPanel from './QuestionBankPanel';
 import PlayerStatusPanel from './PlayerStatusPanel';
+import { useGameState } from '@/hooks/useGameState';
+import { useToast } from '@/hooks/use-toast';
 
 interface PreparationPhaseDialogProps {
   isOpen: boolean;
@@ -21,10 +22,13 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isStarting, setIsStarting] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // 使用真实数据
   const { players } = usePlayersRealtime(roomId);
+  const { startGame } = useGameState(roomId);
   const allPlayersReady = players.every(player => player.isReady);
 
   // 拖动处理函数
@@ -63,9 +67,43 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
     };
   }, [isDragging, dragStart]);
 
-  const handleStartGame = () => {
-    console.log('开始游戏');
-    onClose();
+  const handleStartGame = async () => {
+    if (!allPlayersReady || players.length === 0) {
+      toast({
+        title: '无法开始游戏',
+        description: '请确保所有玩家都已准备就绪',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsStarting(true);
+    try {
+      const success = await startGame();
+      
+      if (success) {
+        toast({
+          title: '游戏开始',
+          description: '游戏已成功开始，玩家将自动跳转到游戏页面',
+        });
+        onClose();
+      } else {
+        toast({
+          title: '开始游戏失败',
+          description: '请稍后重试',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error starting game:', error);
+      toast({
+        title: '开始游戏时发生错误',
+        description: '请稍后重试',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -107,15 +145,16 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
             <div className="flex-shrink-0">
               <Button
                 onClick={handleStartGame}
-                disabled={!allPlayersReady || players.length === 0}
+                disabled={!allPlayersReady || players.length === 0 || isStarting}
+                loading={isStarting}
                 className={`w-full px-4 py-3 text-lg ${
-                  allPlayersReady && players.length > 0
+                  allPlayersReady && players.length > 0 && !isStarting
                     ? 'bg-werewolf-purple hover:bg-werewolf-light'
                     : 'bg-gray-600 cursor-not-allowed'
                 }`}
               >
                 <Play className="mr-2 h-5 w-5" />
-                开始游戏
+                {isStarting ? '正在开始游戏...' : '开始游戏'}
               </Button>
             </div>
           </div>

@@ -196,11 +196,43 @@ export const useGameState = (roomId: string) => {
     return () => clearInterval(interval);
   }, [gameState?.phaseEndTime, gameState?.isPaused]);
 
-  // Start game
+  // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
     if (!roomId) return false;
 
     try {
+      // 首先确保游戏设置存在
+      const { data: existingSettings } = await supabase
+        .from('game_settings')
+        .select('*')
+        .eq('room_id', roomId)
+        .maybeSingle();
+
+      if (!existingSettings) {
+        // 创建默认游戏设置
+        const { error: settingsError } = await supabase
+          .from('game_settings')
+          .insert({
+            room_id: roomId,
+            is_auto_advance: true,
+            day_duration: 300,
+            evening_duration: 40,
+            night_duration: 180,
+            dawn_duration: 40
+          });
+
+        if (settingsError) {
+          console.error('Error creating game settings:', settingsError);
+          toast({
+            title: '初始化游戏设置失败',
+            description: settingsError.message,
+            variant: 'destructive',
+          });
+          return false;
+        }
+      }
+
+      // 调用开始游戏函数
       const { error } = await supabase.rpc('start_game', {
         p_room_id: roomId
       });
@@ -222,6 +254,10 @@ export const useGameState = (roomId: string) => {
       return true;
     } catch (error) {
       console.error('Error starting game:', error);
+      toast({
+        title: '开始游戏时发生错误',
+        variant: 'destructive',
+      });
       return false;
     }
   };

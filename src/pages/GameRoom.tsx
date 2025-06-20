@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useGameState } from '@/hooks/useGameState';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
 
 const GameRoom = () => {
@@ -35,7 +35,16 @@ const GameRoom = () => {
   const { leaveCurrentRoom } = usePlayerRoom();
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
+  const { gameState } = useGameState(roomData?.id || '');
   
+  // 监听游戏状态变化，当游戏开始时自动跳转
+  useEffect(() => {
+    if (gameState?.status === 'active' && roomData?.id) {
+      console.log('Game started, navigating to game page...');
+      navigate(`/room/${roomData.id}/game`);
+    }
+  }, [gameState?.status, roomData?.id, navigate]);
+
   // 添加在线状态追踪
   const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
   const onlinePlayersList = getOnlinePlayers();
