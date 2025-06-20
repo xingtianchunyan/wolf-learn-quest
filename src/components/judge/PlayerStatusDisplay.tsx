@@ -98,9 +98,9 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
                 </div>
               </div>
 
-              {/* 背面 - 角色图片（隐藏彩蛋） */}
+              {/* 背面 - 角色图片铺满整个面板 */}
               <div 
-                className={`absolute inset-0 w-full h-full rounded-lg p-3 backface-hidden rotate-y-180 cursor-pointer ${
+                className={`absolute inset-0 w-full h-full rounded-lg backface-hidden rotate-y-180 cursor-pointer overflow-hidden ${
                   player.status === 'waiting' 
                     ? 'bg-gray-600/40 border-2 border-gray-500'
                     : 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
@@ -111,39 +111,24 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
                 }}
                 onClick={() => handleCardFlip(player.id)}
               >
-                <div className="h-full flex flex-col items-center justify-between">
-                  {/* 角色图片 */}
-                  <div className="flex-1 flex items-center justify-center">
-                    {roleImageUrl && player.status !== 'waiting' ? (
-                      <img 
-                        src={roleImageUrl} 
-                        alt={roleName}
-                        className="w-16 h-16 rounded-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-                          if (fallback) {
-                            fallback.style.display = 'flex';
-                          }
-                        }}
-                      />
-                    ) : null}
-                    <div className={`fallback-icon ${roleImageUrl ? 'hidden' : 'flex'} w-16 h-16 rounded-full items-center justify-center text-3xl ${
-                      player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60'
-                    }`}>
-                      🎭
-                    </div>
-                  </div>
-                  
-                  {/* 角色名称 */}
-                  <div className="text-center">
-                    <h4 className="font-semibold text-sm text-white">
-                      {roleName}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-1">
-                      点击返回
-                    </p>
-                  </div>
+                {roleImageUrl && player.status !== 'waiting' ? (
+                  <img 
+                    src={roleImageUrl} 
+                    alt={roleName}
+                    className="w-full h-full object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                      if (fallback) {
+                        fallback.style.display = 'flex';
+                      }
+                    }}
+                  />
+                ) : null}
+                <div className={`fallback-icon ${roleImageUrl ? 'hidden' : 'flex'} w-full h-full rounded-lg items-center justify-center text-6xl ${
+                  player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60'
+                }`}>
+                  🎭
                 </div>
               </div>
             </div>
