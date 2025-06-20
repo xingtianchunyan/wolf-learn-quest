@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GamepadIcon } from 'lucide-react';
+import { GamepadIcon, Clock, Play, Pause } from 'lucide-react';
 import PlayerStatusDisplay from './PlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
@@ -17,7 +17,7 @@ interface EnhancedGameStateDisplayProps {
 const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   roomId,
 }) => {
-  const { gameState, getPhaseDisplayName } = useGameState(roomId);
+  const { gameState, getPhaseDisplayName, formatTime, timeRemaining } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
   const { getRoleImageUrl } = useRoleDesigns();
   const { currentUser } = useAuth();
@@ -75,24 +75,81 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   });
 
+  const getGameStatusDisplay = () => {
+    if (!gameState) return '准备阶段 - 等待中';
+    
+    switch (gameState.status) {
+      case 'waiting':
+        return '准备阶段 - 等待开始';
+      case 'active':
+        return `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}阶段`;
+      case 'ended':
+        return '游戏已结束';
+      default:
+        return '未知状态';
+    }
+  };
+
+  const showTimer = gameState?.status === 'active' && gameState.phaseEndTime && !gameState.isPaused;
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-werewolf-purple flex items-center text-lg">
-          <GamepadIcon className="mr-2 h-5 w-5" />
-          游戏信息
+        <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
+          <div className="flex items-center">
+            <GamepadIcon className="mr-2 h-5 w-5" />
+            游戏信息
+          </div>
+          {gameState?.status === 'active' && (
+            <div className="flex items-center text-sm">
+              {gameState.isPaused ? (
+                <div className="flex items-center text-yellow-400">
+                  <Pause className="h-4 w-4 mr-1" />
+                  已暂停
+                </div>
+              ) : (
+                <div className="flex items-center text-green-400">
+                  <Play className="h-4 w-4 mr-1" />
+                  进行中
+                </div>
+              )}
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* 当前游戏轮次和阶段 */}
         <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">
-          <h2 className="text-xl font-bold text-werewolf-purple">
-            {gameState && gameState.status !== 'waiting' 
-              ? `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}阶段`
-              : '准备阶段 - 等待中'
-            }
+          <h2 className="text-xl font-bold text-werewolf-purple mb-2">
+            {getGameStatusDisplay()}
           </h2>
+          
+          {/* 显示倒计时 */}
+          {showTimer && (
+            <div className="flex items-center justify-center text-lg font-semibold">
+              <Clock className="h-5 w-5 mr-2 text-werewolf-purple" />
+              <span className={`${
+                timeRemaining <= 10 ? 'text-red-400' : 
+                timeRemaining <= 30 ? 'text-yellow-400' : 
+                'text-werewolf-purple'
+              }`}>
+                剩余时间: {formatTime(timeRemaining)}
+              </span>
+            </div>
+          )}
+          
+          {/* 游戏状态说明 */}
+          {gameState && (
+            <div className="text-sm text-gray-400 mt-2">
+              {gameState.status === 'waiting' && '等待法官开始游戏'}
+              {gameState.status === 'active' && gameState.currentPhase === 'day' && '白天讨论阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 'evening' && '傍晚答题阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 'night' && '夜晚行动阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 'dawn' && '黎明答题阶段'}
+              {gameState.status === 'ended' && '游戏结束，可查看结算'}
+            </div>
+          )}
         </div>
 
         {/* 玩家角色和状态 */}

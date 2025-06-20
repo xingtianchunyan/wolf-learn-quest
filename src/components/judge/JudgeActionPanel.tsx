@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { useVoteResults, VoteRecord } from '@/hooks/useVoteResults';
 import { useGameState } from '@/hooks/useGameState';
+import { useToast } from '@/hooks/use-toast';
 
 interface JudgeActionPanelProps {
   roomId: string;
@@ -28,6 +30,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
   const { voteRecords, loading: votesLoading } = useVoteResults(roomId);
   const { gameState, advancePhase, togglePause, endGame, gameSettings, updateGameSettings } = useGameState(roomId);
+  const { toast } = useToast();
 
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [isPausing, setIsPausing] = useState(false);
@@ -60,6 +63,17 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
   const handleQuitJudge = async () => {
     if (!roomId || !currentUser) return;
+    
+    // 如果游戏正在进行中，提示用户
+    if (gameState?.status === 'active') {
+      toast({
+        title: '无法退出',
+        description: '游戏进行中无法停止扮演法官，请先结束游戏',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLeavingJudge(true);
     try {
       // 将 judge_user_id 置空
@@ -69,20 +83,28 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         .eq('id', roomId);
 
       if (error) {
-        alert('退出法官失败: ' + error.message);
+        toast({
+          title: '退出法官失败',
+          description: error.message,
+          variant: 'destructive',
+        });
         setIsLeavingJudge(false);
         return;
       }
       // 返回大厅
       navigate('/lobby');
     } catch (err) {
-      alert('退出法官时发生错误');
+      toast({
+        title: '退出法官时发生错误',
+        variant: 'destructive',
+      });
     } finally {
       setIsLeavingJudge(false);
     }
   };
 
   const isGameActive = gameState?.status === 'active';
+  const canQuitJudge = !isGameActive; // 只有在游戏非激活状态下才能退出
 
   return (
     <>
@@ -99,6 +121,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                 size="sm"
                 onClick={() => setIsPreparationDialogOpen(true)}
                 className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                disabled={isGameActive} // 游戏进行中禁用准备阶段按钮
               >
                 <Settings className="h-4 w-4 mr-2" />
                 准备阶段
@@ -109,12 +132,26 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                 onClick={handleQuitJudge}
                 className="border-werewolf-purple/50 hover:bg-red-700/40"
                 loading={isLeavingJudge}
+                disabled={!canQuitJudge || isLeavingJudge}
               >
                 <Square className="h-4 w-4 mr-2" />
                 {isLeavingJudge ? "正在退出..." : "停止扮演法官"}
               </Button>
             </div>
           </div>
+          {/* 游戏状态提示 */}
+          {gameState && (
+            <div className="mt-2 text-sm text-gray-400">
+              当前状态: {gameState.status === 'waiting' ? '等待开始' : 
+                       gameState.status === 'active' ? '游戏进行中' : 
+                       gameState.status === 'ended' ? '游戏已结束' : '未知状态'}
+              {gameState.status === 'active' && 
+                ` - 第${gameState.currentRound}轮 ${gameState.currentPhase === 'day' ? '白天' : 
+                     gameState.currentPhase === 'evening' ? '傍晚' : 
+                     gameState.currentPhase === 'night' ? '夜晚' : '黎明'}阶段`
+              }
+            </div>
+          )}
         </CardHeader>
         
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4">
@@ -149,7 +186,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center text-gray-400">
-                        当前阶段无投票记录
+                        {gameState?.status === 'active' ? '当前阶段无投票记录' : '游戏尚未开始'}
                       </TableCell>
                     </TableRow>
                   )}
@@ -159,16 +196,21 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
           </div>
 
           {/* 自动化设置 */}
-          <div className="p-4 bg-werewolf-dark/40 rounded-md">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
-              <Switch
-                checked={gameSettings?.isAutoAdvance ?? true}
-                onCheckedChange={(checked) => updateGameSettings({ isAutoAdvance: checked })}
-                disabled={!isGameActive}
-              />
+          {gameState && (
+            <div className="p-4 bg-werewolf-dark/40 rounded-md">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
+                <Switch
+                  checked={gameSettings?.isAutoAdvance ?? true}
+                  onCheckedChange={(checked) => updateGameSettings({ isAutoAdvance: checked })}
+                  disabled={!isGameActive}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {gameSettings?.isAutoAdvance ? '自动切换阶段模式' : '手动切换阶段模式'}
+              </p>
             </div>
-          </div>
+          )}
 
           {/* 游戏控制按钮 */}
           <div className="grid grid-cols-2 gap-3">
@@ -215,6 +257,13 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               游戏结算
             </Button>
           </div>
+
+          {/* 游戏进行中的提示信息 */}
+          {gameState?.status === 'active' && (
+            <div className="text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md">
+              游戏进行中，部分功能已禁用
+            </div>
+          )}
         </CardContent>
       </Card>
 

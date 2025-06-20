@@ -17,7 +17,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
 
   useEffect(() => {
-    if (isSystemLinked && gameState) {
+    if (isSystemLinked && gameState && gameState.status === 'active') {
       const { currentRound, currentPhase } = gameState;
       const phaseIndex = currentPhase === 'evening' ? 0 : currentPhase === 'dawn' ? 1 : -1;
 
@@ -56,12 +56,21 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const isAnsweringPhase = gameState && (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn');
   const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 
+  // 显示游戏状态信息
+  const getGameStatusInfo = () => {
+    if (!gameState) return '游戏准备中';
+    if (gameState.status === 'waiting') return '游戏准备中';
+    if (gameState.status === 'active') return `游戏进行中 - 第${roundNumber}轮 ${phaseName}阶段`;
+    if (gameState.status === 'ended') return '游戏已结束';
+    return '未知状态';
+  };
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <GraduationCap className="mr-2 h-5 w-5" />
-          教师系统 - 第{roundNumber}轮 {phaseName}阶段
+          教师系统 - {getGameStatusInfo()}
         </CardTitle>
       </CardHeader>
       
@@ -77,14 +86,13 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                 </span>
               </div>
             )}
-             {gameState?.isPaused && isAnsweringPhase && (
-                <div className="flex items-center justify-center p-3 bg-yellow-900/30 rounded-md">
-                    <span className="text-lg font-bold text-yellow-400">游戏已暂停</span>
-                </div>
+            {gameState?.isPaused && isAnsweringPhase && (
+              <div className="flex items-center justify-center p-3 bg-yellow-900/30 rounded-md">
+                <span className="text-lg font-bold text-yellow-400">游戏已暂停</span>
+              </div>
             )}
 
-
-            {currentQuestion ? (
+            {gameState?.status === 'active' && currentQuestion ? (
               <>
                 {/* 题目题干 */}
                 <div className="p-4 bg-werewolf-dark/40 rounded-md">
@@ -123,9 +131,16 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
               </>
             ) : (
               <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
-                {isSystemLinked
-                  ? (gameState && !isAnsweringPhase ? '当前非答题阶段' : '当前阶段无题目信息或题目已用尽')
-                  : '请先在 准备阶段管理 -> 题库管理 中链接题目'}
+                {!gameState || gameState.status === 'waiting' 
+                  ? '游戏尚未开始，请先开始游戏'
+                  : !isSystemLinked 
+                    ? '请先在 准备阶段管理 -> 题库管理 中链接题目'
+                    : gameState.status === 'ended'
+                      ? '游戏已结束'
+                      : !isAnsweringPhase 
+                        ? '当前非答题阶段' 
+                        : '当前阶段无题目信息或题目已用尽'
+                }
               </div>
             )}
           </div>

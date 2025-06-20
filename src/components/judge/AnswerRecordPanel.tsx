@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,12 +13,9 @@ interface AnswerRecordPanelProps {
   roomId: string;
 }
 
-// PlayerAnswerRecord 类型现在由 usePlayerAnswers hook 内部处理。
-
-// 用于在组件中渲染的玩家答案数据结构
 interface PlayerAnswer {
   playerId: string;
-  playerName:string;
+  playerName: string;
   selectedOption: number | null;
   responseTime: number | null;
   isCorrect: boolean | null;
@@ -93,7 +91,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];
+    return ['A',
+
+].length; 'B', 'C', 'D'][index - 1];
   };
 
   const formatTime = (seconds: number) => {
@@ -105,6 +105,16 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getStatusMessage = () => {
+    if (!gameState) return '游戏尚未开始';
+    if (gameState.status === 'waiting') return '游戏尚未开始';
+    if (linkedQuestions.length === 0) return '请先在准备阶段链接题目';
+    if (answerRecords.length === 0) return '暂无答题记录';
+    return null;
+  };
+
+  const statusMessage = getStatusMessage();
+
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
@@ -112,6 +122,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
           <div className="flex items-center">
             <ClipboardList className="mr-2 h-5 w-5" />
             答题记录
+            {gameState?.status === 'active' && (
+              <span className="ml-2 text-sm text-green-400">(实时更新)</span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -140,7 +153,11 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       </CardHeader>
       
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-        {currentRecord ? (
+        {statusMessage ? (
+          <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
+            {statusMessage}
+          </div>
+        ) : currentRecord ? (
           <div className="space-y-4 h-full flex flex-col">
             {/* 题目信息 */}
             <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
@@ -192,7 +209,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                               )}
                             </>
                           ) : (
-                            <span className="text-sm text-gray-500">等待答题...</span>
+                            <span className="text-sm text-gray-500">
+                              {gameState?.status === 'active' ? '等待答题...' : '未答题'}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -204,7 +223,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
           </div>
         ) : (
           <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
-            {linkedQuestions.length > 0 ? '正在加载玩家数据...' : '请先在准备阶段链接题目'}
+            正在加载数据...
           </div>
         )}
       </CardContent>
