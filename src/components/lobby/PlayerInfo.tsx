@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -20,104 +21,76 @@ interface PlayerInfoProps {
 const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
   const { t } = useLanguage();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [playerData, setPlayerData] = useState({
+    id: '',
+    name: 'Player',
+    playerId: '',
+    level: 1,
+    experience: 0,
+    wins: 0,
+    losses: 0,
+  });
 
-  const getInitialPlayerData = (user: (User & { player_name?: string }) | null) => {
-    if (!user) {
-      return {
-        id: '',
-        name: 'Player',
-        playerId: '',
-        level: 1,
-        experience: 0,
-        wins: 0,
-        losses: 0,
-      };
-    }
-
-    const displayName = user.user_metadata?.display_name || 
-                       user.user_metadata?.player_name || 
-                       user.email?.split('@')[0] || 
-                       'Player';
-
-    return {
-      id: user.id,
-      name: user.user_metadata?.player_name || user.email?.split('@')[0] || 'Player',
-      playerId: displayName,
-      level: 1,
-      experience: 0,
-      wins: 0,
-      losses: 0,
-    };
-  };
-
-  const [playerData, setPlayerData] = useState(() => getInitialPlayerData(currentUser));
-  
-  // Fetch player data from Supabase
+  // Fetch player data and avatar from Supabase
   useEffect(() => {
-    setPlayerData(getInitialPlayerData(currentUser));
+    const fetchPlayerData = async () => {
+      if (!currentUser) {
+        setPlayerData({
+          id: '',
+          name: 'Player',
+          playerId: '',
+          level: 1,
+          experience: 0,
+          wins: 0,
+          losses: 0,
+        });
+        setAvatarUrl(null);
+        return;
+      }
+
+      try {
+        // Fetch user profile data
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+        }
+
+        const displayName = userData?.player_name || 
+                           currentUser.user_metadata?.display_name || 
+                           currentUser.user_metadata?.player_name || 
+                           currentUser.email?.split('@')[0] || 
+                           'Player';
+
+        setPlayerData({
+          id: currentUser.id,
+          name: displayName,
+          playerId: displayName,
+          level: userData?.level || 1,
+          experience: userData?.experience || 0,
+          wins: userData?.games_won || 0,
+          losses: userData?.games_lost || 0,
+        });
+
+        // Set avatar URL if available
+        if (userData?.avatar_url) {
+          setAvatarUrl(userData.avatar_url);
+        }
+      } catch (error) {
+        console.error('Error fetching player data:', error);
+      }
+    };
+
+    fetchPlayerData();
   }, [currentUser]);
-  
-  // const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   try {
-  //     if (!event.target.files || event.target.files.length === 0 || !currentUser) {
-  //       return;
-  //     }
-      
-  //     const file = event.target.files[0];
-  //     const fileExt = file.name.split('.').pop();
-  //     const fileName = `${currentUser.id}-${Math.random()}.${fileExt}`;
-  //     const filePath = `${fileName}`;
-      
-  //     // Upload the file to Supabase Storage
-  //     const { error: uploadError } = await supabase.storage
-  //       .from('avatars')
-  //       .upload(filePath, file);
-        
-  //     if (uploadError) {
-  //       toast({
-  //         title: "Upload failed",
-  //         description: uploadError.message,
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
-      
-  //     // Get the public URL
-  //     const { data: { publicUrl } } = supabase.storage
-  //       .from('avatars')
-  //       .getPublicUrl(filePath);
-        
-  //     setAvatarUrl(publicUrl);
-      
-  //     // Update the user's avatar URL in the database
-  //     const { error: updateError } = await supabase
-  //       .from('users')
-  //       .update({ avatar_url: publicUrl })
-  //       .eq('user_id', currentUser.id);
-        
-  //     if (updateError) {
-  //       console.error("Error updating avatar URL:", updateError);
-  //       toast({
-  //         title: "Failed to update profile",
-  //         description: "Your avatar was uploaded but we couldn't update your profile",
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
-      
-  //     toast({
-  //       title: "Avatar uploaded",
-  //       description: "Your profile has been updated",
-  //     });
-  //   } catch (error) {
-  //     console.error("Avatar upload error:", error);
-  //     toast({
-  //       title: "Upload failed",
-  //       description: "Something went wrong. Please try again.",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
+
+  const handleAvatarUpdate = (url: string) => {
+    setAvatarUrl(url);
+  };
   
   // Get level from experience
   const getLevelInfo = (exp: number) => {
@@ -139,7 +112,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
         <AvatarUpload 
           avatarUrl={avatarUrl}
           playerName={playerData.name}
-          onAvatarUpdate={setAvatarUrl}
+          onAvatarUpdate={handleAvatarUpdate}
         />
         
         {/* Player Name - Centered */}

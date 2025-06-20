@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,16 +38,50 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       }
       
       const file = event.target.files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: t('upload_failed'),
+          description: '请选择图片文件',
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: t('upload_failed'),
+          description: '图片大小不能超过5MB',
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const fileExt = file.name.split('.').pop();
-      const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${session.user.id}/avatar.${fileExt}`;
+      
+      // Delete old avatar if exists
+      if (avatarUrl) {
+        const oldPath = avatarUrl.split('/').pop();
+        if (oldPath) {
+          await supabase.storage
+            .from('avatars')
+            .remove([`${session.user.id}/${oldPath}`]);
+        }
+      }
       
       // Upload the file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
         
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         toast({
           title: t('upload_failed'),
           description: uploadError.message,
@@ -58,7 +93,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
         
       onAvatarUpdate(publicUrl);
       
