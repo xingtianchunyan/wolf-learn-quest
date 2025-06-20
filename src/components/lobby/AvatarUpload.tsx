@@ -50,10 +50,10 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       }
       
       // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 1 * 1024 * 1024) {
         toast({
           title: t('upload_failed'),
-          description: '图片大小不能超过5MB',
+          description: '图片大小不能超过1MB',
           variant: "destructive",
         });
         return;
