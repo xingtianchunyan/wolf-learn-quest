@@ -23,7 +23,7 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({
   onSkillType
 }) => {
   const [isRoomInfoOpen, setIsRoomInfoOpen] = useState(false);
-  const { voteResults, loading: voteLoading } = useVoteResults(roomId);
+  const { voteRecords, loading: voteLoading } = useVoteResults(roomId);
 
   const handleRoomInfoClick = () => {
     setIsRoomInfoOpen(true);
@@ -58,8 +58,8 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({
               <div className="space-y-2 pr-4">
                 {voteLoading ? (
                   <div className="text-center text-gray-400">加载投票结果中...</div>
-                ) : voteResults && voteResults.length > 0 ? (
-                  voteResults.map((vote, index) => (
+                ) : voteRecords && voteRecords.length > 0 ? (
+                  voteRecords.map((vote, index) => (
                     <div 
                       key={index} 
                       className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"

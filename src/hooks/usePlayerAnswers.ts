@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-// 从 AnswerRecordPanel.tsx 移过来的类型定义
+// Player answer record with extended properties
 export interface PlayerAnswerRecord {
   id: string;
   game_id: string | null;
@@ -12,6 +12,15 @@ export interface PlayerAnswerRecord {
   selected_option: number | null;
   is_correct: boolean | null;
   response_time: number | null;
+  user_id?: string;
+  game_round?: number;
+  game_phase?: string;
+  is_timeout?: boolean;
+  questions?: {
+    question: string;
+    correct_option: number;
+    explanation?: string;
+  };
 }
 
 export const usePlayerAnswers = (gameId: string | null | undefined) => {
@@ -29,13 +38,26 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('player_answers')
-        .select('*')
+        .select(`
+          *,
+          questions (
+            question,
+            correct_option,
+            explanation
+          )
+        `)
         .eq('game_id', gameId);
       
       if (error) {
         console.error('Error fetching player answers:', error);
       } else if (data) {
-        setPlayerAnswers(data as PlayerAnswerRecord[]);
+        // Add user_id field for compatibility
+        const transformedData = data.map(answer => ({
+          ...answer,
+          user_id: answer.player_id,
+          is_timeout: answer.response_time === null
+        }));
+        setPlayerAnswers(transformedData as PlayerAnswerRecord[]);
       }
       setLoading(false);
     };
@@ -54,7 +76,11 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
         },
         (payload: RealtimePostgresChangesPayload<PlayerAnswerRecord>) => {
           if (payload.new && typeof payload.new === 'object') {
-            const newAnswer = payload.new as PlayerAnswerRecord;
+            const newAnswer = {
+              ...payload.new as PlayerAnswerRecord,
+              user_id: (payload.new as any).player_id,
+              is_timeout: (payload.new as any).response_time === null
+            };
             if (payload.eventType === 'INSERT') {
               setPlayerAnswers(currentAnswers => {
                 if (currentAnswers.some(a => a.id === newAnswer.id)) {

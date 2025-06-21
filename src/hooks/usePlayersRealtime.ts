@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -9,8 +8,15 @@ interface Player {
   isReady: boolean;
   isHost: boolean;
   isAI: boolean;
-  userId?: string; // 添加userId字段用于在线状态检查  
+  userId?: string;
   role?: string;
+  user_id?: string;
+  is_ready?: boolean;
+  is_ai?: boolean;
+  users?: {
+    player_name?: string;
+  };
+  selected_character?: string;
 }
 
 export const usePlayersRealtime = (roomId: string) => {
@@ -82,8 +88,13 @@ export const usePlayersRealtime = (roomId: string) => {
                 isReady: player.is_ready || false,
                 isHost: false,
                 isAI: true,
-                userId: undefined, // AI玩家没有userId                
+                userId: undefined,
                 role: player.role,
+                user_id: undefined,
+                is_ready: player.is_ready || false,
+                is_ai: true,
+                users: undefined,
+                selected_character: player.role,
               };
             } else {
               const userData = usersData.find(user => user.user_id === player.user_id);
@@ -94,8 +105,15 @@ export const usePlayersRealtime = (roomId: string) => {
                 isReady: player.is_ready || false,
                 isHost: roomData?.host_id === player.user_id,
                 isAI: false,
-                userId: player.user_id, // 添加userId字段
+                userId: player.user_id,
                 role: player.role,
+                user_id: player.user_id,
+                is_ready: player.is_ready || false,
+                is_ai: false,
+                users: {
+                  player_name: userData?.player_name || 'Unknown Player'
+                },
+                selected_character: player.role,
               };
             }
           });

@@ -85,10 +85,10 @@ const StudentAnswerRecord: React.FC<StudentAnswerRecordProps> = ({ roomId }) => 
     
     // 如果是当前轮次，检查阶段是否已经过去
     if (answerRound === currentRound) {
-      if (answerPhase === 'evening' && (currentPhase === 'dawn' || currentPhase === 'discussion' || currentPhase === 'voting')) {
+      if (answerPhase === 'evening' && (currentPhase === 'dawn' || currentPhase === 'day' || currentPhase === 'night')) {
         return true;
       }
-      if (answerPhase === 'dawn' && (currentPhase === 'discussion' || currentPhase === 'voting')) {
+      if (answerPhase === 'dawn' && (currentPhase === 'day' || currentPhase === 'night')) {
         return true;
       }
     }
