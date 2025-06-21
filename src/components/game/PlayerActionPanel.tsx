@@ -66,14 +66,14 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({
                     >
                       <div className="flex justify-between items-center">
                         <span className="text-gray-300">
-                          {vote.voter_name || 'Unknown'} 
+                          {vote.voters.length} 票
                         </span>
                         <span className="text-werewolf-purple">
-                          → {vote.target_name || 'Unknown'}
+                          → {vote.votedPlayerName}
                         </span>
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        投票时间: {new Date(vote.created_at).toLocaleTimeString()}
+                        投票者: {vote.voters.join(', ')}
                       </div>
                     </div>
                   ))
