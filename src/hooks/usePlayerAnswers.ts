@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-// 从 AnswerRecordPanel.tsx 移过来的类型定义
 export interface PlayerAnswerRecord {
   id: string;
   game_id: string | null;
@@ -12,6 +11,9 @@ export interface PlayerAnswerRecord {
   selected_option: number | null;
   is_correct: boolean | null;
   response_time: number | null;
+  game_phase?: string | null;
+  explanation?: string | null;
+  is_timeout?: boolean | null;
 }
 
 export const usePlayerAnswers = (gameId: string | null | undefined) => {

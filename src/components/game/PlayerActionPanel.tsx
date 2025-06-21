@@ -95,7 +95,7 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({ roomId, selectedP
                           <div className="flex items-center space-x-2">
                             <Vote className="h-4 w-4 text-werewolf-purple" />
                             <span className="text-sm text-gray-300">
-                              {record.voters} 票投给 {record.votedPlayerName}
+                              {record.voters.join(', ')} 票投给 {record.votedPlayerName}
                             </span>
                           </div>
                           <Badge variant="outline" className="border-werewolf-purple/50 text-xs">
