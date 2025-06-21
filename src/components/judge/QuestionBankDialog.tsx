@@ -223,6 +223,10 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     setSelectedQuestions(selected);
   };
 
+  const clearAllSelections = () => {
+    setSelectedQuestions([]);
+  };
+
   const toggleQuestionSelection = (question: Question) => {
     const isSelected = selectedQuestions.some(q => q.id === question.id);
     
@@ -371,6 +375,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                   onToggleSource={toggleSourceSelection}
                   onSelectAllFromSource={selectAllFromSource}
                   onRandomSelectAll={randomSelectAll}
+                  onClearAllSelections={clearAllSelections}
                 />
                 <QuestionPreview
                   questions={filteredQuestions}
