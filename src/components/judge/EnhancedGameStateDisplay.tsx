@@ -46,6 +46,35 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     maxPlayers
   );
 
+  const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
+    if (i < realPlayers.length) {
+      const player = realPlayers[i];
+      const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
+      const roleName = selectedRole?.roleName || '';
+      const roleImageUrl = selectedRole?.roleDesign?.role_name ? getRoleImageUrl(selectedRole.roleDesign.role_name) : null;
+      
+      return {
+        id: player.id,
+        name: player.name,
+        role: roleName,
+        status: 'normal' as const,
+        avatar: player.avatar,
+        roleImageUrl,
+        userId: player.userId,
+      };
+    } else {
+      return {
+        id: `placeholder-${i}`,
+        name: '等待玩家',
+        role: '',
+        status: 'waiting' as const,
+        avatar: '',
+        roleImageUrl: null,
+        userId: undefined,
+      };
+    }
+  });
+
   const getGameStatusDisplay = () => {
     if (!gameState) return '准备阶段 - 等待中';
     
@@ -126,7 +155,11 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         {/* 玩家角色和状态 */}
         <div className="space-y-3">
           <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
-          <PlayerStatusDisplay roomId={roomId} hideRoles={false} />
+          <PlayerStatusDisplay 
+            players={displayPlayers} 
+            roomId={roomId} 
+            maxPlayers={maxPlayers} 
+          />
         </div>
       </CardContent>
     </Card>
