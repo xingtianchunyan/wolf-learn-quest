@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -206,22 +207,28 @@ export const useGameState = (roomId: string) => {
   const advancePhaseRef = useRef(advancePhase);
   advancePhaseRef.current = advancePhase;
 
-  // Timer effect - fix scope issues
+  // Timer effect - fix dependency issues by using separate variables
   useEffect(() => {
-    if (!gameState?.phaseEndTime || gameState.isPaused) {
+    const phaseEndTime = gameState?.phaseEndTime;
+    const isPaused = gameState?.isPaused;
+    const currentPhase = gameState?.currentPhase;
+    const gameId = gameState?.id;
+    const isAutoAdvance = gameSettings?.isAutoAdvance;
+
+    if (!phaseEndTime || isPaused) {
       setTimeRemaining(0);
       return;
     }
 
     const updateTimer = () => {
       const now = new Date().getTime();
-      const endTime = new Date(gameState.phaseEndTime!).getTime();
+      const endTime = new Date(phaseEndTime).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
       setTimeRemaining(remaining);
 
       // Handle auto-advance when timer reaches zero
-      if (remaining === 0 && gameSettings?.isAutoAdvance && gameState.currentPhase && gameState.id) {
-        const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
+      if (remaining === 0 && isAutoAdvance && currentPhase && gameId) {
+        const isAnsweringPhase = currentPhase === 'evening' || currentPhase === 'dawn';
         
         if (isAnsweringPhase) {
           // Handle timeout for unanswered players
@@ -238,17 +245,17 @@ export const useGameState = (roomId: string) => {
               const { data: existingAnswers } = await supabase
                 .from('player_answers')
                 .select('player_id')
-                .eq('game_id', gameState.id)
-                .eq('game_phase', gameState.currentPhase);
+                .eq('game_id', gameId)
+                .eq('game_phase', currentPhase);
 
               const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
               const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
 
               if (unansweredPlayers.length > 0) {
                 const timeoutRecords = unansweredPlayers.map(player => ({
-                  game_id: gameState.id,
+                  game_id: gameId,
                   player_id: player.user_id,
-                  game_phase: gameState.currentPhase,
+                  game_phase: currentPhase,
                   is_timeout: true,
                   response_time: null,
                   selected_option: null,
@@ -278,7 +285,7 @@ export const useGameState = (roomId: string) => {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameState?.id, gameSettings?.isAutoAdvance, roomId]);
+  }, [phaseEndTime, isPaused, currentPhase, gameId, isAutoAdvance, roomId]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
