@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -207,13 +208,15 @@ export const useGameState = (roomId: string) => {
   const advancePhaseRef = useRef(advancePhase);
   advancePhaseRef.current = advancePhase;
 
-  // Timer effect - fix dependency issues by using separate variables
+  // Timer effect - simplified to avoid type issues
   useEffect(() => {
-    const phaseEndTime = gameState?.phaseEndTime;
-    const isPaused = gameState?.isPaused;
-    const currentPhase = gameState?.currentPhase;
-    const gameId = gameState?.id;
-    const isAutoAdvance = gameSettings?.isAutoAdvance;
+    if (!gameState || !gameSettings) {
+      setTimeRemaining(0);
+      return;
+    }
+
+    const { phaseEndTime, isPaused, currentPhase, id: gameId } = gameState;
+    const { isAutoAdvance } = gameSettings;
 
     if (!phaseEndTime || isPaused) {
       setTimeRemaining(0);
@@ -285,7 +288,7 @@ export const useGameState = (roomId: string) => {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [phaseEndTime, isPaused, currentPhase, gameId, isAutoAdvance, roomId]);
+  }, [gameState, gameSettings, roomId]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
@@ -530,3 +533,4 @@ export const useGameState = (roomId: string) => {
     getPhaseDisplayName,
   };
 };
+
