@@ -14,6 +14,7 @@ export interface PlayerAnswerRecord {
   game_phase?: string | null;
   explanation?: string | null;
   is_timeout?: boolean | null;
+  create_at?: string;
 }
 
 export const usePlayerAnswers = (gameId: string | null | undefined) => {
@@ -32,7 +33,8 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
       const { data, error } = await supabase
         .from('player_answers')
         .select('*')
-        .eq('game_id', gameId);
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: true });
       
       if (error) {
         console.error('Error fetching player answers:', error);
@@ -62,7 +64,9 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
                 if (currentAnswers.some(a => a.id === newAnswer.id)) {
                   return currentAnswers;
                 }
-                return [...currentAnswers, newAnswer];
+                return [...currentAnswers, newAnswer].sort((a, b) => 
+                  new Date(a.create_at || '').getTime() - new Date(b.create_at || '').getTime()
+                );
               });
             } else if (payload.eventType === 'UPDATE') {
               setPlayerAnswers(currentAnswers =>

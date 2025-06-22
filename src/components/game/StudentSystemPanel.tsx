@@ -3,27 +3,72 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Clock } from 'lucide-react';
-import { useJudgePage } from '@/contexts/JudgePageContext';
 import { Question } from '@/components/judge/types/questionBank';
 import { useGameState } from '@/hooks/useGameState';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StudentSystemPanelProps {
   roomId: string;
 }
 
 const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
-  const { linkedQuestions, isSystemLinked } = useJudgePage();
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName } = useGameState(roomId);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [linkedQuestions, setLinkedQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch linked questions for the room
   useEffect(() => {
-    if (isSystemLinked && gameState && gameState.status === 'active') {
+    const fetchLinkedQuestions = async () => {
+      if (!roomId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('room_questions')
+          .select(`
+            question_order,
+            questions (
+              id,
+              question,
+              option_a,
+              option_b,
+              option_c,
+              option_d,
+              correct_option,
+              explanation
+            )
+          `)
+          .eq('room_id', roomId)
+          .order('question_order', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching linked questions:', error);
+          return;
+        }
+
+        if (data) {
+          const questions = data.map(item => item.questions).filter(Boolean) as Question[];
+          setLinkedQuestions(questions);
+        }
+      } catch (error) {
+        console.error('Error fetching linked questions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLinkedQuestions();
+  }, [roomId]);
+
+  // Update current question based on game state
+  useEffect(() => {
+    if (linkedQuestions.length > 0 && gameState && gameState.status === 'active') {
       const { currentRound, currentPhase } = gameState;
       const phaseIndex = currentPhase === 'evening' ? 0 : currentPhase === 'dawn' ? 1 : -1;
 
       if (phaseIndex !== -1) {
         const questionIndex = (currentRound - 1) * 2 + phaseIndex;
-        if (linkedQuestions && linkedQuestions.length > questionIndex) {
+        if (questionIndex < linkedQuestions.length) {
           setCurrentQuestion(linkedQuestions[questionIndex]);
         } else {
           setCurrentQuestion(null);
@@ -34,7 +79,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     } else {
       setCurrentQuestion(null);
     }
-  }, [isSystemLinked, linkedQuestions, gameState]);
+  }, [linkedQuestions, gameState]);
 
   const getOptionLabel = (index: number) => {
     return ['A', 'B', 'C', 'D'][index];
@@ -54,7 +99,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
   const isAnsweringPhase = gameState && (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn');
-  const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
+  const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 
   const getGameStatusInfo = () => {
     if (!gameState) return '游戏准备中';
@@ -63,6 +108,19 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     if (gameState.status === 'ended') return '游戏已结束';
     return '未知状态';
   };
+
+  if (loading) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+        <CardContent className="p-4 flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
+            <p className="text-sm text-gray-400">加载题目信息...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
@@ -116,7 +174,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
                 {!gameState || gameState.status === 'waiting' 
                   ? '游戏尚未开始，请等待法官开始游戏'
-                  : !isSystemLinked 
+                  : linkedQuestions.length === 0
                     ? '等待法官配置题目'
                     : gameState.status === 'ended'
                       ? '游戏已结束'

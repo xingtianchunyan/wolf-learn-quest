@@ -176,25 +176,100 @@ export const useGameState = (roomId: string) => {
     };
   }, [roomId]);
 
-  // Calculate time remaining
+  // Calculate time remaining and handle auto-advance
   useEffect(() => {
     if (!gameState || !gameState.phaseEndTime || gameState.isPaused) {
       setTimeRemaining(0);
       return;
     }
 
-    const calculateTimeRemaining = () => {
+    const calculateTimeRemaining = async () => {
       const now = new Date().getTime();
       const endTime = new Date(gameState.phaseEndTime!).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
       setTimeRemaining(remaining);
+
+      // Auto-advance when timer reaches zero for answering phases
+      if (remaining === 0 && gameSettings?.isAutoAdvance) {
+        const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
+        
+        if (isAnsweringPhase) {
+          console.log('Timer reached zero, auto-advancing phase...');
+          
+          // Handle timeout for players who haven't answered
+          await handlePhaseTimeout();
+          
+          // Advance to next phase
+          try {
+            await advancePhase();
+          } catch (error) {
+            console.error('Error auto-advancing phase:', error);
+          }
+        }
+      }
+    };
+
+    const handlePhaseTimeout = async () => {
+      try {
+        // Get all players in the room who haven't answered in this phase
+        const { data: players, error: playersError } = await supabase
+          .from('room_players')
+          .select('user_id')
+          .eq('room_id', roomId)
+          .eq('is_ai', false);
+
+        if (playersError || !players) {
+          console.error('Error fetching players for timeout:', playersError);
+          return;
+        }
+
+        // Get existing answers for this phase
+        const { data: existingAnswers, error: answersError } = await supabase
+          .from('player_answers')
+          .select('player_id')
+          .eq('game_id', gameState.id)
+          .eq('game_phase', gameState.currentPhase);
+
+        if (answersError) {
+          console.error('Error fetching existing answers:', answersError);
+          return;
+        }
+
+        const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
+        const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
+
+        // Create timeout records for unanswered players
+        if (unansweredPlayers.length > 0) {
+          const timeoutRecords = unansweredPlayers.map(player => ({
+            game_id: gameState.id,
+            player_id: player.user_id,
+            game_phase: gameState.currentPhase,
+            is_timeout: true,
+            response_time: null,
+            selected_option: null,
+            is_correct: null
+          }));
+
+          const { error: insertError } = await supabase
+            .from('player_answers')
+            .insert(timeoutRecords);
+
+          if (insertError) {
+            console.error('Error inserting timeout records:', insertError);
+          } else {
+            console.log(`Created timeout records for ${unansweredPlayers.length} players`);
+          }
+        }
+      } catch (error) {
+        console.error('Error handling phase timeout:', error);
+      }
     };
 
     calculateTimeRemaining();
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState?.phaseEndTime, gameState?.isPaused]);
+  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameSettings?.isAutoAdvance, roomId]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
