@@ -207,29 +207,30 @@ export const useGameState = (roomId: string) => {
   const advancePhaseRef = useRef(advancePhase);
   advancePhaseRef.current = advancePhase;
 
-  // Extract primitive values outside useEffect to avoid type inference issues
-  const endTimeString = gameState?.phaseEndTime || null;
-  const isPausedFlag = gameState?.isPaused || false;
-  const currentPhaseValue = gameState?.currentPhase || null;
-  const gameStateId = gameState?.id || null;
-  const autoAdvanceFlag = gameSettings?.isAutoAdvance || false;
-
-  // Timer effect - use primitive values to avoid type instantiation issues
+  // Timer effect - use separate effect with minimal dependencies
   useEffect(() => {
-    if (!gameState || !gameSettings || !endTimeString || isPausedFlag) {
+    if (!gameState || !gameSettings) {
       setTimeRemaining(0);
       return;
     }
 
     const updateTimer = () => {
+      const endTime = gameState.phaseEndTime;
+      const isPaused = gameState.isPaused;
+      
+      if (!endTime || isPaused) {
+        setTimeRemaining(0);
+        return;
+      }
+
       const now = new Date().getTime();
-      const targetTime = new Date(endTimeString).getTime();
+      const targetTime = new Date(endTime).getTime();
       const remaining = Math.max(0, Math.floor((targetTime - now) / 1000));
       setTimeRemaining(remaining);
 
       // Handle auto-advance when timer reaches zero
-      if (remaining === 0 && autoAdvanceFlag && currentPhaseValue && gameStateId) {
-        const isAnsweringPhase = currentPhaseValue === 'evening' || currentPhaseValue === 'dawn';
+      if (remaining === 0 && gameSettings.isAutoAdvance && gameState.currentPhase && gameState.id) {
+        const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
         
         if (isAnsweringPhase) {
           // Handle timeout for unanswered players
@@ -246,17 +247,17 @@ export const useGameState = (roomId: string) => {
               const { data: existingAnswers } = await supabase
                 .from('player_answers')
                 .select('player_id')
-                .eq('game_id', gameStateId)
-                .eq('game_phase', currentPhaseValue);
+                .eq('game_id', gameState.id)
+                .eq('game_phase', gameState.currentPhase);
 
               const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
               const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
 
               if (unansweredPlayers.length > 0) {
                 const timeoutRecords = unansweredPlayers.map(player => ({
-                  game_id: gameStateId,
+                  game_id: gameState.id,
                   player_id: player.user_id,
-                  game_phase: currentPhaseValue,
+                  game_phase: gameState.currentPhase,
                   is_timeout: true,
                   response_time: null,
                   selected_option: null,
@@ -286,7 +287,7 @@ export const useGameState = (roomId: string) => {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [endTimeString, isPausedFlag, currentPhaseValue, gameStateId, autoAdvanceFlag, roomId]);
+  }, [gameState, gameSettings, roomId]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
