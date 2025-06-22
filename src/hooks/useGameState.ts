@@ -183,7 +183,7 @@ export const useGameState = (roomId: string) => {
       return;
     }
 
-    const calculateTimeRemaining = async () => {
+    const calculateTimeRemaining = () => {
       const now = new Date().getTime();
       const endTime = new Date(gameState.phaseEndTime!).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
@@ -197,14 +197,12 @@ export const useGameState = (roomId: string) => {
           console.log('Timer reached zero, auto-advancing phase...');
           
           // Handle timeout for players who haven't answered
-          await handlePhaseTimeout();
-          
-          // Advance to next phase
-          try {
-            await advancePhase();
-          } catch (error) {
-            console.error('Error auto-advancing phase:', error);
-          }
+          handlePhaseTimeout().then(() => {
+            // Advance to next phase
+            advancePhase().catch(error => {
+              console.error('Error auto-advancing phase:', error);
+            });
+          });
         }
       }
     };

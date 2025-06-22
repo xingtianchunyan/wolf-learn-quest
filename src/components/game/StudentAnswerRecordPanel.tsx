@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,7 +20,7 @@ interface QuestionInfo {
 
 const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roomId }) => {
   const { currentUser } = useAuth();
-  const { gameState } = useGameState(roomId);
+  const { gameState, timeRemaining } = useGameState(roomId);
   const { playerAnswers, loading } = usePlayerAnswers(gameState?.id);
   const [questionsInfo, setQuestionsInfo] = useState<{ [key: string]: QuestionInfo }>({});
 
@@ -85,7 +84,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
       );
 
       // If no answer exists and timer is up, create timeout record
-      if (currentPhaseAnswers.length === 0 && gameState.timeRemaining === 0) {
+      if (currentPhaseAnswers.length === 0 && timeRemaining === 0) {
         try {
           await supabase
             .from('player_answers')
@@ -105,7 +104,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
     };
 
     handlePhaseTimeout();
-  }, [gameState?.currentPhase, gameState?.timeRemaining, currentUser?.id, currentPlayerAnswers]);
+  }, [gameState?.currentPhase, timeRemaining, currentUser?.id, currentPlayerAnswers]);
 
   const getPhaseLabel = (phase: string) => {
     switch (phase) {
