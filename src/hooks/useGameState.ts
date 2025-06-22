@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -183,30 +184,7 @@ export const useGameState = (roomId: string) => {
       return;
     }
 
-    const calculateTimeRemaining = () => {
-      const now = new Date().getTime();
-      const endTime = new Date(gameState.phaseEndTime!).getTime();
-      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
-      setTimeRemaining(remaining);
-
-      // Auto-advance when timer reaches zero for answering phases
-      if (remaining === 0 && gameSettings?.isAutoAdvance) {
-        const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
-        
-        if (isAnsweringPhase) {
-          console.log('Timer reached zero, auto-advancing phase...');
-          
-          // Handle timeout for players who haven't answered
-          handlePhaseTimeout().then(() => {
-            // Advance to next phase
-            advancePhase().catch(error => {
-              console.error('Error auto-advancing phase:', error);
-            });
-          });
-        }
-      }
-    };
-
+    // Handle timeout for players who haven't answered - separate function to avoid recursion
     const handlePhaseTimeout = async () => {
       try {
         // Get all players in the room who haven't answered in this phase
@@ -263,11 +241,34 @@ export const useGameState = (roomId: string) => {
       }
     };
 
+    const calculateTimeRemaining = () => {
+      const now = new Date().getTime();
+      const endTime = new Date(gameState.phaseEndTime!).getTime();
+      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+      setTimeRemaining(remaining);
+
+      // Auto-advance when timer reaches zero for answering phases
+      if (remaining === 0 && gameSettings?.isAutoAdvance) {
+        const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
+        
+        if (isAnsweringPhase) {
+          console.log('Timer reached zero, auto-advancing phase...');
+          
+          // Handle timeout first, then advance phase
+          handlePhaseTimeout().then(() => {
+            advancePhase().catch(error => {
+              console.error('Error auto-advancing phase:', error);
+            });
+          });
+        }
+      }
+    };
+
     calculateTimeRemaining();
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameSettings?.isAutoAdvance, roomId]);
+  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameSettings?.isAutoAdvance, roomId, gameState?.id]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
