@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -206,34 +207,34 @@ export const useGameState = (roomId: string) => {
   const advancePhaseRef = useRef(advancePhase);
   advancePhaseRef.current = advancePhase;
 
-  // Timer effect - use primitive values to avoid infinite type instantiation
+  // Timer effect - completely separated to avoid infinite type instantiation
   useEffect(() => {
     if (!gameState || !gameSettings) {
       setTimeRemaining(0);
       return;
     }
 
-    // Extract primitive values to avoid type issues
-    const phaseEndTime = gameState.phaseEndTime;
-    const isPaused = gameState.isPaused;
-    const currentPhase = gameState.currentPhase;
-    const gameId = gameState.id;
-    const isAutoAdvance = gameSettings.isAutoAdvance;
+    // Create local variables to break type inference chain
+    const endTime = gameState.phaseEndTime;
+    const paused = gameState.isPaused;
+    const phase = gameState.currentPhase;
+    const stateId = gameState.id;
+    const autoAdvance = gameSettings.isAutoAdvance;
 
-    if (!phaseEndTime || isPaused) {
+    if (!endTime || paused) {
       setTimeRemaining(0);
       return;
     }
 
     const updateTimer = () => {
       const now = new Date().getTime();
-      const endTime = new Date(phaseEndTime).getTime();
-      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+      const targetTime = new Date(endTime).getTime();
+      const remaining = Math.max(0, Math.floor((targetTime - now) / 1000));
       setTimeRemaining(remaining);
 
       // Handle auto-advance when timer reaches zero
-      if (remaining === 0 && isAutoAdvance && currentPhase && gameId) {
-        const isAnsweringPhase = currentPhase === 'evening' || currentPhase === 'dawn';
+      if (remaining === 0 && autoAdvance && phase && stateId) {
+        const isAnsweringPhase = phase === 'evening' || phase === 'dawn';
         
         if (isAnsweringPhase) {
           // Handle timeout for unanswered players
@@ -250,17 +251,17 @@ export const useGameState = (roomId: string) => {
               const { data: existingAnswers } = await supabase
                 .from('player_answers')
                 .select('player_id')
-                .eq('game_id', gameId)
-                .eq('game_phase', currentPhase);
+                .eq('game_id', stateId)
+                .eq('game_phase', phase);
 
               const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
               const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
 
               if (unansweredPlayers.length > 0) {
                 const timeoutRecords = unansweredPlayers.map(player => ({
-                  game_id: gameId,
+                  game_id: stateId,
                   player_id: player.user_id,
-                  game_phase: currentPhase,
+                  game_phase: phase,
                   is_timeout: true,
                   response_time: null,
                   selected_option: null,
@@ -291,6 +292,7 @@ export const useGameState = (roomId: string) => {
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [
+    // Use string/primitive dependencies only to avoid type inference issues
     gameState?.phaseEndTime,
     gameState?.isPaused,
     gameState?.currentPhase,
