@@ -207,21 +207,16 @@ export const useGameState = (roomId: string) => {
   const advancePhaseRef = useRef(advancePhase);
   advancePhaseRef.current = advancePhase;
 
-  // Timer effect - extract primitive values to avoid type instantiation issues
+  // Extract primitive values outside useEffect to avoid type inference issues
+  const endTimeString = gameState?.phaseEndTime || null;
+  const isPausedFlag = gameState?.isPaused || false;
+  const currentPhaseValue = gameState?.currentPhase || null;
+  const gameStateId = gameState?.id || null;
+  const autoAdvanceFlag = gameSettings?.isAutoAdvance || false;
+
+  // Timer effect - use primitive values to avoid type instantiation issues
   useEffect(() => {
-    if (!gameState || !gameSettings) {
-      setTimeRemaining(0);
-      return;
-    }
-
-    // Extract all needed values as primitives to avoid type inference issues
-    const endTimeString = gameState.phaseEndTime;
-    const isPausedFlag = gameState.isPaused;
-    const currentPhaseValue = gameState.currentPhase;
-    const gameStateId = gameState.id;
-    const autoAdvanceFlag = gameSettings.isAutoAdvance;
-
-    if (!endTimeString || isPausedFlag) {
+    if (!gameState || !gameSettings || !endTimeString || isPausedFlag) {
       setTimeRemaining(0);
       return;
     }
@@ -291,15 +286,7 @@ export const useGameState = (roomId: string) => {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [
-    // Use extracted primitive values as dependencies
-    gameState?.phaseEndTime,
-    gameState?.isPaused,
-    gameState?.currentPhase,
-    gameState?.id,
-    gameSettings?.isAutoAdvance,
-    roomId
-  ]);
+  }, [endTimeString, isPausedFlag, currentPhaseValue, gameStateId, autoAdvanceFlag, roomId]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
