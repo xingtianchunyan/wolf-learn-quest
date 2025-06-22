@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ const GameRoom = () => {
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
   
   const { leaveCurrentRoom } = usePlayerRoom();
-  const { room: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
+  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
   const { gameState } = useGameState(roomData?.id || '');
   
@@ -52,7 +51,7 @@ const GameRoom = () => {
   const onlinePlayers = onlinePlayersList.map(p => p.user_id);
   
   // Get current max players from realtime data or fallback to local state
-  const currentMaxPlayers = realtimeRoomData?.max_players || roomData?.maxPlayers || 6;
+  const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
   
   // 使用角色选择 hook，传递 user_id 而不是 player_id
   const {
@@ -480,140 +479,6 @@ const GameRoom = () => {
       });
     }
   };
-
-  // Fetch current user and room data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setCurrentUser(session.user);
-          setCurrentUserId(session.user.id);
-          
-          // Get user profile for player name
-          const { data: userData } = await supabase
-            .from('users')
-            .select('player_name')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
-          }
-        }
-
-        // Fetch room data using the id from URL params or fallback to user's most recent room
-        if (id) {
-          console.log('Fetching room data for room ID:', id);
-          
-          // Fetch specific room by ID
-          const { data: roomData, error: roomError } = await supabase
-            .from('rooms')
-            .select(`
-              id,
-              room_id,
-              max_players,
-              host_id,
-              users!rooms_host_id_fkey(player_name),
-              judge_user_id,
-              room_players(id, user_id)
-            `)
-            .eq('id', id)
-            .maybeSingle();
-
-          if (roomError) {
-            console.error('Error fetching room:', roomError);
-            toast({
-              title: t('error'),
-              description: t('error_loading_room'),
-              variant: "destructive",
-            });
-            return;
-          }
-
-          if (roomData) {
-            console.log('Room data found:', roomData);
-            setRoomData({
-              id: roomData.id,
-              roomId: roomData.room_id,
-              hostPlayerId: roomData.users?.player_name || 'Unknown',
-              maxPlayers: roomData.max_players,
-              judge_user_id: roomData.judge_user_id,
-            });
-            if (roomData.judge_user_id) {
-              const { data: judgeData } = await supabase
-                .from('users')
-                .select('player_name')
-                .eq('user_id', roomData.judge_user_id)
-                .single();
-              if(judgeData) setJudgeName(judgeData.player_name);
-            } else {
-              setJudgeName(null);
-            }
-            setPreviousMaxPlayers(roomData.max_players);
-          } else {
-            console.log('No room found with ID:', id);
-          }
-        } else if (session?.user) {
-          // Fallback: fetch user's most recent room
-          console.log('No room ID in URL, fetching user\'s most recent room');
-          
-          const { data: roomPlayerData } = await supabase
-            .from('room_players')
-            .select(`
-              id,
-              room_id,
-              rooms!inner(
-                id,
-                room_id,
-                max_players,
-                host_id,
-                users!rooms_host_id_fkey(player_name),
-                judge_user_id
-              )
-            `)
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms;
-            setRoomData({
-              id: room.id,
-              roomId: room.room_id,
-              hostPlayerId: room.users?.player_name || 'Unknown',
-              maxPlayers: room.max_players,
-              judge_user_id: room.judge_user_id,
-            });
-             if (room.judge_user_id) {
-               const { data: judgeData } = await supabase
-                .from('users')
-                .select('player_name')
-                .eq('user_id', room.judge_user_id)
-                .single();
-              if(judgeData) setJudgeName(judgeData.player_name);
-            } else {
-              setJudgeName(null);
-            }
-            setPreviousMaxPlayers(room.max_players);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast({
-          title: t('error'),
-          description: t('error_loading_room'),
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [toast, id]);
 
   if (isLoading) {
     return (

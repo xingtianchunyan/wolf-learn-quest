@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useGameState } from './useGameState';
 
 export interface VoteRecord {
-  id: string;
   votedPlayerId: string;
   votedPlayerName: string;
   voteCount: number;
@@ -34,12 +33,13 @@ const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> =
   return nameMap;
 };
 
-export const useVoteResults = (gameId: string | null) => {
+export const useVoteResults = (roomId: string) => {
   const [voteRecords, setVoteRecords] = useState<VoteRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const { gameState } = useGameState(roomId);
 
   const fetchVoteResults = useCallback(async () => {
-    if (!gameId) {
+    if (!roomId || !gameState || gameState.status === 'waiting' || gameState.status === 'ended') {
       setVoteRecords([]);
       setLoading(false);
       return;
@@ -47,12 +47,16 @@ export const useVoteResults = (gameId: string | null) => {
     setLoading(true);
 
     try {
-      // 获取当前游戏的投票动作
+      // 使用 gameState.id 作为 game_id 来查询
+      const gameId = gameState.id;
+
+      // 获取当前回合和阶段的投票动作
       const { data: voteActions, error: actionsError } = await supabase
         .from('game_actions')
         .select('actor_id, target_id')
         .eq('game_id', gameId)
-        .eq('action_type', 'vote');
+        .eq('round', gameState.currentRound)
+        .eq('phase', gameState.currentPhase);
       
       if (actionsError) {
         console.error('获取投票动作失败:', actionsError);
@@ -88,7 +92,6 @@ export const useVoteResults = (gameId: string | null) => {
       // 格式化投票记录
       const formattedRecords: VoteRecord[] = Object.entries(voteCounts).map(([votedPlayerId, {voters}]) => {
         return {
-          id: votedPlayerId, // Use votedPlayerId as the id
           votedPlayerId: votedPlayerId,
           votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
           voteCount: voters.length,
@@ -106,7 +109,7 @@ export const useVoteResults = (gameId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [gameId]);
+  }, [roomId, gameState]);
 
   useEffect(() => {
     fetchVoteResults();
@@ -114,10 +117,8 @@ export const useVoteResults = (gameId: string | null) => {
 
   // 设置实时订阅
   useEffect(() => {
-    if (!gameId) return;
-
     const channel = supabase
-      .channel(`game-actions-votes-${gameId}`)
+      .channel(`game-actions-votes-${roomId}`)
       .on(
         'postgres_changes',
         {
@@ -137,7 +138,7 @@ export const useVoteResults = (gameId: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId, fetchVoteResults]);
+  }, [roomId, fetchVoteResults]);
 
   return { voteRecords, loading };
 };
