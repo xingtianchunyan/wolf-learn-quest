@@ -177,64 +177,7 @@ export const useGameState = (roomId: string) => {
     };
   }, [roomId]);
 
-  // Memoized function to handle phase timeout
-  const handlePhaseTimeout = useCallback(async (gameStateId: string, currentPhase: string) => {
-    try {
-      // Get all players in the room who haven't answered in this phase
-      const { data: players, error: playersError } = await supabase
-        .from('room_players')
-        .select('user_id')
-        .eq('room_id', roomId)
-        .eq('is_ai', false);
-
-      if (playersError || !players) {
-        console.error('Error fetching players for timeout:', playersError);
-        return;
-      }
-
-      // Get existing answers for this phase
-      const { data: existingAnswers, error: answersError } = await supabase
-        .from('player_answers')
-        .select('player_id')
-        .eq('game_id', gameStateId)
-        .eq('game_phase', currentPhase);
-
-      if (answersError) {
-        console.error('Error fetching existing answers:', answersError);
-        return;
-      }
-
-      const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
-      const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
-
-      // Create timeout records for unanswered players
-      if (unansweredPlayers.length > 0) {
-        const timeoutRecords = unansweredPlayers.map(player => ({
-          game_id: gameStateId,
-          player_id: player.user_id,
-          game_phase: currentPhase,
-          is_timeout: true,
-          response_time: null,
-          selected_option: null,
-          is_correct: null
-        }));
-
-        const { error: insertError } = await supabase
-          .from('player_answers')
-          .insert(timeoutRecords);
-
-        if (insertError) {
-          console.error('Error inserting timeout records:', insertError);
-        } else {
-          console.log(`Created timeout records for ${unansweredPlayers.length} players`);
-        }
-      }
-    } catch (error) {
-      console.error('Error handling phase timeout:', error);
-    }
-  }, [roomId]);
-
-  // Advance phase function
+  // Advance phase function - separated from circular dependencies
   const advancePhase = useCallback(async () => {
     if (!roomId) return false;
 
@@ -260,7 +203,7 @@ export const useGameState = (roomId: string) => {
     }
   }, [roomId, toast]);
 
-  // Calculate time remaining and handle auto-advance
+  // Timer and auto-advance logic - simplified without circular dependencies
   useEffect(() => {
     if (!gameState || !gameState.phaseEndTime || gameState.isPaused) {
       setTimeRemaining(0);
@@ -280,8 +223,62 @@ export const useGameState = (roomId: string) => {
         if (isAnsweringPhase) {
           console.log('Timer reached zero, auto-advancing phase...');
           
-          // Handle timeout first, then advance phase
-          handlePhaseTimeout(gameState.id, gameState.currentPhase).then(() => {
+          // Handle timeout for players who haven't answered
+          const handleTimeout = async () => {
+            try {
+              const { data: players, error: playersError } = await supabase
+                .from('room_players')
+                .select('user_id')
+                .eq('room_id', roomId)
+                .eq('is_ai', false);
+
+              if (playersError || !players) {
+                console.error('Error fetching players for timeout:', playersError);
+                return;
+              }
+
+              const { data: existingAnswers, error: answersError } = await supabase
+                .from('player_answers')
+                .select('player_id')
+                .eq('game_id', gameState.id)
+                .eq('game_phase', gameState.currentPhase);
+
+              if (answersError) {
+                console.error('Error fetching existing answers:', answersError);
+                return;
+              }
+
+              const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
+              const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
+
+              if (unansweredPlayers.length > 0) {
+                const timeoutRecords = unansweredPlayers.map(player => ({
+                  game_id: gameState.id,
+                  player_id: player.user_id,
+                  game_phase: gameState.currentPhase,
+                  is_timeout: true,
+                  response_time: null,
+                  selected_option: null,
+                  is_correct: null
+                }));
+
+                const { error: insertError } = await supabase
+                  .from('player_answers')
+                  .insert(timeoutRecords);
+
+                if (insertError) {
+                  console.error('Error inserting timeout records:', insertError);
+                } else {
+                  console.log(`Created timeout records for ${unansweredPlayers.length} players`);
+                }
+              }
+            } catch (error) {
+              console.error('Error handling phase timeout:', error);
+            }
+          };
+
+          // Execute timeout handling then advance phase
+          handleTimeout().then(() => {
             advancePhase().catch(error => {
               console.error('Error auto-advancing phase:', error);
             });
@@ -294,7 +291,7 @@ export const useGameState = (roomId: string) => {
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameState?.id, gameSettings?.isAutoAdvance, handlePhaseTimeout, advancePhase]);
+  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameState?.id, gameSettings?.isAutoAdvance, roomId, advancePhase]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
