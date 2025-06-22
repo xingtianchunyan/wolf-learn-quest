@@ -2,47 +2,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Room {
-  id: string;
-  room_id: string;
-  max_players: number;
+interface RoomRealtimeData {
+  maxPlayers: number;
   status: string;
   judge_user_id?: string | null;
-  host_id?: string | null;
+  lastUpdate: Date;
 }
 
 export const useRoomRealtime = (roomId: string) => {
-  const [room, setRoom] = useState<Room | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
 
   useEffect(() => {
-    if (!roomId) {
-      setLoading(false);
-      return;
-    }
-
-    // Initial fetch
-    const fetchRoom = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('id', roomId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching room:', error);
-        } else if (data) {
-          setRoom(data);
-        }
-      } catch (error) {
-        console.error('Error fetching room:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRoom();
+    if (!roomId) return;
 
     // Subscribe to room changes
     const channel = supabase
@@ -58,7 +29,15 @@ export const useRoomRealtime = (roomId: string) => {
         (payload) => {
           console.log('Room update received:', payload);
           if (payload.new && typeof payload.new === 'object') {
-            setRoom(payload.new as Room);
+            const newData = payload.new as any;
+            if (newData.max_players !== undefined && newData.status !== undefined) {
+              setRoomData({
+                maxPlayers: newData.max_players,
+                status: newData.status,
+                judge_user_id: newData.judge_user_id,
+                lastUpdate: new Date()
+              });
+            }
           }
         }
       )
@@ -91,8 +70,7 @@ export const useRoomRealtime = (roomId: string) => {
   };
 
   return {
-    room,
-    loading,
+    roomData,
     updateMaxPlayers
   };
 };

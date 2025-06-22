@@ -1,22 +1,15 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import StudentSystemPanel from '@/components/game/StudentSystemPanel';
-import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
-import ActionTargetPanel from '@/components/game/ActionTargetPanel';
-import PlayerActionPanel from '@/components/game/PlayerActionPanel';
-import MultiChannelChat from '@/components/chat/MultiChannelChat';
+import GameStateDisplay from '@/components/game/GameStateDisplay';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/providers/AuthProvider';
-import { useRoomRealtime } from '@/hooks/useRoomRealtime';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
-  const { currentUser } = useAuth();
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
-  const { room } = useRoomRealtime(roomId || '');
+  const { t } = useLanguage();
 
   if (!roomId) {
     return (
@@ -36,48 +29,70 @@ const GamePage = () => {
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
-        {/* Main Content Grid - 与法官页面相同的高度设置 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{
-          height: 'calc(100vh - 16rem)'
-        }}>
-          {/* Left Column - Student System and Answer Records */}
-          <div className="lg:col-span-3 flex flex-col gap-6 h-full">
-            <div className="h-1/2">
-              <StudentSystemPanel roomId={roomId} />
-            </div>
-            <div className="h-1/2">
-              <StudentAnswerRecordPanel roomId={roomId} />
-            </div>
-          </div>
-          
-          {/* Center Column - Action Target and Player Actions */}
-          <div className="lg:col-span-6 flex flex-col gap-6 h-full">
-            <div className="h-1/2">
-              <ActionTargetPanel 
-                roomId={roomId} 
-                maxPlayers={room?.max_players || 8}
-                onPlayerSelect={setSelectedPlayerId}
-                selectedPlayerId={selectedPlayerId}
-              />
-            </div>
-            <div className="h-1/2">
-              <PlayerActionPanel 
-                roomId={roomId}
-                selectedPlayerId={selectedPlayerId}
-              />
+        {/* Navigation */}
+        <div className="mb-6">
+          <Link to={`/room/${roomId}`}>
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              返回房间
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Game State Display at the top center */}
+          <div className="lg:col-span-12">
+            <div className="max-w-2xl mx-auto">
+              <GameStateDisplay roomId={roomId} />
             </div>
           </div>
           
-          {/* Right Column - Chat */}
-          <div className="lg:col-span-3 h-full">
-            <MultiChannelChat 
-              roomId={roomId} 
-              currentUser={currentUser} 
-              isGameRoom={true} 
-              title="游戏聊天" 
-              className="h-full" 
-              height="100%" 
-            />
+          {/* Main Game Content */}
+          <div className="lg:col-span-8">
+            <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏进行中</h2>
+              <div className="space-y-4">
+                <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                  <p className="text-gray-300">
+                    房间ID: {roomId}
+                  </p>
+                  <p className="text-gray-300 mt-2">
+                    游戏内容区域 - 这里将显示游戏的主要界面，包括玩家列表、投票界面、技能使用等功能。
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                    <h3 className="font-semibold text-werewolf-purple mb-2">玩家操作</h3>
+                    <p className="text-sm text-gray-400">
+                      根据当前阶段显示相应的操作界面
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                    <h3 className="font-semibold text-werewolf-purple mb-2">游戏信息</h3>
+                    <p className="text-sm text-gray-400">
+                      显示当前游戏状态和相关信息
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Side Panel */}
+          <div className="lg:col-span-4">
+            <div className="space-y-6">
+              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-werewolf-purple mb-4">玩家列表</h3>
+                <p className="text-sm text-gray-400">玩家列表和状态信息</p>
+              </div>
+              
+              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-werewolf-purple mb-4">聊天区</h3>
+                <p className="text-sm text-gray-400">游戏聊天和讨论区域</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
