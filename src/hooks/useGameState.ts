@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,6 +34,7 @@ export const useGameState = (roomId: string) => {
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const { toast } = useToast();
+  const advancePhaseRef = useRef<(() => Promise<boolean>) | null>(null);
 
   // Fetch initial game state and settings
   useEffect(() => {
@@ -176,7 +177,38 @@ export const useGameState = (roomId: string) => {
     };
   }, [roomId]);
 
-  // Calculate time remaining
+  // Advance phase function
+  const advancePhase = async () => {
+    if (!roomId) return false;
+
+    try {
+      const { error } = await supabase.rpc('advance_game_phase', {
+        p_room_id: roomId
+      });
+
+      if (error) {
+        console.error('Error advancing phase:', error);
+        toast({
+          title: '阶段切换失败',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error advancing phase:', error);
+      return false;
+    }
+  };
+
+  // Store advance phase function in ref
+  useEffect(() => {
+    advancePhaseRef.current = advancePhase;
+  });
+
+  // Calculate time remaining and handle auto-advance
   useEffect(() => {
     if (!gameState || !gameState.phaseEndTime || gameState.isPaused) {
       setTimeRemaining(0);
@@ -188,13 +220,21 @@ export const useGameState = (roomId: string) => {
       const endTime = new Date(gameState.phaseEndTime!).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
       setTimeRemaining(remaining);
+
+      // Auto-advance when timer reaches 0 for evening/dawn phases
+      if (remaining === 0 && (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn')) {
+        console.log('Timer reached 0, auto-advancing phase...');
+        if (advancePhaseRef.current) {
+          advancePhaseRef.current();
+        }
+      }
     };
 
     calculateTimeRemaining();
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState?.phaseEndTime, gameState?.isPaused]);
+  }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase]);
 
   // Start game - 修改以确保正确初始化游戏设置
   const startGame = async () => {
@@ -258,32 +298,6 @@ export const useGameState = (roomId: string) => {
         title: '开始游戏时发生错误',
         variant: 'destructive',
       });
-      return false;
-    }
-  };
-
-  // Advance phase
-  const advancePhase = async () => {
-    if (!roomId) return false;
-
-    try {
-      const { error } = await supabase.rpc('advance_game_phase', {
-        p_room_id: roomId
-      });
-
-      if (error) {
-        console.error('Error advancing phase:', error);
-        toast({
-          title: '阶段切换失败',
-          description: error.message,
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error advancing phase:', error);
       return false;
     }
   };
