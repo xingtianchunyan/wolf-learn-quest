@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -177,7 +176,7 @@ export const useGameState = (roomId: string) => {
     };
   }, [roomId]);
 
-  // Advance phase function - separated from circular dependencies
+  // Advance phase function - stable reference
   const advancePhase = useCallback(async () => {
     if (!roomId) return false;
 
@@ -203,50 +202,40 @@ export const useGameState = (roomId: string) => {
     }
   }, [roomId, toast]);
 
-  // Timer and auto-advance logic - simplified without circular dependencies
+  // Timer effect - simplified to avoid circular dependencies
   useEffect(() => {
-    if (!gameState || !gameState.phaseEndTime || gameState.isPaused) {
+    if (!gameState?.phaseEndTime || gameState.isPaused) {
       setTimeRemaining(0);
       return;
     }
 
-    const calculateTimeRemaining = () => {
+    const updateTimer = () => {
       const now = new Date().getTime();
       const endTime = new Date(gameState.phaseEndTime!).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
       setTimeRemaining(remaining);
 
-      // Auto-advance when timer reaches zero for answering phases
-      if (remaining === 0 && gameSettings?.isAutoAdvance && gameState.id) {
+      // Handle auto-advance when timer reaches zero
+      if (remaining === 0 && gameSettings?.isAutoAdvance) {
         const isAnsweringPhase = gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn';
         
-        if (isAnsweringPhase) {
-          console.log('Timer reached zero, auto-advancing phase...');
-          
-          // Handle timeout for players who haven't answered
+        if (isAnsweringPhase && gameState.id) {
+          // Handle timeout for unanswered players
           const handleTimeout = async () => {
             try {
-              const { data: players, error: playersError } = await supabase
+              const { data: players } = await supabase
                 .from('room_players')
                 .select('user_id')
                 .eq('room_id', roomId)
                 .eq('is_ai', false);
 
-              if (playersError || !players) {
-                console.error('Error fetching players for timeout:', playersError);
-                return;
-              }
+              if (!players) return;
 
-              const { data: existingAnswers, error: answersError } = await supabase
+              const { data: existingAnswers } = await supabase
                 .from('player_answers')
                 .select('player_id')
                 .eq('game_id', gameState.id)
                 .eq('game_phase', gameState.currentPhase);
-
-              if (answersError) {
-                console.error('Error fetching existing answers:', answersError);
-                return;
-              }
 
               const answeredPlayerIds = existingAnswers?.map(a => a.player_id) || [];
               const unansweredPlayers = players.filter(p => !answeredPlayerIds.includes(p.user_id));
@@ -262,34 +251,25 @@ export const useGameState = (roomId: string) => {
                   is_correct: null
                 }));
 
-                const { error: insertError } = await supabase
+                await supabase
                   .from('player_answers')
                   .insert(timeoutRecords);
-
-                if (insertError) {
-                  console.error('Error inserting timeout records:', insertError);
-                } else {
-                  console.log(`Created timeout records for ${unansweredPlayers.length} players`);
-                }
               }
             } catch (error) {
               console.error('Error handling phase timeout:', error);
             }
           };
 
-          // Execute timeout handling then advance phase
+          // Execute timeout handling then advance
           handleTimeout().then(() => {
-            advancePhase().catch(error => {
-              console.error('Error auto-advancing phase:', error);
-            });
+            advancePhase();
           });
         }
       }
     };
 
-    calculateTimeRemaining();
-    const interval = setInterval(calculateTimeRemaining, 1000);
-
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [gameState?.phaseEndTime, gameState?.isPaused, gameState?.currentPhase, gameState?.id, gameSettings?.isAutoAdvance, roomId, advancePhase]);
 
