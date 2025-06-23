@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -169,7 +170,7 @@ export const useMultiChannelChat = ({
           sender_id: user.id, // 使用认证用户ID，与RLS策略一致
           message: messageText.trim(),
           game_round: gameState?.currentRound,
-          game_phase: gameState?.currentPhase,
+          game_phase: gameState?.currentPhase?.toString(), // 转换为字符串
           game_id: gameState?.id
         });
 

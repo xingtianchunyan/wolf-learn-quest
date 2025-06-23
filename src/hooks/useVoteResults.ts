@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGameState } from './useGameState';
@@ -56,7 +57,7 @@ export const useVoteResults = (roomId: string) => {
         .select('actor_id, target_id')
         .eq('game_id', gameId)
         .eq('round', gameState.currentRound)
-        .eq('phase', gameState.currentPhase);
+        .eq('phase', gameState.currentPhase.toString()); // 转换为字符串
       
       if (actionsError) {
         console.error('获取投票动作失败:', actionsError);

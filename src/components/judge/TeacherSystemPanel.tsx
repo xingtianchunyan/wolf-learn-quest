@@ -19,7 +19,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   useEffect(() => {
     if (isSystemLinked && gameState && gameState.status === 'active') {
       const { currentRound, currentPhase } = gameState;
-      const phaseIndex = currentPhase === 'evening' ? 0 : currentPhase === 'dawn' ? 1 : -1;
+      const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
 
       if (phaseIndex !== -1) {
         const questionIndex = (currentRound - 1) * 2 + phaseIndex;
@@ -53,7 +53,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
-  const isAnsweringPhase = gameState && (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn');
+  const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4); // 2=傍晚, 4=黎明
   const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 
   // 显示游戏状态信息
