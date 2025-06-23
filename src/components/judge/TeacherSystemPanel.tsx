@@ -19,6 +19,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   useEffect(() => {
     if (isSystemLinked && gameState && gameState.status === 'active') {
       const { currentRound, currentPhase } = gameState;
+      // 修复阶段判断：现在 currentPhase 是数字类型
       const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
 
       if (phaseIndex !== -1) {
@@ -53,6 +54,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
+  // 修复答题阶段判断：使用数字比较
   const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4); // 2=傍晚, 4=黎明
   const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 

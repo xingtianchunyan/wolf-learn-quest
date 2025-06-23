@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -197,7 +196,7 @@ export const useGameState = (roomId: string) => {
     return () => clearInterval(interval);
   }, [gameState?.phaseEndTime, gameState?.isPaused]);
 
-  // Start game - 修改以确保正确初始化游戏设置
+  // Start game - 修改以直接操作数据库而不使用过时的函数
   const startGame = async () => {
     if (!roomId) return false;
 
@@ -233,19 +232,60 @@ export const useGameState = (roomId: string) => {
         }
       }
 
-      // 调用开始游戏函数
-      const { error } = await supabase.rpc('start_game', {
-        p_room_id: roomId
-      });
+      // 计算阶段结束时间（白天阶段，如果是自动模式则设置结束时间）
+      const settings = existingSettings || {
+        is_auto_advance: true,
+        day_duration: 300
+      };
+      
+      const now = new Date();
+      const phaseEndTime = settings.is_auto_advance 
+        ? new Date(now.getTime() + settings.day_duration * 1000).toISOString()
+        : null;
 
-      if (error) {
-        console.error('Error starting game:', error);
+      // 创建或更新游戏状态
+      const { data: gameStateData, error: gameStateError } = await supabase
+        .from('game_states')
+        .upsert({
+          room_id: roomId,
+          status: 'active',
+          current_phase: 1, // 1 = 白天
+          current_round: 1,
+          phase_start_time: now.toISOString(),
+          phase_end_time: phaseEndTime,
+          is_paused: false,
+          total_paused_duration: 0,
+          auto_advance: settings.is_auto_advance,
+          phase_duration: settings.day_duration
+        }, {
+          onConflict: 'room_id'
+        })
+        .select()
+        .single();
+
+      if (gameStateError) {
+        console.error('Error starting game:', gameStateError);
         toast({
           title: '开始游戏失败',
-          description: error.message,
+          description: gameStateError.message,
           variant: 'destructive',
         });
         return false;
+      }
+
+      // 记录游戏开始的第一个阶段
+      const { error: historyError } = await supabase
+        .from('game_phase_history')
+        .insert({
+          game_state_id: gameStateData.id,
+          phase: '1', // 存储为字符串以兼容现有表结构
+          round_number: 1,
+          started_at: now.toISOString()
+        });
+
+      if (historyError) {
+        console.error('Error recording phase history:', historyError);
+        // 不阻止游戏开始，只记录错误
       }
 
       toast({
