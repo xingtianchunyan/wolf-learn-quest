@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +7,7 @@ export interface GameState {
   id: string;
   roomId: string;
   status: 'waiting' | 'active' | 'paused' | 'ended';
-  currentPhase: 'day' | 'evening' | 'night' | 'dawn';
+  currentPhase: number; // 改为数字类型：1=白天, 2=傍晚, 3=夜晚, 4=黎明
   currentRound: number;
   phaseStartTime: string;
   phaseEndTime: string | null;
@@ -70,7 +71,7 @@ export const useGameState = (roomId: string) => {
             id: stateData.id,
             roomId: stateData.room_id,
             status: stateData.status as 'waiting' | 'active' | 'paused' | 'ended',
-            currentPhase: stateData.current_phase as 'day' | 'evening' | 'night' | 'dawn',
+            currentPhase: stateData.current_phase as number, // 现在是数字类型
             currentRound: stateData.current_round,
             phaseStartTime: stateData.phase_start_time,
             phaseEndTime: stateData.phase_end_time,
@@ -126,7 +127,7 @@ export const useGameState = (roomId: string) => {
               id: newData.id,
               roomId: newData.room_id,
               status: newData.status as 'waiting' | 'active' | 'paused' | 'ended',
-              currentPhase: newData.current_phase as 'day' | 'evening' | 'night' | 'dawn',
+              currentPhase: newData.current_phase as number, // 现在是数字类型
               currentRound: newData.current_round,
               phaseStartTime: newData.phase_start_time,
               phaseEndTime: newData.phase_end_time,
@@ -441,14 +442,14 @@ export const useGameState = (roomId: string) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getPhaseDisplayName = (phase: string) => {
+  const getPhaseDisplayName = (phase: number) => {
     const phaseNames = {
-      day: '白天',
-      evening: '傍晚',
-      night: '夜晚',
-      dawn: '黎明'
+      1: '白天',
+      2: '傍晚',
+      3: '夜晚',
+      4: '黎明'
     };
-    return phaseNames[phase as keyof typeof phaseNames] || phase;
+    return phaseNames[phase as keyof typeof phaseNames] || '未知';
   };
 
   return {

@@ -146,9 +146,9 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                        gameState.status === 'active' ? '游戏进行中' : 
                        gameState.status === 'ended' ? '游戏已结束' : '未知状态'}
               {gameState.status === 'active' && 
-                ` - 第${gameState.currentRound}轮 ${gameState.currentPhase === 'day' ? '白天' : 
-                     gameState.currentPhase === 'evening' ? '傍晚' : 
-                     gameState.currentPhase === 'night' ? '夜晚' : '黎明'}阶段`
+                ` - 第${gameState.currentRound}轮 ${gameState.currentPhase === 1 ? '白天' : 
+                     gameState.currentPhase === 2 ? '傍晚' : 
+                     gameState.currentPhase === 3 ? '夜晚' : '黎明'}阶段`
               }
             </div>
           )}

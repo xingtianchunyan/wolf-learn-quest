@@ -254,7 +254,7 @@ export type Database = {
         Row: {
           auto_advance: boolean
           created_at: string
-          current_phase: string
+          current_phase: number | null
           current_round: number
           id: string
           is_paused: boolean
@@ -270,7 +270,7 @@ export type Database = {
         Insert: {
           auto_advance?: boolean
           created_at?: string
-          current_phase?: string
+          current_phase?: number | null
           current_round?: number
           id?: string
           is_paused?: boolean
@@ -286,7 +286,7 @@ export type Database = {
         Update: {
           auto_advance?: boolean
           created_at?: string
-          current_phase?: string
+          current_phase?: number | null
           current_round?: number
           id?: string
           is_paused?: boolean

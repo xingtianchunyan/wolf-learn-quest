@@ -143,10 +143,10 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
           {gameState && (
             <div className="text-sm text-gray-400 mt-2">
               {gameState.status === 'waiting' && '等待法官开始游戏'}
-              {gameState.status === 'active' && gameState.currentPhase === 'day' && '白天讨论阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 'evening' && '傍晚答题阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 'night' && '夜晚行动阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 'dawn' && '黎明答题阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 1 && '白天讨论阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 2 && '傍晚答题阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 3 && '夜晚行动阶段'}
+              {gameState.status === 'active' && gameState.currentPhase === 4 && '黎明答题阶段'}
               {gameState.status === 'ended' && '游戏结束，可查看结算'}
             </div>
           )}

@@ -49,22 +49,22 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge = f
     );
   }
 
-  const getPhaseIcon = (phase: string) => {
+  const getPhaseIcon = (phase: number) => {
     switch (phase) {
-      case 'day': return <Sun className="h-5 w-5 text-yellow-400" />;
-      case 'evening': return <Sunset className="h-5 w-5 text-orange-400" />;
-      case 'night': return <Moon className="h-5 w-5 text-blue-400" />;
-      case 'dawn': return <Sunrise className="h-5 w-5 text-pink-400" />;
+      case 1: return <Sun className="h-5 w-5 text-yellow-400" />;
+      case 2: return <Sunset className="h-5 w-5 text-orange-400" />;
+      case 3: return <Moon className="h-5 w-5 text-blue-400" />;
+      case 4: return <Sunrise className="h-5 w-5 text-pink-400" />;
       default: return <Clock className="h-5 w-5" />;
     }
   };
 
-  const getPhaseColor = (phase: string) => {
+  const getPhaseColor = (phase: number) => {
     switch (phase) {
-      case 'day': return 'bg-yellow-900/30 text-yellow-200 border-yellow-500';
-      case 'evening': return 'bg-orange-900/30 text-orange-200 border-orange-500';
-      case 'night': return 'bg-blue-900/30 text-blue-200 border-blue-500';
-      case 'dawn': return 'bg-pink-900/30 text-pink-200 border-pink-500';
+      case 1: return 'bg-yellow-900/30 text-yellow-200 border-yellow-500';
+      case 2: return 'bg-orange-900/30 text-orange-200 border-orange-500';
+      case 3: return 'bg-blue-900/30 text-blue-200 border-blue-500';
+      case 4: return 'bg-pink-900/30 text-pink-200 border-pink-500';
       default: return 'bg-gray-900/30 text-gray-200 border-gray-500';
     }
   };
@@ -74,7 +74,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge = f
     if (gameState.status !== 'active') return false;
     
     // Auto phases always advance automatically
-    if (gameState.currentPhase === 'evening' || gameState.currentPhase === 'dawn') {
+    if (gameState.currentPhase === 2 || gameState.currentPhase === 4) { // 傍晚=2, 黎明=4
       return false;
     }
     
@@ -159,10 +159,10 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge = f
           {/* Phase Description */}
           <div className="text-center p-3 bg-werewolf-dark/40 rounded-md">
             <p className="text-sm text-gray-300">
-              {gameState.currentPhase === 'day' && '讨论投票阶段 - 玩家可以自由讨论并投票'}
-              {gameState.currentPhase === 'evening' && '答题阶段 - 请准备回答问题'}
-              {gameState.currentPhase === 'night' && '技能使用阶段 - 特殊角色可以使用技能'}
-              {gameState.currentPhase === 'dawn' && '答题阶段 - 请准备回答问题'}
+              {gameState.currentPhase === 1 && '讨论投票阶段 - 玩家可以自由讨论并投票'}
+              {gameState.currentPhase === 2 && '答题阶段 - 请准备回答问题'}
+              {gameState.currentPhase === 3 && '技能使用阶段 - 特殊角色可以使用技能'}
+              {gameState.currentPhase === 4 && '答题阶段 - 请准备回答问题'}
             </p>
           </div>
 
