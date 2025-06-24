@@ -6,7 +6,7 @@ import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
-import { usePlayerAnswers } from '@/hooks/usePlayerAnswers';
+import { useRoomAnswers } from '@/hooks/useRoomAnswers';
 
 interface AnswerRecordPanelProps {
   roomId: string;
@@ -33,7 +33,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const { linkedQuestions } = useJudgePage();
   const { players } = usePlayersRealtime(roomId);
   const { gameState } = useGameState(roomId);
-  const { playerAnswers } = usePlayerAnswers(gameState?.id);
+  const { roomAnswers } = useRoomAnswers(roomId);
 
   const answerRecords: AnswerRecord[] = useMemo(() => {
     if (!linkedQuestions || linkedQuestions.length === 0) {
@@ -46,8 +46,8 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       const phase = index % 2 === 0 ? '傍晚' : '黎明'; // 偶数索引=傍晚，奇数索引=黎明
 
       const answersForQuestion: PlayerAnswer[] = players.map(player => {
-        const playerAnswerData = playerAnswers.find(
-          pa => pa.player_id === player.id && pa.question_id === question.id
+        const playerAnswerData = roomAnswers.find(
+          ra => ra.user_id === player.userId && ra.question_order === index + 1
         );
 
         if (playerAnswerData) {
@@ -77,7 +77,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         answers: answersForQuestion,
       };
     });
-  }, [linkedQuestions, players, playerAnswers]);
+  }, [linkedQuestions, players, roomAnswers]);
 
   const totalPages = Math.max(1, answerRecords.length);
   const currentRecord = answerRecords[currentPage];

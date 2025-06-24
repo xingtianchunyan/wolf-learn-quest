@@ -3,24 +3,26 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-// 从 AnswerRecordPanel.tsx 移过来的类型定义
-export interface PlayerAnswerRecord {
+export interface RoomAnswerRecord {
   id: string;
-  game_id: string | null;
-  question_id: string | null;
-  player_id: string | null;
+  room_id: string | null;
+  user_id: string | null;
+  role_id: string | null;
+  room_question_id: string | null;
+  question_order: number | null;
   selected_option: number | null;
   is_correct: boolean | null;
   response_time: number | null;
+  created_at: string | null;
 }
 
-export const usePlayerAnswers = (gameId: string | null | undefined) => {
-  const [playerAnswers, setPlayerAnswers] = useState<PlayerAnswerRecord[]>([]);
+export const useRoomAnswers = (roomId: string | null | undefined) => {
+  const [roomAnswers, setRoomAnswers] = useState<RoomAnswerRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!gameId) {
-      setPlayerAnswers([]);
+    if (!roomId) {
+      setRoomAnswers([]);
       setLoading(false);
       return;
     }
@@ -28,14 +30,14 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
     const fetchAnswers = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from('player_answers')
+        .from('room_answers')
         .select('*')
-        .eq('game_id', gameId);
+        .eq('room_id', roomId);
       
       if (error) {
-        console.error('Error fetching player answers:', error);
+        console.error('Error fetching room answers:', error);
       } else if (data) {
-        setPlayerAnswers(data as PlayerAnswerRecord[]);
+        setRoomAnswers(data as RoomAnswerRecord[]);
       }
       setLoading(false);
     };
@@ -43,27 +45,27 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
     fetchAnswers();
 
     const channel = supabase
-      .channel(`player_answers_for_game_${gameId}`)
-      .on<PlayerAnswerRecord>(
+      .channel(`room_answers_for_room_${roomId}`)
+      .on<RoomAnswerRecord>(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'player_answers',
-          filter: `game_id=eq.${gameId}`,
+          table: 'room_answers',
+          filter: `room_id=eq.${roomId}`,
         },
-        (payload: RealtimePostgresChangesPayload<PlayerAnswerRecord>) => {
+        (payload: RealtimePostgresChangesPayload<RoomAnswerRecord>) => {
           if (payload.new && typeof payload.new === 'object') {
-            const newAnswer = payload.new as PlayerAnswerRecord;
+            const newAnswer = payload.new as RoomAnswerRecord;
             if (payload.eventType === 'INSERT') {
-              setPlayerAnswers(currentAnswers => {
+              setRoomAnswers(currentAnswers => {
                 if (currentAnswers.some(a => a.id === newAnswer.id)) {
                   return currentAnswers;
                 }
                 return [...currentAnswers, newAnswer];
               });
             } else if (payload.eventType === 'UPDATE') {
-              setPlayerAnswers(currentAnswers =>
+              setRoomAnswers(currentAnswers =>
                 currentAnswers.map(ans =>
                   ans.id === newAnswer.id ? newAnswer : ans
                 )
@@ -77,7 +79,7 @@ export const usePlayerAnswers = (gameId: string | null | undefined) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId]);
+  }, [roomId]);
 
-  return { playerAnswers, loading };
+  return { roomAnswers, loading };
 };

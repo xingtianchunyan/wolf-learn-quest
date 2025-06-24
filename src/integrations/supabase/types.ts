@@ -360,61 +360,6 @@ export type Database = {
           },
         ]
       }
-      player_answers: {
-        Row: {
-          created_at: string | null
-          game_id: string | null
-          id: string
-          is_correct: boolean | null
-          player_id: string | null
-          question_id: string | null
-          response_time: number | null
-          selected_option: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          game_id?: string | null
-          id?: string
-          is_correct?: boolean | null
-          player_id?: string | null
-          question_id?: string | null
-          response_time?: number | null
-          selected_option?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          game_id?: string | null
-          id?: string
-          is_correct?: boolean | null
-          player_id?: string | null
-          question_id?: string | null
-          response_time?: number | null
-          selected_option?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "player_answers_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "game_states"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "player_answers_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "player_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       player_game_states: {
         Row: {
           created_at: string
@@ -614,6 +559,74 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "role_design"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_answers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_correct: boolean | null
+          question_order: number | null
+          response_time: number | null
+          role_id: string | null
+          room_id: string | null
+          room_question_id: string | null
+          selected_option: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          question_order?: number | null
+          response_time?: number | null
+          role_id?: string | null
+          room_id?: string | null
+          room_question_id?: string | null
+          selected_option?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          question_order?: number | null
+          response_time?: number | null
+          role_id?: string | null
+          room_id?: string | null
+          room_question_id?: string | null
+          selected_option?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_room_answers_role_id"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "role_design"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_answers_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_answers_room_question_id"
+            columns: ["room_question_id"]
+            isOneToOne: false
+            referencedRelation: "room_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_answers_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
           },
         ]
       }
