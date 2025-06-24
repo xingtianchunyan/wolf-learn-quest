@@ -360,42 +360,6 @@ export type Database = {
           },
         ]
       }
-      player_game_states: {
-        Row: {
-          created_at: string
-          game_state_id: string
-          id: string
-          is_alive: boolean
-          role: string
-          skill_uses_remaining: Json | null
-          status_effects: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          game_state_id: string
-          id?: string
-          is_alive?: boolean
-          role: string
-          skill_uses_remaining?: Json | null
-          status_effects?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          game_state_id?: string
-          id?: string
-          is_alive?: boolean
-          role?: string
-          skill_uses_remaining?: Json | null
-          status_effects?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       preprocessed_files: {
         Row: {
           created_at: string | null
@@ -559,6 +523,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "role_design"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_states: {
+        Row: {
+          created_at: string
+          current_phase: number | null
+          game_state_id: string
+          id: string
+          role_id: string
+          role_status: number
+          room_id: string
+          skill_uses_remaining: Json | null
+          status_effects: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_phase?: number | null
+          game_state_id: string
+          id?: string
+          role_id: string
+          role_status?: number
+          room_id: string
+          skill_uses_remaining?: Json | null
+          status_effects?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_phase?: number | null
+          game_state_id?: string
+          id?: string
+          role_id?: string
+          role_status?: number
+          room_id?: string
+          skill_uses_remaining?: Json | null
+          status_effects?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_role_states_game_state_id"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_role_states_role_selection"
+            columns: ["room_id", "user_id", "role_id"]
+            isOneToOne: false
+            referencedRelation: "role_selections"
+            referencedColumns: ["room_id", "user_id", "role_id"]
           },
         ]
       }
@@ -868,6 +889,10 @@ export type Database = {
           phase_end_time: string
         }[]
       }
+      can_use_skill: {
+        Args: { p_role_state_id: string }
+        Returns: boolean
+      }
       cleanup_old_voice_signals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -888,6 +913,14 @@ export type Database = {
         Args: { p_room_id: string }
         Returns: string
       }
+      initialize_skill_uses_remaining: {
+        Args: { p_role_id: string }
+        Returns: Json
+      }
+      initialize_status_effects: {
+        Args: { p_role_status: number }
+        Returns: Json
+      }
       is_room_judge: {
         Args: { p_room_id: string; p_user_id: string }
         Returns: boolean
@@ -902,6 +935,10 @@ export type Database = {
       }
       toggle_game_pause: {
         Args: { p_room_id: string }
+        Returns: boolean
+      }
+      use_skill_charge: {
+        Args: { p_role_state_id: string }
         Returns: boolean
       }
     }
