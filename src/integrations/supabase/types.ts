@@ -882,6 +882,216 @@ export type Database = {
         }
         Relationships: []
       }
+      vote_processing_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          processing_step: string
+          step_details: Json | null
+          step_status: string
+          voting_result_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          processing_step: string
+          step_details?: Json | null
+          step_status: string
+          voting_result_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          processing_step?: string
+          step_details?: Json | null
+          step_status?: string
+          voting_result_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_processing_logs_voting_result_id_fkey"
+            columns: ["voting_result_id"]
+            isOneToOne: false
+            referencedRelation: "voting_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      votes: {
+        Row: {
+          created_at: string
+          id: string
+          is_valid: boolean
+          target_id: string | null
+          vote_time: string
+          vote_weight: number
+          voter_id: string
+          voting_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_valid?: boolean
+          target_id?: string | null
+          vote_time?: string
+          vote_weight?: number
+          voter_id: string
+          voting_session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_valid?: boolean
+          target_id?: string | null
+          vote_time?: string
+          vote_weight?: number
+          voter_id?: string
+          voting_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votes_voting_session_id_fkey"
+            columns: ["voting_session_id"]
+            isOneToOne: false
+            referencedRelation: "voting_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voting_results: {
+        Row: {
+          created_at: string
+          id: string
+          is_majority: boolean
+          is_tied: boolean
+          processed_at: string | null
+          processing_status: string
+          result_type: string
+          target_id: string | null
+          total_votes: number
+          updated_at: string
+          vote_percentage: number | null
+          voting_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_majority?: boolean
+          is_tied?: boolean
+          processed_at?: string | null
+          processing_status?: string
+          result_type: string
+          target_id?: string | null
+          total_votes?: number
+          updated_at?: string
+          vote_percentage?: number | null
+          voting_session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_majority?: boolean
+          is_tied?: boolean
+          processed_at?: string | null
+          processing_status?: string
+          result_type?: string
+          target_id?: string | null
+          total_votes?: number
+          updated_at?: string
+          vote_percentage?: number | null
+          voting_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voting_results_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voting_results_voting_session_id_fkey"
+            columns: ["voting_session_id"]
+            isOneToOne: false
+            referencedRelation: "voting_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voting_sessions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          game_state_id: string
+          id: string
+          phase: number
+          room_id: string
+          round_number: number
+          session_type: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          game_state_id: string
+          id?: string
+          phase: number
+          room_id: string
+          round_number: number
+          session_type?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          game_state_id?: string
+          id?: string
+          phase?: number
+          room_id?: string
+          round_number?: number
+          session_type?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voting_sessions_game_state_id_fkey"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voting_sessions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -895,8 +1105,24 @@ export type Database = {
           phase_end_time: string
         }[]
       }
+      auto_eliminate_expired_hunters: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      calculate_voting_results: {
+        Args: { p_voting_session_id: string }
+        Returns: undefined
+      }
       can_use_skill: {
         Args: { p_role_state_id: string }
+        Returns: boolean
+      }
+      cast_vote: {
+        Args: {
+          p_voting_session_id: string
+          p_voter_id: string
+          p_target_id?: string
+        }
         Returns: boolean
       }
       cleanup_old_voice_signals: {
@@ -906,6 +1132,16 @@ export type Database = {
       close_inactive_rooms: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_voting_session: {
+        Args: {
+          p_game_state_id: string
+          p_room_id: string
+          p_round_number: number
+          p_phase: number
+          p_session_type?: string
+        }
+        Returns: string
       }
       get_phase_duration: {
         Args: { p_room_id: string; p_phase: string }
@@ -933,6 +1169,10 @@ export type Database = {
       }
       is_room_participant: {
         Args: { p_room_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      process_voting_result: {
+        Args: { p_voting_result_id: string }
         Returns: boolean
       }
       start_game: {

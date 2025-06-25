@@ -1,154 +1,142 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ROLE_STATUS } from './roleStateHelpers';
 
-// 猎人角色的反击时间（秒）
-const HUNTER_REVENGE_TIME = 40;
-
-// 检查角色是否是猎人
-const isHunterRole = async (roleId: string): Promise<boolean> => {
-  const { data, error } = await supabase
-    .from('role_design')
-    .select('role_name')
-    .eq('id', roleId)
-    .single();
-    
-  if (error) {
-    console.error('检查猎人角色失败:', error);
-    return false;
-  }
-  
-  return data?.role_name === '猎人';
-};
-
-// 处理投票结果，处理被投票最多的玩家
-export const handleVoteResult = async (roomId: string, gameStateId: string, votedPlayerId: string): Promise<boolean> => {
+// 处理投票结果的主函数
+export const handleVoteResult = async (
+  roomId: string,
+  gameStateId: string,
+  mostVotedPlayerId: string
+): Promise<boolean> => {
   try {
-    // 获取被投票玩家的角色状态
-    const { data: roleState, error: roleStateError } = await supabase
-      .from('role_states')
+    console.log('开始处理投票结果:', {
+      roomId,
+      gameStateId,
+      mostVotedPlayerId
+    });
+
+    // 使用新的投票系统处理结果
+    // 首先获取当前活跃的投票会话
+    const { data: votingSession, error: sessionError } = await supabase
+      .from('voting_sessions')
       .select('*')
-      .eq('room_id', roomId)
       .eq('game_state_id', gameStateId)
-      .eq('user_id', votedPlayerId)
-      .single();
-    
-    if (roleStateError || !roleState) {
-      console.error('获取角色状态失败:', roleStateError);
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (sessionError) {
+      console.error('获取投票会话失败:', sessionError);
       return false;
     }
-    
-    // 检查是否是猎人角色
-    const isHunter = await isHunterRole(roleState.role_id);
-    
-    if (isHunter) {
-      // 猎人进入濒死状态，设置反击时间
-      const { error: updateError } = await supabase
-        .from('role_states')
-        .update({
-          role_status: ROLE_STATUS.DYING,
-          status_effects: {
-            can_chat: false,
-            can_vote: false,
-            can_use_skill: true,
-            can_be_targeted: false,
-            can_answer_questions: true,
-            can_be_voted: false,
-            hunter_revenge_end_time: new Date(Date.now() + HUNTER_REVENGE_TIME * 1000).toISOString(),
-            is_hunter_revenge: true
-          }
-        })
-        .eq('id', roleState.id);
-      
-      if (updateError) {
-        console.error('更新猎人状态失败:', updateError);
-        return false;
-      }
-      
-      console.log(`猎人 ${votedPlayerId} 进入濒死状态，有 ${HUNTER_REVENGE_TIME} 秒反击时间`);
-      
-      // 设置定时器，40秒后自动淘汰猎人
-      setTimeout(async () => {
-        await eliminateHunterAfterRevenge(roleState.id);
-      }, HUNTER_REVENGE_TIME * 1000);
-      
-    } else {
-      // 非猎人直接淘汰
-      const { error: updateError } = await supabase
-        .from('role_states')
-        .update({
-          role_status: ROLE_STATUS.ELIMINATED
-        })
-        .eq('id', roleState.id);
-      
-      if (updateError) {
-        console.error('更新玩家淘汰状态失败:', updateError);
-        return false;
-      }
-      
-      console.log(`玩家 ${votedPlayerId} 被投票淘汰`);
+
+    if (!votingSession) {
+      console.error('没有找到活跃的投票会话');
+      return false;
     }
-    
+
+    // 计算投票结果
+    const { error: calculateError } = await supabase.rpc('calculate_voting_results', {
+      p_voting_session_id: votingSession.id
+    });
+
+    if (calculateError) {
+      console.error('计算投票结果失败:', calculateError);
+      return false;
+    }
+
+    // 获取计算后的结果
+    const { data: results, error: resultsError } = await supabase
+      .from('voting_results')
+      .select('*')
+      .eq('voting_session_id', votingSession.id)
+      .eq('result_type', 'eliminated')
+      .order('total_votes', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (resultsError) {
+      console.error('获取投票结果失败:', resultsError);
+      return false;
+    }
+
+    // 如果有被淘汰的玩家，处理结果
+    if (results && results.target_id) {
+      const { data: processResult, error: processError } = await supabase.rpc('process_voting_result', {
+        p_voting_result_id: results.id
+      });
+
+      if (processError) {
+        console.error('处理投票结果失败:', processError);
+        return false;
+      }
+
+      console.log('投票结果处理成功:', processResult);
+      return true;
+    }
+
+    console.log('投票无淘汰结果，处理完成');
     return true;
+
   } catch (error) {
-    console.error('处理投票结果时出错:', error);
+    console.error('处理投票结果时发生未知错误:', error);
     return false;
   }
 };
 
-// 猎人反击时间结束后自动淘汰
-const eliminateHunterAfterRevenge = async (roleStateId: string): Promise<void> => {
+// 获取投票统计信息（保持向后兼容）
+export const getVoteStats = async (
+  gameStateId: string,
+  currentRound: number,
+  currentPhase: number
+) => {
   try {
-    // 检查猎人是否仍在濒死状态（可能已经被治疗或其他状态变化）
-    const { data: currentState, error: checkError } = await supabase
-      .from('role_states')
-      .select('role_status, status_effects')
-      .eq('id', roleStateId)
-      .single();
-    
-    if (checkError || !currentState) {
-      console.error('检查猎人当前状态失败:', checkError);
-      return;
+    // 获取当前投票会话的投票记录
+    const { data: votingSession } = await supabase
+      .from('voting_sessions')
+      .select('id')
+      .eq('game_state_id', gameStateId)
+      .eq('round_number', currentRound)
+      .eq('phase', currentPhase)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!votingSession) {
+      return { voteCount: 0, mostVotedPlayer: null };
     }
-    
-    // 只有当猎人仍在反击状态时才自动淘汰
-    const statusEffects = currentState.status_effects as any;
-    if (currentState.role_status === ROLE_STATUS.DYING && statusEffects?.is_hunter_revenge) {
-      const { error: updateError } = await supabase
-        .from('role_states')
-        .update({
-          role_status: ROLE_STATUS.ELIMINATED
-        })
-        .eq('id', roleStateId);
-      
-      if (updateError) {
-        console.error('自动淘汰猎人失败:', updateError);
-      } else {
-        console.log(`猎人反击时间结束，自动淘汰`);
+
+    // 获取投票统计
+    const { data: votes } = await supabase
+      .from('votes')
+      .select('target_id, voter_id')
+      .eq('voting_session_id', votingSession.id)
+      .eq('is_valid', true);
+
+    if (!votes || votes.length === 0) {
+      return { voteCount: 0, mostVotedPlayer: null };
+    }
+
+    // 统计得票
+    const voteCounts: Record<string, number> = {};
+    votes.forEach(vote => {
+      if (vote.target_id) {
+        voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1;
       }
-    }
+    });
+
+    // 找出得票最多的玩家
+    const mostVotedPlayerId = Object.entries(voteCounts)
+      .sort(([,a], [,b]) => b - a)[0]?.[0];
+
+    return {
+      voteCount: votes.length,
+      mostVotedPlayer: mostVotedPlayerId || null,
+      voteCounts
+    };
+
   } catch (error) {
-    console.error('处理猎人自动淘汰时出错:', error);
+    console.error('获取投票统计失败:', error);
+    return { voteCount: 0, mostVotedPlayer: null };
   }
-};
-
-// 检查猎人反击时间是否已结束
-export const checkHunterRevengeTimeout = (statusEffects: any): boolean => {
-  if (!statusEffects?.is_hunter_revenge || !statusEffects?.hunter_revenge_end_time) {
-    return false;
-  }
-  
-  const endTime = new Date(statusEffects.hunter_revenge_end_time);
-  return Date.now() > endTime.getTime();
-};
-
-// 获取猎人剩余反击时间（秒）
-export const getHunterRevengeTimeLeft = (statusEffects: any): number => {
-  if (!statusEffects?.is_hunter_revenge || !statusEffects?.hunter_revenge_end_time) {
-    return 0;
-  }
-  
-  const endTime = new Date(statusEffects.hunter_revenge_end_time);
-  const timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000));
-  return timeLeft;
 };
