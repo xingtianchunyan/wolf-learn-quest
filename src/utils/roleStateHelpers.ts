@@ -67,3 +67,19 @@ export const canUseSkill = (skillUses: any): boolean => {
   const remaining = getSkillUsesRemaining(skillUses);
   return remaining === 'unlimited' || (typeof remaining === 'number' && remaining > 0);
 };
+
+// 检查是否是猎人反击状态
+export const isHunterRevenge = (statusEffects: any): boolean => {
+  return statusEffects?.is_hunter_revenge === true;
+};
+
+// 获取猎人反击剩余时间（秒）
+export const getHunterRevengeTimeLeft = (statusEffects: any): number => {
+  if (!statusEffects?.is_hunter_revenge || !statusEffects?.hunter_revenge_end_time) {
+    return 0;
+  }
+  
+  const endTime = new Date(statusEffects.hunter_revenge_end_time);
+  const timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000));
+  return timeLeft;
+};

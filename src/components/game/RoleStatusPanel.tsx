@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Clock } from 'lucide-react';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
@@ -9,7 +10,9 @@ import {
   getRoleStatusName, 
   getRoleStatusColor, 
   canPerformAction, 
-  getSkillUsesRemaining 
+  getSkillUsesRemaining,
+  isHunterRevenge,
+  getHunterRevengeTimeLeft
 } from '@/utils/roleStateHelpers';
 
 interface RoleStatusPanelProps {
@@ -20,6 +23,16 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
   const { roleStates, loading } = useRoleStates(roomId);
   const { players } = usePlayersRealtime(roomId);
   const { roleDesigns } = useRoleDesigns();
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // 每秒更新时间，用于猎人反击倒计时
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   if (loading) {
     return (
@@ -48,11 +61,17 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
             const player = players.find(p => p.userId === roleState.user_id);
             const role = roleDesigns.find(r => r.id === roleState.role_id);
             const skillRemaining = getSkillUsesRemaining(roleState.skill_uses_remaining);
+            const isHunterRevengeState = isHunterRevenge(roleState.status_effects);
+            const revengeTimeLeft = getHunterRevengeTimeLeft(roleState.status_effects);
             
             return (
               <div 
                 key={roleState.id}
-                className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
+                className={`p-3 rounded-md border ${
+                  isHunterRevengeState 
+                    ? 'bg-yellow-900/40 border-yellow-500/50' 
+                    : 'bg-werewolf-dark/40 border-gray-600'
+                }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -63,18 +82,36 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                       {role?.role_name || '未知角色'}
                     </div>
                   </div>
-                  <Badge 
-                    variant="outline" 
-                    className={`${getRoleStatusColor(roleState.role_status)} border-current`}
-                  >
-                    {getRoleStatusName(roleState.role_status)}
-                  </Badge>
+                  <div className="flex flex-col items-end space-y-1">
+                    <Badge 
+                      variant="outline" 
+                      className={`${getRoleStatusColor(roleState.role_status)} border-current`}
+                    >
+                      {getRoleStatusName(roleState.role_status)}
+                    </Badge>
+                    
+                    {isHunterRevengeState && revengeTimeLeft > 0 && (
+                      <Badge 
+                        variant="outline" 
+                        className="text-yellow-400 border-yellow-400 animate-pulse"
+                      >
+                        <Clock className="h-3 w-3 mr-1" />
+                        反击 {revengeTimeLeft}s
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
                 <div className="text-xs text-gray-500 space-y-1">
                   <div>
                     技能剩余: {skillRemaining === 'unlimited' ? '无限' : skillRemaining}
                   </div>
+                  
+                  {isHunterRevengeState && (
+                    <div className="text-yellow-400 font-medium">
+                      猎人反击状态 - 可使用技能反击！
+                    </div>
+                  )}
                   
                   {roleState.status_effects && (
                     <div className="flex flex-wrap gap-1">
