@@ -10,9 +10,11 @@ export interface VotingSession {
   round_number: number;
   phase: number;
   session_type: string;
-  status: 'active' | 'completed' | 'cancelled';
+  status: string; // 改为通用 string 类型
   start_time: string;
   end_time?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Vote {
@@ -23,6 +25,7 @@ export interface Vote {
   vote_time: string;
   is_valid: boolean;
   vote_weight: number;
+  created_at?: string;
 }
 
 export interface VotingResult {
@@ -33,9 +36,11 @@ export interface VotingResult {
   vote_percentage?: number;
   is_majority: boolean;
   is_tied: boolean;
-  result_type: 'eliminated' | 'saved' | 'tied' | 'no_result';
-  processing_status: 'pending' | 'processing' | 'completed' | 'failed';
+  result_type: string; // 改为通用 string 类型
+  processing_status: string; // 改为通用 string 类型
   processed_at?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useVotingSystem = (roomId: string, gameStateId?: string) => {
@@ -63,7 +68,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       return;
     }
 
-    setCurrentSession(data);
+    setCurrentSession(data as VotingSession | null);
   }, [gameStateId]);
 
   // 获取投票记录
@@ -79,7 +84,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       return;
     }
 
-    setVotes(data || []);
+    setVotes((data || []) as Vote[]);
   }, []);
 
   // 获取投票结果
@@ -95,7 +100,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       return;
     }
 
-    setResults(data || []);
+    setResults((data || []) as VotingResult[]);
   }, []);
 
   // 创建投票会话
@@ -177,7 +182,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       // 刷新投票记录
       await fetchVotes(currentSession.id);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('投票失败:', error);
       toast({
         title: '投票失败',
@@ -219,7 +224,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       });
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('计算投票结果失败:', error);
       toast({
         title: '计算结果失败',
@@ -253,7 +258,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('处理投票结果失败:', error);
       toast({
         title: '处理结果失败',
