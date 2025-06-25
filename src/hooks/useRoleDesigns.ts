@@ -2,8 +2,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import type { SkillEffects, RoleAttributes } from '@/utils/skillSystemHelpers';
 
-export type RoleDesign = Tables<'role_design'>;
+export type RoleDesign = Tables<'role_design'> & {
+  skill_effects?: SkillEffects;
+  role_attributes?: RoleAttributes;
+};
 
 // 本地角色图片映射
 const localRoleImages: Record<string, string> = {
@@ -34,7 +38,13 @@ export const useRoleDesigns = () => {
       if (error) {
         console.error('Error fetching role designs:', error);
       } else {
-        setRoleDesigns(data || []);
+        // 解析 JSONB 字段
+        const processedData = (data || []).map(role => ({
+          ...role,
+          skill_effects: role.skill_effects as SkillEffects,
+          role_attributes: role.role_attributes as RoleAttributes,
+        }));
+        setRoleDesigns(processedData);
       }
       setLoading(false);
     };
@@ -73,11 +83,43 @@ export const useRoleDesigns = () => {
     return localRoleImages[roleDesign.role_name] || null;
   };
 
+  // 获取角色的技能效果配置
+  const getSkillEffects = (roleDesignId: string): SkillEffects | null => {
+    const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
+    return roleDesign?.skill_effects || null;
+  };
+
+  // 获取角色的属性配置
+  const getRoleAttributes = (roleDesignId: string): RoleAttributes | null => {
+    const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
+    return roleDesign?.role_attributes || null;
+  };
+
+  // 根据阵营筛选角色
+  const getRolesByFaction = (isWolfFaction: boolean): RoleDesign[] => {
+    return roleDesigns.filter(role => role.faction === isWolfFaction);
+  };
+
+  // 获取好人阵营角色
+  const getGoodRoles = (): RoleDesign[] => {
+    return getRolesByFaction(false);
+  };
+
+  // 获取狼人阵营角色
+  const getWolfRoles = (): RoleDesign[] => {
+    return getRolesByFaction(true);
+  };
+
   return { 
     roleDesigns, 
     loading, 
     getRoleByName, 
     getRoleImageUrl,
-    getLocalImageByDesignId
+    getLocalImageByDesignId,
+    getSkillEffects,
+    getRoleAttributes,
+    getRolesByFaction,
+    getGoodRoles,
+    getWolfRoles
   };
 };

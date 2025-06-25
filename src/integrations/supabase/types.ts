@@ -462,10 +462,12 @@ export type Database = {
         Row: {
           faction: boolean
           id: string
+          role_attributes: Json | null
           role_description: string | null
           role_image: string | null
           role_name: string
           skill_description: string | null
+          skill_effects: Json | null
           skill_name: string | null
           skill_type: Json | null
           skill_usage: number | null
@@ -473,10 +475,12 @@ export type Database = {
         Insert: {
           faction: boolean
           id?: string
+          role_attributes?: Json | null
           role_description?: string | null
           role_image?: string | null
           role_name: string
           skill_description?: string | null
+          skill_effects?: Json | null
           skill_name?: string | null
           skill_type?: Json | null
           skill_usage?: number | null
@@ -484,10 +488,12 @@ export type Database = {
         Update: {
           faction?: boolean
           id?: string
+          role_attributes?: Json | null
           role_description?: string | null
           role_image?: string | null
           role_name?: string
           skill_description?: string | null
+          skill_effects?: Json | null
           skill_name?: string | null
           skill_type?: Json | null
           skill_usage?: number | null

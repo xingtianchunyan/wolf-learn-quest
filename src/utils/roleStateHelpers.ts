@@ -83,3 +83,28 @@ export const getHunterRevengeTimeLeft = (statusEffects: any): number => {
   const timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000));
   return timeLeft;
 };
+
+// 将角色状态数字转换为技能系统可识别的状态名称
+export const getStatusNameForSkillSystem = (status: number): string => {
+  switch (status) {
+    case ROLE_STATUS.NORMAL:
+      return 'normal';
+    case ROLE_STATUS.DYING:
+      return 'dying';
+    case ROLE_STATUS.WEAK:
+      return 'weak';
+    case ROLE_STATUS.ELIMINATED:
+      return 'eliminated';
+    default:
+      return 'normal';
+  }
+};
+
+// 检查角色是否可以在当前状态下使用技能（基于新的技能系统）
+export const canUseSkillWithCurrentStatus = (
+  roleStatus: number,
+  requiredStatuses: string[]
+): boolean => {
+  const currentStatusName = getStatusNameForSkillSystem(roleStatus);
+  return requiredStatuses.includes(currentStatusName);
+};
