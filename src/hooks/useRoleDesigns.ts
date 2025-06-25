@@ -40,15 +40,16 @@ export const useRoleDesigns = () => {
       } else {
         // 安全地处理 JSONB 字段转换
         const processedData = (data || []).map(role => {
-          const processedRole: RoleDesign = {
+          // 直接使用 as RoleDesign 类型断言，避免复杂的类型转换
+          const processedRole = {
             ...role,
             skill_effects: role.skill_effects ? 
-              (role.skill_effects as unknown as SkillEffects) : 
+              (role.skill_effects as any as SkillEffects) : 
               undefined,
             role_attributes: role.role_attributes ? 
-              (role.role_attributes as unknown as RoleAttributes) : 
+              (role.role_attributes as any as RoleAttributes) : 
               undefined,
-          };
+          } as RoleDesign;
           return processedRole;
         });
         setRoleDesigns(processedData);
