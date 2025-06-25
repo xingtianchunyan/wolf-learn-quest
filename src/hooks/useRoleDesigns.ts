@@ -38,12 +38,19 @@ export const useRoleDesigns = () => {
       if (error) {
         console.error('Error fetching role designs:', error);
       } else {
-        // 解析 JSONB 字段
-        const processedData = (data || []).map(role => ({
-          ...role,
-          skill_effects: role.skill_effects as SkillEffects,
-          role_attributes: role.role_attributes as RoleAttributes,
-        }));
+        // 安全地处理 JSONB 字段转换
+        const processedData = (data || []).map(role => {
+          const processedRole: RoleDesign = {
+            ...role,
+            skill_effects: role.skill_effects ? 
+              (role.skill_effects as unknown as SkillEffects) : 
+              undefined,
+            role_attributes: role.role_attributes ? 
+              (role.role_attributes as unknown as RoleAttributes) : 
+              undefined,
+          };
+          return processedRole;
+        });
         setRoleDesigns(processedData);
       }
       setLoading(false);
