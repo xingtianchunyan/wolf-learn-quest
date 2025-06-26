@@ -128,23 +128,25 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
       </Card>
 
       {/* 主要内容区域 */}
-      <Tabs defaultValue="use-skill" className="w-full">
+      <Tabs defaultValue="effects" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="use-skill">技能使用</TabsTrigger>
+          {!isJudge && <TabsTrigger value="use-skill">技能使用</TabsTrigger>}
           <TabsTrigger value="effects">效果管理</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="use-skill" className="space-y-4">
-          <SkillUsePanel
-            roomId={roomId}
-            gameStateId={gameStateId}
-            userId={userId}
-            currentPhase={currentPhase}
-            roleState={roleState}
-            roleDesign={roleDesign}
-            players={players}
-          />
-        </TabsContent>
+        {!isJudge && (
+          <TabsContent value="use-skill" className="space-y-4">
+            <SkillUsePanel
+              roomId={roomId}
+              gameStateId={gameStateId}
+              userId={userId}
+              currentPhase={currentPhase}
+              roleState={roleState}
+              roleDesign={roleDesign}
+              players={players}
+            />
+          </TabsContent>
+        )}
         
         <TabsContent value="effects" className="space-y-4">
           <SkillEffectsDisplay

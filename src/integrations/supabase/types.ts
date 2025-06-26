@@ -1318,7 +1318,7 @@ export type Database = {
       advance_game_phase: {
         Args: { p_room_id: string }
         Returns: {
-          new_phase: string
+          new_phase: number
           new_round: number
           phase_end_time: string
         }[]
@@ -1394,7 +1394,7 @@ export type Database = {
         Returns: string
       }
       get_phase_duration: {
-        Args: { p_room_id: string; p_phase: string }
+        Args: { p_room_id: string; p_phase: number }
         Returns: number
       }
       get_room_judge_id: {
