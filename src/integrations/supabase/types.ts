@@ -778,38 +778,256 @@ export type Database = {
           },
         ]
       }
-      skill_uses: {
+      skill_conflicts: {
+        Row: {
+          conflicting_skills: Json
+          created_at: string
+          game_state_id: string
+          id: string
+          phase: string
+          resolution_details: Json | null
+          resolution_rule: string
+          resolved_skill_id: string | null
+          round_number: number
+        }
+        Insert: {
+          conflicting_skills?: Json
+          created_at?: string
+          game_state_id: string
+          id?: string
+          phase: string
+          resolution_details?: Json | null
+          resolution_rule: string
+          resolved_skill_id?: string | null
+          round_number: number
+        }
+        Update: {
+          conflicting_skills?: Json
+          created_at?: string
+          game_state_id?: string
+          id?: string
+          phase?: string
+          resolution_details?: Json | null
+          resolution_rule?: string
+          resolved_skill_id?: string | null
+          round_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_conflicts_game_state_id_fkey"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_conflicts_resolved_skill_id_fkey"
+            columns: ["resolved_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_effects_queue: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          effect_data: Json
+          effect_type: string
+          execution_order: number
+          expires_at: string | null
+          game_state_id: string
+          id: string
+          priority: number
+          processed_at: string | null
+          room_id: string
+          skill_use_id: string
+          status: string
+          trigger_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          effect_data?: Json
+          effect_type: string
+          execution_order?: number
+          expires_at?: string | null
+          game_state_id: string
+          id?: string
+          priority?: number
+          processed_at?: string | null
+          room_id: string
+          skill_use_id: string
+          status?: string
+          trigger_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          effect_data?: Json
+          effect_type?: string
+          execution_order?: number
+          expires_at?: string | null
+          game_state_id?: string
+          id?: string
+          priority?: number
+          processed_at?: string | null
+          room_id?: string
+          skill_use_id?: string
+          status?: string
+          trigger_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_effects_queue_game_state_id_fkey"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_effects_queue_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_effects_queue_skill_use_id_fkey"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_targets: {
         Row: {
           created_at: string
+          effect_applied: Json
+          effect_duration: number | null
+          effect_end_time: string | null
+          effect_start_time: string | null
+          id: string
+          is_active: boolean
+          skill_effects_queue_id: string | null
+          skill_use_id: string
+          stack_count: number | null
+          target_type: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string | null
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id: string
+          stack_count?: number | null
+          target_type: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string | null
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id?: string
+          stack_count?: number | null
+          target_type?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_targets_skill_effects_queue_id_fkey"
+            columns: ["skill_effects_queue_id"]
+            isOneToOne: false
+            referencedRelation: "skill_effects_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_targets_skill_use_id_fkey"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_targets_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_uses: {
+        Row: {
+          conditions_met: Json | null
+          created_at: string
+          execution_status: string | null
+          execution_time: string | null
+          failure_reason: string | null
           game_state_id: string
           id: string
           phase: string
           result: Json | null
           round_number: number
+          skill_effects: Json | null
           skill_name: string
+          skill_priority: number | null
           target_user_id: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          conditions_met?: Json | null
           created_at?: string
+          execution_status?: string | null
+          execution_time?: string | null
+          failure_reason?: string | null
           game_state_id: string
           id?: string
           phase: string
           result?: Json | null
           round_number: number
+          skill_effects?: Json | null
           skill_name: string
+          skill_priority?: number | null
           target_user_id?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          conditions_met?: Json | null
           created_at?: string
+          execution_status?: string | null
+          execution_time?: string | null
+          failure_reason?: string | null
           game_state_id?: string
           id?: string
           phase?: string
           result?: Json | null
           round_number?: number
+          skill_effects?: Json | null
           skill_name?: string
+          skill_priority?: number | null
           target_user_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1105,6 +1323,26 @@ export type Database = {
           phase_end_time: string
         }[]
       }
+      apply_elimination_effect: {
+        Args: { p_effect_queue_id: string }
+        Returns: boolean
+      }
+      apply_generic_effect: {
+        Args: { p_effect_queue_id: string }
+        Returns: boolean
+      }
+      apply_investigation_effect: {
+        Args: { p_effect_queue_id: string }
+        Returns: boolean
+      }
+      apply_protection_effect: {
+        Args: { p_effect_queue_id: string }
+        Returns: boolean
+      }
+      apply_status_effect: {
+        Args: { p_effect_queue_id: string }
+        Returns: boolean
+      }
       auto_eliminate_expired_hunters: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1125,6 +1363,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_expired_skill_effects: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_voice_signals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1140,6 +1382,14 @@ export type Database = {
           p_round_number: number
           p_phase: number
           p_session_type?: string
+        }
+        Returns: string
+      }
+      detect_skill_conflicts: {
+        Args: {
+          p_game_state_id: string
+          p_round_number: number
+          p_phase: string
         }
         Returns: string
       }
@@ -1171,9 +1421,24 @@ export type Database = {
         Args: { p_room_id: string; p_user_id: string }
         Returns: boolean
       }
+      process_skill_effects: {
+        Args: { p_game_state_id: string }
+        Returns: number
+      }
       process_voting_result: {
         Args: { p_voting_result_id: string }
         Returns: boolean
+      }
+      queue_skill_effect: {
+        Args: {
+          p_skill_use_id: string
+          p_effect_type: string
+          p_effect_data: Json
+          p_priority?: number
+          p_conditions?: Json
+          p_trigger_delay_seconds?: number
+        }
+        Returns: string
       }
       start_game: {
         Args: { p_room_id: string }
@@ -1182,6 +1447,16 @@ export type Database = {
       toggle_game_pause: {
         Args: { p_room_id: string }
         Returns: boolean
+      }
+      use_skill: {
+        Args: {
+          p_user_id: string
+          p_game_state_id: string
+          p_skill_name: string
+          p_target_user_id?: string
+          p_skill_data?: Json
+        }
+        Returns: string
       }
       use_skill_charge: {
         Args: { p_role_state_id: string }
