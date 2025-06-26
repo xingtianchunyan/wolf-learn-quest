@@ -6,29 +6,17 @@ import MultiChannelChat from '@/components/chat/MultiChannelChat';
 import TeacherSystemPanel from '@/components/judge/TeacherSystemPanel';
 import AnswerRecordPanel from '@/components/judge/AnswerRecordPanel';
 import JudgeActionPanel from '@/components/judge/JudgeActionPanel';
-import SkillSystemManager from '@/components/game/SkillSystemManager';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useGameState } from '@/hooks/useGameState';
-import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { JudgePageProvider } from '@/contexts/JudgePageContext';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
   const { currentUser } = useAuth();
   const { gameState } = useGameState(roomId || '');
-  const { players } = usePlayersRealtime(roomId || '');
-  
-  // 获取角色选择信息
-  const { getSelectedRoleByUser } = useRoleSelection(
-    roomId || '',
-    currentUser?.id || null,
-    players.length,
-    8
-  );
 
   if (!roomId) {
     return (
@@ -44,16 +32,6 @@ const JudgePage = () => {
       </PageLayout>
     );
   }
-
-  // 构建玩家信息，包含角色状态
-  const playersWithRoles = players.map(player => {
-    const selectedRole = getSelectedRoleByUser(player.userId || '');
-    return {
-      userId: player.userId || '',
-      name: player.name,
-      roleStatus: 1 // 默认正常状态，实际应该从 role_states 表获取
-    };
-  });
 
   return (
     <JudgePageProvider roomId={roomId}>
@@ -85,27 +63,12 @@ const JudgePage = () => {
             
             {/* Center Column - Game State and Judge Actions */}
             <div className="lg:col-span-6 flex flex-col gap-6 h-full">
-              <div className="h-1/3">
+              <div className="h-1/2">
                 <EnhancedGameStateDisplay roomId={roomId} />
               </div>
-              <div className="h-1/3">
+              <div className="h-1/2">
                 <JudgeActionPanel roomId={roomId} />
               </div>
-              {/* 添加技能系统管理器 */}
-              {gameState && (
-                <div className="h-1/3">
-                  <SkillSystemManager
-                    roomId={roomId}
-                    gameStateId={gameState.id}
-                    userId={currentUser?.id || ''}
-                    isJudge={true}
-                    currentPhase={gameState.currentPhase}
-                    roleState={null}
-                    roleDesign={null}
-                    players={playersWithRoles}
-                  />
-                </div>
-              )}
             </div>
             
             {/* Right Column - Chat */}
