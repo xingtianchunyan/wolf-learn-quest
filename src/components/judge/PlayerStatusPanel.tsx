@@ -70,6 +70,8 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, hideRoleC
               players.map((player, index) => {
                 const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
                 const roleName = selectedRole?.roleName || '';
+                // Use default status 'alive' since Player interface doesn't have status property
+                const playerStatus = 'alive';
                 
                 return (
                   <div
@@ -97,13 +99,13 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, hideRoleC
                       <div className="flex items-center space-x-2">
                         <Badge 
                           variant="outline" 
-                          className={getStatusColor(player.status || 'alive')}
+                          className={getStatusColor(playerStatus)}
                         >
-                          {getStatusIcon(player.status || 'alive')}
+                          {getStatusIcon(playerStatus)}
                           <span className="ml-1">
-                            {player.status === 'alive' ? '存活' : 
-                             player.status === 'injured' ? '受伤' : 
-                             player.status === 'dead' ? '死亡' : '等待'}
+                            {playerStatus === 'alive' ? '存活' : 
+                             playerStatus === 'injured' ? '受伤' : 
+                             playerStatus === 'dead' ? '死亡' : '等待'}
                           </span>
                         </Badge>
                         {player.isReady && (

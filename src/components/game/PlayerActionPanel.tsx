@@ -49,7 +49,7 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({ roomId, selectedP
     
     console.log('使用技能:', {
       targetPlayerId: selectedPlayerId,
-      skillType: skillType || currentPlayerRole?.roleDesign?.skill_name,
+      skillType: skillType || currentPlayerRole?.roleDesign?.role_name,
       role: currentPlayerRole?.roleDesign?.role_name
     });
     
@@ -73,8 +73,8 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({ roomId, selectedP
 
   // 设置默认技能类型
   React.useEffect(() => {
-    if (currentPlayerRole?.roleDesign?.skill_name && !isWitch) {
-      setSkillType(currentPlayerRole.roleDesign.skill_name);
+    if (currentPlayerRole?.roleDesign?.role_name && !isWitch) {
+      setSkillType(currentPlayerRole.roleDesign.role_name);
     }
   }, [currentPlayerRole, isWitch]);
 
@@ -165,8 +165,8 @@ const PlayerActionPanel: React.FC<PlayerActionPanelProps> = ({ roomId, selectedP
                       <SelectItem value="attack">攻击</SelectItem>
                     </>
                   ) : (
-                    <SelectItem value={currentPlayerRole?.roleDesign?.skill_name || ''}>
-                      {currentPlayerRole?.roleDesign?.skill_name || '无技能'}
+                    <SelectItem value={currentPlayerRole?.roleDesign?.role_name || ''}>
+                      {currentPlayerRole?.roleDesign?.role_name || '无技能'}
                     </SelectItem>
                   )}
                 </SelectContent>

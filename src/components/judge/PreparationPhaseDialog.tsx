@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
@@ -163,12 +164,12 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           <div className="col-span-8 flex flex-col gap-4">
             {/* 题库管理 */}
             <div className="flex-1">
-              <QuestionBankPanel className="h-full" />
+              <QuestionBankPanel />
             </div>
 
             {/* 玩家状态 */}
             <div className="flex-1">
-              <PlayerStatusPanel roomId={roomId} className="h-full" />
+              <PlayerStatusPanel roomId={roomId} />
             </div>
           </div>
         </div>
