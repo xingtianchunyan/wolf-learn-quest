@@ -116,7 +116,8 @@ const ActionTargetPanel: React.FC<ActionTargetPanelProps> = ({
   };
 
   const handlePlayerFlip = (playerId: string) => {
-    if (displayPlayers.find(p => p.id === playerId)?.isCurrentPlayer) return;
+    const player = displayPlayers.find(p => p.id === playerId);
+    if (player?.isCurrentPlayer || player?.status === 'waiting') return;
     
     setFlippedPlayers(prev => {
       const newSet = new Set(prev);
@@ -175,21 +176,37 @@ const ActionTargetPanel: React.FC<ActionTargetPanelProps> = ({
                       ? 'border-werewolf-purple bg-werewolf-purple/20'
                       : 'border-gray-500 bg-werewolf-dark/40 hover:border-werewolf-purple/50'
                 }`}
+                style={{ perspective: '1000px' }}
                 onClick={() => handlePlayerFlip(player.id)}
               >
                 {/* 正面 */}
-                <div className={`absolute inset-0 rounded-lg p-2 flex flex-col items-center justify-center transition-transform duration-500 ${
-                  isFlipped && !player.isCurrentPlayer ? 'rotate-y-180' : ''
-                }`}>
+                <div 
+                  className={`absolute inset-0 rounded-lg p-2 flex flex-col items-center justify-center transition-all duration-500 ${
+                    isFlipped && !player.isCurrentPlayer ? 'opacity-0 rotate-y-180' : 'opacity-100'
+                  }`}
+                  style={{ 
+                    transform: isFlipped && !player.isCurrentPlayer ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    backfaceVisibility: 'hidden'
+                  }}
+                >
                   {player.status === 'waiting' ? (
                     <div className="text-xs text-gray-500 text-center">等待玩家</div>
                   ) : (
                     <>
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-werewolf-purple to-werewolf-light mb-1 flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">
-                          {player.name.charAt(0)}
-                        </span>
-                      </div>
+                      {/* 只有当前玩家显示角色图片 */}
+                      {player.isCurrentPlayer && player.roleImageUrl ? (
+                        <img 
+                          src={player.roleImageUrl} 
+                          alt={player.role}
+                          className="w-12 h-12 object-cover rounded mb-1"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-werewolf-purple to-werewolf-light mb-1 flex items-center justify-center">
+                          <span className="text-xs font-bold text-white">
+                            {player.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
                       <div className="text-xs text-gray-300 text-center truncate w-full">
                         {player.name}
                       </div>
@@ -200,22 +217,20 @@ const ActionTargetPanel: React.FC<ActionTargetPanelProps> = ({
                   )}
                 </div>
 
-                {/* 背面（仅非当前玩家显示） */}
+                {/* 背面（非当前玩家且非等待状态） */}
                 {!player.isCurrentPlayer && player.status !== 'waiting' && (
-                  <div className={`absolute inset-0 rounded-lg p-2 flex flex-col items-center justify-center transition-transform duration-500 rotate-y-180 ${
-                    isFlipped ? 'rotate-y-0' : ''
-                  }`}>
-                    {player.roleImageUrl ? (
-                      <img 
-                        src={player.roleImageUrl} 
-                        alt={player.role}
-                        className="w-12 h-12 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-werewolf-dark rounded mb-1 flex items-center justify-center">
-                        <span className="text-xs text-gray-500">角色</span>
-                      </div>
-                    )}
+                  <div 
+                    className={`absolute inset-0 rounded-lg p-2 flex flex-col items-center justify-center transition-all duration-500 ${
+                      isFlipped ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{ 
+                      transform: isFlipped ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                      backfaceVisibility: 'hidden'
+                    }}
+                  >
+                    <div className="w-12 h-12 bg-werewolf-dark rounded mb-1 flex items-center justify-center">
+                      <span className="text-xs text-gray-500">?</span>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -225,7 +240,24 @@ const ActionTargetPanel: React.FC<ActionTargetPanelProps> = ({
                         handlePlayerSelect(player.id);
                       }}
                     >
-                      {isSelected ? '已选中' : '选中玩家'}
+                      {isSelected ? '已选中' : '选中'}
+                    </Button>
+                  </div>
+                )}
+
+                {/* 当前玩家的选择按钮 */}
+                {player.isCurrentPlayer && player.status !== 'waiting' && (
+                  <div className="absolute bottom-1 left-1 right-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-6 w-full border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayerSelect(player.id);
+                      }}
+                    >
+                      {isSelected ? '已选中' : '选中自己'}
                     </Button>
                   </div>
                 )}
