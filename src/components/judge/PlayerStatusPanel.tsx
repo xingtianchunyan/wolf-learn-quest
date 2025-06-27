@@ -1,160 +1,122 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Users, Heart, Zap, XCircle, Clock } from 'lucide-react';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { usePlayerPresence } from '@/hooks/usePlayerPresence';
-import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
-import { supabase } from '@/integrations/supabase/client';
-
-interface Player {
-  id: string;
-  name: string;
-  avatar: string;
-  isReady: boolean;
-  isHost: boolean;
-  isAI: boolean;
-  role?: string;
-  userId?: string;
-}
+import { useAuth } from '@/providers/AuthProvider';
 
 interface PlayerStatusPanelProps {
   roomId: string;
-  className?: string;
+  hideRoleColumn?: boolean;
 }
 
-const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className }) => {
+const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, hideRoleColumn = false }) => {
+  const { players } = usePlayersRealtime(roomId);
   const { currentUser } = useAuth();
-  const { players, loading: playersLoading } = usePlayersRealtime(roomId);
-  const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
-  const onlinePlayersList = getOnlinePlayers();
-
-  const [maxPlayers, setMaxPlayers] = useState(8);
-
-  useEffect(() => {
-    const fetchRoomData = async () => {
-      if (!roomId) return;
-      const { data, error } = await supabase
-        .from('rooms')
-        .select('max_players')
-        .eq('id', roomId)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching max players for PlayerStatusPanel:', error);
-      } else if (data && data.max_players) {
-        setMaxPlayers(data.max_players);
-      }
-    };
-    fetchRoomData();
-  }, [roomId]);
-
-  const { getSelectedRoleByUser, loading: roleSelectionLoading } = useRoleSelection(
+  
+  const { getSelectedRoleByUser } = useRoleSelection(
     roomId,
     currentUser?.id || null,
     players.length,
-    maxPlayers
+    8
   );
 
-  const isPlayerOnline = (player: Player) => {
-    if (player.isAI) {
-      return true;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'alive':
+        return <Heart className="h-4 w-4 text-green-400" />;
+      case 'injured':
+        return <Zap className="h-4 w-4 text-yellow-400" />;
+      case 'dead':
+        return <XCircle className="h-4 w-4 text-red-400" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
+  };
 
-    if (!player.userId) {
-      return false;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'alive':
+        return 'bg-green-900/30 text-green-200 border-green-500';
+      case 'injured':
+        return 'bg-yellow-900/30 text-yellow-200 border-yellow-500';
+      case 'dead':
+        return 'bg-red-900/30 text-red-200 border-red-500';
+      default:
+        return 'bg-gray-900/30 text-gray-200 border-gray-500';
     }
-
-    return onlinePlayersList.some(onlinePlayer => onlinePlayer.user_id === player.userId);
   };
 
   return (
-    <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="text-werewolf-purple flex items-center text-lg">
           <Users className="mr-2 h-5 w-5" />
-          玩家状态
+          玩家状态 ({players.length}名玩家)
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
+      
+      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="border border-werewolf-purple/30 rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-werewolf-purple/30">
-                  <TableHead className="text-werewolf-purple">玩家ID</TableHead>
-                  <TableHead className="text-werewolf-purple">角色</TableHead>
-                  <TableHead className="text-werewolf-purple">在线状态</TableHead>
-                  <TableHead className="text-werewolf-purple">准备状态</TableHead>
-                  <TableHead className="text-werewolf-purple">特殊标识</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {playersLoading || roleSelectionLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-400 py-4">
-                      加载中...
-                    </TableCell>
-                  </TableRow>
-                ) : players.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-400 py-4">
-                      暂无玩家
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  players.map(player => {
-                    const playerOnline = isPlayerOnline(player);
-                    const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
-                    const roleName = selectedRole?.roleName || '未选择';
-
-                    return (
-                      <TableRow key={player.id} className="border-werewolf-purple/30">
-                        <TableCell className="text-gray-300 font-medium">
-                          {player.name}
-                        </TableCell>
-                        <TableCell className="text-gray-300">
-                          {roleName}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {playerOnline ? (
-                              <Wifi className="h-4 w-4 text-green-400" />
-                            ) : (
-                              <WifiOff className="h-4 w-4 text-red-400" />
-                            )}
-                            <span className={`text-sm ${playerOnline ? 'text-green-400' : 'text-red-400'}`}>
-                              {playerOnline ? '在线' : '离线'}
-                            </span>
+          <div className="space-y-3 pr-4">
+            {players.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                暂无玩家
+              </div>
+            ) : (
+              players.map((player, index) => {
+                const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
+                const roleName = selectedRole?.roleName || '';
+                
+                return (
+                  <div
+                    key={player.id}
+                    className="p-3 bg-werewolf-dark/40 rounded-md border border-werewolf-purple/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-werewolf-purple to-werewolf-light flex items-center justify-center">
+                          <span className="text-sm font-bold text-white">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-300">
+                            {player.name}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {player.isReady ? (
-                              <UserCheck className="h-4 w-4 text-green-400" />
-                            ) : (
-                              <UserX className="h-4 w-4 text-red-400" />
-                            )}
-                            <span className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}>
-                              {player.isReady ? '已准备' : '未准备'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-1">
-                            {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
-                            {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                          {!hideRoleColumn && (
+                            <div className="text-sm text-werewolf-purple">
+                              {roleName || '未选择角色'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          variant="outline" 
+                          className={getStatusColor(player.status || 'alive')}
+                        >
+                          {getStatusIcon(player.status || 'alive')}
+                          <span className="ml-1">
+                            {player.status === 'alive' ? '存活' : 
+                             player.status === 'injured' ? '受伤' : 
+                             player.status === 'dead' ? '死亡' : '等待'}
+                          </span>
+                        </Badge>
+                        {player.isReady && (
+                          <Badge variant="outline" className="border-green-500 text-green-200">
+                            已准备
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </ScrollArea>
       </CardContent>
