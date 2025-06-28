@@ -32,7 +32,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [previousQuestion, setPreviousQuestion] = useState<Question | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // 获取当前题目
@@ -178,7 +177,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           question_order: questionOrder,
           selected_option: optionNumber,
           is_correct: isCorrect,
-          response_time: Math.max(0, (gameState.phase_duration || 300) - timeRemaining)
+          response_time: Math.max(0, (gameState.phaseDuration || 300) - timeRemaining)
         });
 
       if (error) {
