@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -180,6 +179,16 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
   const handleOptionClick = async (optionNumber: number) => {
     if (hasSubmitted || !currentQuestion || !currentUser || !gameState) return;
+    
+    // 如果时间归零，不允许提交答案
+    if (timeRemaining <= 0 && showTimer) {
+      toast({
+        title: '答题时间已结束',
+        description: '无法提交答案',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setLoading(true);
     setSelectedOption(optionNumber);
@@ -246,6 +255,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
   const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
   const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
+  const timeIsUp = timeRemaining <= 0 && showTimer;
 
   const getGameStatusInfo = () => {
     if (!gameState) return '游戏准备中';
@@ -272,15 +282,20 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
                 调试信息: 轮次={gameState.currentRound}, 阶段={gameState.currentPhase}, 
                 题目序号={(gameState.currentRound - 1) * 2 + (gameState.currentPhase === 2 ? 0 : gameState.currentPhase === 4 ? 1 : -1) + 1}
+                {timeIsUp && ', 时间已结束'}
               </div>
             )}
 
-            {/* 剩余答题时间 */}
+            {/* 剩余答题时间或时间结束提示 */}
             {showTimer && (
-              <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
-                <Clock className="mr-2 h-5 w-5 text-werewolf-purple" />
-                <span className="text-lg font-bold text-werewolf-purple">
-                  剩余时间: {formatTime(timeRemaining)}
+              <div className={`flex items-center justify-center p-3 rounded-md ${
+                timeIsUp ? 'bg-red-900/30' : 'bg-werewolf-dark/40'
+              }`}>
+                <Clock className={`mr-2 h-5 w-5 ${timeIsUp ? 'text-red-400' : 'text-werewolf-purple'}`} />
+                <span className={`text-lg font-bold ${
+                  timeIsUp ? 'text-red-400' : 'text-werewolf-purple'
+                }`}>
+                  {timeIsUp ? '答题时间已结束' : `剩余时间: ${formatTime(timeRemaining)}`}
                 </span>
               </div>
             )}
@@ -290,7 +305,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               </div>
             )}
 
-            {/* 当前题目 */}
+            {/* 当前题目 - 修改显示条件，即使时间归零也显示 */}
             {gameState?.status === 'active' && currentQuestion && isAnsweringPhase ? (
               <>
                 {/* 题目题干 */}
@@ -316,7 +331,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                       <button
                         key={optionNum}
                         onClick={() => handleOptionClick(optionNum)}
-                        disabled={hasSubmitted || loading}
+                        disabled={hasSubmitted || loading || timeIsUp}
                         className={`w-full p-3 rounded-md border text-left transition-all ${
                           isCorrect && hasSubmitted
                             ? 'bg-green-500/20 border-green-500 text-green-300'
@@ -324,7 +339,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                             ? 'bg-red-500/20 border-red-500 text-red-300'
                             : isSelected
                             ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
-                            : hasSubmitted
+                            : hasSubmitted || timeIsUp
                             ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
                             : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
                         }`}
@@ -341,6 +356,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                 {hasSubmitted && (
                   <div className="text-center text-green-400 font-medium">
                     答案已提交
+                  </div>
+                )}
+                
+                {timeIsUp && !hasSubmitted && (
+                  <div className="text-center text-red-400 font-medium">
+                    答题时间已结束，无法提交答案
                   </div>
                 )}
               </>
