@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,17 +33,23 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [questionNotFound, setQuestionNotFound] = useState(false);
 
   // 获取当前题目
   useEffect(() => {
     const fetchCurrentQuestion = async () => {
-      if (!gameState || gameState.status !== 'active' || !currentUser) return;
+      if (!gameState || gameState.status !== 'active' || !currentUser) {
+        setCurrentQuestion(null);
+        setQuestionNotFound(false);
+        return;
+      }
 
       const { currentRound, currentPhase } = gameState;
       const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
       
       if (phaseIndex === -1) {
         setCurrentQuestion(null);
+        setQuestionNotFound(false);
         return;
       }
 
@@ -57,6 +64,15 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       });
 
       try {
+        // 首先检查 room_questions 表中是否有数据
+        const { data: allRoomQuestions, error: countError } = await supabase
+          .from('room_questions')
+          .select('question_order')
+          .eq('room_id', roomId);
+
+        console.log('All room questions:', { allRoomQuestions, countError });
+
+        // 查询特定题目
         const { data: roomQuestion, error } = await supabase
           .from('room_questions')
           .select(`
@@ -75,21 +91,24 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           `)
           .eq('room_id', roomId)
           .eq('question_order', questionOrder)
-          .single();
+          .maybeSingle();
 
-        console.log('Room question query result:', { roomQuestion, error });
+        console.log('Room question query result:', { roomQuestion, error, questionOrder });
 
         if (error) {
           console.error('Error fetching current question:', error);
+          setQuestionNotFound(true);
           return;
         }
 
         if (roomQuestion && roomQuestion.questions) {
           console.log('Setting current question:', roomQuestion.questions);
           setCurrentQuestion(roomQuestion.questions as Question);
+          setQuestionNotFound(false);
         } else {
           console.log('No question found for order:', questionOrder);
           setCurrentQuestion(null);
+          setQuestionNotFound(true);
         }
 
         // 检查用户是否已经回答过这道题
@@ -99,7 +118,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('room_id', roomId)
           .eq('user_id', currentUser.id)
           .eq('question_order', questionOrder)
-          .single();
+          .maybeSingle();
 
         console.log('User answer query result:', userAnswer);
 
@@ -113,6 +132,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       } catch (error) {
         console.error('Error in fetchCurrentQuestion:', error);
+        setQuestionNotFound(true);
       }
     };
 
@@ -157,7 +177,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           `)
           .eq('room_id', roomId)
           .eq('question_order', previousQuestionOrder)
-          .single();
+          .maybeSingle();
 
         console.log('Previous question query result:', { roomQuestion, error });
 
@@ -281,7 +301,8 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
             {gameState && (
               <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
                 调试信息: 轮次={gameState.currentRound}, 阶段={gameState.currentPhase}, 
-                题目序号={(gameState.currentRound - 1) * 2 + (gameState.currentPhase === 2 ? 0 : gameState.currentPhase === 4 ? 1 : -1) + 1}
+                题目序号={(gameState.currentRound - 1) * 2 + (gameState.currentPhase === 2 ? 0 : gameState.currentPhase === 4 ? 1 : -1) + 1},
+                题目状态={currentQuestion ? '已找到' : questionNotFound ? '未找到' : '查询中'}
                 {timeIsUp && ', 时间已结束'}
               </div>
             )}
@@ -305,66 +326,86 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               </div>
             )}
 
-            {/* 当前题目 - 修改显示条件，即使时间归零也显示 */}
-            {gameState?.status === 'active' && currentQuestion && isAnsweringPhase ? (
-              <>
-                {/* 题目题干 */}
-                <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                  <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
-                  <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
-                </div>
-
-                {/* 选项列表 */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-werewolf-purple">选项</h3>
-                  {[1, 2, 3, 4].map((optionNum) => {
-                    const optionText = optionNum === 1 ? currentQuestion.option_a
-                      : optionNum === 2 ? currentQuestion.option_b
-                      : optionNum === 3 ? currentQuestion.option_c
-                      : currentQuestion.option_d;
-                    
-                    const isSelected = selectedOption === optionNum;
-                    const isCorrect = hasSubmitted && optionNum === currentQuestion.correct_option;
-                    const isWrong = hasSubmitted && isSelected && optionNum !== currentQuestion.correct_option;
-                    
-                    return (
-                      <button
-                        key={optionNum}
-                        onClick={() => handleOptionClick(optionNum)}
-                        disabled={hasSubmitted || loading || timeIsUp}
-                        className={`w-full p-3 rounded-md border text-left transition-all ${
-                          isCorrect && hasSubmitted
-                            ? 'bg-green-500/20 border-green-500 text-green-300'
-                            : isWrong
-                            ? 'bg-red-500/20 border-red-500 text-red-300'
-                            : isSelected
-                            ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
-                            : hasSubmitted || timeIsUp
-                            ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
-                            : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
-                        }`}
-                      >
-                        <span className="font-semibold mr-2">
-                          {getOptionLabel(optionNum)}.
-                        </span>
-                        {optionText}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {hasSubmitted && (
-                  <div className="text-center text-green-400 font-medium">
-                    答案已提交
+            {/* 当前题目显示 - 包括题目未找到的情况 */}
+            {gameState?.status === 'active' && isAnsweringPhase ? (
+              questionNotFound ? (
+                /* 题目未找到的提示 */
+                <div className="text-center text-red-400 py-8">
+                  <div className="p-4 bg-red-900/20 rounded-md border border-red-500/30">
+                    <h3 className="font-semibold mb-2">题目加载失败</h3>
+                    <p className="text-sm">
+                      当前阶段（第{roundNumber}轮{phaseName}）的题目未找到。
+                      <br />
+                      可能原因：法官尚未为此房间设置足够的题目。
+                    </p>
                   </div>
-                )}
-                
-                {timeIsUp && !hasSubmitted && (
-                  <div className="text-center text-red-400 font-medium">
-                    答题时间已结束，无法提交答案
+                </div>
+              ) : currentQuestion ? (
+                /* 正常显示题目 */
+                <>
+                  {/* 题目题干 */}
+                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
+                    <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
+                    <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
                   </div>
-                )}
-              </>
+
+                  {/* 选项列表 */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-werewolf-purple">选项</h3>
+                    {[1, 2, 3, 4].map((optionNum) => {
+                      const optionText = optionNum === 1 ? currentQuestion.option_a
+                        : optionNum === 2 ? currentQuestion.option_b
+                        : optionNum === 3 ? currentQuestion.option_c
+                        : currentQuestion.option_d;
+                      
+                      const isSelected = selectedOption === optionNum;
+                      const isCorrect = hasSubmitted && optionNum === currentQuestion.correct_option;
+                      const isWrong = hasSubmitted && isSelected && optionNum !== currentQuestion.correct_option;
+                      
+                      return (
+                        <button
+                          key={optionNum}
+                          onClick={() => handleOptionClick(optionNum)}
+                          disabled={hasSubmitted || loading || timeIsUp}
+                          className={`w-full p-3 rounded-md border text-left transition-all ${
+                            isCorrect && hasSubmitted
+                              ? 'bg-green-500/20 border-green-500 text-green-300'
+                              : isWrong
+                              ? 'bg-red-500/20 border-red-500 text-red-300'
+                              : isSelected
+                              ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
+                              : hasSubmitted || timeIsUp
+                              ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
+                              : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
+                          }`}
+                        >
+                          <span className="font-semibold mr-2">
+                            {getOptionLabel(optionNum)}.
+                          </span>
+                          {optionText}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {hasSubmitted && (
+                    <div className="text-center text-green-400 font-medium">
+                      答案已提交
+                    </div>
+                  )}
+                  
+                  {timeIsUp && !hasSubmitted && (
+                    <div className="text-center text-red-400 font-medium">
+                      答题时间已结束，无法提交答案
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* 题目加载中 */
+                <div className="text-center text-gray-400 py-8">
+                  正在加载题目...
+                </div>
+              )
             ) : previousQuestion && !isAnsweringPhase ? (
               /* 显示上一阶段的题目和答案 */
               <>
@@ -417,7 +458,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                     ? '游戏已结束'
                     : !isAnsweringPhase 
                       ? '当前非答题阶段' 
-                      : '当前阶段无题目信息'
+                      : '正在加载题目信息...'
                 }
               </div>
             )}
