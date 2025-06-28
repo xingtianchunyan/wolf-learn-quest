@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -45,21 +44,28 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       }
 
       const { currentRound, currentPhase } = gameState;
-      const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
       
-      if (phaseIndex === -1) {
+      // 修正题目顺序计算逻辑
+      // 每轮有2道题：傍晚(phase 2)和黎明(phase 4)
+      // 第1轮傍晚 = 题目1, 第1轮黎明 = 题目2
+      // 第2轮傍晚 = 题目3, 第2轮黎明 = 题目4
+      let questionOrder = 0;
+      
+      if (currentPhase === 2) { // 傍晚阶段
+        questionOrder = (currentRound - 1) * 2 + 1;
+      } else if (currentPhase === 4) { // 黎明阶段
+        questionOrder = (currentRound - 1) * 2 + 2;
+      } else {
+        // 非答题阶段
         setCurrentQuestion(null);
         setQuestionNotFound(false);
         return;
       }
 
-      const questionOrder = (currentRound - 1) * 2 + phaseIndex + 1;
-
-      console.log('Fetching question for:', {
+      console.log('Fetching question with corrected logic:', {
         currentRound,
         currentPhase,
-        phaseIndex,
-        questionOrder,
+        calculatedQuestionOrder: questionOrder,
         roomId
       });
 
@@ -68,17 +74,22 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         const { data: allRoomQuestions, error: countError } = await supabase
           .from('room_questions')
           .select('question_order')
-          .eq('room_id', roomId);
+          .eq('room_id', roomId)
+          .order('question_order');
 
-        console.log('All room questions:', { allRoomQuestions, countError });
+        console.log('All room questions available:', { 
+          allRoomQuestions, 
+          countError,
+          totalQuestions: allRoomQuestions?.length || 0
+        });
 
-        // 查询特定题目
+        // 查询特定题目 - 使用正确的关联查询
         const { data: roomQuestion, error } = await supabase
           .from('room_questions')
           .select(`
             question_id,
             question_order,
-            questions (
+            questions!inner (
               id,
               question,
               option_a,
@@ -93,7 +104,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('question_order', questionOrder)
           .maybeSingle();
 
-        console.log('Room question query result:', { roomQuestion, error, questionOrder });
+        console.log('Current question query result:', { 
+          roomQuestion, 
+          error, 
+          requestedQuestionOrder: questionOrder,
+          foundQuestion: !!roomQuestion
+        });
 
         if (error) {
           console.error('Error fetching current question:', error);
@@ -102,7 +118,11 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         }
 
         if (roomQuestion && roomQuestion.questions) {
-          console.log('Setting current question:', roomQuestion.questions);
+          console.log('Successfully loaded question:', {
+            questionOrder: roomQuestion.question_order,
+            questionId: roomQuestion.questions.id,
+            questionText: roomQuestion.questions.question?.substring(0, 50) + '...'
+          });
           setCurrentQuestion(roomQuestion.questions as Question);
           setQuestionNotFound(false);
         } else {
@@ -112,7 +132,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         }
 
         // 检查用户是否已经回答过这道题
-        const { data: userAnswer } = await supabase
+        const { data: userAnswer, error: answerError } = await supabase
           .from('room_answers')
           .select('selected_option')
           .eq('room_id', roomId)
@@ -120,7 +140,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('question_order', questionOrder)
           .maybeSingle();
 
-        console.log('User answer query result:', userAnswer);
+        console.log('User answer query result:', { userAnswer, answerError });
 
         if (userAnswer) {
           setSelectedOption(userAnswer.selected_option);
@@ -164,7 +184,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .from('room_questions')
           .select(`
             question_id,
-            questions (
+            questions!inner (
               id,
               question,
               option_a,
@@ -214,8 +234,9 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     setSelectedOption(optionNumber);
 
     const { currentRound, currentPhase } = gameState;
-    const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1;
-    const questionOrder = (currentRound - 1) * 2 + phaseIndex + 1;
+    const questionOrder = currentPhase === 2 
+      ? (currentRound - 1) * 2 + 1 
+      : (currentRound - 1) * 2 + 2;
     const isCorrect = optionNumber === currentQuestion.correct_option;
 
     console.log('Submitting answer:', {
@@ -297,11 +318,15 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
-            {/* Debug info */}
+            {/* Enhanced Debug info */}
             {gameState && (
               <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
                 调试信息: 轮次={gameState.currentRound}, 阶段={gameState.currentPhase}, 
-                题目序号={(gameState.currentRound - 1) * 2 + (gameState.currentPhase === 2 ? 0 : gameState.currentPhase === 4 ? 1 : -1) + 1},
+                计算题目序号={gameState.currentPhase === 2 
+                  ? (gameState.currentRound - 1) * 2 + 1 
+                  : gameState.currentPhase === 4 
+                    ? (gameState.currentRound - 1) * 2 + 2 
+                    : '非答题阶段'},
                 题目状态={currentQuestion ? '已找到' : questionNotFound ? '未找到' : '查询中'}
                 {timeIsUp && ', 时间已结束'}
               </div>
@@ -326,7 +351,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               </div>
             )}
 
-            {/* 当前题目显示 - 包括题目未找到的情况 */}
+            {/* 当前题目显示 */}
             {gameState?.status === 'active' && isAnsweringPhase ? (
               questionNotFound ? (
                 /* 题目未找到的提示 */
@@ -335,6 +360,10 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                     <h3 className="font-semibold mb-2">题目加载失败</h3>
                     <p className="text-sm">
                       当前阶段（第{roundNumber}轮{phaseName}）的题目未找到。
+                      <br />
+                      期望题目序号：{gameState.currentPhase === 2 
+                        ? (gameState.currentRound - 1) * 2 + 1 
+                        : (gameState.currentRound - 1) * 2 + 2}
                       <br />
                       可能原因：法官尚未为此房间设置足够的题目。
                     </p>
