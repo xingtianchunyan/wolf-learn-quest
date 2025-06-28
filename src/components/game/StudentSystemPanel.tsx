@@ -49,11 +49,20 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       const questionOrder = (currentRound - 1) * 2 + phaseIndex + 1;
 
+      console.log('Fetching question for:', {
+        currentRound,
+        currentPhase,
+        phaseIndex,
+        questionOrder,
+        roomId
+      });
+
       try {
         const { data: roomQuestion, error } = await supabase
           .from('room_questions')
           .select(`
             question_id,
+            question_order,
             questions (
               id,
               question,
@@ -69,13 +78,19 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('question_order', questionOrder)
           .single();
 
+        console.log('Room question query result:', { roomQuestion, error });
+
         if (error) {
           console.error('Error fetching current question:', error);
           return;
         }
 
         if (roomQuestion && roomQuestion.questions) {
+          console.log('Setting current question:', roomQuestion.questions);
           setCurrentQuestion(roomQuestion.questions as Question);
+        } else {
+          console.log('No question found for order:', questionOrder);
+          setCurrentQuestion(null);
         }
 
         // 检查用户是否已经回答过这道题
@@ -86,6 +101,8 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('user_id', currentUser.id)
           .eq('question_order', questionOrder)
           .single();
+
+        console.log('User answer query result:', userAnswer);
 
         if (userAnswer) {
           setSelectedOption(userAnswer.selected_option);
@@ -121,6 +138,8 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         return;
       }
 
+      console.log('Fetching previous question for order:', previousQuestionOrder);
+
       try {
         const { data: roomQuestion, error } = await supabase
           .from('room_questions')
@@ -140,6 +159,8 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('room_id', roomId)
           .eq('question_order', previousQuestionOrder)
           .single();
+
+        console.log('Previous question query result:', { roomQuestion, error });
 
         if (error) {
           console.error('Error fetching previous question:', error);
@@ -167,6 +188,15 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1;
     const questionOrder = (currentRound - 1) * 2 + phaseIndex + 1;
     const isCorrect = optionNumber === currentQuestion.correct_option;
+
+    console.log('Submitting answer:', {
+      roomId,
+      userId: currentUser.id,
+      questionOrder,
+      selectedOption: optionNumber,
+      isCorrect,
+      responseTime: Math.max(0, (gameState.phaseDuration || 300) - timeRemaining)
+    });
 
     try {
       const { error } = await supabase
@@ -237,6 +267,14 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
+            {/* Debug info */}
+            {gameState && (
+              <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
+                调试信息: 轮次={gameState.currentRound}, 阶段={gameState.currentPhase}, 
+                题目序号={(gameState.currentRound - 1) * 2 + (gameState.currentPhase === 2 ? 0 : gameState.currentPhase === 4 ? 1 : -1) + 1}
+              </div>
+            )}
+
             {/* 剩余答题时间 */}
             {showTimer && (
               <div className="flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md">
