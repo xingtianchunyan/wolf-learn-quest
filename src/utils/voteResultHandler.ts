@@ -14,68 +14,46 @@ export const handleVoteResult = async (
       mostVotedPlayerId
     });
 
-    // 使用新的投票系统处理结果
-    // 首先获取当前活跃的投票会话
-    const { data: votingSession, error: sessionError } = await supabase
-      .from('voting_sessions')
-      .select('*')
-      .eq('game_state_id', gameStateId)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // 简化的投票结果处理：直接更新被投票最多的玩家状态
+    if (mostVotedPlayerId) {
+      // 检查目标玩家是否存在
+      const { data: targetPlayer, error: playerError } = await supabase
+        .from('role_states')
+        .select('*')
+        .eq('user_id', mostVotedPlayerId)
+        .eq('game_state_id', gameStateId)
+        .maybeSingle();
 
-    if (sessionError) {
-      console.error('获取投票会话失败:', sessionError);
-      return false;
-    }
-
-    if (!votingSession) {
-      console.error('没有找到活跃的投票会话');
-      return false;
-    }
-
-    // 计算投票结果
-    const { error: calculateError } = await supabase.rpc('calculate_voting_results', {
-      p_voting_session_id: votingSession.id
-    });
-
-    if (calculateError) {
-      console.error('计算投票结果失败:', calculateError);
-      return false;
-    }
-
-    // 获取计算后的结果
-    const { data: results, error: resultsError } = await supabase
-      .from('voting_results')
-      .select('*')
-      .eq('voting_session_id', votingSession.id)
-      .eq('result_type', 'eliminated')
-      .order('total_votes', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (resultsError) {
-      console.error('获取投票结果失败:', resultsError);
-      return false;
-    }
-
-    // 如果有被淘汰的玩家，处理结果
-    if (results && results.target_id) {
-      const { data: processResult, error: processError } = await supabase.rpc('process_voting_result', {
-        p_voting_result_id: results.id
-      });
-
-      if (processError) {
-        console.error('处理投票结果失败:', processError);
+      if (playerError) {
+        console.error('查询目标玩家失败:', playerError);
         return false;
       }
 
-      console.log('投票结果处理成功:', processResult);
+      if (!targetPlayer) {
+        console.error('未找到目标玩家');
+        return false;
+      }
+
+      // 更新玩家状态为淘汰
+      const { error: updateError } = await supabase
+        .from('role_states')
+        .update({ 
+          role_status: 4, // 淘汰状态
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', mostVotedPlayerId)
+        .eq('game_state_id', gameStateId);
+
+      if (updateError) {
+        console.error('更新玩家状态失败:', updateError);
+        return false;
+      }
+
+      console.log('投票结果处理成功，玩家已淘汰:', mostVotedPlayerId);
       return true;
     }
 
-    console.log('投票无淘汰结果，处理完成');
+    console.log('没有玩家被淘汰');
     return true;
 
   } catch (error) {
@@ -84,44 +62,36 @@ export const handleVoteResult = async (
   }
 };
 
-// 获取投票统计信息（保持向后兼容）
+// 获取投票统计信息（使用 game_actions 表）
 export const getVoteStats = async (
   gameStateId: string,
   currentRound: number,
   currentPhase: number
 ) => {
   try {
-    // 获取当前投票会话的投票记录
-    const { data: votingSession } = await supabase
-      .from('voting_sessions')
-      .select('id')
-      .eq('game_state_id', gameStateId)
-      .eq('round_number', currentRound)
-      .eq('phase', currentPhase)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // 从 game_actions 表获取投票记录
+    const { data: voteActions, error } = await supabase
+      .from('game_actions')
+      .select('actor_id, target_id')
+      .eq('game_id', gameStateId)
+      .eq('round', currentRound)
+      .eq('phase', currentPhase.toString())
+      .eq('action_type', 'vote');
 
-    if (!votingSession) {
+    if (error) {
+      console.error('获取投票统计失败:', error);
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
-    // 获取投票统计
-    const { data: votes } = await supabase
-      .from('votes')
-      .select('target_id, voter_id')
-      .eq('voting_session_id', votingSession.id)
-      .eq('is_valid', true);
-
-    if (!votes || votes.length === 0) {
+    if (!voteActions || voteActions.length === 0) {
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
     // 统计得票
     const voteCounts: Record<string, number> = {};
-    votes.forEach(vote => {
-      if (vote.target_id) {
-        voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1;
+    voteActions.forEach(action => {
+      if (action.target_id) {
+        voteCounts[action.target_id] = (voteCounts[action.target_id] || 0) + 1;
       }
     });
 
@@ -130,7 +100,7 @@ export const getVoteStats = async (
       .sort(([,a], [,b]) => b - a)[0]?.[0];
 
     return {
-      voteCount: votes.length,
+      voteCount: voteActions.length,
       mostVotedPlayer: mostVotedPlayerId || null,
       voteCounts
     };
