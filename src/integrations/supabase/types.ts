@@ -462,41 +462,47 @@ export type Database = {
         Row: {
           faction: boolean
           id: string
-          role_attributes: Json | null
+          priority: number
+          role_attributes: Json
           role_description: string | null
           role_image: string | null
           role_name: string
           skill_description: string | null
-          skill_effects: Json | null
+          skill_effects: Json
           skill_name: string | null
           skill_type: Json | null
           skill_usage: number | null
+          usage_frequency: boolean
         }
         Insert: {
           faction: boolean
           id?: string
-          role_attributes?: Json | null
+          priority: number
+          role_attributes?: Json
           role_description?: string | null
           role_image?: string | null
           role_name: string
           skill_description?: string | null
-          skill_effects?: Json | null
+          skill_effects?: Json
           skill_name?: string | null
           skill_type?: Json | null
           skill_usage?: number | null
+          usage_frequency?: boolean
         }
         Update: {
           faction?: boolean
           id?: string
-          role_attributes?: Json | null
+          priority?: number
+          role_attributes?: Json
           role_description?: string | null
           role_image?: string | null
           role_name?: string
           skill_description?: string | null
-          skill_effects?: Json | null
+          skill_effects?: Json
           skill_name?: string | null
           skill_type?: Json | null
           skill_usage?: number | null
+          usage_frequency?: boolean
         }
         Relationships: []
       }
@@ -778,203 +784,6 @@ export type Database = {
           },
         ]
       }
-      skill_conflicts: {
-        Row: {
-          conflicting_skills: Json
-          created_at: string
-          game_state_id: string
-          id: string
-          phase: string
-          resolution_details: Json | null
-          resolution_rule: string
-          resolved_skill_id: string | null
-          round_number: number
-        }
-        Insert: {
-          conflicting_skills?: Json
-          created_at?: string
-          game_state_id: string
-          id?: string
-          phase: string
-          resolution_details?: Json | null
-          resolution_rule: string
-          resolved_skill_id?: string | null
-          round_number: number
-        }
-        Update: {
-          conflicting_skills?: Json
-          created_at?: string
-          game_state_id?: string
-          id?: string
-          phase?: string
-          resolution_details?: Json | null
-          resolution_rule?: string
-          resolved_skill_id?: string | null
-          round_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "skill_conflicts_game_state_id_fkey"
-            columns: ["game_state_id"]
-            isOneToOne: false
-            referencedRelation: "game_states"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_conflicts_resolved_skill_id_fkey"
-            columns: ["resolved_skill_id"]
-            isOneToOne: false
-            referencedRelation: "skill_uses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      skill_effects_queue: {
-        Row: {
-          conditions: Json | null
-          created_at: string
-          effect_data: Json
-          effect_type: string
-          execution_order: number
-          expires_at: string | null
-          game_state_id: string
-          id: string
-          priority: number
-          processed_at: string | null
-          room_id: string
-          skill_use_id: string
-          status: string
-          trigger_time: string | null
-          updated_at: string
-        }
-        Insert: {
-          conditions?: Json | null
-          created_at?: string
-          effect_data?: Json
-          effect_type: string
-          execution_order?: number
-          expires_at?: string | null
-          game_state_id: string
-          id?: string
-          priority?: number
-          processed_at?: string | null
-          room_id: string
-          skill_use_id: string
-          status?: string
-          trigger_time?: string | null
-          updated_at?: string
-        }
-        Update: {
-          conditions?: Json | null
-          created_at?: string
-          effect_data?: Json
-          effect_type?: string
-          execution_order?: number
-          expires_at?: string | null
-          game_state_id?: string
-          id?: string
-          priority?: number
-          processed_at?: string | null
-          room_id?: string
-          skill_use_id?: string
-          status?: string
-          trigger_time?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "skill_effects_queue_game_state_id_fkey"
-            columns: ["game_state_id"]
-            isOneToOne: false
-            referencedRelation: "game_states"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_effects_queue_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_effects_queue_skill_use_id_fkey"
-            columns: ["skill_use_id"]
-            isOneToOne: false
-            referencedRelation: "skill_uses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      skill_targets: {
-        Row: {
-          created_at: string
-          effect_applied: Json
-          effect_duration: number | null
-          effect_end_time: string | null
-          effect_start_time: string | null
-          id: string
-          is_active: boolean
-          skill_effects_queue_id: string | null
-          skill_use_id: string
-          stack_count: number | null
-          target_type: string
-          target_user_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          effect_applied?: Json
-          effect_duration?: number | null
-          effect_end_time?: string | null
-          effect_start_time?: string | null
-          id?: string
-          is_active?: boolean
-          skill_effects_queue_id?: string | null
-          skill_use_id: string
-          stack_count?: number | null
-          target_type: string
-          target_user_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          effect_applied?: Json
-          effect_duration?: number | null
-          effect_end_time?: string | null
-          effect_start_time?: string | null
-          id?: string
-          is_active?: boolean
-          skill_effects_queue_id?: string | null
-          skill_use_id?: string
-          stack_count?: number | null
-          target_type?: string
-          target_user_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "skill_targets_skill_effects_queue_id_fkey"
-            columns: ["skill_effects_queue_id"]
-            isOneToOne: false
-            referencedRelation: "skill_effects_queue"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_targets_skill_use_id_fkey"
-            columns: ["skill_use_id"]
-            isOneToOne: false
-            referencedRelation: "skill_uses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_targets_target_user_id_fkey"
-            columns: ["target_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       skill_uses: {
         Row: {
           conditions_met: Json | null
@@ -1099,216 +908,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      vote_processing_logs: {
-        Row: {
-          created_at: string
-          error_message: string | null
-          id: string
-          processing_step: string
-          step_details: Json | null
-          step_status: string
-          voting_result_id: string
-        }
-        Insert: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          processing_step: string
-          step_details?: Json | null
-          step_status: string
-          voting_result_id: string
-        }
-        Update: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          processing_step?: string
-          step_details?: Json | null
-          step_status?: string
-          voting_result_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vote_processing_logs_voting_result_id_fkey"
-            columns: ["voting_result_id"]
-            isOneToOne: false
-            referencedRelation: "voting_results"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      votes: {
-        Row: {
-          created_at: string
-          id: string
-          is_valid: boolean
-          target_id: string | null
-          vote_time: string
-          vote_weight: number
-          voter_id: string
-          voting_session_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_valid?: boolean
-          target_id?: string | null
-          vote_time?: string
-          vote_weight?: number
-          voter_id: string
-          voting_session_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_valid?: boolean
-          target_id?: string | null
-          vote_time?: string
-          vote_weight?: number
-          voter_id?: string
-          voting_session_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "votes_target_id_fkey"
-            columns: ["target_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "votes_voter_id_fkey"
-            columns: ["voter_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "votes_voting_session_id_fkey"
-            columns: ["voting_session_id"]
-            isOneToOne: false
-            referencedRelation: "voting_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      voting_results: {
-        Row: {
-          created_at: string
-          id: string
-          is_majority: boolean
-          is_tied: boolean
-          processed_at: string | null
-          processing_status: string
-          result_type: string
-          target_id: string | null
-          total_votes: number
-          updated_at: string
-          vote_percentage: number | null
-          voting_session_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_majority?: boolean
-          is_tied?: boolean
-          processed_at?: string | null
-          processing_status?: string
-          result_type: string
-          target_id?: string | null
-          total_votes?: number
-          updated_at?: string
-          vote_percentage?: number | null
-          voting_session_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_majority?: boolean
-          is_tied?: boolean
-          processed_at?: string | null
-          processing_status?: string
-          result_type?: string
-          target_id?: string | null
-          total_votes?: number
-          updated_at?: string
-          vote_percentage?: number | null
-          voting_session_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voting_results_target_id_fkey"
-            columns: ["target_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voting_results_voting_session_id_fkey"
-            columns: ["voting_session_id"]
-            isOneToOne: false
-            referencedRelation: "voting_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      voting_sessions: {
-        Row: {
-          created_at: string
-          end_time: string | null
-          game_state_id: string
-          id: string
-          phase: number
-          room_id: string
-          round_number: number
-          session_type: string
-          start_time: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          end_time?: string | null
-          game_state_id: string
-          id?: string
-          phase: number
-          room_id: string
-          round_number: number
-          session_type?: string
-          start_time?: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          end_time?: string | null
-          game_state_id?: string
-          id?: string
-          phase?: number
-          room_id?: string
-          round_number?: number
-          session_type?: string
-          start_time?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voting_sessions_game_state_id_fkey"
-            columns: ["game_state_id"]
-            isOneToOne: false
-            referencedRelation: "game_states"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voting_sessions_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
