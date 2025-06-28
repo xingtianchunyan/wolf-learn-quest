@@ -1,77 +1,87 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --werewolf-purple: #8B5CF6;
-  --werewolf-light: #A78BFA;
-  --werewolf-dark: #1F2937;
-  --werewolf-card: #111827;
-  --werewolf-bg: #030712;
+@layer base {
+  :root {
+    --background: 220 26% 14%;
+    --foreground: 222.2 84% 98%;
+
+    --card: 222 26% 18%;
+    --card-foreground: 222.2 84% 98%;
+
+    --popover: 222 26% 18%;
+    --popover-foreground: 222.2 84% 98%;
+
+    --primary: 255 92% 76%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 250 95% 76%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-werewolf-dark text-werewolf-text;
+  }
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--werewolf-bg);
-  color: #f9fafb;
-}
-
-@layer utilities {
-  .rotate-y-180 {
-    transform: rotateY(180deg);
+@layer components {
+  .feature-card {
+    @apply bg-werewolf-card rounded-lg p-6 flex flex-col items-center transition-all hover:shadow-lg hover:shadow-werewolf-purple/30;
   }
   
-  .rotate-y-0 {
-    transform: rotateY(0deg);
+  .feature-icon {
+    @apply rounded-full bg-werewolf-purple/20 p-4 mb-4;
   }
   
-  .backface-hidden {
-    backface-visibility: hidden;
+  .nav-link {
+    @apply hover:text-werewolf-purple transition-colors;
   }
   
-  .preserve-3d {
-    transform-style: preserve-3d;
+  .btn-primary {
+    @apply bg-werewolf-purple hover:bg-werewolf-light text-white px-6 py-3 rounded-md transition-colors;
+  }
+  
+  .btn-shake {
+    @apply hover:animate-shake;
   }
 }
 
-/* 自定义滚动条样式 */
-.custom-scroll::-webkit-scrollbar {
-  width: 6px;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
 }
 
-.custom-scroll::-webkit-scrollbar-track {
-  background: rgba(75, 85, 99, 0.1);
-  border-radius: 3px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.5);
-  border-radius: 3px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.7);
-}
-
-/* 确保3D变换正常工作 */
-[style*="perspective"] {
-  perspective: 1000px;
-}
-
-[style*="transform-style"] {
+/* 3D翻转卡片样式 */
+.transform-style-preserve-3d {
   transform-style: preserve-3d;
 }
 
-[style*="backface-visibility"] {
+.backface-hidden {
   backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
 }
