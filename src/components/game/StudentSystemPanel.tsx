@@ -1,11 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { GraduationCap, Clock } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import StudentTimerDisplay from './student/StudentTimerDisplay';
+import StudentDebugInfo from './student/StudentDebugInfo';
+import StudentQuestionDisplay from './student/StudentQuestionDisplay';
+import StudentPreviousQuestionDisplay from './student/StudentPreviousQuestionDisplay';
+import StudentQuestionNotFound from './student/StudentQuestionNotFound';
 
 interface Question {
   id: string;
@@ -288,15 +294,16 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     }
   };
 
-  const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];
-  };
-
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
   const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
   const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
   const timeIsUp = timeRemaining <= 0 && showTimer;
+  const expectedQuestionOrder = gameState?.currentPhase === 2 
+    ? (gameState.currentRound - 1) * 2 + 1 
+    : gameState?.currentPhase === 4 
+      ? (gameState.currentRound - 1) * 2 + 2 
+      : 0;
 
   const getGameStatusInfo = () => {
     if (!gameState) return '游戏准备中';
@@ -319,116 +326,40 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
             {/* Enhanced Debug info */}
-            {gameState && (
-              <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
-                调试信息: 轮次={gameState.currentRound}, 阶段={gameState.currentPhase}, 
-                计算题目序号={gameState.currentPhase === 2 
-                  ? (gameState.currentRound - 1) * 2 + 1 
-                  : gameState.currentPhase === 4 
-                    ? (gameState.currentRound - 1) * 2 + 2 
-                    : '非答题阶段'},
-                题目状态={currentQuestion ? '已找到' : questionNotFound ? '未找到' : '查询中'}
-                {timeIsUp && ', 时间已结束'}
-              </div>
-            )}
+            <StudentDebugInfo 
+              gameState={gameState}
+              currentQuestion={currentQuestion}
+              questionNotFound={questionNotFound}
+              timeIsUp={timeIsUp}
+            />
 
-            {/* 剩余答题时间或时间结束提示 */}
-            {showTimer && (
-              <div className={`flex items-center justify-center p-3 rounded-md ${
-                timeIsUp ? 'bg-red-900/30' : 'bg-werewolf-dark/40'
-              }`}>
-                <Clock className={`mr-2 h-5 w-5 ${timeIsUp ? 'text-red-400' : 'text-werewolf-purple'}`} />
-                <span className={`text-lg font-bold ${
-                  timeIsUp ? 'text-red-400' : 'text-werewolf-purple'
-                }`}>
-                  {timeIsUp ? '答题时间已结束' : `剩余时间: ${formatTime(timeRemaining)}`}
-                </span>
-              </div>
-            )}
-            {gameState?.isPaused && isAnsweringPhase && (
-              <div className="flex items-center justify-center p-3 bg-yellow-900/30 rounded-md">
-                <span className="text-lg font-bold text-yellow-400">游戏已暂停</span>
-              </div>
-            )}
+            {/* Timer Display */}
+            <StudentTimerDisplay 
+              showTimer={showTimer}
+              timeIsUp={timeIsUp}
+              timeRemaining={timeRemaining}
+              formatTime={formatTime}
+              isAnsweringPhase={isAnsweringPhase}
+              gameState={gameState}
+            />
 
             {/* 当前题目显示 */}
             {gameState?.status === 'active' && isAnsweringPhase ? (
               questionNotFound ? (
-                /* 题目未找到的提示 */
-                <div className="text-center text-red-400 py-8">
-                  <div className="p-4 bg-red-900/20 rounded-md border border-red-500/30">
-                    <h3 className="font-semibold mb-2">题目加载失败</h3>
-                    <p className="text-sm">
-                      当前阶段（第{roundNumber}轮{phaseName}）的题目未找到。
-                      <br />
-                      期望题目序号：{gameState.currentPhase === 2 
-                        ? (gameState.currentRound - 1) * 2 + 1 
-                        : (gameState.currentRound - 1) * 2 + 2}
-                      <br />
-                      可能原因：法官尚未为此房间设置足够的题目。
-                    </p>
-                  </div>
-                </div>
+                <StudentQuestionNotFound 
+                  roundNumber={roundNumber}
+                  phaseName={phaseName}
+                  expectedQuestionOrder={expectedQuestionOrder}
+                />
               ) : currentQuestion ? (
-                /* 正常显示题目 */
-                <>
-                  {/* 题目题干 */}
-                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                    <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
-                    <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
-                  </div>
-
-                  {/* 选项列表 */}
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-werewolf-purple">选项</h3>
-                    {[1, 2, 3, 4].map((optionNum) => {
-                      const optionText = optionNum === 1 ? currentQuestion.option_a
-                        : optionNum === 2 ? currentQuestion.option_b
-                        : optionNum === 3 ? currentQuestion.option_c
-                        : currentQuestion.option_d;
-                      
-                      const isSelected = selectedOption === optionNum;
-                      const isCorrect = hasSubmitted && optionNum === currentQuestion.correct_option;
-                      const isWrong = hasSubmitted && isSelected && optionNum !== currentQuestion.correct_option;
-                      
-                      return (
-                        <button
-                          key={optionNum}
-                          onClick={() => handleOptionClick(optionNum)}
-                          disabled={hasSubmitted || loading || timeIsUp}
-                          className={`w-full p-3 rounded-md border text-left transition-all ${
-                            isCorrect && hasSubmitted
-                              ? 'bg-green-500/20 border-green-500 text-green-300'
-                              : isWrong
-                              ? 'bg-red-500/20 border-red-500 text-red-300'
-                              : isSelected
-                              ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
-                              : hasSubmitted || timeIsUp
-                              ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
-                              : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
-                          }`}
-                        >
-                          <span className="font-semibold mr-2">
-                            {getOptionLabel(optionNum)}.
-                          </span>
-                          {optionText}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {hasSubmitted && (
-                    <div className="text-center text-green-400 font-medium">
-                      答案已提交
-                    </div>
-                  )}
-                  
-                  {timeIsUp && !hasSubmitted && (
-                    <div className="text-center text-red-400 font-medium">
-                      答题时间已结束，无法提交答案
-                    </div>
-                  )}
-                </>
+                <StudentQuestionDisplay 
+                  currentQuestion={currentQuestion}
+                  selectedOption={selectedOption}
+                  hasSubmitted={hasSubmitted}
+                  loading={loading}
+                  timeIsUp={timeIsUp}
+                  onOptionClick={handleOptionClick}
+                />
               ) : (
                 /* 题目加载中 */
                 <div className="text-center text-gray-400 py-8">
@@ -437,48 +368,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               )
             ) : previousQuestion && !isAnsweringPhase ? (
               /* 显示上一阶段的题目和答案 */
-              <>
-                <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                  <h3 className="font-semibold text-werewolf-purple mb-2">上一阶段题目</h3>
-                  <p className="text-gray-300 leading-relaxed">{previousQuestion.question}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-werewolf-purple">选项及答案</h3>
-                  {[1, 2, 3, 4].map((optionNum) => {
-                    const optionText = optionNum === 1 ? previousQuestion.option_a
-                      : optionNum === 2 ? previousQuestion.option_b
-                      : optionNum === 3 ? previousQuestion.option_c
-                      : previousQuestion.option_d;
-                    
-                    const isCorrect = optionNum === previousQuestion.correct_option;
-                    
-                    return (
-                      <div 
-                        key={optionNum}
-                        className={`p-3 rounded-md border ${
-                          isCorrect
-                            ? 'bg-green-500/20 border-green-500 text-green-300'
-                            : 'bg-werewolf-dark/40 border-gray-600 text-gray-300'
-                        }`}
-                      >
-                        <span className="font-semibold mr-2">
-                          {getOptionLabel(optionNum)}.
-                        </span>
-                        {optionText}
-                        {isCorrect && (
-                          <span className="ml-2 text-green-400 font-bold">✓ 正确答案</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                  <h3 className="font-semibold text-werewolf-purple mb-2">答案解析</h3>
-                  <p className="text-gray-300 leading-relaxed">{previousQuestion.explanation}</p>
-                </div>
-              </>
+              <StudentPreviousQuestionDisplay previousQuestion={previousQuestion} />
             ) : (
               <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
                 {!gameState || gameState.status === 'waiting' 
