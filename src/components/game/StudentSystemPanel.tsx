@@ -44,13 +44,15 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [loading, setLoading] = useState(false);
   const [questionNotFound, setQuestionNotFound] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [hasQuestionsInRoom, setHasQuestionsInRoom] = useState(false);
 
-  // 获取链接的题目列表 - 使用与教师系统完全相同的逻辑
+  // 获取链接的题目列表
   useEffect(() => {
     const fetchLinkedQuestions = async () => {
       if (!roomId) {
         setLinkedQuestions([]);
         setIsLoadingQuestions(false);
+        setHasQuestionsInRoom(false);
         return;
       }
 
@@ -58,7 +60,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         setIsLoadingQuestions(true);
         console.log('学生系统：开始获取题目，房间ID:', roomId);
         
-        // 第一步：获取房间题目的顺序（与教师系统完全一致）
+        // 第一步：获取房间题目的顺序
         const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
           .from('room_questions')
           .select('question_id')
@@ -75,6 +77,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         if (!roomQuestionsData || roomQuestionsData.length === 0) {
           console.log('学生系统：房间未找到题目');
           setLinkedQuestions([]);
+          setHasQuestionsInRoom(false);
           setIsLoadingQuestions(false);
           return;
         }
@@ -103,10 +106,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
         console.log('学生系统：排序后的题目列表:', orderedQuestions.length, '个题目');
         setLinkedQuestions(orderedQuestions);
+        setHasQuestionsInRoom(orderedQuestions.length > 0);
 
       } catch (error: any) {
         console.error('学生系统：获取题目失败:', error);
         setLinkedQuestions([]);
+        setHasQuestionsInRoom(false);
       } finally {
         setIsLoadingQuestions(false);
       }
@@ -115,7 +120,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     fetchLinkedQuestions();
   }, [roomId]);
 
-  // 获取当前题目 - 使用与教师系统完全一致的逻辑
+  // 获取当前题目
   useEffect(() => {
     console.log('学生系统：计算当前题目', {
       gameState: gameState?.status,
@@ -133,14 +138,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
     const { currentRound, currentPhase } = gameState;
     
-    // 使用与教师系统完全相同的逻辑计算题目索引
     let questionIndex = -1;
     if (currentPhase === 2) { // 傍晚阶段
       questionIndex = (currentRound - 1) * 2; // 0, 2, 4, 6...
     } else if (currentPhase === 4) { // 黎明阶段  
       questionIndex = (currentRound - 1) * 2 + 1; // 1, 3, 5, 7...
     } else {
-      // 非答题阶段
       console.log('学生系统：当前非答题阶段，阶段:', currentPhase);
       setCurrentQuestion(null);
       setQuestionNotFound(false);
@@ -154,7 +157,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       totalQuestions: linkedQuestions.length
     });
 
-    // 检查题目是否存在
     if (questionIndex >= 0 && questionIndex < linkedQuestions.length) {
       const question = linkedQuestions[questionIndex];
       setCurrentQuestion(question);
@@ -178,7 +180,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       const { currentRound, currentPhase } = gameState;
       let previousQuestionIndex = -1;
 
-      // 使用与教师系统一致的逻辑计算上一题目索引
       if (currentPhase === 4) { // 黎明阶段，显示傍晚题目
         previousQuestionIndex = (currentRound - 1) * 2; // 当前轮傍晚题目
       } else if (currentPhase === 2 && currentRound > 1) { // 傍晚阶段，显示上一轮黎明题目
@@ -195,7 +196,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         totalQuestions: linkedQuestions.length
       });
 
-      // 检查上一题目是否存在
       if (previousQuestionIndex >= 0 && previousQuestionIndex < linkedQuestions.length) {
         const question = linkedQuestions[previousQuestionIndex];
         setPreviousQuestion(question);
@@ -219,7 +219,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       const { currentRound, currentPhase } = gameState;
       
-      // 计算题目序号（用于数据库查询，1-based）
       const questionOrder = currentPhase === 2 
         ? (currentRound - 1) * 2 + 1 
         : (currentRound - 1) * 2 + 2;
@@ -257,7 +256,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const handleOptionClick = async (optionNumber: number) => {
     if (hasSubmitted || !currentQuestion || !currentUser || !gameState) return;
     
-    // 如果时间归零，不允许提交答案
     if (timeRemaining <= 0 && showTimer) {
       toast({
         title: '答题时间已结束',
@@ -271,7 +269,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     setSelectedOption(optionNumber);
 
     const { currentRound, currentPhase } = gameState;
-    // 使用与获取题目时相同的计算逻辑
     const questionOrder = currentPhase === 2 
       ? (currentRound - 1) * 2 + 1 
       : (currentRound - 1) * 2 + 2;
@@ -332,7 +329,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
   const timeIsUp = timeRemaining <= 0 && showTimer;
   
-  // 使用一致的题目索引计算逻辑
   const expectedQuestionIndex = gameState?.currentPhase === 2 
     ? (gameState.currentRound - 1) * 2
     : gameState?.currentPhase === 4 
@@ -347,9 +343,9 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     return '未知状态';
   };
 
-  // 改进显示逻辑
-  const shouldShowCurrentQuestion = gameState?.status === 'active' && isAnsweringPhase && !isLoadingQuestions;
-  const shouldShowLoading = isLoadingQuestions || (shouldShowCurrentQuestion && !currentQuestion && !questionNotFound);
+  // 改进的显示逻辑
+  const shouldShowCurrentQuestion = gameState?.status === 'active' && isAnsweringPhase && hasQuestionsInRoom;
+  const shouldShowNoQuestions = !isLoadingQuestions && !hasQuestionsInRoom;
 
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
@@ -372,6 +368,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               linkedQuestionsCount={linkedQuestions.length}
               expectedQuestionIndex={expectedQuestionIndex}
               isLoadingQuestions={isLoadingQuestions}
+              hasQuestionsInRoom={hasQuestionsInRoom}
             />
 
             {/* Timer Display */}
@@ -384,8 +381,21 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               gameState={gameState}
             />
 
-            {/* 当前题目显示 */}
-            {shouldShowCurrentQuestion ? (
+            {/* 主要内容显示 */}
+            {isLoadingQuestions ? (
+              <div className="text-center text-gray-400 py-8">
+                正在加载题目信息...
+              </div>
+            ) : shouldShowNoQuestions ? (
+              <div className="text-center text-yellow-400 py-8">
+                <div className="p-4 bg-yellow-900/20 rounded-md border border-yellow-500/30">
+                  <h3 className="font-semibold mb-2">房间未设置题目</h3>
+                  <p className="text-sm">
+                    法官尚未为此房间设置题目。请等待法官导入题目后再开始游戏。
+                  </p>
+                </div>
+              </div>
+            ) : shouldShowCurrentQuestion ? (
               questionNotFound ? (
                 <StudentQuestionNotFound 
                   roundNumber={roundNumber}
@@ -402,14 +412,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                   timeIsUp={timeIsUp}
                   onOptionClick={handleOptionClick}
                 />
-              ) : shouldShowLoading ? (
-                /* 题目加载中 */
+              ) : (
                 <div className="text-center text-gray-400 py-8">
-                  正在加载题目...
+                  正在准备题目...
                 </div>
-              ) : null
+              )
             ) : previousQuestion && !isAnsweringPhase ? (
-              /* 显示上一阶段的题目和答案 */
               <StudentPreviousQuestionDisplay previousQuestion={previousQuestion} />
             ) : (
               <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
@@ -419,9 +427,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                     ? '游戏已结束'
                     : !isAnsweringPhase 
                       ? '当前非答题阶段' 
-                      : isLoadingQuestions
-                        ? '正在加载题目信息...'
-                        : '正在准备题目...'
+                      : '正在准备题目...'
                 }
               </div>
             )}
