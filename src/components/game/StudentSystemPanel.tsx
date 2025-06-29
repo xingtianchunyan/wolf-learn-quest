@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,7 +20,11 @@ interface Question {
   option_c: string;
   option_d: string;
   correct_option: number;
-  explanation: string;
+  explanation: string | null;
+  difficulty: number | null;
+  category: string | null;
+  generated_questions_id: string | null;
+  room_id: string | null;
 }
 
 interface StudentSystemPanelProps {
