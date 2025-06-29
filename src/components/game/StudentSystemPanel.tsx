@@ -40,7 +40,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [loading, setLoading] = useState(false);
   const [questionNotFound, setQuestionNotFound] = useState(false);
 
-  // 获取当前题目
+  // 获取当前题目 - 使用与教师系统一致的逻辑
   useEffect(() => {
     const fetchCurrentQuestion = async () => {
       if (!gameState || gameState.status !== 'active' || !currentUser) {
@@ -51,16 +51,13 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       const { currentRound, currentPhase } = gameState;
       
-      // 修正题目顺序计算逻辑
-      // 每轮有2道题：傍晚(phase 2)和黎明(phase 4)
-      // 第1轮傍晚 = 题目1, 第1轮黎明 = 题目2
-      // 第2轮傍晚 = 题目3, 第2轮黎明 = 题目4
-      let questionOrder = 0;
-      
+      // 使用与教师系统相同的逻辑计算题目索引
+      // 2=傍晚阶段, 4=黎明阶段
+      let questionIndex = -1;
       if (currentPhase === 2) { // 傍晚阶段
-        questionOrder = (currentRound - 1) * 2 + 1;
-      } else if (currentPhase === 4) { // 黎明阶段
-        questionOrder = (currentRound - 1) * 2 + 2;
+        questionIndex = (currentRound - 1) * 2; // 0, 2, 4, 6...
+      } else if (currentPhase === 4) { // 黎明阶段  
+        questionIndex = (currentRound - 1) * 2 + 1; // 1, 3, 5, 7...
       } else {
         // 非答题阶段
         setCurrentQuestion(null);
@@ -68,34 +65,23 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         return;
       }
 
-      console.log('Fetching question with corrected logic:', {
+      const questionOrder = questionIndex + 1; // 转换为1-based索引用于数据库查询
+
+      console.log('Fetching question with consistent logic:', {
         currentRound,
         currentPhase,
-        calculatedQuestionOrder: questionOrder,
+        calculatedQuestionIndex: questionIndex,
+        questionOrderInDB: questionOrder,
         roomId
       });
 
       try {
-        // 首先检查 room_questions 表中是否有数据
-        const { data: allRoomQuestions, error: countError } = await supabase
-          .from('room_questions')
-          .select('question_order')
-          .eq('room_id', roomId)
-          .order('question_order');
-
-        console.log('All room questions available:', { 
-          allRoomQuestions, 
-          countError,
-          totalQuestions: allRoomQuestions?.length || 0
-        });
-
-        // 查询特定题目 - 使用正确的关联查询
-        const { data: roomQuestion, error } = await supabase
+        // 修改查询逻辑，使用正确的JOIN和字段名
+        const { data: questionData, error } = await supabase
           .from('room_questions')
           .select(`
-            question_id,
             question_order,
-            questions!inner (
+            questions (
               id,
               question,
               option_a,
@@ -108,28 +94,31 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           `)
           .eq('room_id', roomId)
           .eq('question_order', questionOrder)
-          .maybeSingle();
+          .single();
 
-        console.log('Current question query result:', { 
-          roomQuestion, 
+        console.log('Question query result:', { 
+          questionData, 
           error, 
-          requestedQuestionOrder: questionOrder,
-          foundQuestion: !!roomQuestion
+          requestedQuestionOrder: questionOrder
         });
 
         if (error) {
           console.error('Error fetching current question:', error);
-          setQuestionNotFound(true);
+          // 如果是未找到记录的错误，标记为题目未找到
+          if (error.code === 'PGRST116') {
+            setQuestionNotFound(true);
+            setCurrentQuestion(null);
+          }
           return;
         }
 
-        if (roomQuestion && roomQuestion.questions) {
+        if (questionData?.questions) {
           console.log('Successfully loaded question:', {
-            questionOrder: roomQuestion.question_order,
-            questionId: roomQuestion.questions.id,
-            questionText: roomQuestion.questions.question?.substring(0, 50) + '...'
+            questionOrder: questionData.question_order,
+            questionId: questionData.questions.id,
+            questionText: questionData.questions.question?.substring(0, 50) + '...'
           });
-          setCurrentQuestion(roomQuestion.questions as Question);
+          setCurrentQuestion(questionData.questions as Question);
           setQuestionNotFound(false);
         } else {
           console.log('No question found for order:', questionOrder);
@@ -173,11 +162,11 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       const { currentRound, currentPhase } = gameState;
       let previousQuestionOrder = 0;
 
-      // 计算上一阶段的题目顺序
+      // 使用与教师系统一致的逻辑计算上一题目序号
       if (currentPhase === 4) { // 黎明阶段，显示傍晚题目
-        previousQuestionOrder = (currentRound - 1) * 2 + 1;
+        previousQuestionOrder = (currentRound - 1) * 2 + 1; // 傍晚题目在数据库中的order
       } else if (currentPhase === 2 && currentRound > 1) { // 傍晚阶段，显示上一轮黎明题目
-        previousQuestionOrder = (currentRound - 2) * 2 + 2;
+        previousQuestionOrder = (currentRound - 2) * 2 + 2; // 上一轮黎明题目
       } else {
         setPreviousQuestion(null);
         return;
@@ -186,11 +175,10 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       console.log('Fetching previous question for order:', previousQuestionOrder);
 
       try {
-        const { data: roomQuestion, error } = await supabase
+        const { data: questionData, error } = await supabase
           .from('room_questions')
           .select(`
-            question_id,
-            questions!inner (
+            questions (
               id,
               question,
               option_a,
@@ -203,17 +191,17 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           `)
           .eq('room_id', roomId)
           .eq('question_order', previousQuestionOrder)
-          .maybeSingle();
+          .single();
 
-        console.log('Previous question query result:', { roomQuestion, error });
+        console.log('Previous question query result:', { questionData, error });
 
         if (error) {
           console.error('Error fetching previous question:', error);
           return;
         }
 
-        if (roomQuestion && roomQuestion.questions) {
-          setPreviousQuestion(roomQuestion.questions as Question);
+        if (questionData?.questions) {
+          setPreviousQuestion(questionData.questions as Question);
         }
       } catch (error) {
         console.error('Error in fetchPreviousQuestion:', error);
@@ -240,6 +228,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     setSelectedOption(optionNumber);
 
     const { currentRound, currentPhase } = gameState;
+    // 使用与获取题目时相同的计算逻辑
     const questionOrder = currentPhase === 2 
       ? (currentRound - 1) * 2 + 1 
       : (currentRound - 1) * 2 + 2;
@@ -299,6 +288,8 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
   const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
   const timeIsUp = timeRemaining <= 0 && showTimer;
+  
+  // 使用一致的题目序号计算逻辑
   const expectedQuestionOrder = gameState?.currentPhase === 2 
     ? (gameState.currentRound - 1) * 2 + 1 
     : gameState?.currentPhase === 4 
