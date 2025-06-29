@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,16 +45,18 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [questionNotFound, setQuestionNotFound] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [hasQuestionsInRoom, setHasQuestionsInRoom] = useState(false);
+  const [dataSource, setDataSource] = useState<'judge' | 'database' | 'none'>('none');
 
   console.log('学生系统：当前状态', {
     roomId,
     gameState,
     linkedQuestionsLength: linkedQuestions.length,
     isLoadingQuestions,
-    hasQuestionsInRoom
+    hasQuestionsInRoom,
+    dataSource
   });
 
-  // 获取链接的题目列表
+  // 获取链接的题目列表 - 增加双重获取机制
   useEffect(() => {
     const fetchLinkedQuestions = async () => {
       if (!roomId) {
@@ -63,6 +64,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         setLinkedQuestions([]);
         setIsLoadingQuestions(false);
         setHasQuestionsInRoom(false);
+        setDataSource('none');
         return;
       }
 
@@ -70,14 +72,57 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         setIsLoadingQuestions(true);
         console.log('学生系统：开始获取题目，房间ID:', roomId);
         
-        // 第一步：获取房间题目的顺序
+        // 方法1：首先尝试从法官页面导入的数据获取（从generated_questions表关联）
+        console.log('学生系统：尝试方法1 - 从法官导入数据获取');
+        const { data: generatedQuestionsData, error: generatedError } = await supabase
+          .from('generated_questions')
+          .select('questions')
+          .eq('room_id', roomId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        console.log('学生系统：法官导入数据查询结果', { generatedQuestionsData, generatedError });
+
+        if (!generatedError && generatedQuestionsData?.questions) {
+          const questionsArray = Array.isArray(generatedQuestionsData.questions) 
+            ? generatedQuestionsData.questions 
+            : [];
+          
+          if (questionsArray.length > 0) {
+            console.log('学生系统：使用法官导入的数据，题目数量:', questionsArray.length);
+            const formattedQuestions: Question[] = questionsArray.map((q: any, index: number) => ({
+              id: `judge_${index}`,
+              question: q.question || '',
+              option_a: q.option_a || '',
+              option_b: q.option_b || '',
+              option_c: q.option_c || '',
+              option_d: q.option_d || '',
+              correct_option: q.correct_option || 1,
+              explanation: q.explanation || null,
+              difficulty: q.difficulty || null,
+              category: q.category || null,
+              generated_questions_id: null,
+              room_id: roomId
+            }));
+            
+            setLinkedQuestions(formattedQuestions);
+            setHasQuestionsInRoom(true);
+            setDataSource('judge');
+            setIsLoadingQuestions(false);
+            return;
+          }
+        }
+
+        // 方法2：如果法官导入数据不可用，从数据库room_questions表直接获取
+        console.log('学生系统：尝试方法2 - 从数据库直接获取');
         const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
           .from('room_questions')
           .select('question_id')
           .eq('room_id', roomId)
           .order('question_order', { ascending: true });
 
-        console.log('学生系统：房间题目查询结果', { roomQuestionsData, roomQuestionsError });
+        console.log('学生系统：数据库房间题目查询结果', { roomQuestionsData, roomQuestionsError });
 
         if (roomQuestionsError) {
           console.error('学生系统：获取房间题目失败:', roomQuestionsError);
@@ -85,14 +130,15 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         }
 
         if (!roomQuestionsData || roomQuestionsData.length === 0) {
-          console.log('学生系统：房间未找到题目');
+          console.log('学生系统：数据库中未找到房间题目');
           setLinkedQuestions([]);
           setHasQuestionsInRoom(false);
+          setDataSource('none');
           setIsLoadingQuestions(false);
           return;
         }
 
-        // 第二步：根据question_id获取完整的题目信息
+        // 根据question_id获取完整的题目信息
         const questionIds = roomQuestionsData.map(rq => rq.question_id);
         console.log('学生系统：准备获取题目详情，题目IDs:', questionIds);
         
@@ -112,26 +158,29 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           console.log('学生系统：题目详情为空');
           setLinkedQuestions([]);
           setHasQuestionsInRoom(false);
+          setDataSource('none');
           setIsLoadingQuestions(false);
           return;
         }
 
-        // 第三步：按照room_questions中的顺序重新排列题目
+        // 按照room_questions中的顺序重新排列题目
         const questionsMap = new Map(questionsData.map(q => [q.id, q]));
         const orderedQuestions = questionIds
           .map(id => questionsMap.get(id))
           .filter((q): q is Question => !!q);
 
-        console.log('学生系统：排序后的题目列表:', orderedQuestions.length, '个题目');
+        console.log('学生系统：使用数据库数据，排序后的题目列表:', orderedQuestions.length, '个题目');
         console.log('学生系统：题目详情:', orderedQuestions.map(q => ({ id: q.id, question: q.question.substring(0, 50) + '...' })));
         
         setLinkedQuestions(orderedQuestions);
         setHasQuestionsInRoom(orderedQuestions.length > 0);
+        setDataSource('database');
 
       } catch (error: any) {
         console.error('学生系统：获取题目失败:', error);
         setLinkedQuestions([]);
         setHasQuestionsInRoom(false);
+        setDataSource('none');
         toast({
           title: '获取题目失败',
           description: error.message || '请稍后重试',
@@ -400,6 +449,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
               expectedQuestionIndex={expectedQuestionIndex}
               isLoadingQuestions={isLoadingQuestions}
               hasQuestionsInRoom={hasQuestionsInRoom}
+              dataSource={dataSource}
             />
 
             {/* Timer Display */}

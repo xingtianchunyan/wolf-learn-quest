@@ -10,6 +10,7 @@ interface StudentDebugInfoProps {
   expectedQuestionIndex: number;
   isLoadingQuestions?: boolean;
   hasQuestionsInRoom?: boolean;
+  dataSource?: 'judge' | 'database' | 'none';
 }
 
 const StudentDebugInfo: React.FC<StudentDebugInfoProps> = ({
@@ -20,7 +21,8 @@ const StudentDebugInfo: React.FC<StudentDebugInfoProps> = ({
   linkedQuestionsCount,
   expectedQuestionIndex,
   isLoadingQuestions = false,
-  hasQuestionsInRoom = false
+  hasQuestionsInRoom = false,
+  dataSource = 'none'
 }) => {
   if (!gameState && !isLoadingQuestions) return null;
 
@@ -37,6 +39,15 @@ const StudentDebugInfo: React.FC<StudentDebugInfoProps> = ({
     return `${gameState.status}`;
   };
 
+  const getDataSourceText = () => {
+    switch (dataSource) {
+      case 'judge': return '法官导入';
+      case 'database': return '数据库直读';
+      case 'none': return '无数据源';
+      default: return '未知';
+    }
+  };
+
   return (
     <div className="p-2 bg-gray-800/40 rounded text-xs text-gray-400">
       调试信息: 游戏状态={getGameStateStatus()}, 
@@ -44,7 +55,8 @@ const StudentDebugInfo: React.FC<StudentDebugInfoProps> = ({
       阶段={gameState?.currentPhase || 'N/A'}, 
       题目总数={linkedQuestionsCount}, 
       期望题目索引={expectedQuestionIndex},
-      题目状态={getQuestionStatus()}
+      题目状态={getQuestionStatus()},
+      数据源={getDataSourceText()}
       {timeIsUp && ', 时间已结束'}
       {!hasQuestionsInRoom && !isLoadingQuestions && ', ⚠️房间未设置题目'}
       {isLoadingQuestions && ', 正在加载题目...'}
