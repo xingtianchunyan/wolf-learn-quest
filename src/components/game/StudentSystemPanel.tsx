@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,8 +23,14 @@ interface Question {
   explanation: string | null;
   difficulty: number | null;
   category: string | null;
-  generated_questions_id: string | null;
-  room_id: string | null;
+}
+
+interface RoomQuestion {
+  id: string;
+  room_id: string;
+  question_id: string;
+  question_order: number;
+  question: Question;
 }
 
 interface StudentSystemPanelProps {
@@ -35,7 +42,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName } = useGameState(roomId);
   const { toast } = useToast();
   
-  const [linkedQuestions, setLinkedQuestions] = useState<Question[]>([]);
+  const [roomQuestions, setRoomQuestions] = useState<RoomQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [previousQuestion, setPreviousQuestion] = useState<Question | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -48,17 +55,17 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   console.log('学生系统：当前状态', {
     roomId,
     gameState,
-    linkedQuestionsLength: linkedQuestions.length,
+    roomQuestionsLength: roomQuestions.length,
     isLoadingQuestions,
     hasQuestionsInRoom
   });
 
-  // 获取房间题目列表 - 直接从room_questions表获取
+  // 获取房间题目列表
   useEffect(() => {
     const fetchRoomQuestions = async () => {
       if (!roomId) {
         console.log('学生系统：没有房间ID');
-        setLinkedQuestions([]);
+        setRoomQuestions([]);
         setIsLoadingQuestions(false);
         setHasQuestionsInRoom(false);
         return;
@@ -68,10 +75,27 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         setIsLoadingQuestions(true);
         console.log('学生系统：开始获取房间题目，房间ID:', roomId);
         
-        // 从room_questions表获取房间的题目列表
+        // 从room_questions表获取房间的题目列表，并联接questions表获取题目详情
         const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
           .from('room_questions')
-          .select('question_id')
+          .select(`
+            id,
+            room_id,
+            question_id,
+            question_order,
+            question:questions(
+              id,
+              question,
+              option_a,
+              option_b,
+              option_c,
+              option_d,
+              correct_option,
+              explanation,
+              difficulty,
+              category
+            )
+          `)
           .eq('room_id', roomId)
           .order('question_order', { ascending: true });
 
@@ -84,51 +108,27 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
         if (!roomQuestionsData || roomQuestionsData.length === 0) {
           console.log('学生系统：房间未设置题目');
-          setLinkedQuestions([]);
+          setRoomQuestions([]);
           setHasQuestionsInRoom(false);
           setIsLoadingQuestions(false);
           return;
         }
 
-        // 根据question_id获取完整的题目信息
-        const questionIds = roomQuestionsData.map(rq => rq.question_id);
-        console.log('学生系统：准备获取题目详情，题目IDs:', questionIds);
+        // 过滤出有效的题目数据
+        const validQuestions = roomQuestionsData.filter(rq => rq.question && typeof rq.question === 'object');
         
-        const { data: questionsData, error: questionsError } = await supabase
-          .from('questions')
-          .select('*')
-          .in('id', questionIds);
+        console.log('学生系统：有效题目列表:', validQuestions.length, '个题目');
+        console.log('学生系统：题目详情:', validQuestions.map(rq => ({ 
+          order: rq.question_order, 
+          question: rq.question?.question?.substring(0, 50) + '...' 
+        })));
         
-        console.log('学生系统：题目详情查询结果', { questionsData, questionsError });
-
-        if (questionsError) {
-          console.error('学生系统：获取题目详情失败:', questionsError);
-          throw questionsError;
-        }
-
-        if (!questionsData || questionsData.length === 0) {
-          console.log('学生系统：题目详情为空');
-          setLinkedQuestions([]);
-          setHasQuestionsInRoom(false);
-          setIsLoadingQuestions(false);
-          return;
-        }
-
-        // 按照room_questions中的顺序重新排列题目
-        const questionsMap = new Map(questionsData.map(q => [q.id, q]));
-        const orderedQuestions = questionIds
-          .map(id => questionsMap.get(id))
-          .filter((q): q is Question => !!q);
-
-        console.log('学生系统：排序后的题目列表:', orderedQuestions.length, '个题目');
-        console.log('学生系统：题目详情:', orderedQuestions.map(q => ({ id: q.id, question: q.question.substring(0, 50) + '...' })));
-        
-        setLinkedQuestions(orderedQuestions);
-        setHasQuestionsInRoom(orderedQuestions.length > 0);
+        setRoomQuestions(validQuestions as RoomQuestion[]);
+        setHasQuestionsInRoom(validQuestions.length > 0);
 
       } catch (error: any) {
         console.error('学生系统：获取题目失败:', error);
-        setLinkedQuestions([]);
+        setRoomQuestions([]);
         setHasQuestionsInRoom(false);
         toast({
           title: '获取题目失败',
@@ -143,18 +143,18 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     fetchRoomQuestions();
   }, [roomId, toast]);
 
-  // 获取当前题目的useEffect
+  // 获取当前题目
   useEffect(() => {
     console.log('学生系统：计算当前题目', {
       gameState: gameState?.status,
-      linkedQuestionsLength: linkedQuestions.length,
+      roomQuestionsLength: roomQuestions.length,
       isLoadingQuestions,
       currentRound: gameState?.currentRound,
       currentPhase: gameState?.currentPhase
     });
 
     // 确保必要的数据都已加载
-    if (isLoadingQuestions || linkedQuestions.length === 0) {
+    if (isLoadingQuestions || roomQuestions.length === 0) {
       console.log('学生系统：还在加载题目或没有题目');
       setCurrentQuestion(null);
       setQuestionNotFound(false);
@@ -171,11 +171,13 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
     const { currentRound, currentPhase } = gameState;
     
-    let questionIndex = -1;
-    if (currentPhase === 2) { // 傍晚阶段
-      questionIndex = (currentRound - 1) * 2; // 0, 2, 4, 6...
-    } else if (currentPhase === 4) { // 黎明阶段  
-      questionIndex = (currentRound - 1) * 2 + 1; // 1, 3, 5, 7...
+    // 计算当前应该显示的题目序号
+    // currentPhase: 2=傍晚阶段，4=黎明阶段
+    let targetQuestionOrder = -1;
+    if (currentPhase === 2) { // 傍晚阶段 - 奇数题目 (1, 3, 5, 7...)
+      targetQuestionOrder = (currentRound - 1) * 2 + 1;
+    } else if (currentPhase === 4) { // 黎明阶段 - 偶数题目 (2, 4, 6, 8...)
+      targetQuestionOrder = (currentRound - 1) * 2 + 2;
     } else {
       console.log('学生系统：当前非答题阶段，阶段:', currentPhase);
       setCurrentQuestion(null);
@@ -183,39 +185,41 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       return;
     }
 
-    console.log('学生系统：计算题目索引', {
+    console.log('学生系统：计算题目序号', {
       currentRound,
       currentPhase,
-      questionIndex,
-      totalQuestions: linkedQuestions.length
+      targetQuestionOrder,
+      totalQuestions: roomQuestions.length
     });
 
-    if (questionIndex >= 0 && questionIndex < linkedQuestions.length) {
-      const question = linkedQuestions[questionIndex];
-      setCurrentQuestion(question);
+    // 查找对应序号的题目
+    const roomQuestion = roomQuestions.find(rq => rq.question_order === targetQuestionOrder);
+    
+    if (roomQuestion && roomQuestion.question) {
+      setCurrentQuestion(roomQuestion.question);
       setQuestionNotFound(false);
-      console.log('学生系统：找到当前题目:', question.question.substring(0, 50) + '...');
+      console.log('学生系统：找到当前题目:', roomQuestion.question.question.substring(0, 50) + '...');
     } else {
-      console.log('学生系统：题目未找到，索引:', questionIndex, '总题目数:', linkedQuestions.length);
+      console.log('学生系统：题目未找到，序号:', targetQuestionOrder, '总题目数:', roomQuestions.length);
       setCurrentQuestion(null);
       setQuestionNotFound(true);
     }
-  }, [gameState, linkedQuestions, isLoadingQuestions]);
+  }, [gameState, roomQuestions, isLoadingQuestions]);
 
-  // 获取上一阶段题目的useEffect
+  // 获取上一阶段题目
   useEffect(() => {
-    if (!gameState || gameState.status !== 'active' || linkedQuestions.length === 0) {
+    if (!gameState || gameState.status !== 'active' || roomQuestions.length === 0) {
       setPreviousQuestion(null);
       return;
     }
 
     const { currentRound, currentPhase } = gameState;
-    let previousQuestionIndex = -1;
+    let previousQuestionOrder = -1;
 
     if (currentPhase === 4) { // 黎明阶段，显示傍晚题目
-      previousQuestionIndex = (currentRound - 1) * 2; // 当前轮傍晚题目
+      previousQuestionOrder = (currentRound - 1) * 2 + 1; // 当前轮傍晚题目
     } else if (currentPhase === 2 && currentRound > 1) { // 傍晚阶段，显示上一轮黎明题目
-      previousQuestionIndex = (currentRound - 2) * 2 + 1; // 上一轮黎明题目
+      previousQuestionOrder = (currentRound - 2) * 2 + 2; // 上一轮黎明题目
     } else {
       setPreviousQuestion(null);
       return;
@@ -224,20 +228,20 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     console.log('学生系统：计算上一题目', {
       currentRound,
       currentPhase,
-      previousQuestionIndex,
-      totalQuestions: linkedQuestions.length
+      previousQuestionOrder,
+      totalQuestions: roomQuestions.length
     });
 
-    if (previousQuestionIndex >= 0 && previousQuestionIndex < linkedQuestions.length) {
-      const question = linkedQuestions[previousQuestionIndex];
-      setPreviousQuestion(question);
-      console.log('学生系统：找到上一题目:', question.question.substring(0, 50) + '...');
+    const roomQuestion = roomQuestions.find(rq => rq.question_order === previousQuestionOrder);
+    if (roomQuestion && roomQuestion.question) {
+      setPreviousQuestion(roomQuestion.question);
+      console.log('学生系统：找到上一题目:', roomQuestion.question.question.substring(0, 50) + '...');
     } else {
       setPreviousQuestion(null);
     }
-  }, [gameState, linkedQuestions]);
+  }, [gameState, roomQuestions]);
 
-  // 检查用户是否已经回答过当前题目的useEffect
+  // 检查用户是否已经回答过当前题目
   useEffect(() => {
     const checkUserAnswer = async () => {
       if (!currentQuestion || !currentUser || !gameState) {
@@ -248,6 +252,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       const { currentRound, currentPhase } = gameState;
       
+      // 计算题目序号
       const questionOrder = currentPhase === 2 
         ? (currentRound - 1) * 2 + 1 
         : (currentRound - 1) * 2 + 2;
@@ -357,12 +362,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
   const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
   const timeIsUp = timeRemaining <= 0 && showTimer;
-  
-  const expectedQuestionIndex = gameState?.currentPhase === 2 
-    ? (gameState.currentRound - 1) * 2
-    : gameState?.currentPhase === 4 
-      ? (gameState.currentRound - 1) * 2 + 1
-      : -1;
 
   const getGameStatusInfo = () => {
     if (!gameState) return '游戏准备中';
@@ -372,7 +371,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     return '未知状态';
   };
 
-  // 改进的显示逻辑
+  // 显示逻辑
   const shouldShowCurrentQuestion = gameState?.status === 'active' && isAnsweringPhase && hasQuestionsInRoom && !isLoadingQuestions;
   const shouldShowNoQuestions = !isLoadingQuestions && !hasQuestionsInRoom;
 
@@ -418,7 +417,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                   roundNumber={roundNumber}
                   phaseName={phaseName}
                   expectedQuestionIndex={-1}
-                  totalQuestions={linkedQuestions.length}
+                  totalQuestions={roomQuestions.length}
                 />
               ) : currentQuestion ? (
                 <StudentQuestionDisplay 

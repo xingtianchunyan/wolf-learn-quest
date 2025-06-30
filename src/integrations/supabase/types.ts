@@ -411,7 +411,6 @@ export type Database = {
           option_c: string
           option_d: string
           question: string
-          room_id: string | null
         }
         Insert: {
           category?: string | null
@@ -425,7 +424,6 @@ export type Database = {
           option_c: string
           option_d: string
           question: string
-          room_id?: string | null
         }
         Update: {
           category?: string | null
@@ -439,7 +437,6 @@ export type Database = {
           option_c?: string
           option_d?: string
           question?: string
-          room_id?: string | null
         }
         Relationships: [
           {
@@ -447,13 +444,6 @@ export type Database = {
             columns: ["generated_questions_id"]
             isOneToOne: false
             referencedRelation: "generated_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]

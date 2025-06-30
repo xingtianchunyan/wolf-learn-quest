@@ -9,7 +9,9 @@ interface Question {
   option_c: string;
   option_d: string;
   correct_option: number;
-  explanation: string;
+  explanation: string | null;
+  difficulty: number | null;
+  category: string | null;
 }
 
 interface StudentQuestionDisplayProps {
@@ -33,23 +35,39 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
     return ['A', 'B', 'C', 'D'][index - 1];
   };
 
+  const getOptionText = (optionNumber: number) => {
+    switch (optionNumber) {
+      case 1: return currentQuestion.option_a;
+      case 2: return currentQuestion.option_b;
+      case 3: return currentQuestion.option_c;
+      case 4: return currentQuestion.option_d;
+      default: return '';
+    }
+  };
+
   return (
     <>
       {/* 题目题干 */}
       <div className="p-4 bg-werewolf-dark/40 rounded-md">
         <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
         <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
+        {currentQuestion.category && (
+          <div className="mt-2 text-xs text-gray-500">
+            类别: {currentQuestion.category}
+          </div>
+        )}
+        {currentQuestion.difficulty && (
+          <div className="mt-1 text-xs text-gray-500">
+            难度: {currentQuestion.difficulty}/10
+          </div>
+        )}
       </div>
 
       {/* 选项列表 */}
       <div className="space-y-2">
         <h3 className="font-semibold text-werewolf-purple">选项</h3>
         {[1, 2, 3, 4].map((optionNum) => {
-          const optionText = optionNum === 1 ? currentQuestion.option_a
-            : optionNum === 2 ? currentQuestion.option_b
-            : optionNum === 3 ? currentQuestion.option_c
-            : currentQuestion.option_d;
-          
+          const optionText = getOptionText(optionNum);
           const isSelected = selectedOption === optionNum;
           const isCorrect = hasSubmitted && optionNum === currentQuestion.correct_option;
           const isWrong = hasSubmitted && isSelected && optionNum !== currentQuestion.correct_option;
@@ -80,15 +98,30 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
         })}
       </div>
 
+      {/* 答案状态提示 */}
       {hasSubmitted && (
-        <div className="text-center text-green-400 font-medium">
-          答案已提交
+        <div className="text-center">
+          <div className="text-green-400 font-medium mb-2">
+            答案已提交
+          </div>
+          {currentQuestion.explanation && (
+            <div className="p-3 bg-blue-900/20 rounded-md border border-blue-500/30">
+              <h4 className="font-semibold text-blue-300 mb-1">解释</h4>
+              <p className="text-sm text-gray-300">{currentQuestion.explanation}</p>
+            </div>
+          )}
         </div>
       )}
       
       {timeIsUp && !hasSubmitted && (
         <div className="text-center text-red-400 font-medium">
           答题时间已结束，无法提交答案
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center text-yellow-400 font-medium">
+          正在提交答案...
         </div>
       )}
     </>
