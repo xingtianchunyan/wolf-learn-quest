@@ -4,9 +4,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/StudentSystemPanel';
 import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
-import { useParams, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const GamePage = () => {
@@ -19,9 +17,6 @@ const GamePage = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="text-center">
             <p className="text-gray-400 mb-4">房间ID不存在</p>
-            <Link to="/lobby">
-              <Button>返回大厅</Button>
-            </Link>
           </div>
         </div>
       </PageLayout>
@@ -31,19 +26,9 @@ const GamePage = () => {
   return (
     <PageLayout>
       <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
-        {/* Navigation */}
-        <div className="mb-6">
-          <Link to="/lobby">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              返回大厅
-            </Button>
-          </Link>
-        </div>
-
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{
-          height: 'calc(100vh - 16rem)'
+          height: 'calc(100vh - 12rem)'
         }}>
           {/* Left Column - Student System and Answer Records */}
           <div className="lg:col-span-3 flex flex-col gap-6 h-full">

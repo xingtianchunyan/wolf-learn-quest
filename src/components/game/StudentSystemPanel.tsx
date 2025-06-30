@@ -7,7 +7,6 @@ import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import StudentTimerDisplay from './student/StudentTimerDisplay';
-import StudentDebugInfo from './student/StudentDebugInfo';
 import StudentQuestionDisplay from './student/StudentQuestionDisplay';
 import StudentPreviousQuestionDisplay from './student/StudentPreviousQuestionDisplay';
 import StudentQuestionNotFound from './student/StudentQuestionNotFound';
@@ -389,18 +388,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
-            {/* Enhanced Debug info */}
-            <StudentDebugInfo 
-              gameState={gameState}
-              currentQuestion={currentQuestion}
-              questionNotFound={questionNotFound}
-              timeIsUp={timeIsUp}
-              linkedQuestionsCount={linkedQuestions.length}
-              expectedQuestionIndex={expectedQuestionIndex}
-              isLoadingQuestions={isLoadingQuestions}
-              hasQuestionsInRoom={hasQuestionsInRoom}
-            />
-
             {/* Timer Display */}
             <StudentTimerDisplay 
               showTimer={showTimer}
@@ -430,7 +417,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                 <StudentQuestionNotFound 
                   roundNumber={roundNumber}
                   phaseName={phaseName}
-                  expectedQuestionIndex={expectedQuestionIndex}
+                  expectedQuestionIndex={-1}
                   totalQuestions={linkedQuestions.length}
                 />
               ) : currentQuestion ? (
