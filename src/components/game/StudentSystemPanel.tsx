@@ -30,7 +30,7 @@ interface RoomQuestion {
   room_id: string;
   question_id: string;
   question_order: number;
-  question: Question;
+  questions: Question;
 }
 
 interface StudentSystemPanelProps {
@@ -75,7 +75,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         setIsLoadingQuestions(true);
         console.log('学生系统：开始获取房间题目，房间ID:', roomId);
         
-        // 从room_questions表获取房间的题目列表，并联接questions表获取题目详情
+        // 修改查询，使用正确的表关联
         const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
           .from('room_questions')
           .select(`
@@ -83,7 +83,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
             room_id,
             question_id,
             question_order,
-            question:questions(
+            questions!inner(
               id,
               question,
               option_a,
@@ -115,12 +115,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         }
 
         // 过滤出有效的题目数据
-        const validQuestions = roomQuestionsData.filter(rq => rq.question && typeof rq.question === 'object');
+        const validQuestions = roomQuestionsData.filter(rq => rq.questions && typeof rq.questions === 'object');
         
         console.log('学生系统：有效题目列表:', validQuestions.length, '个题目');
         console.log('学生系统：题目详情:', validQuestions.map(rq => ({ 
           order: rq.question_order, 
-          question: rq.question?.question?.substring(0, 50) + '...' 
+          question: rq.questions?.question?.substring(0, 50) + '...' 
         })));
         
         setRoomQuestions(validQuestions as RoomQuestion[]);
@@ -195,10 +195,10 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     // 查找对应序号的题目
     const roomQuestion = roomQuestions.find(rq => rq.question_order === targetQuestionOrder);
     
-    if (roomQuestion && roomQuestion.question) {
-      setCurrentQuestion(roomQuestion.question);
+    if (roomQuestion && roomQuestion.questions) {
+      setCurrentQuestion(roomQuestion.questions);
       setQuestionNotFound(false);
-      console.log('学生系统：找到当前题目:', roomQuestion.question.question.substring(0, 50) + '...');
+      console.log('学生系统：找到当前题目:', roomQuestion.questions.question.substring(0, 50) + '...');
     } else {
       console.log('学生系统：题目未找到，序号:', targetQuestionOrder, '总题目数:', roomQuestions.length);
       setCurrentQuestion(null);
@@ -233,9 +233,9 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     });
 
     const roomQuestion = roomQuestions.find(rq => rq.question_order === previousQuestionOrder);
-    if (roomQuestion && roomQuestion.question) {
-      setPreviousQuestion(roomQuestion.question);
-      console.log('学生系统：找到上一题目:', roomQuestion.question.question.substring(0, 50) + '...');
+    if (roomQuestion && roomQuestion.questions) {
+      setPreviousQuestion(roomQuestion.questions);
+      console.log('学生系统：找到上一题目:', roomQuestion.questions.question.substring(0, 50) + '...');
     } else {
       setPreviousQuestion(null);
     }
