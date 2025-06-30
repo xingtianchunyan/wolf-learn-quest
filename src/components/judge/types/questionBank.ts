@@ -13,7 +13,6 @@ export interface Question {
   source_file?: string;
   category: string | null;
   generated_questions_id: string | null;
-  room_id: string | null;
 }
 
 export interface QuestionSource {

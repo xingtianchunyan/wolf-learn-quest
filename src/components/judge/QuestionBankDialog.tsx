@@ -131,8 +131,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         difficulty: q.difficulty || 1,
         source_file: q.generated_questions?.file_name || '未知来源',
         category: q.category || '生成题目',
-        generated_questions_id: q.generated_questions_id,
-        room_id: q.room_id
+        generated_questions_id: q.generated_questions_id
       }));
 
       setQuestions(formattedQuestions);
