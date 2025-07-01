@@ -14,12 +14,14 @@ interface Question {
   explanation: string | null;
   difficulty: number | null;
   category: string | null;
+  generated_questions_id: string | null;
 }
 
 interface JudgePageContextType {
   linkedQuestions: Question[] | null;
   isSystemLinked: boolean;
   refreshLinkedQuestions: () => Promise<void>;
+  saveLinkedQuestions: (questions: Question[]) => Promise<void>;
 }
 
 const JudgePageContext = createContext<JudgePageContextType | undefined>(undefined);
@@ -65,7 +67,8 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
             correct_option,
             explanation,
             difficulty,
-            category
+            category,
+            generated_questions_id
           )
         `)
         .eq('room_id', roomId)
@@ -100,6 +103,58 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
       console.error('JudgePage Context: 获取题目时发生错误:', error);
       setLinkedQuestions(null);
       setIsSystemLinked(false);
+    }
+  };
+
+  const saveLinkedQuestions = async (questions: Question[]) => {
+    if (!roomId || questions.length === 0) return;
+
+    try {
+      console.log('JudgePage Context: 开始保存题目到房间，roomId:', roomId);
+
+      // 先删除现有的房间题目
+      const { error: deleteError } = await supabase
+        .from('room_questions')
+        .delete()
+        .eq('room_id', roomId);
+
+      if (deleteError) {
+        console.error('JudgePage Context: 删除旧题目失败:', deleteError);
+        throw deleteError;
+      }
+
+      // 插入新的房间题目
+      const roomQuestions = questions.map((question, index) => ({
+        room_id: roomId,
+        question_id: question.id,
+        question_order: index + 1
+      }));
+
+      const { error: insertError } = await supabase
+        .from('room_questions')
+        .insert(roomQuestions);
+
+      if (insertError) {
+        console.error('JudgePage Context: 插入新题目失败:', insertError);
+        throw insertError;
+      }
+
+      console.log('JudgePage Context: 题目保存成功，数量:', questions.length);
+      setLinkedQuestions(questions);
+      setIsSystemLinked(true);
+
+      toast({
+        title: '题目设置成功',
+        description: `已为房间设置 ${questions.length} 道题目`,
+      });
+
+    } catch (error) {
+      console.error('JudgePage Context: 保存题目时发生错误:', error);
+      toast({
+        title: '题目设置失败',
+        description: '无法保存题目设置',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -155,6 +210,7 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
     linkedQuestions,
     isSystemLinked,
     refreshLinkedQuestions,
+    saveLinkedQuestions,
   };
 
   return (

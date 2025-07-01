@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X } from 'lucide-react';
@@ -86,7 +87,12 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchGeneratedQuestions();
-      setSelectedQuestions(linkedQuestions);
+      // Convert linkedQuestions to match the local Question type
+      const convertedQuestions = linkedQuestions?.map(q => ({
+        ...q,
+        selected: true
+      })) || [];
+      setSelectedQuestions(convertedQuestions);
     }
   }, [isOpen, linkedQuestions]);
 
@@ -317,7 +323,22 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   };
 
   const handleLinkSystem = async () => {
-    await saveLinkedQuestions(selectedQuestions);
+    // Convert selected questions to the context Question type
+    const questionsToSave = selectedQuestions.map(q => ({
+      id: q.id,
+      question: q.question,
+      option_a: q.option_a,
+      option_b: q.option_b,
+      option_c: q.option_c,
+      option_d: q.option_d,
+      correct_option: q.correct_option,
+      explanation: q.explanation,
+      difficulty: q.difficulty,
+      category: q.category,
+      generated_questions_id: q.generated_questions_id
+    }));
+    
+    await saveLinkedQuestions(questionsToSave);
     onClose();
   };
 
