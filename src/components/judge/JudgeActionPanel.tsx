@@ -12,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings } from 'lucide-react';
+import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, RefreshCw } from 'lucide-react';
 import PreparationPhaseDialog from './PreparationPhaseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +20,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useVoteResults, VoteRecord } from '@/hooks/useVoteResults';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
+import { useJudgePage } from '@/contexts/JudgePageContext';
 
 interface JudgeActionPanelProps {
   roomId: string;
@@ -28,9 +29,11 @@ interface JudgeActionPanelProps {
 const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
+  const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
   const { voteRecords, loading: votesLoading } = useVoteResults(roomId);
   const { gameState, advancePhase, togglePause, endGame, gameSettings, updateGameSettings } = useGameState(roomId);
   const { toast } = useToast();
+  const { refreshLinkedQuestions } = useJudgePage();
 
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [isPausing, setIsPausing] = useState(false);
@@ -59,6 +62,29 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
   const handleGameSettlement = () => {
     console.log('游戏结算');
+  };
+
+  // 更新题目功能
+  const handleUpdateQuestions = async () => {
+    setIsUpdatingQuestions(true);
+    try {
+      // 刷新题目数据
+      await refreshLinkedQuestions();
+      
+      toast({
+        title: '题目更新成功',
+        description: '已重新加载题目信息',
+      });
+    } catch (error) {
+      console.error('更新题目失败:', error);
+      toast({
+        title: '题目更新失败',
+        description: '请稍后重试',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdatingQuestions(false);
+    }
   };
 
   const handleQuitJudge = async () => {
@@ -116,16 +142,30 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               法官行动
             </CardTitle>
             <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPreparationDialogOpen(true)}
-                className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-                disabled={isGameActive} // 游戏进行中禁用准备阶段按钮
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                准备阶段
-              </Button>
+              {/* 根据游戏状态显示不同按钮 */}
+              {isGameActive ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUpdateQuestions}
+                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                  loading={isUpdatingQuestions}
+                  disabled={isUpdatingQuestions}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {isUpdatingQuestions ? "更新中..." : "更新题目"}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsPreparationDialogOpen(true)}
+                  className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  准备阶段
+                </Button>
+              )}
               <Button
                 variant="destructive"
                 size="sm"
@@ -154,10 +194,10 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
           )}
         </CardHeader>
         
-        <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4">
-          {/* 投票结果表格 */}
-          <div className="border border-werewolf-purple/30 rounded-md">
-            <ScrollArea className="h-52">
+        <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4 min-h-0">
+          {/* 投票结果表格 - 固定高度，支持滚动 */}
+          <div className="border border-werewolf-purple/30 rounded-md flex-shrink-0" style={{ height: '200px' }}>
+            <ScrollArea className="h-full">
               <Table>
                 <TableHeader className="sticky top-0 bg-werewolf-card z-10">
                   <TableRow className="border-b border-werewolf-purple/30 hover:bg-transparent">
@@ -197,7 +237,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
           {/* 自动化设置 */}
           {gameState && (
-            <div className="p-4 bg-werewolf-dark/40 rounded-md">
+            <div className="p-4 bg-werewolf-dark/40 rounded-md flex-shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
                 <Switch
@@ -213,7 +253,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
           )}
 
           {/* 游戏控制按钮 */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 flex-shrink-0">
             <Button
               variant="outline"
               onClick={handleNextPhase}
@@ -260,7 +300,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
           {/* 游戏进行中的提示信息 */}
           {gameState?.status === 'active' && (
-            <div className="text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md">
+            <div className="text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md flex-shrink-0">
               游戏进行中，部分功能已禁用
             </div>
           )}
