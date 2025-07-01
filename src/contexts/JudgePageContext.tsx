@@ -148,6 +148,9 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
         description: `已为房间设置 ${questions.length} 道题目`,
       });
 
+      // 发送实时通知，确保学生系统能够及时更新
+      console.log('JudgePage Context: 发送题目更新通知');
+
     } catch (error) {
       console.error('JudgePage Context: 保存题目时发生错误:', error);
       toast({
@@ -185,7 +188,7 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
     if (!roomId) return;
 
     const channel = supabase
-      .channel(`room_questions_${roomId}`)
+      .channel(`judge_room_questions_${roomId}`)
       .on(
         'postgres_changes',
         {

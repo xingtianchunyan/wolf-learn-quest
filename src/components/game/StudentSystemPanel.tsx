@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -63,141 +62,147 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   });
 
   // 获取房间题目列表
-  useEffect(() => {
-    const fetchRoomQuestions = async () => {
-      if (!roomId) {
-        console.log('学生系统：没有房间ID，跳过查询');
+  const fetchRoomQuestions = async () => {
+    if (!roomId) {
+      console.log('学生系统：没有房间ID，跳过查询');
+      setRoomQuestions([]);
+      setIsLoadingQuestions(false);
+      setHasQuestionsInRoom(false);
+      return;
+    }
+
+    try {
+      setIsLoadingQuestions(true);
+      console.log('学生系统：开始获取房间题目，房间ID:', roomId);
+      
+      // 直接查询 room_questions 表，现在RLS策略已经修复
+      const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
+        .from('room_questions')
+        .select(`
+          id,
+          room_id,
+          question_id,
+          question_order,
+          questions!inner (
+            id,
+            question,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_option,
+            explanation,
+            difficulty,
+            category
+          )
+        `)
+        .eq('room_id', roomId)
+        .order('question_order', { ascending: true });
+
+      console.log('学生系统：题目查询结果', { 
+        data: roomQuestionsData, 
+        error: roomQuestionsError,
+        dataLength: roomQuestionsData?.length || 0
+      });
+
+      if (roomQuestionsError) {
+        console.error('学生系统：获取房间题目失败:', roomQuestionsError);
+        throw roomQuestionsError;
+      }
+
+      if (!roomQuestionsData || roomQuestionsData.length === 0) {
+        console.log('学生系统：房间未设置题目');
         setRoomQuestions([]);
-        setIsLoadingQuestions(false);
         setHasQuestionsInRoom(false);
+        setIsLoadingQuestions(false);
         return;
       }
 
-      try {
-        setIsLoadingQuestions(true);
-        console.log('学生系统：开始获取房间题目，房间ID:', roomId);
+      // 验证数据完整性
+      const validQuestions = roomQuestionsData.filter(rq => {
+        const isValid = rq.questions && 
+                       typeof rq.questions === 'object' && 
+                       rq.questions.question && 
+                       rq.questions.option_a &&
+                       rq.questions.option_b &&
+                       rq.questions.option_c &&
+                       rq.questions.option_d &&
+                       rq.questions.correct_option;
         
-        // 第一步：检查房间是否存在题目
-        const { data: roomCheck, error: roomCheckError } = await supabase
-          .from('room_questions')
-          .select('id, question_order')
-          .eq('room_id', roomId)
-          .order('question_order', { ascending: true });
-
-        console.log('学生系统：房间题目检查结果', { roomCheck, roomCheckError });
-
-        if (roomCheckError) {
-          console.error('学生系统：检查房间题目失败:', roomCheckError);
-          throw roomCheckError;
+        if (!isValid) {
+          console.warn('学生系统：发现无效题目数据:', rq);
         }
-
-        if (!roomCheck || roomCheck.length === 0) {
-          console.log('学生系统：房间未设置题目 - room_questions表中没有数据');
-          setRoomQuestions([]);
-          setHasQuestionsInRoom(false);
-          setIsLoadingQuestions(false);
-          return;
-        }
-
-        console.log('学生系统：房间存在题目记录，数量:', roomCheck.length);
-
-        // 第二步：获取详细的题目信息
-        const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
-          .from('room_questions')
-          .select(`
-            id,
-            room_id,
-            question_id,
-            question_order,
-            questions!inner (
-              id,
-              question,
-              option_a,
-              option_b,
-              option_c,
-              option_d,
-              correct_option,
-              explanation,
-              difficulty,
-              category
-            )
-          `)
-          .eq('room_id', roomId)
-          .order('question_order', { ascending: true });
-
-        console.log('学生系统：详细题目查询结果', { 
-          data: roomQuestionsData, 
-          error: roomQuestionsError,
-          dataLength: roomQuestionsData?.length || 0
-        });
-
-        if (roomQuestionsError) {
-          console.error('学生系统：获取房间题目详情失败:', roomQuestionsError);
-          throw roomQuestionsError;
-        }
-
-        if (!roomQuestionsData || roomQuestionsData.length === 0) {
-          console.log('学生系统：关联查询未返回题目数据');
-          setRoomQuestions([]);
-          setHasQuestionsInRoom(false);
-          setIsLoadingQuestions(false);
-          return;
-        }
-
-        // 验证数据完整性
-        const validQuestions = roomQuestionsData.filter(rq => {
-          const isValid = rq.questions && 
-                         typeof rq.questions === 'object' && 
-                         rq.questions.question && 
-                         rq.questions.option_a &&
-                         rq.questions.option_b &&
-                         rq.questions.option_c &&
-                         rq.questions.option_d &&
-                         rq.questions.correct_option;
-          
-          if (!isValid) {
-            console.warn('学生系统：发现无效题目数据:', rq);
-          }
-          
-          return isValid;
-        });
         
-        console.log('学生系统：有效题目验证结果', {
-          totalQuestions: roomQuestionsData.length,
-          validQuestions: validQuestions.length,
-          invalidCount: roomQuestionsData.length - validQuestions.length
-        });
+        return isValid;
+      });
+      
+      console.log('学生系统：有效题目验证结果', {
+        totalQuestions: roomQuestionsData.length,
+        validQuestions: validQuestions.length,
+        invalidCount: roomQuestionsData.length - validQuestions.length
+      });
 
-        if (validQuestions.length === 0) {
-          console.log('学生系统：没有有效的题目数据');
-          setRoomQuestions([]);
-          setHasQuestionsInRoom(false);
-        } else {
-          console.log('学生系统：成功加载题目', validQuestions.map(rq => ({
-            order: rq.question_order,
-            questionId: rq.questions.id,
-            questionPreview: rq.questions.question.substring(0, 50) + '...'
-          })));
-          setRoomQuestions(validQuestions as RoomQuestion[]);
-          setHasQuestionsInRoom(true);
-        }
-
-      } catch (error: any) {
-        console.error('学生系统：获取题目过程中发生错误:', error);
+      if (validQuestions.length === 0) {
+        console.log('学生系统：没有有效的题目数据');
         setRoomQuestions([]);
         setHasQuestionsInRoom(false);
-        toast({
-          title: '获取题目失败',
-          description: error.message || '请稍后重试',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoadingQuestions(false);
+      } else {
+        console.log('学生系统：成功加载题目', validQuestions.map(rq => ({
+          order: rq.question_order,
+          questionId: rq.questions.id,
+          questionPreview: rq.questions.question.substring(0, 50) + '...'
+        })));
+        setRoomQuestions(validQuestions as RoomQuestion[]);
+        setHasQuestionsInRoom(true);
       }
-    };
 
+    } catch (error: any) {
+      console.error('学生系统：获取题目过程中发生错误:', error);
+      setRoomQuestions([]);
+      setHasQuestionsInRoom(false);
+      toast({
+        title: '获取题目失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRoomQuestions();
   }, [roomId, toast]);
+
+  // 监听房间题目变化，实现实时同步
+  useEffect(() => {
+    if (!roomId) return;
+
+    console.log('学生系统：设置实时监听，房间ID:', roomId);
+
+    const channel = supabase
+      .channel(`student_room_questions_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_questions',
+          filter: `room_id=eq.${roomId}`
+        },
+        (payload) => {
+          console.log('学生系统：房间题目发生变化:', payload);
+          // 重新获取题目数据
+          fetchRoomQuestions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('学生系统：清理实时监听');
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
 
   // 获取当前题目
   useEffect(() => {
