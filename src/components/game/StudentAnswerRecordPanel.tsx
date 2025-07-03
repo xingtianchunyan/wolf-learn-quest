@@ -247,7 +247,19 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
                           </>
                         ) : (
                           <span className="text-sm text-red-500">
-                            {gameState?.status === 'active' ? '等待答题...' : '超时未答'}
+                            {(() => {
+                              const { currentRound, currentPhase } = gameState || {};
+                              const questionRound = currentRecord.round;
+                              const questionPhase = currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
+                              
+                              // 判断题目是否已经过期
+                              const isQuestionExpired = questionRound < (currentRound || 1) || 
+                                (questionRound === (currentRound || 1) && questionPhase < (currentPhase || 1));
+                              
+                              return gameState?.status === 'active' && !isQuestionExpired 
+                                ? '等待答题...' 
+                                : '超时未答';
+                            })()}
                           </span>
                         )}
                       </div>
