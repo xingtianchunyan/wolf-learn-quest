@@ -4,6 +4,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/StudentSystemPanel';
 import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
+import { VotingSystemManager } from '@/components/game/VotingSystemManager';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
@@ -80,14 +81,19 @@ const GamePage = () => {
           
           {/* Right Column - Side Panel */}
           <div className="lg:col-span-3">
-            <div className="space-y-6 h-full">
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-1/2">
-                <h3 className="text-lg font-semibold text-werewolf-purple mb-4">玩家列表</h3>
+            <div className="space-y-4 h-full overflow-y-auto">
+              {/* 投票系统 */}
+              <VotingSystemManager roomId={roomId} />
+              
+              {/* 玩家列表 */}
+              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-werewolf-purple mb-3">玩家列表</h3>
                 <p className="text-sm text-gray-400">玩家列表和状态信息</p>
               </div>
               
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-1/2">
-                <h3 className="text-lg font-semibold text-werewolf-purple mb-4">聊天区</h3>
+              {/* 聊天区 */}
+              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-werewolf-purple mb-3">聊天区</h3>
                 <p className="text-sm text-gray-400">游戏聊天和讨论区域</p>
               </div>
             </div>

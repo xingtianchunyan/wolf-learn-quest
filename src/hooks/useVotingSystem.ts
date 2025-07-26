@@ -1,6 +1,7 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface VotingSession {
   id: string;
@@ -43,53 +44,274 @@ export interface VotingResult {
 }
 
 export const useVotingSystem = (roomId: string, gameStateId?: string) => {
-  const [currentSession] = useState<VotingSession | null>(null);
-  const [votes] = useState<Vote[]>([]);
-  const [results] = useState<VotingResult[]>([]);
+  const [currentSession, setCurrentSession] = useState<VotingSession | null>(null);
+  const [votes, setVotes] = useState<Vote[]>([]);
+  const [results, setResults] = useState<VotingResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Mock implementations - these tables don't exist in the current schema
+  // 获取当前投票会话
+  const fetchCurrentSession = useCallback(async () => {
+    if (!gameStateId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('voting_sessions')
+        .select('*')
+        .eq('game_state_id', gameStateId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      setCurrentSession(data?.[0] || null);
+    } catch (error) {
+      console.error('Error fetching voting session:', error);
+    }
+  }, [gameStateId]);
+
+  // 获取投票记录
+  const fetchVotes = useCallback(async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('voting_session_id', sessionId)
+        .order('vote_time', { ascending: true });
+
+      if (error) throw error;
+      setVotes(data || []);
+    } catch (error) {
+      console.error('Error fetching votes:', error);
+    }
+  }, []);
+
+  // 获取投票结果
+  const fetchResults = useCallback(async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('voting_results')
+        .select('*')
+        .eq('voting_session_id', sessionId)
+        .order('total_votes', { ascending: false });
+
+      if (error) throw error;
+      setResults(data || []);
+    } catch (error) {
+      console.error('Error fetching voting results:', error);
+    }
+  }, []);
+
+  // 监听实时更新
+  useEffect(() => {
+    if (!gameStateId) return;
+
+    fetchCurrentSession();
+
+    const sessionChannel = supabase
+      .channel(`voting_sessions_${gameStateId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'voting_sessions',
+          filter: `game_state_id=eq.${gameStateId}`
+        },
+        () => fetchCurrentSession()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sessionChannel);
+    };
+  }, [gameStateId, fetchCurrentSession]);
+
+  useEffect(() => {
+    if (!currentSession) return;
+
+    fetchVotes(currentSession.id);
+    fetchResults(currentSession.id);
+
+    const votesChannel = supabase
+      .channel(`votes_${currentSession.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'votes',
+          filter: `voting_session_id=eq.${currentSession.id}`
+        },
+        () => fetchVotes(currentSession.id)
+      )
+      .subscribe();
+
+    const resultsChannel = supabase
+      .channel(`results_${currentSession.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'voting_results',
+          filter: `voting_session_id=eq.${currentSession.id}`
+        },
+        () => fetchResults(currentSession.id)
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(votesChannel);
+      supabase.removeChannel(resultsChannel);
+    };
+  }, [currentSession, fetchVotes, fetchResults]);
+
+  // 创建投票会话
   const createVotingSession = useCallback(async (
     roundNumber: number,
     phase: number,
     sessionType: string = 'day_vote'
   ) => {
-    toast({
-      title: '投票系统暂未启用',
-      description: '投票功能正在开发中',
-      variant: 'destructive',
-    });
-    return null;
-  }, [toast]);
+    if (!gameStateId) return null;
 
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('create_voting_session', {
+        p_game_state_id: gameStateId,
+        p_room_id: roomId,
+        p_round_number: roundNumber,
+        p_phase: phase,
+        p_session_type: sessionType
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: '投票开始',
+        description: '新的投票会话已创建',
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error creating voting session:', error);
+      toast({
+        title: '创建投票会话失败',
+        description: '请重试',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [gameStateId, roomId, toast]);
+
+  // 投票
   const castVote = useCallback(async (
     voterId: string,
     targetId?: string
   ) => {
-    toast({
-      title: '投票系统暂未启用',
-      description: '投票功能正在开发中',
-      variant: 'destructive',
-    });
-    return false;
+    if (!currentSession) return false;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc('cast_vote', {
+        p_voting_session_id: currentSession.id,
+        p_voter_id: voterId,
+        p_target_id: targetId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: '投票成功',
+        description: targetId ? '您已成功投票' : '您已弃权',
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      toast({
+        title: '投票失败',
+        description: '请重试',
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [currentSession, toast]);
+
+  // 计算投票结果
+  const calculateResults = useCallback(async (sessionId?: string) => {
+    const targetSessionId = sessionId || currentSession?.id;
+    if (!targetSessionId) return false;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc('calculate_voting_results', {
+        p_voting_session_id: targetSessionId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: '投票结果已计算',
+        description: '投票结果统计完成',
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error calculating results:', error);
+      toast({
+        title: '计算投票结果失败',
+        description: '请重试',
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [currentSession, toast]);
+
+  // 处理投票结果
+  const processResult = useCallback(async (resultId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc('process_voting_result', {
+        p_voting_result_id: resultId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: '投票结果处理完成',
+        description: '玩家状态已更新',
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error processing result:', error);
+      toast({
+        title: '处理投票结果失败',
+        description: '请重试',
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
   }, [toast]);
 
-  const calculateResults = useCallback(async (sessionId?: string) => {
-    return false;
-  }, []);
-
-  const processResult = useCallback(async (resultId: string) => {
-    return false;
-  }, []);
-
+  // 获取用户投票
   const getUserVote = useCallback((userId: string): Vote | null => {
-    return null;
-  }, []);
+    return votes.find(vote => vote.voter_id === userId) || null;
+  }, [votes]);
 
+  // 获取目标得票数
   const getTargetVoteCount = useCallback((targetId: string): number => {
-    return 0;
-  }, []);
+    return votes.filter(vote => vote.target_id === targetId && vote.is_valid).length;
+  }, [votes]);
 
   return {
     currentSession,
