@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Vote, Clock, Users, Gavel } from 'lucide-react';
 import VotingPanel from '@/components/voting/VotingPanel';
 import { useGameState } from '@/hooks/useGameState';
+import { useVotingSystem } from '@/hooks/useVotingSystem';
 
 interface VotingSystemManagerProps {
   roomId: string;
@@ -16,10 +17,19 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   isJudge = false
 }) => {
   const { gameState } = useGameState(roomId);
+  const { currentSession, createVotingSession } = useVotingSystem(roomId, gameState?.id);
 
   // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段
   const gameStateId = gameState?.id;
+
+  // 自动创建投票会话 - 在白天阶段且没有活跃投票会话时
+  useEffect(() => {
+    if (gameState?.currentPhase === 1 && gameStateId && !currentSession) {
+      // 白天阶段且没有投票会话，自动创建
+      createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
+    }
+  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, currentSession, createVotingSession]);
 
   return (
     <div className="space-y-4">

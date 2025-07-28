@@ -66,13 +66,13 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     return 'bg-yellow-500/20 text-yellow-400';
   };
 
-  if (!currentSession && !isJudge) {
+  if (!currentSession) {
     return (
       <Card className="bg-werewolf-card border-werewolf-purple/30">
         <CardContent className="p-6 text-center">
           <div className="text-gray-400">
             <Vote className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>当前没有进行中的投票</p>
+            <p>正在准备投票会话...</p>
           </div>
         </CardContent>
       </Card>
