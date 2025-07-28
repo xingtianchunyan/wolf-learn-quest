@@ -47,44 +47,17 @@ const GamePage = () => {
               <GameStateDisplay roomId={roomId} />
             </div>
             <div className="h-1/2">
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-full">
-                <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏进行中</h2>
-                <div className="space-y-4">
-                  <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                    <p className="text-gray-300">
-                      房间ID: {roomId}
-                    </p>
-                    <p className="text-gray-300 mt-2">
-                      游戏内容区域 - 这里将显示游戏的主要界面，包括玩家列表、投票界面、技能使用等功能。
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                      <h3 className="font-semibold text-werewolf-purple mb-2">玩家操作</h3>
-                      <p className="text-sm text-gray-400">
-                        根据当前阶段显示相应的操作界面
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 bg-werewolf-dark/40 rounded-md">
-                      <h3 className="font-semibold text-werewolf-purple mb-2">游戏信息</h3>
-                      <p className="text-sm text-gray-400">
-                        显示当前游戏状态和相关信息
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-full overflow-y-auto">
+                <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
+                {/* 投票系统区域 */}
+                <VotingSystemManager roomId={roomId} />
               </div>
             </div>
           </div>
           
           {/* Right Column - Side Panel */}
           <div className="lg:col-span-3">
-            <div className="space-y-4 h-full overflow-y-auto">
-              {/* 投票系统 */}
-              <VotingSystemManager roomId={roomId} />
-              
+            <div className="space-y-4 h-full overflow-y-auto">              
               {/* 玩家列表 */}
               <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-werewolf-purple mb-3">玩家列表</h3>

@@ -96,53 +96,6 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* 法官控制面板 */}
-        {isJudge && (
-          <div className="p-4 bg-werewolf-dark/40 rounded-md space-y-3">
-            <h3 className="font-semibold text-werewolf-purple">法官控制</h3>
-            <div className="flex flex-wrap gap-2">
-              {!currentSession && (
-                <Button
-                  onClick={() => createVotingSession(1, currentPhase || 1, 'day_vote')}
-                  disabled={loading}
-                  size="sm"
-                  className="bg-werewolf-purple hover:bg-werewolf-purple/80"
-                >
-                  开始投票
-                </Button>
-              )}
-              
-              {currentSession && (
-                <>
-                  <Button
-                    onClick={handleCalculateResults}
-                    disabled={loading}
-                    size="sm"
-                    variant="outline"
-                    className="border-werewolf-purple/50"
-                  >
-                    计算结果
-                  </Button>
-                  
-                  {results.map(result => (
-                    result.processing_status === 'pending' && (
-                      <Button
-                        key={result.id}
-                        onClick={() => handleProcessResult(result.id)}
-                        disabled={loading}
-                        size="sm"
-                        variant="outline"
-                        className="border-green-500/50 text-green-400"
-                      >
-                        处理结果
-                      </Button>
-                    )
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        )}
 
         {currentSession && (
           <>

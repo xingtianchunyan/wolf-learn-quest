@@ -17,8 +17,8 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
 }) => {
   const { gameState } = useGameState(roomId);
 
-  // 检查是否是投票阶段
-  const isVotingPhase = gameState?.currentPhase === 1; // 白天阶段可以投票
+  // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
+  const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段
   const gameStateId = gameState?.id;
 
   return (
@@ -51,8 +51,9 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={isVotingPhase ? 'default' : 'secondary'}>
-                {isVotingPhase ? '可投票' : '非投票阶段'}
+              <Badge variant={gameState?.currentPhase === 1 ? 'default' : 'secondary'}>
+                {gameState?.currentPhase === 1 ? '投票中' : 
+                 gameState?.currentPhase === 2 ? '投票结算' : '非投票阶段'}
               </Badge>
               {isJudge && (
                 <Badge variant="outline">
@@ -67,8 +68,8 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
 
       <Separator />
 
-      {/* 投票面板 */}
-      {gameStateId && (
+      {/* 投票面板 - 白天和傍晚阶段都显示 */}
+      {gameStateId && isVotingPhase && (
         <VotingPanel
           roomId={roomId}
           gameStateId={gameStateId}
@@ -77,7 +78,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
         />
       )}
 
-      {/* 投票阶段提示 */}
+      {/* 非投票阶段提示 */}
       {!isVotingPhase && (
         <Card>
           <CardContent className="py-6">
@@ -85,15 +86,12 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
               <Vote className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p className="text-sm">
                 {gameState?.currentPhase === 3 
-                  ? '夜晚阶段 - 等待白天进行投票'
+                  ? '夜晚阶段 - 投票已结束'
+                  : gameState?.currentPhase === 4
+                  ? '黎明阶段 - 准备新的一天'
                   : '当前阶段不可投票'
                 }
               </p>
-              {isJudge && (
-                <p className="text-xs mt-1 text-muted-foreground">
-                  法官可以在白天阶段开启投票
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
