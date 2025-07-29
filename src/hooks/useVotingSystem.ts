@@ -51,10 +51,29 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
   const { toast } = useToast();
 
   // 获取当前投票会话
-  const fetchCurrentSession = useCallback(async () => {
+  const fetchCurrentSession = useCallback(async (roundNumber?: number, phase?: number) => {
     if (!gameStateId) return;
 
     try {
+      // 如果提供了轮次和阶段，先检查是否已存在该轮次阶段的投票会话
+      if (roundNumber && phase) {
+        const { data: existingData, error: existingError } = await supabase
+          .from('voting_sessions')
+          .select('*')
+          .eq('game_state_id', gameStateId)
+          .eq('round_number', roundNumber)
+          .eq('phase', phase)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (existingError) throw existingError;
+        if (existingData && existingData.length > 0) {
+          setCurrentSession(existingData[0]);
+          return;
+        }
+      }
+
+      // 否则获取当前活跃的投票会话
       const { data, error } = await supabase
         .from('voting_sessions')
         .select('*')
@@ -174,6 +193,28 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     sessionType: string = 'day_vote'
   ) => {
     if (!gameStateId) return null;
+
+    // 先检查是否已存在该轮次阶段的投票会话
+    try {
+      const { data: existingData, error: existingError } = await supabase
+        .from('voting_sessions')
+        .select('*')
+        .eq('game_state_id', gameStateId)
+        .eq('round_number', roundNumber)
+        .eq('phase', phase)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (existingError) throw existingError;
+      
+      if (existingData && existingData.length > 0) {
+        // 如果已存在，直接返回现有会话
+        setCurrentSession(existingData[0]);
+        return existingData[0].id;
+      }
+    } catch (error) {
+      console.error('Error checking existing voting session:', error);
+    }
 
     setLoading(true);
     try {
@@ -313,6 +354,27 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     return votes.filter(vote => vote.target_id === targetId && vote.is_valid).length;
   }, [votes]);
 
+  // 获取投票统计信息
+  const getVotingSummary = useCallback(() => {
+    const validVotes = votes.filter(v => v.is_valid);
+    const abstentions = votes.filter(v => v.is_valid && !v.target_id).length;
+    
+    // 按目标分组统计投票
+    const votesByTarget = validVotes.reduce((acc, vote) => {
+      if (vote.target_id) {
+        acc[vote.target_id] = (acc[vote.target_id] || 0) + vote.vote_weight;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      totalVotes: validVotes.length,
+      abstentions,
+      votesByTarget,
+      hasVotes: validVotes.length > 0
+    };
+  }, [votes]);
+
   return {
     currentSession,
     votes,
@@ -324,5 +386,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     processResult,
     getUserVote,
     getTargetVoteCount,
+    getVotingSummary,
+    fetchCurrentSession,
   };
 };

@@ -17,7 +17,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   isJudge = false
 }) => {
   const { gameState } = useGameState(roomId);
-  const { currentSession, createVotingSession } = useVotingSystem(roomId, gameState?.id);
+  const { currentSession, createVotingSession, fetchCurrentSession } = useVotingSystem(roomId, gameState?.id);
 
   // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段
@@ -25,11 +25,18 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
 
   // 自动创建投票会话 - 在白天阶段且没有活跃投票会话时
   useEffect(() => {
-    if (gameState?.currentPhase === 1 && gameStateId && !currentSession) {
-      // 白天阶段且没有投票会话，自动创建
-      createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
+    if (gameState?.currentPhase === 1 && gameStateId) {
+      // 先检查是否已存在该轮次的投票会话
+      fetchCurrentSession(gameState.currentRound, gameState.currentPhase).then(() => {
+        // 如果还没有会话，创建新的
+        setTimeout(() => {
+          if (!currentSession) {
+            createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
+          }
+        }, 100);
+      });
     }
-  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, currentSession, createVotingSession]);
+  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, fetchCurrentSession, createVotingSession]);
 
   return (
     <div className="space-y-4">

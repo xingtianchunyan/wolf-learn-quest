@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Vote, Users, Clock, CheckCircle } from 'lucide-react';
+import { Vote, Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useVotingSystem } from '@/hooks/useVotingSystem';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useRoleStates } from '@/hooks/useRoleStates';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
 interface VotingPanelProps {
   roomId: string;
@@ -24,6 +26,8 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const { players } = usePlayersRealtime(roomId);
+  const { roleStates } = useRoleStates(roomId);
+  const { roleDesigns } = useRoleDesigns();
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   
   const {
@@ -37,10 +41,36 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     processResult,
     getUserVote,
     getTargetVoteCount,
+    getVotingSummary,
   } = useVotingSystem(roomId, gameStateId);
 
   const userVote = currentUser ? getUserVote(currentUser.id) : null;
   const canVote = currentSession?.status === 'active' && !userVote;
+  const votingSummary = getVotingSummary();
+
+  // 获取当前用户的角色信息
+  const currentUserRole = useMemo(() => {
+    if (!currentUser) return null;
+    const roleState = roleStates.find(rs => rs.user_id === currentUser.id);
+    if (!roleState) return null;
+    return roleDesigns.find(role => role.id === roleState.role_id);
+  }, [currentUser, roleStates, roleDesigns]);
+
+  // 检查是否可以投票给自己（只有白狼王可以）
+  const canVoteForSelf = useMemo(() => {
+    return currentUserRole?.role_name === 'whitewolf';
+  }, [currentUserRole]);
+
+  // 过滤可投票的玩家列表
+  const votablePlayers = useMemo(() => {
+    return players.filter(player => {
+      // 如果是当前用户且不能投票给自己，过滤掉
+      if (player.userId === currentUser?.id && !canVoteForSelf) {
+        return false;
+      }
+      return true;
+    });
+  }, [players, currentUser?.id, canVoteForSelf]);
 
   const handleVote = async (targetId?: string) => {
     if (!currentUser) return;
@@ -108,38 +138,81 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 text-werewolf-purple" />
                 <span className="text-sm text-gray-300">
-                  {votes.filter(v => v.is_valid).length} / {players.length} 已投票
+                  {votingSummary.totalVotes} / {players.length} 已投票
                 </span>
+                {votingSummary.abstentions > 0 && (
+                  <Badge variant="outline" className="text-gray-400 text-xs">
+                    {votingSummary.abstentions} 弃权
+                  </Badge>
+                )}
               </div>
             </div>
+
+            {/* 投票统计 */}
+            {votingSummary.hasVotes && (
+              <div className="p-3 bg-werewolf-dark/20 rounded-md">
+                <h4 className="text-sm font-medium text-werewolf-purple mb-2">当前投票统计</h4>
+                <div className="space-y-1">
+                  {Object.entries(votingSummary.votesByTarget).map(([targetId, voteCount]) => {
+                    const targetPlayer = players.find(p => p.userId === targetId);
+                    return (
+                      <div key={targetId} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-300">{targetPlayer?.name || '未知玩家'}</span>
+                        <Badge variant="outline" className="text-werewolf-purple">
+                          {voteCount} 票
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* 玩家投票界面 */}
             {!isJudge && canVote && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-werewolf-purple">选择投票目标</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-werewolf-purple">选择投票目标</h3>
+                  {!canVoteForSelf && (
+                    <div className="flex items-center text-xs text-yellow-400">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      不能投票给自己
+                    </div>
+                  )}
+                </div>
                 <ScrollArea className="h-40">
                   <div className="space-y-2">
-                    {players.map(player => (
-                      <div
-                        key={player.id}
-                        className={`p-2 rounded-md border cursor-pointer transition-colors ${
-                          selectedTarget === player.userId
-                            ? 'border-werewolf-purple bg-werewolf-purple/20'
-                            : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
-                        }`}
-                        onClick={() => setSelectedTarget(player.userId || '')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">{player.name}</span>
-                          <Badge 
-                            variant="outline" 
-                            className={getVoteStatusColor(player.userId || '')}
-                          >
-                            {getTargetVoteCount(player.userId || '')} 票
-                          </Badge>
+                    {votablePlayers.map(player => {
+                      const isCurrentUser = player.userId === currentUser?.id;
+                      return (
+                        <div
+                          key={player.id}
+                          className={`p-2 rounded-md border cursor-pointer transition-colors ${
+                            selectedTarget === player.userId
+                              ? 'border-werewolf-purple bg-werewolf-purple/20'
+                              : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
+                          } ${isCurrentUser ? 'bg-yellow-500/10 border-yellow-500/30' : ''}`}
+                          onClick={() => setSelectedTarget(player.userId || '')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-gray-300">{player.name}</span>
+                              {isCurrentUser && (
+                                <Badge variant="outline" className="text-yellow-400 text-xs">
+                                  自己
+                                </Badge>
+                              )}
+                            </div>
+                            <Badge 
+                              variant="outline" 
+                              className={getVoteStatusColor(player.userId || '')}
+                            >
+                              {getTargetVoteCount(player.userId || '')} 票
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     
                     {/* 弃权选项 */}
                     <div
@@ -162,10 +235,10 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
                 
                 <Button
                   onClick={() => handleVote(selectedTarget || undefined)}
-                  disabled={loading}
+                  disabled={loading || (!selectedTarget && selectedTarget !== '')}
                   className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
                 >
-                  确认投票
+                  {selectedTarget ? '确认投票' : '确认弃权'}
                 </Button>
               </div>
             )}
