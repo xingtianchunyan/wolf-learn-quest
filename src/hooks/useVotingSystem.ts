@@ -367,12 +367,38 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
       return acc;
     }, {} as Record<string, number>);
 
+    // 获取详细的投票信息：谁投票给谁
+    const voteDetails = validVotes.reduce((acc, vote) => {
+      const targetId = vote.target_id || 'abstention';
+      if (!acc[targetId]) {
+        acc[targetId] = [];
+      }
+      acc[targetId].push({
+        voterId: vote.voter_id,
+        voteTime: vote.vote_time,
+        voteWeight: vote.vote_weight
+      });
+      return acc;
+    }, {} as Record<string, Array<{voterId: string, voteTime: string, voteWeight: number}>>);
+
     return {
       totalVotes: validVotes.length,
       abstentions,
       votesByTarget,
+      voteDetails,
       hasVotes: validVotes.length > 0
     };
+  }, [votes]);
+
+  // 获取投票给特定目标的玩家列表
+  const getVotersForTarget = useCallback((targetId: string) => {
+    return votes
+      .filter(vote => vote.is_valid && vote.target_id === targetId)
+      .map(vote => ({
+        voterId: vote.voter_id,
+        voteTime: vote.vote_time,
+        voteWeight: vote.vote_weight
+      }));
   }, [votes]);
 
   return {
@@ -387,6 +413,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     getUserVote,
     getTargetVoteCount,
     getVotingSummary,
+    getVotersForTarget,
     fetchCurrentSession,
   };
 };

@@ -17,7 +17,8 @@ import PreparationPhaseDialog from './PreparationPhaseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import { useVoteResults, VoteRecord } from '@/hooks/useVoteResults';
+import { useVotingSystem } from '@/hooks/useVotingSystem';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 import { useJudgePage } from '@/contexts/JudgePageContext';
@@ -30,8 +31,16 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
-  const { voteRecords, loading: votesLoading } = useVoteResults(roomId);
+  
   const { gameState, advancePhase, togglePause, endGame, gameSettings, updateGameSettings } = useGameState(roomId);
+  const { players } = usePlayersRealtime(roomId);
+  const { 
+    currentSession, 
+    votes, 
+    getVotingSummary, 
+    getVotersForTarget,
+    loading: votesLoading 
+  } = useVotingSystem(roomId, gameState?.id);
   const { toast } = useToast();
   const { refreshLinkedQuestions } = useJudgePage();
 
@@ -131,6 +140,54 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
   const isGameActive = gameState?.status === 'active';
   const canQuitJudge = !isGameActive; // 只有在游戏非激活状态下才能退出
+  
+  // 获取当前投票统计信息
+  const votingSummary = getVotingSummary();
+  
+  // 格式化投票记录用于法官显示
+  const formatVoteRecordsForJudge = () => {
+    if (!votingSummary.hasVotes) return [];
+    
+    const records = [];
+    
+    // 显示有得票的玩家
+    for (const [targetId, voteCount] of Object.entries(votingSummary.votesByTarget)) {
+      const targetPlayer = players.find(p => p.userId === targetId);
+      const voters = getVotersForTarget(targetId);
+      const voterNames = voters.map(voter => {
+        const voterPlayer = players.find(p => p.userId === voter.voterId);
+        return voterPlayer?.name || '未知玩家';
+      });
+      
+      records.push({
+        votedPlayerId: targetId,
+        votedPlayerName: targetPlayer?.name || '未知玩家',
+        voteCount: voteCount,
+        voters: voterNames
+      });
+    }
+    
+    // 显示弃权票（如果有的话）
+    if (votingSummary.abstentions > 0) {
+      const abstentionVoters = votingSummary.voteDetails?.['abstention'] || [];
+      const abstentionVoterNames = abstentionVoters.map(vote => {
+        const voterPlayer = players.find(p => p.userId === vote.voterId);
+        return voterPlayer?.name || '未知玩家';
+      });
+      
+      records.push({
+        votedPlayerId: 'abstention',
+        votedPlayerName: '弃权',
+        voteCount: votingSummary.abstentions,
+        voters: abstentionVoterNames
+      });
+    }
+    
+    // 按票数降序排序
+    return records.sort((a, b) => b.voteCount - a.voteCount);
+  };
+  
+  const voteRecords = formatVoteRecordsForJudge();
 
   return (
     <>
@@ -214,8 +271,8 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                       </TableCell>
                     </TableRow>
                   ) : voteRecords.length > 0 ? (
-                    voteRecords.map((record) => (
-                      <TableRow key={record.votedPlayerId} className="border-b border-werewolf-purple/30 last:border-b-0">
+                    voteRecords.map((record, index) => (
+                      <TableRow key={`${record.votedPlayerId}-${index}`} className="border-b border-werewolf-purple/30 last:border-b-0">
                         <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
                         <TableCell className="text-gray-300">{record.voteCount}</TableCell>
                         <TableCell className="text-gray-300 text-sm">
@@ -226,7 +283,9 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center text-gray-400">
-                        {gameState?.status === 'active' ? '当前阶段无投票记录' : '游戏尚未开始'}
+                        {gameState?.status === 'active' && currentSession ? 
+                          (gameState.currentPhase === 1 ? '当前白天阶段无投票记录' : '当前阶段无投票') : 
+                          '游戏尚未开始或无活跃投票会话'}
                       </TableCell>
                     </TableRow>
                   )}

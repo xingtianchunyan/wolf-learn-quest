@@ -42,6 +42,7 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     getUserVote,
     getTargetVoteCount,
     getVotingSummary,
+    getVotersForTarget,
   } = useVotingSystem(roomId, gameStateId);
 
   const userVote = currentUser ? getUserVote(currentUser.id) : null;
@@ -152,18 +153,46 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
             {votingSummary.hasVotes && (
               <div className="p-3 bg-werewolf-dark/20 rounded-md">
                 <h4 className="text-sm font-medium text-werewolf-purple mb-2">当前投票统计</h4>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {Object.entries(votingSummary.votesByTarget).map(([targetId, voteCount]) => {
                     const targetPlayer = players.find(p => p.userId === targetId);
+                    const voters = getVotersForTarget(targetId);
                     return (
-                      <div key={targetId} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-300">{targetPlayer?.name || '未知玩家'}</span>
-                        <Badge variant="outline" className="text-werewolf-purple">
-                          {voteCount} 票
-                        </Badge>
+                      <div key={targetId} className="border border-werewolf-purple/20 rounded-md p-2">
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span className="text-gray-300 font-medium">{targetPlayer?.name || '未知玩家'}</span>
+                          <Badge variant="outline" className="text-werewolf-purple">
+                            {voteCount} 票
+                          </Badge>
+                        </div>
+                        {voters.length > 0 && (
+                          <div className="text-xs text-gray-400">
+                            投票者: {voters.map(voter => {
+                              const voterPlayer = players.find(p => p.userId === voter.voterId);
+                              return voterPlayer?.name || '未知玩家';
+                            }).join(', ')}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
+                  {/* 显示弃权票 */}
+                  {votingSummary.voteDetails['abstention'] && (
+                    <div className="border border-werewolf-purple/20 rounded-md p-2">
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-gray-300 font-medium">弃权</span>
+                        <Badge variant="outline" className="text-gray-400">
+                          {votingSummary.abstentions} 票
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        弃权者: {votingSummary.voteDetails['abstention'].map(vote => {
+                          const voterPlayer = players.find(p => p.userId === vote.voterId);
+                          return voterPlayer?.name || '未知玩家';
+                        }).join(', ')}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
