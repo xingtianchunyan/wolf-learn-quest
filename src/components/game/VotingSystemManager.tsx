@@ -40,50 +40,6 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 投票系统状态概览 */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Vote className="h-5 w-5" />
-            投票系统
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  当前阶段: {
-                    gameState?.currentPhase === 1 ? '白天' :
-                    gameState?.currentPhase === 2 ? '傍晚' :
-                    gameState?.currentPhase === 3 ? '夜晚' :
-                    gameState?.currentPhase === 4 ? '黎明' : '未知'
-                  }
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">回合 {gameState?.currentRound || 1}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={gameState?.currentPhase === 1 ? 'default' : 'secondary'}>
-                {gameState?.currentPhase === 1 ? '投票中' : 
-                 gameState?.currentPhase === 2 ? '投票结算' : '非投票阶段'}
-              </Badge>
-              {isJudge && (
-                <Badge variant="outline">
-                  <Gavel className="h-3 w-3 mr-1" />
-                  法官
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
 
       {/* 投票面板 - 白天和傍晚阶段都显示 */}
       {gameStateId && isVotingPhase && (
