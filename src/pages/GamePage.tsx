@@ -5,6 +5,7 @@ import GameStateDisplay from '@/components/game/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/StudentSystemPanel';
 import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
 import { VotingSystemManager } from '@/components/game/VotingSystemManager';
+import { Card, CardContent } from '@/components/ui/card';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
@@ -43,15 +44,17 @@ const GamePage = () => {
           
           {/* Center Column - Game State Display */}
           <div className="lg:col-span-6 flex flex-col gap-6 h-full">
-            <div className="h-1/2">
+            <div className="h-1/3">
               <GameStateDisplay roomId={roomId} />
             </div>
-            <div className="h-1/2">
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-full overflow-y-auto">
-                <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
-                {/* 投票系统区域 */}
-                <VotingSystemManager roomId={roomId} />
-              </div>
+            <div className="h-2/3">
+              <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+                <CardContent className="p-6 h-full overflow-y-auto">
+                  <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
+                  {/* 投票系统区域 */}
+                  <VotingSystemManager roomId={roomId} />
+                </CardContent>
+              </Card>
             </div>
           </div>
           
