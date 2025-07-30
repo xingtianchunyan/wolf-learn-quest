@@ -1307,6 +1307,10 @@ export type Database = {
         Args: { p_room_id: string }
         Returns: string
       }
+      get_skill_target_room_id: {
+        Args: { p_skill_effects_queue_id: string }
+        Returns: string
+      }
       initialize_game_state: {
         Args: { p_room_id: string }
         Returns: string
