@@ -61,12 +61,6 @@ const GamePage = () => {
           {/* Right Column - Side Panel */}
           <div className="lg:col-span-3">
             <div className="space-y-4 h-full overflow-y-auto">              
-              {/* 玩家列表 */}
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-werewolf-purple mb-3">玩家列表</h3>
-                <p className="text-sm text-gray-400">玩家列表和状态信息</p>
-              </div>
-              
               {/* 聊天区 */}
               <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-werewolf-purple mb-3">聊天区</h3>
