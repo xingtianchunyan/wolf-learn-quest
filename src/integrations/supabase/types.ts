@@ -779,6 +779,144 @@ export type Database = {
           },
         ]
       }
+      skill_conflicts: {
+        Row: {
+          conflicting_skills: Json
+          created_at: string
+          game_state_id: string
+          id: string
+          phase: string
+          resolution_rule: string
+          resolved_skill_id: string | null
+          round_number: number
+          updated_at: string
+        }
+        Insert: {
+          conflicting_skills?: Json
+          created_at?: string
+          game_state_id: string
+          id?: string
+          phase: string
+          resolution_rule?: string
+          resolved_skill_id?: string | null
+          round_number: number
+          updated_at?: string
+        }
+        Update: {
+          conflicting_skills?: Json
+          created_at?: string
+          game_state_id?: string
+          id?: string
+          phase?: string
+          resolution_rule?: string
+          resolved_skill_id?: string | null
+          round_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_effects_queue: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          effect_data: Json
+          effect_type: string
+          execution_order: number
+          expires_at: string | null
+          game_state_id: string
+          id: string
+          priority: number
+          processed_at: string | null
+          room_id: string
+          skill_use_id: string
+          status: string
+          trigger_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          effect_data?: Json
+          effect_type: string
+          execution_order?: number
+          expires_at?: string | null
+          game_state_id: string
+          id?: string
+          priority?: number
+          processed_at?: string | null
+          room_id: string
+          skill_use_id: string
+          status?: string
+          trigger_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          effect_data?: Json
+          effect_type?: string
+          execution_order?: number
+          expires_at?: string | null
+          game_state_id?: string
+          id?: string
+          priority?: number
+          processed_at?: string | null
+          room_id?: string
+          skill_use_id?: string
+          status?: string
+          trigger_time?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_targets: {
+        Row: {
+          created_at: string
+          effect_applied: Json
+          effect_duration: number | null
+          effect_end_time: string | null
+          effect_start_time: string
+          id: string
+          is_active: boolean
+          skill_effects_queue_id: string | null
+          skill_use_id: string
+          stack_count: number
+          target_type: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id: string
+          stack_count?: number
+          target_type: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id?: string
+          stack_count?: number
+          target_type?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       skill_uses: {
         Row: {
           conditions_met: Json | null
