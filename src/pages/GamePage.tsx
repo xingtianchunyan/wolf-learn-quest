@@ -5,13 +5,34 @@ import GameStateDisplay from '@/components/game/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/StudentSystemPanel';
 import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
 import { VotingSystemManager } from '@/components/game/VotingSystemManager';
+import SkillSystemManager from '@/components/game/SkillSystemManager';
 import { Card, CardContent } from '@/components/ui/card';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { useGameState } from '@/hooks/useGameState';
+import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
+import { useRoleStates } from '@/hooks/useRoleStates';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
   const { t } = useLanguage();
+  const { gameState } = useGameState(roomId!);
+  const { players } = usePlayersRealtime(roomId!);
+  const { roleDesigns } = useRoleDesigns();
+  const { roleStates } = useRoleStates(gameState?.id);
+  
+  // Get current user's role information
+  const currentUserId = 'current-user-id'; // This should come from auth context
+  const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
+  const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
+  
+  // Determine if user is judge
+  const isJudge = false; // This should come from room/user context
+  
+  // Check current phase to determine which system to show
+  const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
+  const isSkillPhase = gameState?.currentPhase === 3 || gameState?.currentPhase === 4; // Night and dawn
 
   if (!roomId) {
     return (
@@ -51,8 +72,36 @@ const GamePage = () => {
               <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
                 <CardContent className="p-6 h-full overflow-y-auto">
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
-                  {/* 投票系统区域 */}
-                  <VotingSystemManager roomId={roomId} />
+                  
+                  {/* 根据游戏阶段显示不同的系统 */}
+                  {isVotingPhase && (
+                    <VotingSystemManager roomId={roomId} isJudge={isJudge} />
+                  )}
+                  
+                  {isSkillPhase && gameState && (
+                    <SkillSystemManager
+                      roomId={roomId}
+                      gameStateId={gameState.id}
+                      userId={currentUserId}
+                      isJudge={isJudge}
+                      currentPhase={gameState.currentPhase}
+                      roleState={currentRoleState}
+                      roleDesign={currentRoleDesign}
+                      players={players.map(p => ({
+                        userId: p.userId || p.id,
+                        name: p.name || '未知玩家',
+                        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1,
+                        isAlive: roleStates.find(rs => rs.user_id === p.userId)?.role_status !== 4
+                      }))}
+                    />
+                  )}
+                  
+                  {/* 等待阶段或游戏未开始 */}
+                  {!gameState && (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">等待游戏开始...</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
