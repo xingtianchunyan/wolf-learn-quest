@@ -31,9 +31,9 @@ const JudgePage = () => {
   return (
     <JudgePageProvider roomId={roomId}>
       <PageLayout>
-        <div className="container mx-auto px-4 h-full">
+        <div className="container mx-auto py-4 px-4 h-screen">
           {/* Main Content Grid - 固定高度，避免内容溢出 */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full max-h-[calc(100vh-12rem)]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
             {/* Left Column - Teacher System and Answer Records */}
             <div className="lg:col-span-3 flex flex-col gap-4 h-full">
               <div className="h-1/2 min-h-0">
