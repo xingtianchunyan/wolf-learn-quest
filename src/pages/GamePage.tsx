@@ -49,8 +49,7 @@ const GamePage = () => {
             <div className="h-1/2">
               <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-6 h-full overflow-y-auto">
                 <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
-                {/* 投票系统区域 */}
-                <VotingSystemManager roomId={roomId} />
+                <p className="text-sm text-gray-400">游戏主界面内容区域</p>
               </div>
             </div>
           </div>
