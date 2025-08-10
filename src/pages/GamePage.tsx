@@ -13,11 +13,13 @@ import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleStates } from '@/hooks/useRoleStates';
+import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
   const { t } = useLanguage();
   const { gameState } = useGameState(roomId!);
+  useEveningRefresh(gameState);
   const { players } = usePlayersRealtime(roomId!);
   const { roleDesigns } = useRoleDesigns();
   const { roleStates } = useRoleStates(gameState?.id);

@@ -10,11 +10,15 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { useGameState } from '@/hooks/useGameState';
 import { JudgePageProvider } from '@/contexts/JudgePageContext';
+import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
+import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
   const { currentUser } = useAuth();
   const { gameState } = useGameState(roomId || '');
+  useAutoProcessDayVote(roomId || '', gameState);
+  useEveningRefresh(gameState);
 
   if (!roomId) {
     return (
