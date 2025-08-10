@@ -139,13 +139,13 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                     const meta = getStatusMeta(statusNum);
 
                     return (
-                      <TableRow key={player.id} className={`border-werewolf-purple/30 ${meta.breath ? 'animate-pulse' : ''}`}>
-                        <TableCell className="text-gray-300 font-medium">
-                          <div className="flex items-center gap-2">
-                            <span className={`inline-block h-4 w-1 rounded ${meta.barClass}`} aria-hidden="true"></span>
-                            {player.name}
-                          </div>
-                        </TableCell>
+                        <TableRow key={player.id} className="border-werewolf-purple/30">
+                          <TableCell className="text-gray-300 font-medium">
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-block h-4 w-1 rounded bg-werewolf-purple`} aria-hidden="true"></span>
+                              {player.name}
+                            </div>
+                          </TableCell>
                         <TableCell className="text-gray-300">
                           {roleName}
                         </TableCell>
@@ -175,7 +175,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className={meta.badgeClass}>{meta.label}</Badge>
+                            <Badge variant="outline" className="text-werewolf-purple border-werewolf-purple/50">{meta.label}</Badge>
                             {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
                             {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
                           </div>

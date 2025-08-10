@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useAuth } from '@/providers/AuthProvider';
+import { useRoleStates } from '@/hooks/useRoleStates';
 
 interface Player {
   id: string;
@@ -24,6 +24,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const { getSelectedRoleByUser } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   const { getLocalImageByDesignId } = useRoleDesigns();
+  const { roleStates } = useRoleStates(roomId);
 
   const handleCardFlip = (playerId: string) => {
     setFlippedCards(prev => {
@@ -46,6 +47,22 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
         const roleName = selectedRole?.roleName || '未分配角色';
         const roleImageUrl = selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null;
 
+        const roleState = player.userId ? roleStates.find(r => r.user_id === player.userId) : undefined;
+        const statusBorderClass = (() => {
+          switch (roleState?.role_status) {
+            case 1: // 正常
+              return 'border-green-400';
+            case 3: // 虚弱
+              return 'border-yellow-400';
+            case 2: // 濒死
+              return 'border-red-400 animate-pulse';
+            case 4: // 淘汰
+              return 'border-white';
+            default:
+              return 'border-werewolf-purple/30';
+          }
+        })();
+
         return (
           <div 
             key={player.id}
@@ -63,7 +80,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
                 className={`absolute inset-0 w-full h-full rounded-lg p-3 backface-hidden cursor-pointer ${
                   player.status === 'waiting' 
                     ? 'bg-gray-600/40 border-2 border-gray-500'
-                    : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60 border-2 border-werewolf-purple/30'
+                    : `bg-werewolf-dark/40 hover:bg-werewolf-dark/60 border-2 ${statusBorderClass}`
                 }`}
                 style={{ backfaceVisibility: 'hidden' }}
                 onClick={() => player.status !== 'waiting' && handleCardFlip(player.id)}
@@ -103,7 +120,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
                 className={`absolute inset-0 w-full h-full rounded-lg backface-hidden rotate-y-180 cursor-pointer overflow-hidden ${
                   player.status === 'waiting' 
                     ? 'bg-gray-600/40 border-2 border-gray-500'
-                    : 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
+                    : `bg-werewolf-purple/30 border-2 ${statusBorderClass}`
                 }`}
                 style={{ 
                   backfaceVisibility: 'hidden',
