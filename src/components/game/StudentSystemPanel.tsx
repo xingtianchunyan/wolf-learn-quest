@@ -405,6 +405,26 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       if (error) {
         console.error('学生系统：保存答案失败:', error);
+        // 若已存在记录（唯一键冲突），则视为已提交并同步状态
+        if ((error as any).code === '23505') {
+          try {
+            const { data: existing } = await supabase
+              .from('room_answers')
+              .select('selected_option')
+              .eq('room_id', roomId)
+              .eq('user_id', currentUser.id)
+              .eq('question_order', questionOrder)
+              .maybeSingle();
+            if (existing) {
+              setSelectedOption(existing.selected_option);
+              setHasSubmitted(true);
+              toast({ title: '已提交过该题', description: '不能重复提交答案' });
+              return;
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
         toast({
           title: '保存答案失败',
           description: '请稍后重试',

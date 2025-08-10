@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot } from 'lucide-react';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
@@ -58,6 +60,29 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     players.length,
     maxPlayers
   );
+
+  const { roleStates } = useRoleStates(roomId);
+
+  const getPlayerRoleStatus = (userId?: string) => {
+    if (!userId) return 1; // 默认正常
+    const rs = roleStates.find(r => r.user_id === userId);
+    return rs?.role_status ?? 1;
+  };
+
+  const getStatusMeta = (status: number) => {
+    switch (status) {
+      case 1: // 正常
+        return { label: '正常', barClass: 'bg-green-400', badgeClass: 'text-green-400 border-green-400', breath: false };
+      case 3: // 虚弱
+        return { label: '虚弱', barClass: 'bg-yellow-400', badgeClass: 'text-yellow-400 border-yellow-400', breath: false };
+      case 2: // 濒死
+        return { label: '濒死', barClass: 'bg-red-400', badgeClass: 'text-red-400 border-red-400', breath: true };
+      case 4: // 淘汰
+        return { label: '淘汰', barClass: 'bg-white', badgeClass: 'text-white border-white', breath: false };
+      default:
+        return { label: '未知', barClass: 'bg-gray-400', badgeClass: 'text-gray-400 border-gray-400', breath: false };
+    }
+  };
 
   const isPlayerOnline = (player: Player) => {
     if (player.isAI) {
@@ -110,11 +135,16 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                     const playerOnline = isPlayerOnline(player);
                     const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
                     const roleName = selectedRole?.roleName || '未选择';
+                    const statusNum = getPlayerRoleStatus(player.userId);
+                    const meta = getStatusMeta(statusNum);
 
                     return (
-                      <TableRow key={player.id} className="border-werewolf-purple/30">
+                      <TableRow key={player.id} className={`border-werewolf-purple/30 ${meta.breath ? 'animate-pulse' : ''}`}>
                         <TableCell className="text-gray-300 font-medium">
-                          {player.name}
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-block h-4 w-1 rounded ${meta.barClass}`} aria-hidden="true"></span>
+                            {player.name}
+                          </div>
                         </TableCell>
                         <TableCell className="text-gray-300">
                           {roleName}
@@ -144,7 +174,8 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className={meta.badgeClass}>{meta.label}</Badge>
                             {player.isHost && <Crown className="h-4 w-4 text-yellow-400" />}
                             {player.isAI && <Bot className="h-4 w-4 text-blue-400" />}
                           </div>

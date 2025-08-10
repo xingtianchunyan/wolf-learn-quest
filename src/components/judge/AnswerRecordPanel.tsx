@@ -195,22 +195,34 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {answer.isCorrect !== null ? (
-                            <>
-                              <span className="text-sm text-gray-400">
-                                用时: {formatTime(answer.responseTime!)}
+                            {answer.isCorrect !== null ? (
+                              <>
+                                <span className="text-sm text-gray-400">
+                                  用时: {formatTime(answer.responseTime!)}
+                                </span>
+                                {answer.isCorrect ? (
+                                  <span className="text-green-400">✓</span>
+                                ) : (
+                                  <span className="text-red-400">✗</span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm">
+                                {(() => {
+                                  const questionRound = currentRecord.round;
+                                  const questionPhaseNum = currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
+                                  const cr = gameState?.currentRound ?? 1;
+                                  const cp = gameState?.currentPhase ?? 1;
+                                  const isActive = gameState?.status === 'active';
+                                  const isExpired = !isActive || (questionRound < cr) || (questionRound === cr && questionPhaseNum < cp);
+                                  return isExpired ? (
+                                    <span className="text-red-500">超时未答</span>
+                                  ) : (
+                                    <span className="text-gray-500">等待答题...</span>
+                                  );
+                                })()}
                               </span>
-                              {answer.isCorrect ? (
-                                <span className="text-green-400">✓</span>
-                              ) : (
-                                <span className="text-red-400">✗</span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-sm text-gray-500">
-                              {gameState?.status === 'active' ? '等待答题...' : '未答题'}
-                            </span>
-                          )}
+                            )}
                         </div>
                       </div>
                     </div>
