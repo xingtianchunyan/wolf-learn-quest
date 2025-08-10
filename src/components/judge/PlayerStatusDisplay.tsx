@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Player {
   id: string;
@@ -26,6 +27,57 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
   const { getLocalImageByDesignId } = useRoleDesigns();
   const { roleStates } = useRoleStates(roomId);
 
+  // Fallback: 从 room_players 读取玩家的生存状态并建立映射
+  const [userStatusMap, setUserStatusMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!roomId) {
+      setUserStatusMap({});
+      return;
+    }
+
+    const fetchStatuses = async () => {
+      const { data, error } = await supabase
+        .from('room_players')
+        .select('user_id,status')
+        .eq('room_id', roomId);
+      if (!error && Array.isArray(data)) {
+        const map: Record<string, string> = {};
+        data.forEach((r: any) => {
+          if (r?.user_id) map[r.user_id] = r.status;
+        });
+        setUserStatusMap(map);
+      }
+    };
+
+    fetchStatuses();
+
+    const channel = supabase
+      .channel(`room_players_status_${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'room_players', filter: `room_id=eq.${roomId}` },
+        (payload: any) => {
+          setUserStatusMap((prev) => {
+            const next = { ...prev } as Record<string, string>;
+            if (payload.eventType === 'DELETE' && payload.old) {
+              const oldUserId = (payload.old as any).user_id;
+              if (oldUserId) delete next[oldUserId];
+            } else if (payload.new) {
+              const row = payload.new as any;
+              if (row?.user_id) next[row.user_id] = row.status;
+            }
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
+
   const handleCardFlip = (playerId: string) => {
     setFlippedCards(prev => {
       const newSet = new Set(prev);
@@ -48,8 +100,24 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
         const roleImageUrl = selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null;
 
         const roleState = player.userId ? roleStates.find(r => r.user_id === player.userId) : undefined;
+        const effectiveStatus = (() => {
+          if (roleState?.role_status) return roleState.role_status;
+          const s = player.userId ? userStatusMap[player.userId] : undefined;
+          switch (s) {
+            case 'alive':
+              return 1;
+            case 'weak':
+              return 3;
+            case 'dying':
+              return 2;
+            case 'eliminated':
+              return 4;
+            default:
+              return undefined;
+          }
+        })();
         const statusBorderClass = (() => {
-          switch (roleState?.role_status) {
+          switch (effectiveStatus) {
             case 1: // 正常
               return 'border-green-400';
             case 3: // 虚弱

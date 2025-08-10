@@ -154,7 +154,15 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
 
         {/* 玩家角色和状态 */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-werewolf-purple">玩家状态</h3>
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full border-2 border-green-400"></span>正常</span>
+              <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full border-2 border-yellow-400"></span>虚弱</span>
+              <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full border-2 border-red-400 animate-pulse"></span>濒死</span>
+              <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full border-2 border-white"></span>淘汰</span>
+            </div>
+          </div>
           <PlayerStatusDisplay 
             players={displayPlayers} 
             roomId={roomId} 
