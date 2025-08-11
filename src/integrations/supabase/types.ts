@@ -1315,6 +1315,10 @@ export type Database = {
         Args: { p_room_id: string }
         Returns: string
       }
+      initialize_room_role_states: {
+        Args: { p_room_id: string }
+        Returns: number
+      }
       initialize_skill_uses_remaining: {
         Args: { p_role_id: string }
         Returns: Json

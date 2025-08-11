@@ -273,6 +273,17 @@ export const useGameState = (roomId: string) => {
         return false;
       }
 
+      // 初始化角色状态（基于角色选择）
+      const { data: initCount, error: initError } = await supabase.rpc('initialize_room_role_states', {
+        p_room_id: roomId
+      });
+      if (initError) {
+        console.error('初始化角色状态失败:', initError);
+        // 不中断流程
+      } else {
+        console.log('已初始化角色状态数量:', initCount);
+      }
+
       // 记录游戏开始的第一个阶段
       const { error: historyError } = await supabase
         .from('game_phase_history')

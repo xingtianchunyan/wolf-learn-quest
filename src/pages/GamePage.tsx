@@ -22,7 +22,7 @@ const GamePage = () => {
   useEveningRefresh(gameState);
   const { players } = usePlayersRealtime(roomId!);
   const { roleDesigns } = useRoleDesigns();
-  const { roleStates } = useRoleStates(gameState?.id);
+  const { roleStates } = useRoleStates(roomId!);
   
   // Get current user's role information
   const currentUserId = 'current-user-id'; // This should come from auth context
