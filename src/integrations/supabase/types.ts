@@ -744,6 +744,7 @@ export type Database = {
           judge_user_id: string | null
           last_human_activity: string | null
           max_players: number | null
+          next_room_id: string | null
           room_id: string
           status: string | null
         }
@@ -755,6 +756,7 @@ export type Database = {
           judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
+          next_room_id?: string | null
           room_id: string
           status?: string | null
         }
@@ -766,6 +768,7 @@ export type Database = {
           judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
+          next_room_id?: string | null
           room_id?: string
           status?: string | null
         }
@@ -1280,6 +1283,10 @@ export type Database = {
       close_inactive_rooms: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_next_room: {
+        Args: { p_room_id: string }
+        Returns: string
       }
       create_voting_session: {
         Args: {

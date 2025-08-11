@@ -14,6 +14,7 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
+import { useRoomTransition } from '@/hooks/useRoomTransition';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
@@ -23,6 +24,9 @@ const GamePage = () => {
   const { players } = usePlayersRealtime(roomId!);
   const { roleDesigns } = useRoleDesigns();
   const { roleStates } = useRoleStates(roomId!);
+  
+  // 自动在游戏结束后迁移到新房间
+  useRoomTransition(roomId, gameState?.status);
   
   // Get current user's role information
   const currentUserId = 'current-user-id'; // This should come from auth context

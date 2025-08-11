@@ -12,6 +12,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { JudgePageProvider } from '@/contexts/JudgePageContext';
 import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
+import { useRoomTransition } from '@/hooks/useRoomTransition';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
@@ -19,6 +20,8 @@ const JudgePage = () => {
   const { gameState } = useGameState(roomId || '');
   useAutoProcessDayVote(roomId || '', gameState);
   useEveningRefresh(gameState);
+  // 法官端也需要在结束后创建并进入新房间
+  useRoomTransition(roomId, gameState?.status);
 
   if (!roomId) {
     return (
