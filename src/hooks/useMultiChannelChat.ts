@@ -75,14 +75,13 @@ export const useMultiChannelChat = ({
         const messagesWithSenders = await Promise.all(
           (data || []).map(async (msg) => {
             const { data: userData } = await supabase
-              .from('users')
-              .select('player_name')
-              .eq('user_id', msg.sender_id)
-              .maybeSingle();
+              .rpc('get_public_user_profile', { p_user_id: msg.sender_id });
+
+            const senderName = Array.isArray(userData) && userData.length > 0 ? userData[0].player_name : 'Unknown';
 
             return {
               ...msg,
-              sender_name: userData?.player_name || 'Unknown'
+              sender_name: senderName
             };
           })
         );
@@ -117,14 +116,13 @@ export const useMultiChannelChat = ({
           
           // 获取发送者信息
           const { data: userData } = await supabase
-            .from('users')
-            .select('player_name')
-            .eq('user_id', payload.new.sender_id)
-            .maybeSingle();
+            .rpc('get_public_user_profile', { p_user_id: payload.new.sender_id });
+
+          const senderName = Array.isArray(userData) && userData.length > 0 ? userData[0].player_name : 'Unknown';
 
           const newMessage = {
             ...payload.new,
-            sender_name: userData?.player_name || 'Unknown'
+            sender_name: senderName
           } as ChatMessage;
 
           setMessages(prev => [...prev, newMessage]);

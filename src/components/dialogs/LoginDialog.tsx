@@ -93,13 +93,10 @@ const LoginDialog: React.FC = () => {
     
     try {
       // Check if Player ID already exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('player_name')
-        .eq('player_name', playerId.trim())
-        .maybeSingle();
+      const { data: existingUserRows, error: checkError } = await supabase
+        .rpc('get_public_user_by_name', { p_name: playerId.trim() });
         
-      if (existingUser) {
+      if (existingUserRows && Array.isArray(existingUserRows) && existingUserRows.length > 0) {
         toast({
           title: t('player_id_taken'),
           description: t('player_id_taken_desc'),

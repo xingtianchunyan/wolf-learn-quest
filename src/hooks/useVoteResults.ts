@@ -16,9 +16,7 @@ const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> =
     return new Map();
   }
   const { data, error } = await supabase
-    .from('users')
-    .select('id, player_name')
-    .in('id', userIds);
+    .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds });
 
   if (error) {
     console.error('获取玩家名称失败:', error);
@@ -27,8 +25,8 @@ const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> =
 
   const nameMap = new Map<string, string>();
   data.forEach(user => {
-    if (user.id && user.player_name) {
-      nameMap.set(user.id, user.player_name);
+    if (user.user_id && user.player_name) {
+      nameMap.set(user.user_id, user.player_name);
     }
   });
   return nameMap;

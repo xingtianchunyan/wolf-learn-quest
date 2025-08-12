@@ -110,13 +110,10 @@ const GameRoom = () => {
 
     const fetchJudgeName = async (userId: string) => {
       const { data, error } = await supabase
-        .from('users')
-        .select('player_name')
-        .eq('user_id', userId)
-        .single();
+        .rpc('get_public_user_profile', { p_user_id: userId });
       
-      if (!error && data) {
-        setJudgeName(data.player_name);
+      if (!error && Array.isArray(data) && data.length > 0) {
+        setJudgeName(data[0].player_name);
       } else {
         console.error("Error fetching judge name for realtime update", error);
         setJudgeName('未知');

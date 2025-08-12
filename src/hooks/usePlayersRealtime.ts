@@ -59,9 +59,7 @@ export const usePlayersRealtime = (roomId: string) => {
           let usersData = [];
           if (userIds.length > 0) {
             const { data: users, error: usersError } = await supabase
-              .from('users')
-              .select('user_id, player_name, avatar_url')
-              .in('user_id', userIds);
+              .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds });
 
             if (usersError) {
               console.error('Error fetching users:', usersError);

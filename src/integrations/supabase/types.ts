@@ -1310,6 +1310,30 @@ export type Database = {
         Args: { p_room_id: string; p_phase: number }
         Returns: number
       }
+      get_public_user_by_name: {
+        Args: { p_name: string }
+        Returns: {
+          user_id: string
+          player_name: string
+          avatar_url: string
+        }[]
+      }
+      get_public_user_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          user_id: string
+          player_name: string
+          avatar_url: string
+        }[]
+      }
+      get_public_user_profiles_by_ids: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          user_id: string
+          player_name: string
+          avatar_url: string
+        }[]
+      }
       get_room_judge_id: {
         Args: { p_room_id: string }
         Returns: string

@@ -142,12 +142,11 @@ const GameLobby = () => {
           
           if (room.judge_user_id) {
             const { data: judgeData } = await supabase
-              .from('users')
-              .select('player_name')
-              .eq('user_id', room.judge_user_id)
-              .single();
+              .rpc('get_public_user_profile', { p_user_id: room.judge_user_id });
             
-            judgeName = judgeData?.player_name;
+            judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
+            
+            
           }
 
           return {
