@@ -232,31 +232,31 @@ export const useGameState = (roomId: string) => {
         }
       }
 
-      // 计算阶段结束时间（白天阶段，如果是自动模式则设置结束时间）
+      // 计算阶段结束时间（首轮从傍晚开始，如果是自动模式则设置结束时间）
       const settings = existingSettings || {
         is_auto_advance: true,
-        day_duration: 300
+        evening_duration: 40
       };
       
       const now = new Date();
       const phaseEndTime = settings.is_auto_advance 
-        ? new Date(now.getTime() + settings.day_duration * 1000).toISOString()
+        ? new Date(now.getTime() + (settings.evening_duration || 40) * 1000).toISOString()
         : null;
 
-      // 创建或更新游戏状态
+      // 创建或更新游戏状态（首轮进入傍晚：2）
       const { data: gameStateData, error: gameStateError } = await supabase
         .from('game_states')
         .upsert({
           room_id: roomId,
           status: 'active',
-          current_phase: 1, // 1 = 白天
+          current_phase: 2, // 2 = 傍晚
           current_round: 1,
           phase_start_time: now.toISOString(),
           phase_end_time: phaseEndTime,
           is_paused: false,
           total_paused_duration: 0,
           auto_advance: settings.is_auto_advance,
-          phase_duration: settings.day_duration
+          phase_duration: settings.evening_duration || 40
         }, {
           onConflict: 'room_id'
         })
@@ -284,12 +284,12 @@ export const useGameState = (roomId: string) => {
         console.log('已初始化角色状态数量:', initCount);
       }
 
-      // 记录游戏开始的第一个阶段
+      // 记录游戏开始的第一个阶段（傍晚）
       const { error: historyError } = await supabase
         .from('game_phase_history')
         .insert({
           game_state_id: gameStateData.id,
-          phase: '1', // 存储为字符串以兼容现有表结构
+          phase: '2', // 存储为字符串以兼容现有表结构
           round_number: 1,
           started_at: now.toISOString()
         });
@@ -301,7 +301,7 @@ export const useGameState = (roomId: string) => {
 
       toast({
         title: '游戏开始',
-        description: '游戏已成功开始，进入白天阶段',
+        description: '游戏已成功开始，进入傍晚阶段',
       });
       return true;
     } catch (error) {

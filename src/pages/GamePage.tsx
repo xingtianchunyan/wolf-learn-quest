@@ -15,6 +15,7 @@ import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
+import { useAuth } from '@/providers/AuthProvider';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
@@ -29,12 +30,13 @@ const GamePage = () => {
   useRoomTransition(roomId, gameState?.status);
   
   // Get current user's role information
-  const currentUserId = 'current-user-id'; // This should come from auth context
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id || '';
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
   
   // Determine if user is judge
-  const isJudge = false; // This should come from room/user context
+  const isJudge = false; // TODO: replace with actual judge check
   
   // Check current phase to determine which system to show
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
