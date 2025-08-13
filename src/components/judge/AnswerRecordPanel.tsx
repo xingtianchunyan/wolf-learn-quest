@@ -106,7 +106,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   const getStatusMessage = () => {
     if (!gameState) return '游戏尚未开始';
     if (gameState.status === 'waiting') return '游戏尚未开始';
-    if (linkedQuestions.length === 0) return '请先在准备阶段链接题目';
+    if (!linkedQuestions || linkedQuestions.length === 0) return '请先在准备阶段链接题目';
     if (answerRecords.length === 0) return '暂无答题记录';
     return null;
   };
