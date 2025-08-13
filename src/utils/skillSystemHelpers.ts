@@ -15,15 +15,40 @@ export interface RoleAttributes {
   special_abilities: string[];
 }
 
+// 技能可用阶段映射
+const SKILL_ACTIVE_PHASES: Record<string, string[]> = {
+  'Sleep': ['night'],        // 村民 - 夜晚
+  'vigil': ['night'],        // 守卫 - 夜晚
+  'night_attack': ['night'], // 狼人 - 夜晚
+  'prophecy': ['night'],     // 预言家 - 夜晚
+  'demon_eye': ['night'],    // 恶魔 - 夜晚
+  'magic_potion': ['night'], // 女巫 - 夜晚
+  'voodoo': ['night'],       // 暗夜术士 - 夜晚
+  'self_destruct': ['night'], // 白狼王 - 夜晚
+  'dying_shot': ['day']      // 猎人 - 白天（被动触发）
+};
+
 // 检查角色是否可以在当前阶段使用技能
-export const canUseSkillInPhase = (skillEffects: SkillEffects, currentPhase: string): boolean => {
-  if (!skillEffects?.active_phases) return false;
-  return skillEffects.active_phases.includes(currentPhase);
+export const canUseSkillInPhase = (skillEffects: SkillEffects, currentPhase: string, skillName?: string): boolean => {
+  // 优先使用配置的阶段
+  if (skillEffects?.active_phases && skillEffects.active_phases.length > 0) {
+    return skillEffects.active_phases.includes(currentPhase);
+  }
+  
+  // 如果没有配置，根据技能名称获取默认阶段
+  if (skillName && SKILL_ACTIVE_PHASES[skillName]) {
+    return SKILL_ACTIVE_PHASES[skillName].includes(currentPhase);
+  }
+  
+  return false;
 };
 
 // 检查角色是否在可用技能的状态
 export const canUseSkillWithStatus = (skillEffects: SkillEffects, currentStatus: string): boolean => {
-  if (!skillEffects?.required_status) return false;
+  // 如果没有配置状态要求，默认只有正常状态可以使用技能
+  if (!skillEffects?.required_status || skillEffects.required_status.length === 0) {
+    return currentStatus === 'normal';
+  }
   return skillEffects.required_status.includes(currentStatus);
 };
 
@@ -38,9 +63,32 @@ export const getSkillEffectTypes = (skillEffects: SkillEffects): string[] => {
   return Array.isArray(skillEffects.effect_type) ? skillEffects.effect_type : [skillEffects.effect_type];
 };
 
+// 角色技能优先级映射（村民 → 守卫 → 狼人 → 预言家 → 恶魔 → 女巫 → 暗夜术士 → 白狼王 → 猎人）
+const ROLE_SKILL_PRIORITIES: Record<string, number> = {
+  'Sleep': 10,        // 村民
+  'vigil': 20,        // 守卫
+  'night_attack': 30, // 狼人
+  'prophecy': 40,     // 预言家
+  'demon_eye': 50,    // 恶魔
+  'magic_potion': 60, // 女巫
+  'voodoo': 70,       // 暗夜术士
+  'self_destruct': 80, // 白狼王
+  'dying_shot': 90    // 猎人
+};
+
 // 获取技能优先级
-export const getSkillPriority = (skillEffects: SkillEffects): number => {
-  return skillEffects?.priority || 0;
+export const getSkillPriority = (skillEffects: SkillEffects, skillName?: string): number => {
+  // 优先使用配置的优先级
+  if (skillEffects?.priority && skillEffects.priority > 0) {
+    return skillEffects.priority;
+  }
+  
+  // 如果没有配置，根据技能名称获取默认优先级
+  if (skillName && ROLE_SKILL_PRIORITIES[skillName]) {
+    return ROLE_SKILL_PRIORITIES[skillName];
+  }
+  
+  return 0;
 };
 
 // 检查角色是否有特殊能力
@@ -90,12 +138,18 @@ export const getPhaseName = (phaseNumber: number): string => {
 export const canUseSkillInGameState = (
   skillEffects: SkillEffects,
   roleStatus: number,
-  currentPhase: number
+  currentPhase: number,
+  skillName?: string
 ): boolean => {
   const phaseName = getPhaseName(currentPhase);
   const statusName = getStatusName(roleStatus);
   
-  return canUseSkillInPhase(skillEffects, phaseName) && 
+  // 检查角色状态（必须是正常状态才能使用技能）
+  if (roleStatus !== 1) {
+    return false;
+  }
+  
+  return canUseSkillInPhase(skillEffects, phaseName, skillName) && 
          canUseSkillWithStatus(skillEffects, statusName);
 };
 

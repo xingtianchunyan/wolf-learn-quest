@@ -45,7 +45,8 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   const canUseSkill = canUseSkillInGameState(
     roleDesign?.skill_effects || {},
     roleState?.role_status || 1,
-    currentPhase
+    currentPhase,
+    roleDesign?.skill_name
   );
 
   // 获取技能效果类型

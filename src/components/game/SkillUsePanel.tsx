@@ -42,12 +42,13 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   const canUseSkill = canUseSkillInGameState(
     roleDesign?.skill_effects || {},
     roleState?.role_status || 1,
-    currentPhase
+    currentPhase,
+    roleDesign?.skill_name
   );
 
   // 获取技能效果类型
   const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects || {});
-  const skillPriority = getSkillPriority(roleDesign?.skill_effects || {});
+  const skillPriority = getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
 
   // 获取当前用户的技能使用记录
   const userSkillUses = getUserSkillUses(userId);
