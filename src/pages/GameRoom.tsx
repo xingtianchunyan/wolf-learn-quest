@@ -16,6 +16,7 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useGameState } from '@/hooks/useGameState';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
+import { useRoomTransition } from '@/hooks/useRoomTransition';
 
 const GameRoom = () => {
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ const GameRoom = () => {
   const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
   const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
   const { gameState } = useGameState(roomData?.id || '');
+  // 游戏结束后自动迁移到新房间
+  useRoomTransition(roomData?.id, gameState?.status);
   
   // 监听游戏状态变化，当游戏开始时自动跳转
   useEffect(() => {
