@@ -79,16 +79,10 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
         }
         const isJudge = room?.judge_user_id && room.judge_user_id === currentUser.id;
 
-        // If judge, create next room immediately (idempotent on server)
-        if (isJudge) {
-          const { data: nextId, error: rpcError } = await supabase.rpc('create_next_room', { p_room_id: roomId });
-          if (rpcError) {
-            console.error('create_next_room failed:', rpcError);
-          } else if (nextId) {
-            await joinNewRoom(nextId as string, true);
-            return;
-          }
-        }
+        // 仅监听 next_room_id 的出现，不再由法官自动创建新房间
+        // 保持 judge 端为手动创建/进入下一局
+        // （玩家端仍然会在 next_room_id 出现后自动迁移）
+
 
         // For players (or if judge RPC failed), subscribe and wait for next_room_id
         roomSub = supabase

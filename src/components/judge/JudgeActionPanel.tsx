@@ -111,11 +111,12 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
     setIsLeavingJudge(true);
     try {
-      // 将 judge_user_id 置空
+      // 将所有等待中的房间里的 judge_user_id 清空，避免回到大厅后再次被认定为法官
       const { error } = await supabase
         .from('rooms')
         .update({ judge_user_id: null })
-        .eq('id', roomId);
+        .eq('judge_user_id', currentUser.id)
+        .eq('status', 'waiting');
 
       if (error) {
         toast({
