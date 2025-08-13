@@ -16,24 +16,19 @@ interface VotingPanelProps {
   gameStateId?: string;
   currentPhase?: number;
   isJudge?: boolean;
-  selectedTargetId?: string;
-  onTargetSelect?: (targetId: string) => void;
 }
 
 const VotingPanel: React.FC<VotingPanelProps> = ({
   roomId,
   gameStateId,
   currentPhase,
-  isJudge = false,
-  selectedTargetId,
-  onTargetSelect
+  isJudge = false
 }) => {
   const { currentUser } = useAuth();
   const { players } = usePlayersRealtime(roomId);
   const { roleStates } = useRoleStates(roomId);
   const { roleDesigns } = useRoleDesigns();
-  // 使用外部传入的选中目标，而不是内部状态
-  const selectedTarget = selectedTargetId || '';
+  const [selectedTarget, setSelectedTarget] = useState<string>('');
   
   const {
     currentSession,
@@ -82,8 +77,8 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     if (!currentUser) return;
     
     const success = await castVote(currentUser.id, targetId);
-    if (success && onTargetSelect) {
-      onTargetSelect(''); // 清除选中状态
+    if (success) {
+      setSelectedTarget('');
     }
   };
 
@@ -202,46 +197,78 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
               </div>
             )}
 
-            {/* 投票动作界面 */}
+            {/* 玩家投票界面 */}
             {!isJudge && canVote && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-werewolf-purple">投票动作</h3>
-                  <div className="text-xs text-gray-400">
-                    请在上方玩家状态区选择投票目标
-                  </div>
+                  <h3 className="font-semibold text-werewolf-purple">选择投票目标</h3>
+                  {!canVoteForSelf && (
+                    <div className="flex items-center text-xs text-yellow-400">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      不能投票给自己
+                    </div>
+                  )}
                 </div>
-                
-                {selectedTarget && (
-                  <div className="p-3 bg-werewolf-purple/20 border border-werewolf-purple/50 rounded-md">
-                    <div className="flex items-center justify-between">
-                      <span className="text-werewolf-purple font-medium">
-                        当前选择: {players.find(p => p.userId === selectedTarget)?.name || '未知玩家'}
-                      </span>
-                      <Badge variant="outline" className="text-werewolf-purple">
-                        {getTargetVoteCount(selectedTarget)} 票
-                      </Badge>
+                <ScrollArea className="h-40">
+                  <div className="space-y-2">
+                    {votablePlayers.map(player => {
+                      const isCurrentUser = player.userId === currentUser?.id;
+                      return (
+                        <div
+                          key={player.id}
+                          className={`p-2 rounded-md border cursor-pointer transition-colors ${
+                            selectedTarget === player.userId
+                              ? 'border-werewolf-purple bg-werewolf-purple/20'
+                              : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
+                          } ${isCurrentUser ? 'bg-yellow-500/10 border-yellow-500/30' : ''}`}
+                          onClick={() => setSelectedTarget(player.userId || '')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-gray-300">{player.name}</span>
+                              {isCurrentUser && (
+                                <Badge variant="outline" className="text-yellow-400 text-xs">
+                                  自己
+                                </Badge>
+                              )}
+                            </div>
+                            <Badge 
+                              variant="outline" 
+                              className={getVoteStatusColor(player.userId || '')}
+                            >
+                              {getTargetVoteCount(player.userId || '')} 票
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* 弃权选项 */}
+                    <div
+                      className={`p-2 rounded-md border cursor-pointer transition-colors ${
+                        selectedTarget === ''
+                          ? 'border-werewolf-purple bg-werewolf-purple/20'
+                          : 'border-werewolf-purple/30 hover:border-werewolf-purple/50'
+                      }`}
+                      onClick={() => setSelectedTarget('')}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-300">弃权</span>
+                        <Badge variant="outline" className="bg-gray-500/20 text-gray-400">
+                          弃权票
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                )}
+                </ScrollArea>
                 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleVote(selectedTarget || undefined)}
-                    disabled={loading || !selectedTarget}
-                    className="flex-1 bg-werewolf-purple hover:bg-werewolf-purple/80"
-                  >
-                    确认投票
-                  </Button>
-                  <Button
-                    onClick={() => handleVote(undefined)}
-                    disabled={loading}
-                    variant="outline"
-                    className="flex-1 border-gray-500 text-gray-300 hover:bg-gray-500/20"
-                  >
-                    弃权
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => handleVote(selectedTarget || undefined)}
+                  disabled={loading || (!selectedTarget && selectedTarget !== '')}
+                  className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
+                >
+                  {selectedTarget ? '确认投票' : '确认弃权'}
+                </Button>
               </div>
             )}
 

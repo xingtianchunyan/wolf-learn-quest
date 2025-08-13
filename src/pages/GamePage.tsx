@@ -1,12 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/StudentSystemPanel';
 import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
-import GameInfoPanel from '@/components/game/GameInfoPanel';
-import VotingPanel from '@/components/voting/VotingPanel';
-import GameSkillPanel from '@/components/game/GameSkillPanel';
+import { VotingSystemManager } from '@/components/game/VotingSystemManager';
+import SkillSystemManager from '@/components/game/SkillSystemManager';
 import { Card, CardContent } from '@/components/ui/card';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -35,9 +34,6 @@ const GamePage = () => {
   const currentUserId = currentUser?.id || '';
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
-  
-  // 目标选择状态
-  const [selectedTargetId, setSelectedTargetId] = useState<string>('');
   
   // Determine if user is judge
   const isJudge = false; // TODO: replace with actual judge check
@@ -75,15 +71,10 @@ const GamePage = () => {
             </div>
           </div>
           
-          {/* Center Column - Game Info and Main Content */}
+          {/* Center Column - Game State Display */}
           <div className="lg:col-span-6 flex flex-col gap-6 h-full">
             <div className="h-1/3">
-              <GameInfoPanel 
-                roomId={roomId} 
-                selectedTargetId={selectedTargetId}
-                onTargetSelect={setSelectedTargetId}
-                canSelectTargets={isVotingPhase || isSkillPhase}
-              />
+              <GameStateDisplay roomId={roomId} />
             </div>
             <div className="h-2/3">
               <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
@@ -91,32 +82,25 @@ const GamePage = () => {
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
                   
                   {/* 根据游戏阶段显示不同的系统 */}
-                  {isVotingPhase && gameState && (
-                    <VotingPanel 
-                      roomId={roomId} 
-                      gameStateId={gameState.id}
-                      currentPhase={gameState.currentPhase}
-                      isJudge={isJudge}
-                      selectedTargetId={selectedTargetId}
-                      onTargetSelect={setSelectedTargetId}
-                    />
+                  {isVotingPhase && (
+                    <VotingSystemManager roomId={roomId} isJudge={isJudge} />
                   )}
                   
-                  {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
-                    <GameSkillPanel
+                  {isSkillPhase && gameState && (
+                    <SkillSystemManager
                       roomId={roomId}
                       gameStateId={gameState.id}
                       userId={currentUserId}
+                      isJudge={isJudge}
                       currentPhase={gameState.currentPhase}
                       roleState={currentRoleState}
                       roleDesign={currentRoleDesign}
                       players={players.map(p => ({
                         userId: p.userId || p.id,
                         name: p.name || '未知玩家',
-                        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
+                        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1,
+                        isAlive: roleStates.find(rs => rs.user_id === p.userId)?.role_status !== 4
                       }))}
-                      selectedTargetId={selectedTargetId}
-                      onTargetSelect={setSelectedTargetId}
                     />
                   )}
                   
