@@ -52,6 +52,13 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     getVotersForTarget,
   } = useVotingSystem(roomId, gameStateId);
 
+  // 自动创建投票会话
+  useEffect(() => {
+    if (gameStateId && currentPhase && currentRound && !currentSession && !loading) {
+      const sessionType = currentPhase === 1 ? 'day_vote' : 'evening_vote';
+      createVotingSession(currentRound, currentPhase, sessionType);
+    }
+  }, [gameStateId, currentPhase, currentRound, currentSession, loading, createVotingSession]);
 
   const userVote = currentUser ? getUserVote(currentUser.id) : null;
   const canVote = currentSession?.status === 'active' && !userVote;
