@@ -18,6 +18,7 @@ interface GamePlayerStatusDisplayProps {
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
   canSelectTargets?: boolean;
+  currentPhase?: number;
 }
 
 const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({ 
@@ -26,7 +27,8 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   maxPlayers, 
   selectedTargetId,
   onTargetSelect,
-  canSelectTargets = false
+  canSelectTargets = false,
+  currentPhase
 }) => {
   const { currentUser } = useAuth();
   const { roleStates } = useRoleStates(roomId);
@@ -55,7 +57,11 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   });
 
   const handlePlayerClick = (player: typeof displayPlayers[0]) => {
-    if (!canSelectTargets || !player.userId || player.userId === currentUser?.id) return;
+    if (!canSelectTargets || !player.userId) return;
+    
+    // 在白天阶段不能选择自己，夜晚阶段可以选择自己
+    const isNightPhase = currentPhase === 3 || currentPhase === 4;
+    if (player.userId === currentUser?.id && !isNightPhase) return;
     
     // 检查玩家是否可以被选为目标
     const targetRoleState = roleStates.find(rs => rs.user_id === player.userId);
@@ -123,7 +129,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   };
 
   const getPlayerCardClass = (player: typeof displayPlayers[0]) => {
-    const baseClass = `relative w-full h-32 rounded-lg p-3 transition-all duration-200`;
+    const baseClass = `relative w-full h-24 rounded-lg p-2 transition-all duration-200`;
     
     if (!player.userId) {
       return `${baseClass} bg-gray-600/40 border-2 border-gray-500`;
@@ -131,7 +137,8 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
 
     const statusBorder = getStatusBorderClass(player);
     const isSelected = selectedTargetId === player.userId;
-    const isSelectable = canSelectTargets && player.userId !== currentUser?.id;
+    const isNightPhase = currentPhase === 3 || currentPhase === 4;
+    const isSelectable = canSelectTargets && (player.userId !== currentUser?.id || isNightPhase);
     const isEliminated = roleStates.find(rs => rs.user_id === player.userId)?.role_status === 4;
 
     return `${baseClass} bg-werewolf-dark/40 border-2 ${statusBorder} ${
@@ -144,7 +151,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {displayPlayers.map((player) => {
         const { roleName, roleImageUrl, showRole } = getPlayerDisplayInfo(player);
 
@@ -161,10 +168,10 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
                   <img
                     src={player.avatar}
                     alt={player.name}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                     !player.userId ? 'bg-gray-500' : 'bg-werewolf-purple/60'
                   }`}>
                     {!player.userId ? '?' : player.name.charAt(0).toUpperCase()}
@@ -174,7 +181,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
               
               {/* 玩家信息 */}
               <div className="text-center">
-                <h4 className="font-semibold text-sm text-white truncate">
+                <h4 className="font-semibold text-xs text-white truncate">
                   {player.name}
                 </h4>
                 {showRole && (

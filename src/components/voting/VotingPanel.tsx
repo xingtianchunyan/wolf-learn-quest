@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface VotingPanelProps {
   roomId: string;
   gameStateId?: string;
   currentPhase?: number;
+  currentRound?: number;
   isJudge?: boolean;
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
@@ -24,6 +25,7 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
   roomId,
   gameStateId,
   currentPhase,
+  currentRound = 1,
   isJudge = false,
   selectedTargetId,
   onTargetSelect
@@ -49,6 +51,14 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     getVotingSummary,
     getVotersForTarget,
   } = useVotingSystem(roomId, gameStateId);
+
+  // 自动创建投票会话
+  useEffect(() => {
+    if (gameStateId && currentPhase && currentRound && !currentSession && !loading) {
+      const sessionType = currentPhase === 1 ? 'day_vote' : 'evening_vote';
+      createVotingSession(currentRound, currentPhase, sessionType);
+    }
+  }, [gameStateId, currentPhase, currentRound, currentSession, loading, createVotingSession]);
 
   const userVote = currentUser ? getUserVote(currentUser.id) : null;
   const canVote = currentSession?.status === 'active' && !userVote;

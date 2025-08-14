@@ -91,16 +91,17 @@ const GamePage = () => {
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
                   
                   {/* 根据游戏阶段显示不同的系统 */}
-                  {isVotingPhase && gameState && (
-                    <VotingPanel 
-                      roomId={roomId} 
-                      gameStateId={gameState.id}
-                      currentPhase={gameState.currentPhase}
-                      isJudge={isJudge}
-                      selectedTargetId={selectedTargetId}
-                      onTargetSelect={setSelectedTargetId}
-                    />
-                  )}
+                   {isVotingPhase && gameState && (
+                     <VotingPanel 
+                       roomId={roomId} 
+                       gameStateId={gameState.id}
+                       currentPhase={gameState.currentPhase}
+                       currentRound={gameState.currentRound}
+                       isJudge={isJudge}
+                       selectedTargetId={selectedTargetId}
+                       onTargetSelect={setSelectedTargetId}
+                     />
+                   )}
                   
                   {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
                     <GameSkillPanel

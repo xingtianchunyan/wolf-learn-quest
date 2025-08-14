@@ -84,17 +84,17 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 overflow-hidden">
         {/* 当前游戏轮次和阶段 */}
-        <div className="text-center p-4 bg-werewolf-dark/40 rounded-md">
-          <h2 className="text-xl font-bold text-werewolf-purple mb-2">
+        <div className="text-center p-3 bg-werewolf-dark/40 rounded-md">
+          <h2 className="text-lg font-bold text-werewolf-purple mb-2">
             {getGameStatusDisplay()}
           </h2>
           
           {/* 显示倒计时 */}
           {showTimer && (
-            <div className="flex items-center justify-center text-lg font-semibold">
-              <Clock className="h-5 w-5 mr-2 text-werewolf-purple" />
+            <div className="flex items-center justify-center text-sm font-semibold">
+              <Clock className="h-4 w-4 mr-2 text-werewolf-purple" />
               <span className={`${
                 timeRemaining <= 10 ? 'text-red-400' : 
                 timeRemaining <= 30 ? 'text-yellow-400' : 
@@ -107,7 +107,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
           
           {/* 游戏状态说明 */}
           {gameState && (
-            <div className="text-sm text-gray-400 mt-2">
+            <div className="text-xs text-gray-400 mt-1">
               {gameState.status === 'waiting' && '等待法官开始游戏'}
               {gameState.status === 'active' && gameState.currentPhase === 1 && '白天讨论阶段'}
               {gameState.status === 'active' && gameState.currentPhase === 2 && '傍晚答题阶段'}
@@ -119,34 +119,37 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         </div>
 
         {/* 玩家角色和状态 */}
-        <div className="space-y-3">
+        <div className="space-y-2 flex-1 overflow-hidden">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-werewolf-purple">
+            <h3 className="font-semibold text-werewolf-purple text-sm">
               玩家状态 {canSelectTargets && '(点击选择目标)'}
             </h3>
-            <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full border-2 border-green-400"></span>正常
+                <span className="inline-block w-2 h-2 rounded-full border border-green-400"></span>正常
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full border-2 border-yellow-400"></span>虚弱
+                <span className="inline-block w-2 h-2 rounded-full border border-yellow-400"></span>虚弱
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full border-2 border-red-400 animate-pulse"></span>濒死
+                <span className="inline-block w-2 h-2 rounded-full border border-red-400 animate-pulse"></span>濒死
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full border-2 border-white"></span>淘汰
+                <span className="inline-block w-2 h-2 rounded-full border border-white"></span>淘汰
               </span>
             </div>
           </div>
-          <GamePlayerStatusDisplay 
-            players={realPlayers}
-            roomId={roomId} 
-            maxPlayers={maxPlayers}
-            selectedTargetId={selectedTargetId}
-            onTargetSelect={onTargetSelect}
-            canSelectTargets={canSelectTargets}
-          />
+          <div className="overflow-y-auto flex-1">
+            <GamePlayerStatusDisplay 
+              players={realPlayers}
+              roomId={roomId} 
+              maxPlayers={maxPlayers}
+              selectedTargetId={selectedTargetId}
+              onTargetSelect={onTargetSelect}
+              canSelectTargets={canSelectTargets}
+              currentPhase={gameState?.currentPhase}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
