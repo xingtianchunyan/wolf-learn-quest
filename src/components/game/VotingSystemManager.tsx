@@ -23,19 +23,20 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段
   const gameStateId = gameState?.id;
 
-  // 自动创建投票会话 - 在白天和傍晚阶段且没有活跃投票会话时
+  // 自动创建投票会话 - 只在白天阶段创建，傍晚阶段显示白天的投票结果
   useEffect(() => {
-    if ((gameState?.currentPhase === 1 || gameState?.currentPhase === 2) && gameStateId) {
-      // 先检查是否已存在该轮次的投票会话
+    if (gameState?.currentPhase === 1 && gameStateId) {
+      // 只在白天阶段创建投票会话
       fetchCurrentSession(gameState.currentRound, gameState.currentPhase).then(() => {
-        // 如果还没有会话，创建新的
         setTimeout(() => {
           if (!currentSession) {
-            const sessionType = gameState.currentPhase === 1 ? 'day_vote' : 'evening_vote';
-            createVotingSession(gameState.currentRound, gameState.currentPhase, sessionType);
+            createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
           }
         }, 100);
       });
+    } else if (gameState?.currentPhase === 2 && gameStateId) {
+      // 傍晚阶段，获取白天阶段的投票会话（phase 1）
+      fetchCurrentSession(gameState.currentRound, 1);
     }
   }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, fetchCurrentSession, createVotingSession, currentSession]);
 
