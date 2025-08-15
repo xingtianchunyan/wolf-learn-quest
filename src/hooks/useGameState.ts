@@ -430,6 +430,22 @@ export const useGameState = (roomId: string) => {
         return false;
       }
 
+      // Step 1.5: Update room status to 'ended'
+      const { error: roomUpdateError } = await supabase
+        .from('rooms')
+        .update({ status: 'ended' })
+        .eq('id', gameState.roomId);
+
+      if (roomUpdateError) {
+        console.error('Error ending game (updating room):', roomUpdateError);
+        toast({
+          title: '结束游戏失败',
+          description: roomUpdateError.message,
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Step 2: Get game start time from history to calculate duration
       const { data: historyData, error: historyError } = await supabase
         .from('game_phase_history')
