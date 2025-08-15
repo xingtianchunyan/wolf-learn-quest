@@ -430,10 +430,10 @@ export const useGameState = (roomId: string) => {
         return false;
       }
 
-      // Step 1.5: Update room status to 'ended'
+      // Step 1.5: Update room status to 'finished'
       const { error: roomUpdateError } = await supabase
         .from('rooms')
-        .update({ status: 'ended' })
+        .update({ status: 'finished' })
         .eq('id', gameState.roomId);
 
       if (roomUpdateError) {

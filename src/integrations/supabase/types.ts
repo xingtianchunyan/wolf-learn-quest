@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1266,9 +1266,9 @@ export type Database = {
       }
       cast_vote: {
         Args: {
-          p_voting_session_id: string
-          p_voter_id: string
           p_target_id?: string
+          p_voter_id: string
+          p_voting_session_id: string
         }
         Returns: boolean
       }
@@ -1291,9 +1291,9 @@ export type Database = {
       create_voting_session: {
         Args: {
           p_game_state_id: string
+          p_phase: number
           p_room_id: string
           p_round_number: number
-          p_phase: number
           p_session_type?: string
         }
         Returns: string
@@ -1301,37 +1301,37 @@ export type Database = {
       detect_skill_conflicts: {
         Args: {
           p_game_state_id: string
-          p_round_number: number
           p_phase: string
+          p_round_number: number
         }
         Returns: string
       }
       get_phase_duration: {
-        Args: { p_room_id: string; p_phase: number }
+        Args: { p_phase: number; p_room_id: string }
         Returns: number
       }
       get_public_user_by_name: {
         Args: { p_name: string }
         Returns: {
-          user_id: string
-          player_name: string
           avatar_url: string
+          player_name: string
+          user_id: string
         }[]
       }
       get_public_user_profile: {
         Args: { p_user_id: string }
         Returns: {
-          user_id: string
-          player_name: string
           avatar_url: string
+          player_name: string
+          user_id: string
         }[]
       }
       get_public_user_profiles_by_ids: {
         Args: { p_user_ids: string[] }
         Returns: {
-          user_id: string
-          player_name: string
           avatar_url: string
+          player_name: string
+          user_id: string
         }[]
       }
       get_room_judge_id: {
@@ -1376,11 +1376,11 @@ export type Database = {
       }
       queue_skill_effect: {
         Args: {
-          p_skill_use_id: string
-          p_effect_type: string
-          p_effect_data: Json
-          p_priority?: number
           p_conditions?: Json
+          p_effect_data: Json
+          p_effect_type: string
+          p_priority?: number
+          p_skill_use_id: string
           p_trigger_delay_seconds?: number
         }
         Returns: string
@@ -1395,11 +1395,11 @@ export type Database = {
       }
       use_skill: {
         Args: {
-          p_user_id: string
           p_game_state_id: string
+          p_skill_data?: Json
           p_skill_name: string
           p_target_user_id?: string
-          p_skill_data?: Json
+          p_user_id: string
         }
         Returns: string
       }
