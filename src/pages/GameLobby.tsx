@@ -109,6 +109,51 @@ const GameLobby = () => {
     }
   }, [initializing, currentUser, playerRoom.roomDbId]);
 
+  // 实时监听房间变化和玩家变化
+  useEffect(() => {
+    if (!currentUser || playerRoom.roomDbId) return;
+
+    // 监听房间表的变化
+    const roomsChannel = supabase
+      .channel('public:rooms')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'rooms',
+          filter: `status=in.(waiting,active)`
+        },
+        () => {
+          console.log('Room change detected, refreshing rooms...');
+          fetchRooms();
+        }
+      )
+      .subscribe();
+
+    // 监听玩家表的变化
+    const playersChannel = supabase
+      .channel('public:room_players')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_players'
+        },
+        () => {
+          console.log('Player change detected, refreshing rooms...');
+          fetchRooms();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(playersChannel);
+    };
+  }, [currentUser, playerRoom.roomDbId]);
+
   // Fetch rooms from the database
   const fetchRooms = async () => {
     try {
@@ -124,7 +169,7 @@ const GameLobby = () => {
           host_id,
           judge_user_id,
           users!rooms_host_id_fkey(player_name),
-          room_players(id)
+          room_players(id, user_id)
         `)
         .in('status', ['waiting', 'active']);
 
@@ -149,12 +194,15 @@ const GameLobby = () => {
             
           }
 
+          // 确保正确计算玩家数量
+          const playerCount = Array.isArray(room.room_players) ? room.room_players.length : 0;
+          
           return {
             id: room.id,
             roomId: room.room_id,
             name: `Game Room ${room.room_id}`,
             host: room.users?.player_name || 'Unknown',
-            players: room.room_players?.length || 0,
+            players: playerCount,
             maxPlayers: room.max_players || 8,
             hasAI: !room.human_judge,
             isPrivate: false,
