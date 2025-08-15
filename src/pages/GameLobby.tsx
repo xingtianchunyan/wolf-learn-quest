@@ -126,7 +126,7 @@ const GameLobby = () => {
           users!rooms_host_id_fkey(player_name),
           room_players(id)
         `)
-        .eq('status', 'waiting');
+        .in('status', ['waiting', 'active']);
 
       if (error) {
         console.error('Error fetching rooms:', error);

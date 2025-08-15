@@ -84,9 +84,9 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-3 overflow-hidden">
+      <CardContent className="flex flex-col h-full space-y-3 overflow-hidden">
         {/* 当前游戏轮次和阶段 */}
-        <div className="text-center p-3 bg-werewolf-dark/40 rounded-md">
+        <div className="text-center p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
           <h2 className="text-lg font-bold text-werewolf-purple mb-2">
             {getGameStatusDisplay()}
           </h2>
@@ -119,8 +119,8 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         </div>
 
         {/* 玩家角色和状态 */}
-        <div className="space-y-2 flex-1 overflow-hidden">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-2 flex-1 min-h-0">
+          <div className="flex items-center justify-between flex-shrink-0">
             <h3 className="font-semibold text-werewolf-purple text-sm">
               玩家状态 {canSelectTargets && '(点击选择目标)'}
             </h3>
@@ -139,7 +139,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
               </span>
             </div>
           </div>
-          <div className="overflow-y-auto flex-1">
+          <div className="flex-1 overflow-y-auto">
             <GamePlayerStatusDisplay 
               players={realPlayers}
               roomId={roomId} 
