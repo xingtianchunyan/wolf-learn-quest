@@ -192,17 +192,19 @@ const GameLobby = () => {
           }
 
           // Get player count for this room
-          const { count: playerCount } = await supabase
+          const { count: playerCount, error: countError } = await supabase
             .from('room_players')
             .select('*', { count: 'exact', head: true })
             .eq('room_id', room.id);
+          
+          console.log(`Player count for room ${room.room_id}:`, playerCount, countError);
           
           return {
             id: room.id,
             roomId: room.room_id,
             name: `Game Room ${room.room_id}`,
             host: room.users?.player_name || 'Unknown',
-            players: playerCount,
+            players: playerCount || 0,
             maxPlayers: room.max_players || 8,
             hasAI: !room.human_judge,
             isPrivate: false,
