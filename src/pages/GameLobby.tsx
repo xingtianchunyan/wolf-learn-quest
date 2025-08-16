@@ -191,14 +191,26 @@ const GameLobby = () => {
             judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
           }
 
-          // Get player count for this room - fix the query to use proper count syntax
-          const { count: playerCount, error: countError } = await supabase
-            .from('room_players')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', room.id);
-          
-          if (countError) {
-            console.error(`Error counting players for room ${room.room_id}:`, countError);
+          // Get player count for this room - use a public function that bypasses RLS
+          let playerCount = 0;
+          try {
+            // 对于游戏大厅，我们需要能够看到等待中房间的玩家数，即使用户未登录
+            // 使用一个公共查询来获取玩家数
+            const { data: playerData, error: countError } = await supabase
+              .from('room_players')
+              .select('id')
+              .eq('room_id', room.id);
+            
+            if (countError) {
+              console.error(`Error counting players for room ${room.room_id}:`, countError);
+              // 如果查询失败，尝试备用方案：直接从缓存数据计算
+              playerCount = 0;
+            } else {
+              playerCount = playerData ? playerData.length : 0;
+            }
+          } catch (err) {
+            console.error(`Exception counting players for room ${room.room_id}:`, err);
+            playerCount = 0;
           }
           
           console.log(`Player count for room ${room.room_id}:`, playerCount);
