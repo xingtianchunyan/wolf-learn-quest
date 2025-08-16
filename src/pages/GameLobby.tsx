@@ -179,7 +179,23 @@ const GameLobby = () => {
 
       console.log('Fetched rooms data:', data);
 
-      // Get judge names and player counts separately
+      // Get player counts for all waiting rooms in one call using SECURITY DEFINER function
+      const { data: playerCounts, error: playerCountError } = await supabase
+        .rpc('get_waiting_room_player_counts');
+
+      if (playerCountError) {
+        console.error('Error fetching player counts:', playerCountError);
+      }
+
+      // Create a map for quick lookup of player counts
+      const playerCountMap = new Map();
+      if (playerCounts) {
+        playerCounts.forEach((item: { room_id: string; player_count: number }) => {
+          playerCountMap.set(item.room_id, Number(item.player_count));
+        });
+      }
+
+      // Get judge names and combine with player counts
       const roomsWithJudges = await Promise.all(
         (data || []).map(async (room) => {
           let judgeName = null;
@@ -191,27 +207,8 @@ const GameLobby = () => {
             judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
           }
 
-          // Get player count for this room - use a public function that bypasses RLS
-          let playerCount = 0;
-          try {
-            // 对于游戏大厅，我们需要能够看到等待中房间的玩家数，即使用户未登录
-            // 使用一个公共查询来获取玩家数
-            const { data: playerData, error: countError } = await supabase
-              .from('room_players')
-              .select('id')
-              .eq('room_id', room.id);
-            
-            if (countError) {
-              console.error(`Error counting players for room ${room.room_id}:`, countError);
-              // 如果查询失败，尝试备用方案：直接从缓存数据计算
-              playerCount = 0;
-            } else {
-              playerCount = playerData ? playerData.length : 0;
-            }
-          } catch (err) {
-            console.error(`Exception counting players for room ${room.room_id}:`, err);
-            playerCount = 0;
-          }
+          // Get player count from the map
+          const playerCount = playerCountMap.get(room.id) || 0;
           
           console.log(`Player count for room ${room.room_id}:`, playerCount);
           
@@ -220,7 +217,7 @@ const GameLobby = () => {
             roomId: room.room_id,
             name: `Game Room ${room.room_id}`,
             host: room.users?.player_name || 'Unknown',
-            players: playerCount || 0,
+            players: playerCount,
             maxPlayers: room.max_players || 8,
             hasAI: !room.human_judge,
             isPrivate: false,

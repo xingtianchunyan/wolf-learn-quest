@@ -1342,6 +1342,13 @@ export type Database = {
         Args: { p_skill_effects_queue_id: string }
         Returns: string
       }
+      get_waiting_room_player_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          player_count: number
+          room_id: string
+        }[]
+      }
       initialize_game_state: {
         Args: { p_room_id: string }
         Returns: string
