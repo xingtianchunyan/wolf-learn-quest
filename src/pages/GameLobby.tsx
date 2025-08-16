@@ -191,13 +191,17 @@ const GameLobby = () => {
             judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
           }
 
-          // Get player count for this room
+          // Get player count for this room - fix the query to use proper count syntax
           const { count: playerCount, error: countError } = await supabase
             .from('room_players')
             .select('*', { count: 'exact', head: true })
             .eq('room_id', room.id);
           
-          console.log(`Player count for room ${room.room_id}:`, playerCount, countError);
+          if (countError) {
+            console.error(`Error counting players for room ${room.room_id}:`, countError);
+          }
+          
+          console.log(`Player count for room ${room.room_id}:`, playerCount);
           
           return {
             id: room.id,
@@ -471,6 +475,38 @@ const GameLobby = () => {
 
     try {
       console.log('Joining room:', roomId, 'as user:', currentUser.id);
+
+      // 先检查房间是否还有空位
+      const { data: roomData, error: roomError } = await supabase
+        .from('rooms')
+        .select('max_players')
+        .eq('id', roomId)
+        .single();
+
+      if (roomError) {
+        console.error('Error fetching room data:', roomError);
+        toast({
+          title: t('room_join_failed'),
+          description: t('room_join_error'),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 检查当前玩家数
+      const { count: currentPlayerCount } = await supabase
+        .from('room_players')
+        .select('*', { count: 'exact', head: true })
+        .eq('room_id', roomId);
+
+      if (currentPlayerCount && currentPlayerCount >= (roomData.max_players || 8)) {
+        toast({
+          title: t('room_join_failed'),
+          description: t('room_full'),
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Add player to room
       const { error } = await supabase

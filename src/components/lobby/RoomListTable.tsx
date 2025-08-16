@@ -112,22 +112,25 @@ const RoomListTable: React.FC<RoomListTableProps> = ({
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell className="text-center">
-                    {room.players < room.maxPlayers && room.status === 'waiting' ? (
-                      <Button 
-                        variant="default"
-                        size="sm"
-                        onClick={() => joinRoom(room.id)}
-                        className="bg-werewolf-purple hover:bg-werewolf-light"
-                        disabled={!currentUser || !!playerRoom.roomDbId}
-                      >
-                        <User className="h-3 w-3 mr-1" />
-                        {t('join')}
-                      </Button>
-                    ) : (
-                      <span className="text-gray-400">{t('full')}</span>
-                    )}
-                  </TableCell>
+                   <TableCell className="text-center">
+                     {/* 检查房间是否已满 - 玩家数 >= 最大玩家数 */}
+                     {room.players >= room.maxPlayers ? (
+                       <span className="text-amber-400">{t('full')}</span>
+                     ) : room.status !== 'waiting' ? (
+                       <span className="text-gray-400">{t('started')}</span>
+                     ) : (
+                       <Button 
+                         variant="default"
+                         size="sm"
+                         onClick={() => joinRoom(room.id)}
+                         className="bg-werewolf-purple hover:bg-werewolf-light"
+                         disabled={!currentUser || !!playerRoom.roomDbId}
+                       >
+                         <User className="h-3 w-3 mr-1" />
+                         {t('join')}
+                       </Button>
+                     )}
+                   </TableCell>
                 </TableRow>
               ))
             )}
