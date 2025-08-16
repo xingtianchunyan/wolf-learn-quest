@@ -168,8 +168,7 @@ const GameLobby = () => {
           human_judge,
           host_id,
           judge_user_id,
-          users!rooms_host_id_fkey(player_name),
-          room_players(id, user_id)
+          users!rooms_host_id_fkey(player_name)
         `)
         .in('status', ['waiting', 'active']);
 
@@ -180,7 +179,7 @@ const GameLobby = () => {
 
       console.log('Fetched rooms data:', data);
 
-      // Get judge names separately if needed
+      // Get judge names and player counts separately
       const roomsWithJudges = await Promise.all(
         (data || []).map(async (room) => {
           let judgeName = null;
@@ -190,12 +189,13 @@ const GameLobby = () => {
               .rpc('get_public_user_profile', { p_user_id: room.judge_user_id });
             
             judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
-            
-            
           }
 
-          // 确保正确计算玩家数量
-          const playerCount = Array.isArray(room.room_players) ? room.room_players.length : 0;
+          // Get player count for this room
+          const { count: playerCount } = await supabase
+            .from('room_players')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', room.id);
           
           return {
             id: room.id,
