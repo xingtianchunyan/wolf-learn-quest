@@ -11,6 +11,7 @@ import QuestionBankTooltip from './QuestionBankTooltip';
 
 interface QuestionBankPanelProps {
   className?: string;
+  roomId?: string;
 }
 
 interface UploadedFile {
@@ -31,7 +32,7 @@ interface PreprocessedFile {
   is_generated?: boolean;
 }
 
-const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
+const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId }) => {
   const [selectedFile, setSelectedFile] = useState<string>('');
   const [selectedPreprocessedFile, setSelectedPreprocessedFile] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -346,7 +347,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         body: {
           filePath: selectedFileData.file_path,
           fileName: selectedFileData.file_name,
-          roomId: 'current-room'
+          roomId: roomId || 'current-room'
         }
       });
 
@@ -409,7 +410,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
         body: {
           preprocessedId: selectedPreprocessedFile,
           questionCount: 18,
-          roomId: 'current-room'
+          roomId: roomId || 'current-room'
         }
       });
 
@@ -635,7 +636,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className }) => {
       <QuestionBankDialog
         isOpen={showQuestionBank}
         onClose={() => setShowQuestionBank(false)}
-        roomId="current-room"
+        roomId={roomId || "current-room"}
       />
     </>
   );
