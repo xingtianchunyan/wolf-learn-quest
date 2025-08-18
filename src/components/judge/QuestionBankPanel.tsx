@@ -3,11 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle, CheckCircle, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useJudgePage } from '@/contexts/JudgePageContext';
 import QuestionBankDialog from './QuestionBankDialog';
 import QuestionBankTooltip from './QuestionBankTooltip';
+import ManualQuestionEditor from './ManualQuestionEditor';
+import { ManualQuestionForm } from './types/questionBank';
 
 interface QuestionBankPanelProps {
   roomId?: string;
@@ -43,8 +47,19 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ roomId, className
   const [isGenerating, setIsGenerating] = useState(false);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
   const [error, setError] = useState<string>('');
+  const [manualQuestion, setManualQuestion] = useState<ManualQuestionForm>({
+    question: '',
+    option_a: '',
+    option_b: '',
+    option_c: '',
+    option_d: '',
+    correct_option: 1,
+    difficulty: 3,
+    explanation: ''
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { refreshLinkedQuestions } = useJudgePage();
 
   useEffect(() => {
     fetchUploadedFiles();
@@ -185,6 +200,115 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ roomId, className
     }
   };
 
+  const handleManualQuestionSubmit = async () => {
+    if (!roomId) {
+      setError('房间ID不存在');
+      toast({
+        title: '无法保存题目',
+        description: '房间ID不存在',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!manualQuestion.question.trim() || !manualQuestion.option_a.trim() || !manualQuestion.option_b.trim()) {
+      setError('请填写题目和至少两个选项');
+      toast({
+        title: '请完整填写题目',
+        description: '题目内容、选项A和选项B是必填项',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    clearError();
+
+    try {
+      console.log('开始保存手动题目:', manualQuestion);
+      
+      // 插入题目到questions表
+      const { data: questionData, error: questionError } = await supabase
+        .from('questions')
+        .insert({
+          question: manualQuestion.question,
+          option_a: manualQuestion.option_a,
+          option_b: manualQuestion.option_b,
+          option_c: manualQuestion.option_c || '',
+          option_d: manualQuestion.option_d || '',
+          correct_option: manualQuestion.correct_option,
+          difficulty: manualQuestion.difficulty,
+          explanation: manualQuestion.explanation || null,
+          category: 'manual'
+        })
+        .select()
+        .single();
+
+      if (questionError) {
+        console.error('保存题目失败:', questionError);
+        throw questionError;
+      }
+
+      console.log('题目保存成功:', questionData);
+
+      // 获取当前房间题目的最大order
+      const { data: existingQuestions } = await supabase
+        .from('room_questions')
+        .select('question_order')
+        .eq('room_id', roomId)
+        .order('question_order', { ascending: false })
+        .limit(1);
+
+      const nextOrder = existingQuestions && existingQuestions.length > 0 
+        ? existingQuestions[0].question_order + 1 
+        : 1;
+
+      // 将题目关联到房间
+      const { error: roomQuestionError } = await supabase
+        .from('room_questions')
+        .insert({
+          room_id: roomId,
+          question_id: questionData.id,
+          question_order: nextOrder
+        });
+
+      if (roomQuestionError) {
+        console.error('关联题目到房间失败:', roomQuestionError);
+        throw roomQuestionError;
+      }
+
+      console.log('题目关联到房间成功');
+
+      toast({
+        title: '题目保存成功',
+        description: '手动编辑的题目已成功保存到房间',
+      });
+
+      // 重置表单
+      setManualQuestion({
+        question: '',
+        option_a: '',
+        option_b: '',
+        option_c: '',
+        option_d: '',
+        correct_option: 1,
+        difficulty: 3,
+        explanation: ''
+      });
+
+      // 刷新题库
+      await refreshLinkedQuestions();
+
+    } catch (error) {
+      console.error('保存题目时发生错误:', error);
+      const errorMsg = error instanceof Error ? error.message : '保存题目失败';
+      setError(`保存失败: ${errorMsg}`);
+      toast({
+        title: '保存失败',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    }
+  };
   const clearError = () => {
     setError('');
   };
@@ -490,146 +614,169 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ roomId, className
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0 h-[calc(100%-80px)]">
-          <div className="space-y-4 h-full flex flex-col">
-            {error && (
-              <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-md">
-                <AlertCircle className="mr-2 h-4 w-4 text-red-400" />
-                <span className="text-red-400 text-sm">{error}</span>
-                <Button
-                  onClick={clearError}
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto h-6 w-6 p-0 text-red-400 hover:text-red-300"
-                >
-                  ×
-                </Button>
-              </div>
-            )}
+          <Tabs defaultValue="ai" className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="ai" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                AI生成题目
+              </TabsTrigger>
+              <TabsTrigger value="manual" className="flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                手动编辑题目
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="ai" className="flex-1 mt-4">
+              <div className="space-y-4 h-full flex flex-col">
+                {error && (
+                  <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-md">
+                    <AlertCircle className="mr-2 h-4 w-4 text-red-400" />
+                    <span className="text-red-400 text-sm">{error}</span>
+                    <Button
+                      onClick={clearError}
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                    >
+                      ×
+                    </Button>
+                  </div>
+                )}
 
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="bg-werewolf-purple hover:bg-werewolf-light text-white flex-1"
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {isUploading ? '上传中...' : '上传文件'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.doc,.docx,.xls,.xlsx,.pptx,.md"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-              </div>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="bg-werewolf-purple hover:bg-werewolf-light text-white flex-1"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {isUploading ? '上传中...' : '上传文件'}
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".txt,.doc,.docx,.xls,.xlsx,.pptx,.md"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
 
-              <Select value={selectedFile} onValueChange={setSelectedFile}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择已上传文件" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
-                  <ScrollArea className="h-full">
-                    {uploadedFiles.map((file) => (
-                      <SelectItem key={file.id} value={file.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center">
-                            <File className="mr-2 h-4 w-4" />
-                            {file.file_name}
-                          </div>
-                          <div className="flex items-center space-x-2 ml-4">
-                            {file.is_preprocessed && (
-                              <span className="text-green-400 text-xs bg-green-900/20 px-2 py-1 rounded">
-                                <CheckCircle className="inline-block w-3 h-3 mr-1" />
-                                已预处理
-                              </span>
-                            )}
-                            {file.is_generated && (
-                              <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded">
-                                <Sparkles className="inline-block w-3 h-3 mr-1" />
-                                已生成题目
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </ScrollArea>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Button
-                  onClick={handlePreprocessFile}
-                  disabled={isProcessing || !selectedFile}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
-                >
-                  <Database className="mr-2 h-4 w-4" />
-                  {isProcessing ? '处理中...' : 'AI预处理'}
-                </Button>
-
-                <Button
-                  onClick={handleGenerateQuestions}
-                  disabled={isGenerating || !selectedPreprocessedFile}
-                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {isGenerating ? '生成中...' : 'AI生成题目'}
-                </Button>
-              </div>
-
-              <Select value={selectedPreprocessedFile} onValueChange={setSelectedPreprocessedFile}>
-                <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                  <SelectValue placeholder="选择已预处理文件" />
-                </SelectTrigger>
-                <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
-                  <ScrollArea className="h-full">
-                    {preprocessedFiles.map((file) => (
-                      <SelectItem key={file.id} value={file.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center">
-                            <Database className="mr-2 h-4 w-4" />
-                            <div className="flex flex-col">
-                              <span>{file.file_name}</span>
-                              <span className="text-xs text-gray-400">
-                                {new Date(file.created_at).toLocaleDateString()}
-                              </span>
+                  <Select value={selectedFile} onValueChange={setSelectedFile}>
+                    <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
+                      <SelectValue placeholder="选择已上传文件" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
+                      <ScrollArea className="h-full">
+                        {uploadedFiles.map((file) => (
+                          <SelectItem key={file.id} value={file.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center">
+                                <File className="mr-2 h-4 w-4" />
+                                {file.file_name}
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                {file.is_preprocessed && (
+                                  <span className="text-green-400 text-xs bg-green-900/20 px-2 py-1 rounded">
+                                    <CheckCircle className="inline-block w-3 h-3 mr-1" />
+                                    已预处理
+                                  </span>
+                                )}
+                                {file.is_generated && (
+                                  <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded">
+                                    <Sparkles className="inline-block w-3 h-3 mr-1" />
+                                    已生成题目
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          {file.is_generated && (
-                            <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded ml-4">
-                              <Sparkles className="inline-block w-3 h-3 mr-1" />
-                              已生成题目
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </ScrollArea>
-                </SelectContent>
-              </Select>
-            </div>
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {status && (
-              <div className="flex items-center justify-center p-4 bg-werewolf-dark/20 rounded-md">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin text-werewolf-purple" />
-                <span className="text-werewolf-purple text-sm">{status}</span>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handlePreprocessFile}
+                      disabled={isProcessing || !selectedFile}
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
+                    >
+                      <Database className="mr-2 h-4 w-4" />
+                      {isProcessing ? '处理中...' : 'AI预处理'}
+                    </Button>
+
+                    <Button
+                      onClick={handleGenerateQuestions}
+                      disabled={isGenerating || !selectedPreprocessedFile}
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      {isGenerating ? '生成中...' : 'AI生成题目'}
+                    </Button>
+                  </div>
+
+                  <Select value={selectedPreprocessedFile} onValueChange={setSelectedPreprocessedFile}>
+                    <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
+                      <SelectValue placeholder="选择已预处理文件" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-werewolf-dark border-werewolf-purple/30 max-h-40">
+                      <ScrollArea className="h-full">
+                        {preprocessedFiles.map((file) => (
+                          <SelectItem key={file.id} value={file.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center">
+                                <Database className="mr-2 h-4 w-4" />
+                                <div className="flex flex-col">
+                                  <span>{file.file_name}</span>
+                                  <span className="text-xs text-gray-400">
+                                    {new Date(file.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+                              {file.is_generated && (
+                                <span className="text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded ml-4">
+                                  <Sparkles className="inline-block w-3 h-3 mr-1" />
+                                  已生成题目
+                                </span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {status && (
+                  <div className="flex items-center justify-center p-4 bg-werewolf-dark/20 rounded-md">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-werewolf-purple" />
+                    <span className="text-werewolf-purple text-sm">{status}</span>
+                  </div>
+                )}
+
+                <div className="mt-auto">
+                  <Button
+                    onClick={() => setShowQuestionBank(true)}
+                    className="w-full bg-werewolf-purple hover:bg-werewolf-light text-white"
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    打开题库
+                  </Button>
+                </div>
               </div>
-            )}
-
-            <div className="mt-auto">
-              <Button
-                onClick={() => setShowQuestionBank(true)}
-                className="w-full bg-werewolf-purple hover:bg-werewolf-light text-white"
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                打开题库
-              </Button>
-            </div>
-          </div>
+            </TabsContent>
+            
+            <TabsContent value="manual" className="flex-1 mt-4">
+              <ManualQuestionEditor
+                manualQuestion={manualQuestion}
+                onUpdateQuestion={(updates) => setManualQuestion(prev => ({ ...prev, ...updates }))}
+                onSubmit={handleManualQuestionSubmit}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
