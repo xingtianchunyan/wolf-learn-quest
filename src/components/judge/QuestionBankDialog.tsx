@@ -117,7 +117,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         .from('questions')
         .select(`
           *,
-          generated_questions(file_name)
+          generated_questions!inner(file_name)
         `)
         .order('id', { ascending: true });
 

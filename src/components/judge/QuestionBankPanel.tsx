@@ -262,7 +262,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       console.log('原始文件名:', originalName);
       console.log('清理后文件名:', fileName);
       
-        const { data, error } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from('question-files')
         .upload(`uploads/${fileName}`, file, {
           cacheControl: '3600',
