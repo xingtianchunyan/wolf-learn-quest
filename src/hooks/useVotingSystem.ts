@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/providers/AuthProvider';
 
 export interface VotingSession {
   id: string;
@@ -49,6 +50,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
   const [results, setResults] = useState<VotingResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { requireAuth } = useAuth();
 
   // 获取当前投票会话
   const fetchCurrentSession = useCallback(async (roundNumber?: number, phase?: number) => {
@@ -192,7 +194,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     phase: number,
     sessionType: string = 'day_vote'
   ) => {
-    if (!gameStateId) return null;
+    if (!requireAuth() || !gameStateId) return null;
 
     // 先检查是否已存在该轮次阶段的投票会话
     try {
@@ -252,7 +254,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     voterId: string,
     targetId?: string
   ) => {
-    if (!currentSession) return false;
+    if (!requireAuth() || !currentSession) return false;
 
     setLoading(true);
     try {
@@ -285,6 +287,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
   // 计算投票结果
   const calculateResults = useCallback(async (sessionId?: string) => {
+    if (!requireAuth()) return false;
     const targetSessionId = sessionId || currentSession?.id;
     if (!targetSessionId) return false;
 
@@ -317,6 +320,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
   // 处理投票结果
   const processResult = useCallback(async (resultId: string) => {
+    if (!requireAuth()) return false;
     setLoading(true);
     try {
       const { error } = await supabase.rpc('process_voting_result', {

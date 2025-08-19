@@ -8,6 +8,7 @@ import AnswerRecordPanel from '@/components/judge/AnswerRecordPanel';
 import JudgeActionPanel from '@/components/judge/JudgeActionPanel';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useGameState } from '@/hooks/useGameState';
 import { JudgePageProvider } from '@/contexts/JudgePageContext';
 import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
@@ -16,12 +17,26 @@ import { useRoomTransition } from '@/hooks/useRoomTransition';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser, requireAuth } = useAuth();
+  const { isJudge, isRoomParticipant, loading: permissionsLoading } = usePermissions(roomId);
   const { gameState } = useGameState(roomId || '');
   useAutoProcessDayVote(roomId || '', gameState);
   useEveningRefresh(gameState);
   // 法官端也需要在结束后创建并进入新房间
   useRoomTransition(roomId, gameState?.status);
+
+  // 要求用户登录
+  if (!requireAuth()) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">请先登录以访问法官页面</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   if (!roomId) {
     return (
@@ -29,6 +44,33 @@ const JudgePage = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="text-center">
             <p className="text-gray-400 mb-4">房间ID不存在</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // 检查权限加载状态
+  if (permissionsLoading) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
+            <p className="text-gray-400 mb-4">检查权限中...</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // 检查是否是法官
+  if (!isJudge) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">您不是此房间的法官</p>
           </div>
         </div>
       </PageLayout>

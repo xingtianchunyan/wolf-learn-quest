@@ -19,6 +19,7 @@ interface AuthContextType {
   initializing: boolean;
   isLoginOpen: boolean;
   setIsLoginOpen: (open: boolean) => void;
+  requireAuth: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,6 +105,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const requireAuth = (): boolean => {
+    if (initializing) return false;
+    if (!isLoggedIn) {
+      setIsLoginOpen(true);
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -138,7 +148,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoggedIn,
     initializing,
     isLoginOpen,
-    setIsLoginOpen
+    setIsLoginOpen,
+    requireAuth
   };
 
   return (

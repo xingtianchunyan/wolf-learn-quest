@@ -16,7 +16,7 @@ interface VotingPanelProps {
   gameStateId?: string;
   currentPhase?: number;
   currentRound?: number;
-  isJudge?: boolean;
+  isJudge: boolean; // 移除默认值，强制上层传入
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
 }
@@ -26,11 +26,25 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
   gameStateId,
   currentPhase,
   currentRound = 1,
-  isJudge = false,
+  isJudge,
   selectedTargetId,
   onTargetSelect
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, requireAuth } = useAuth();
+  
+  // 检查认证状态
+  if (!requireAuth() || !currentUser) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30">
+        <CardContent className="p-6 text-center">
+          <div className="text-gray-400">
+            <Vote className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>请先登录以参与投票</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   const { players } = usePlayersRealtime(roomId);
   const { roleStates } = useRoleStates(roomId);
   const { roleDesigns } = useRoleDesigns();
@@ -82,7 +96,8 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
   }, [players, currentUser?.id, canVoteForSelf]);
 
   const handleVote = async (targetId?: string) => {
-    if (!currentUser) return;
+    // 再次确保用户已登录（双重保护）
+    if (!requireAuth() || !currentUser) return;
     
     const success = await castVote(currentUser.id, targetId);
     if (success && onTargetSelect) {

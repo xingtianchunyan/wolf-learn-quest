@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 export interface GameState {
   id: string;
@@ -34,6 +35,7 @@ export const useGameState = (roomId: string) => {
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const { toast } = useToast();
+  const { requireAuth } = useAuth();
 
   // Fetch initial game state and settings
   useEffect(() => {
@@ -198,7 +200,7 @@ export const useGameState = (roomId: string) => {
 
   // Start game - 修改以直接操作数据库而不使用过时的函数
   const startGame = async () => {
-    if (!roomId) return false;
+    if (!requireAuth() || !roomId) return false;
 
     try {
       // 首先确保游戏设置存在
@@ -316,7 +318,7 @@ export const useGameState = (roomId: string) => {
 
   // Advance phase
   const advancePhase = async () => {
-    if (!roomId) return false;
+    if (!requireAuth() || !roomId) return false;
 
     try {
       const { error } = await supabase.rpc('advance_game_phase', {
@@ -342,7 +344,7 @@ export const useGameState = (roomId: string) => {
 
   // Toggle pause
   const togglePause = async () => {
-    if (!roomId) return false;
+    if (!requireAuth() || !roomId) return false;
 
     try {
       const { data, error } = await supabase.rpc('toggle_game_pause', {
@@ -372,7 +374,7 @@ export const useGameState = (roomId: string) => {
 
   // Update game settings
   const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>) => {
-    if (!roomId) return false;
+    if (!requireAuth() || !roomId) return false;
 
     const dbUpdates: { [key: string]: any } = {};
     if (settings.isAutoAdvance !== undefined) dbUpdates.is_auto_advance = settings.isAutoAdvance;
@@ -411,7 +413,7 @@ export const useGameState = (roomId: string) => {
 
   // End game
   const endGame = async () => {
-    if (!gameState) return false;
+    if (!requireAuth() || !gameState) return false;
 
     try {
       // Step 1: Update game state to 'ended'

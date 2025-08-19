@@ -17,6 +17,7 @@ import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
 import { useAuth } from '@/providers/AuthProvider';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
@@ -30,17 +31,30 @@ const GamePage = () => {
   // 自动在游戏结束后迁移到新房间
   useRoomTransition(roomId, gameState?.status);
   
-  // Get current user's role information
-  const { currentUser } = useAuth();
-  const currentUserId = currentUser?.id || '';
+  // 权限和认证检查
+  const { currentUser, requireAuth } = useAuth();
+  const { isJudge, isRoomParticipant, loading: permissionsLoading } = usePermissions(roomId);
+  
+  // 要求用户登录
+  if (!requireAuth()) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">请先登录以访问游戏</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Get current user's role information - 只有登录用户才能获取
+  const currentUserId = currentUser!.id; // 此时已确保用户已登录
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
   
   // 目标选择状态
   const [selectedTargetId, setSelectedTargetId] = useState<string>('');
-  
-  // Determine if user is judge
-  const isJudge = false; // TODO: replace with actual judge check
   
   // Check current phase to determine which system to show
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
@@ -52,6 +66,33 @@ const GamePage = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="text-center">
             <p className="text-gray-400 mb-4">房间ID不存在</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // 检查权限加载状态
+  if (permissionsLoading) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
+            <p className="text-gray-400 mb-4">检查权限中...</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // 检查是否是房间参与者
+  if (!isRoomParticipant) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto py-6 px-4">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">您不是此房间的参与者</p>
           </div>
         </div>
       </PageLayout>

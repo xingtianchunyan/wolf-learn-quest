@@ -9,12 +9,12 @@ import { useVotingSystem } from '@/hooks/useVotingSystem';
 
 interface VotingSystemManagerProps {
   roomId: string;
-  isJudge?: boolean;
+  isJudge: boolean; // 移除默认值，强制上层传入
 }
 
 export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   roomId,
-  isJudge = false
+  isJudge
 }) => {
   const { gameState } = useGameState(roomId);
   const { currentSession, createVotingSession, fetchCurrentSession } = useVotingSystem(roomId, gameState?.id);

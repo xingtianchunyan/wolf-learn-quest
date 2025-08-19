@@ -19,10 +19,10 @@ import { useGameState } from '@/hooks/useGameState';
 
 interface GameStateDisplayProps {
   roomId: string;
-  isJudge?: boolean;
+  isJudge: boolean; // 移除默认值，强制上层传入
 }
 
-const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge = false }) => {
+const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge }) => {
   const {
     gameState,
     gameSettings,
