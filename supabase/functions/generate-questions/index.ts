@@ -166,14 +166,14 @@ serve(async (req) => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
-    // 将每道题目单独保存到questions表 - 修复：不传入room_id
+    // 将每道题目单独保存到questions表 - 修复：使用正确的correct_option映射 (0-3)
     const individualQuestions = questionsData.questions.map((q: any, index: number) => ({
       question: q.question,
       option_a: q.option_a,
       option_b: q.option_b,
       option_c: q.option_c,
       option_d: q.option_d,
-      correct_option: q.correct_answer === 'A' ? 1 : q.correct_answer === 'B' ? 2 : q.correct_answer === 'C' ? 3 : 4,
+      correct_option: q.correct_answer === 'A' ? 0 : q.correct_answer === 'B' ? 1 : q.correct_answer === 'C' ? 2 : 3,
       explanation: q.explanation,
       generated_questions_id: savedQuestionSet.id,
       difficulty: Math.floor(index / 6) + 1, // 分为3个难度等级
