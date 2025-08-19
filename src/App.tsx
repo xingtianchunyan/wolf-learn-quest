@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "./components/layout/LanguageSwitcher";
-import { PermissionProvider } from "./contexts/PermissionContext";
 import Index from "./pages/Index";
 import GameLobby from "./pages/GameLobby";
 import GameRoom from "./pages/GameRoom";
@@ -27,21 +26,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/lobby" element={<GameLobby />} />
-              <Route path="/room/:id" element={
-                <PermissionProvider>
-                  <GameRoom />
-                </PermissionProvider>
-              } />
-              <Route path="/room/:id/game" element={
-                <PermissionProvider>
-                  <GamePage />
-                </PermissionProvider>
-              } />
-              <Route path="/room/:id/judge" element={
-                <PermissionProvider>
-                  <JudgePage />
-                </PermissionProvider>
-              } />
+              <Route path="/room/:id" element={<GameRoom />} />
+              <Route path="/room/:id/game" element={<GamePage />} />
+              <Route path="/room/:id/judge" element={<JudgePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

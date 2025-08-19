@@ -2,7 +2,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { SkillService } from '@/services/skillService';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export interface SkillUse {
@@ -183,13 +182,23 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
 
     setLoading(true);
     try {
-      const data = await SkillService.useSkill(
-        userId,
-        gameStateId,
-        skillName,
-        targetUserId,
-        skillData
-      );
+      const { data, error } = await supabase.rpc('use_skill', {
+        p_user_id: userId,
+        p_game_state_id: gameStateId,
+        p_skill_name: skillName,
+        p_target_user_id: targetUserId,
+        p_skill_data: skillData
+      });
+
+      if (error) {
+        console.error('Error using skill:', error);
+        toast({
+          title: '使用技能失败',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return null;
+      }
 
       toast({
         title: '技能使用成功',
@@ -220,14 +229,19 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
     triggerDelaySeconds: number = 0
   ) => {
     try {
-      const data = await SkillService.queueSkillEffect(
-        skillUseId,
-        effectType,
-        effectData,
-        priority,
-        conditions,
-        triggerDelaySeconds
-      );
+      const { data, error } = await supabase.rpc('queue_skill_effect', {
+        p_skill_use_id: skillUseId,
+        p_effect_type: effectType,
+        p_effect_data: effectData,
+        p_priority: priority,
+        p_conditions: conditions,
+        p_trigger_delay_seconds: triggerDelaySeconds
+      });
+
+      if (error) {
+        console.error('Error queuing skill effect:', error);
+        return null;
+      }
 
       return data;
     } catch (error) {
@@ -241,8 +255,16 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
     if (!gameStateId) return 0;
 
     try {
-      const data = await SkillService.processSkillEffects(gameStateId);
-      return data;
+      const { data, error } = await supabase.rpc('process_skill_effects', {
+        p_game_state_id: gameStateId
+      });
+
+      if (error) {
+        console.error('Error processing skill effects:', error);
+        return 0;
+      }
+
+      return data || 0;
     } catch (error) {
       console.error('Error processing skill effects:', error);
       return 0;
