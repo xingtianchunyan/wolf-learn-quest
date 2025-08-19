@@ -12,13 +12,13 @@ import { useToast } from '@/components/ui/use-toast';
  *   - Players listen for rooms.next_room_id, leave old room and join the new one
  */
 export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'waiting' | 'active' | 'paused' | 'ended') => {
-  const { currentUser } = useAuth();
+  const { currentUser, requireAuth } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const handledRef = useRef(false);
 
   useEffect(() => {
-    if (!roomId || !currentUser) return;
+    if (!roomId || !currentUser || !requireAuth()) return;
 
     let roomSub: ReturnType<typeof supabase.channel> | null = null;
     let cancelled = false;
