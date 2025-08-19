@@ -8,7 +8,7 @@ import AnswerRecordPanel from '@/components/judge/AnswerRecordPanel';
 import JudgeActionPanel from '@/components/judge/JudgeActionPanel';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/contexts/PermissionContext';
 import { useGameState } from '@/hooks/useGameState';
 import { JudgePageProvider } from '@/contexts/JudgePageContext';
 import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';

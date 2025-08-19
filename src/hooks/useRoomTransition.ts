@@ -24,6 +24,7 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
     let cancelled = false;
 
     const leaveRoomExplicit = async (rid: string) => {
+      if (!requireAuth()) return;
       try {
         // Leave as player (noop if not in room_players)
         await supabase.from('room_players').delete().eq('room_id', rid).eq('user_id', currentUser.id);
@@ -42,6 +43,7 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
         await leaveRoomExplicit(roomId);
 
         if (!asJudge) {
+          if (!requireAuth()) return;
           // Insert player into new room
           const { error } = await supabase.from('room_players').insert({
             room_id: newRoomId,
