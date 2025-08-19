@@ -17,7 +17,7 @@ import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
 import { useAuth } from '@/providers/AuthProvider';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/contexts/PermissionContext';
 
 const GamePage = () => {
   const { id: roomId } = useParams();

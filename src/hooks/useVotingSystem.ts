@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { VotingService } from '@/services/votingService';
 import { useAuth } from '@/providers/AuthProvider';
 
 export interface VotingSession {
@@ -220,22 +221,20 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('create_voting_session', {
-        p_game_state_id: gameStateId,
-        p_room_id: roomId,
-        p_round_number: roundNumber,
-        p_phase: phase,
-        p_session_type: sessionType
-      });
-
-      if (error) throw error;
+      const sessionId = await VotingService.createVotingSession(
+        gameStateId,
+        roomId,
+        roundNumber,
+        phase,
+        sessionType
+      );
 
       toast({
         title: '投票开始',
         description: '新的投票会话已创建',
       });
 
-      return data;
+      return sessionId;
     } catch (error) {
       console.error('Error creating voting session:', error);
       toast({
@@ -258,13 +257,11 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('cast_vote', {
-        p_voting_session_id: currentSession.id,
-        p_voter_id: voterId,
-        p_target_id: targetId
-      });
-
-      if (error) throw error;
+      await VotingService.castVote(
+        currentSession.id,
+        voterId,
+        targetId
+      );
 
       toast({
         title: '投票成功',
@@ -293,11 +290,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('calculate_voting_results', {
-        p_voting_session_id: targetSessionId
-      });
-
-      if (error) throw error;
+      await VotingService.calculateVotingResults(targetSessionId);
 
       toast({
         title: '投票结果已计算',
@@ -323,11 +316,7 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     if (!requireAuth()) return false;
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('process_voting_result', {
-        p_voting_result_id: resultId
-      });
-
-      if (error) throw error;
+      await VotingService.processVotingResult(resultId);
 
       toast({
         title: '投票结果处理完成',
