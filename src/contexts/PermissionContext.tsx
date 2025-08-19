@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+// 新增：从路由参数自动解析 roomId，避免未传递 roomId 时权限判断失效
+import { useParams } from 'react-router-dom';
 
 export interface PermissionState {
   isJudge: boolean;
@@ -34,6 +36,10 @@ interface PermissionProviderProps {
 
 export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children, roomId }) => {
   const { currentUser, isLoggedIn, initializing, requireAuth } = useAuth();
+  // 当未显式传入 roomId 时，自动从 URL 参数获取
+  const params = useParams();
+  const effectiveRoomId = roomId ?? params.id; // 可能为 undefined，后续逻辑已做防御
+
   const [permissions, setPermissions] = useState<PermissionState>({
     isJudge: false,
     isRoomParticipant: false,
@@ -45,7 +51,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
   });
 
   const checkPermissions = async () => {
-    if (!roomId || !currentUser?.id || !isLoggedIn) {
+    if (!effectiveRoomId || !currentUser?.id || !isLoggedIn) {
       setPermissions({
         isJudge: false,
         isRoomParticipant: false,
@@ -63,10 +69,10 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     try {
       // 并行查询房间信息、玩家状态、角色状态、游戏状态
       const [roomData, playerData, roleStateData, gameStateData] = await Promise.all([
-        supabase.from('rooms').select('judge_user_id').eq('id', roomId).single(),
-        supabase.from('room_players').select('id').eq('room_id', roomId).eq('user_id', currentUser.id).single(),
-        supabase.from('role_states').select('role_status, status_effects').eq('room_id', roomId).eq('user_id', currentUser.id).single(),
-        supabase.from('game_states').select('current_phase, status').eq('room_id', roomId).single()
+        supabase.from('rooms').select('judge_user_id').eq('id', effectiveRoomId).single(),
+        supabase.from('room_players').select('id').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
+        supabase.from('role_states').select('role_status, status_effects').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
+        supabase.from('game_states').select('current_phase, status').eq('room_id', effectiveRoomId).single()
       ]);
 
       const isJudge = roomData.data?.judge_user_id === currentUser.id;
@@ -112,21 +118,21 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     if (!initializing) {
       checkPermissions();
     }
-  }, [roomId, currentUser?.id, isLoggedIn, initializing]);
+  }, [effectiveRoomId, currentUser?.id, isLoggedIn, initializing]);
 
   // 实时监听权限变化
   useEffect(() => {
-    if (!roomId || !currentUser?.id) return;
+    if (!effectiveRoomId || !currentUser?.id) return;
 
     const channel = supabase
-      .channel(`permissions_${roomId}_${currentUser.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'role_states', filter: `room_id=eq.${roomId}` }, () => {
+      .channel(`permissions_${effectiveRoomId}_${currentUser.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'role_states', filter: `room_id=eq.${effectiveRoomId}` }, () => {
         checkPermissions();
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_states', filter: `room_id=eq.${roomId}` }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_states', filter: `room_id=eq.${effectiveRoomId}` }, () => {
         checkPermissions();
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${effectiveRoomId}` }, () => {
         checkPermissions();
       })
       .subscribe();
@@ -134,7 +140,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [roomId, currentUser?.id]);
+  }, [effectiveRoomId, currentUser?.id]);
 
   const value: PermissionContextType = {
     ...permissions,
