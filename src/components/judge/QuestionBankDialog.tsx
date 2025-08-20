@@ -88,8 +88,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     if (isOpen) {
       fetchGeneratedQuestions();
       // Convert linkedQuestions to match the local Question type
-      const convertedQuestions = linkedQuestions?.map(q => ({
-        ...q,
+      const convertedQuestions = linkedQuestions?.map(lq => ({
+        ...lq.question,
         selected: true
       })) || [];
       setSelectedQuestions(convertedQuestions);

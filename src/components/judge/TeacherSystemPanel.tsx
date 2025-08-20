@@ -16,17 +16,27 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName } = useGameState(roomId);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
 
+  // 计算当前轮次和阶段对应的题目序号（与学生端保持一致）
+  const calculateQuestionOrder = (round: number, phase: number): number => {
+    const phaseIndex = phase === 2 ? 0 : phase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
+    if (phaseIndex === -1) return -1;
+    
+    const questionIndex = (round - 1) * 2 + phaseIndex;
+    return questionIndex + 1; // 转换为1基的question_order
+  };
+
   useEffect(() => {
     if (isSystemLinked && gameState && gameState.status === 'active') {
       const { currentRound, currentPhase } = gameState;
-      // 修复阶段判断：现在 currentPhase 是数字类型
-      const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
+      const targetQuestionOrder = calculateQuestionOrder(currentRound, currentPhase);
 
-      if (phaseIndex !== -1) {
-        const questionIndex = (currentRound - 1) * 2 + phaseIndex;
-        if (linkedQuestions && linkedQuestions.length > questionIndex) {
-          setCurrentQuestion(linkedQuestions[questionIndex]);
+      if (targetQuestionOrder > 0 && linkedQuestions) {
+        // 使用question_order精确查找，而不是数组下标
+        const foundQuestion = linkedQuestions.find(lq => lq.question_order === targetQuestionOrder);
+        if (foundQuestion) {
+          setCurrentQuestion(foundQuestion.question);
         } else {
+          console.warn('TeacherSystemPanel: 未找到题目，question_order:', targetQuestionOrder);
           setCurrentQuestion(null);
         }
       } else {
@@ -141,7 +151,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                       ? '游戏已结束'
                       : !isAnsweringPhase 
                         ? '当前非答题阶段' 
-                        : '当前阶段无题目信息或题目已用尽'
+                        : '当前阶段的题目未找到，请检查题库与题目顺序设置'
                 }
               </div>
             )}

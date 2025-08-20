@@ -40,14 +40,15 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       return [];
     }
 
-    return linkedQuestions.map((question, index) => {
-      const round = Math.floor(index / 2) + 1;
-      // 修复阶段判断逻辑：现在使用数字类型的阶段
-      const phase = index % 2 === 0 ? '傍晚' : '黎明'; // 偶数索引=傍晚，奇数索引=黎明
+    return linkedQuestions.map((linkedQuestion, index) => {
+      const { question_order, question } = linkedQuestion;
+      const round = Math.floor((question_order - 1) / 2) + 1;
+      // 基于question_order计算阶段：奇数=傍晚，偶数=黎明
+      const phase = question_order % 2 === 1 ? '傍晚' : '黎明';
 
       const answersForQuestion: PlayerAnswer[] = players.map(player => {
         const playerAnswerData = roomAnswers.find(
-          ra => ra.user_id === player.userId && ra.question_order === index + 1
+          ra => ra.user_id === player.userId && ra.question_order === question_order
         );
 
         if (playerAnswerData) {
