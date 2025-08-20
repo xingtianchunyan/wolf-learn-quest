@@ -50,6 +50,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [questionNotFound, setQuestionNotFound] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [hasQuestionsInRoom, setHasQuestionsInRoom] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
 
   console.log('学生系统：完整状态调试信息', {
     roomId,
@@ -243,13 +244,22 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       return;
     }
 
-    // 计算题目序号：傍晚=奇数题目，黎明=偶数题目
-    let targetQuestionOrder = -1;
-    if (currentPhase === 2) { // 傍晚阶段 - 奇数题目 (1, 3, 5, 7...)
-      targetQuestionOrder = (currentRound - 1) * 2 + 1;
-    } else if (currentPhase === 4) { // 黎明阶段 - 偶数题目 (2, 4, 6, 8...)
-      targetQuestionOrder = (currentRound - 1) * 2 + 2;
+    // 计算题目序号：与TeacherSystemPanel保持一致
+    // phaseIndex: 傍晚=0, 黎明=1
+    const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1;
+    
+    if (phaseIndex === -1) {
+      console.log('学生系统：无效的游戏阶段:', currentPhase);
+      return;
     }
+    
+    // 计算在数组中的索引（0基）
+    const questionIndex = (currentRound - 1) * 2 + phaseIndex;
+    // 转换为数据库中的question_order（1基）
+    const targetQuestionOrder = questionIndex + 1;
+    
+    // 保存当前题目索引供其他地方使用
+    setCurrentQuestionIndex(questionIndex);
 
     console.log('学生系统：计算目标题目序号', {
       currentRound,
@@ -326,10 +336,10 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
       const { currentRound, currentPhase } = gameState;
       
-      // 计算题目序号
-      const questionOrder = currentPhase === 2 
-        ? (currentRound - 1) * 2 + 1 
-        : (currentRound - 1) * 2 + 2;
+      // 计算题目序号：与上面的逻辑保持一致
+      const phaseIndex = currentPhase === 2 ? 0 : 1;
+      const questionIndex = (currentRound - 1) * 2 + phaseIndex;
+      const questionOrder = questionIndex + 1;
 
       console.log('学生系统：检查用户答案，题目序号:', questionOrder);
 
@@ -377,9 +387,10 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     setSelectedOption(optionNumber);
 
     const { currentRound, currentPhase } = gameState;
-    const questionOrder = currentPhase === 2 
-      ? (currentRound - 1) * 2 + 1 
-      : (currentRound - 1) * 2 + 2;
+    // 计算题目序号：与上面的逻辑保持一致
+    const phaseIndex = currentPhase === 2 ? 0 : 1;
+    const questionIndex = (currentRound - 1) * 2 + phaseIndex;
+    const questionOrder = questionIndex + 1;
     const isCorrect = optionNumber === currentQuestion.correct_option;
 
     console.log('学生系统：提交答案:', {
@@ -520,7 +531,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                 <StudentQuestionNotFound 
                   roundNumber={roundNumber}
                   phaseName={phaseName}
-                  expectedQuestionIndex={-1}
+                  expectedQuestionIndex={currentQuestionIndex}
                   totalQuestions={roomQuestions.length}
                 />
               ) : currentQuestion ? (
