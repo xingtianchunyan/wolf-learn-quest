@@ -14,7 +14,20 @@ import JudgePage from "./pages/JudgePage";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from '@/providers/AuthProvider';
 
-const queryClient = new QueryClient();
+// 文件级注释：React Query 全局客户端配置（重试/缓存/错误处理）
+// 注意：可以根据需要将 onError 接入全局 toast
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,          // 减少重试次数，避免抖动
+      staleTime: 60_000, // 1 分钟内数据视为新鲜
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,          // 变更默认不重试，交由 UI 处理
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

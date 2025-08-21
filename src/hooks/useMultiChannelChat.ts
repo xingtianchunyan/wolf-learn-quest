@@ -1,15 +1,40 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ChatChannel } from '@/components/chat/ChatChannelSelector';
 import { useGameState } from './useGameState';
+import { usePermissions } from '@/contexts/PermissionContext';
 
 interface UseMultiChannelChatProps {
   roomId: string | null;
   currentUser: any;
   userRole?: string;
+}
+
+/**
+ * 接口注释：系统公告可见性结构
+ */
+interface AnnouncementVisibility {
+  isVisibleToJudge: boolean;
+  isVisibleToActor: boolean;
+  isVisibleToTarget: boolean;
+  isVisibleToWerewolves: boolean;
+  isVisibleToRescuers: boolean;
+  isVisibleToAll: boolean;
+}
+
+/**
+ * 接口注释：系统公告元数据结构（与服务层保持一致的关键字段）
+ */
+interface SystemAnnouncementMetadata {
+  visibility?: AnnouncementVisibility;
+  data?: {
+    actorUserId?: string;
+    targetUserId?: string;
+    roomId?: string;
+  };
 }
 
 export const useMultiChannelChat = ({
@@ -22,6 +47,32 @@ export const useMultiChannelChat = ({
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { gameState } = useGameState(roomId);
+  const { isJudge } = usePermissions(roomId);
+
+  /**
+   * 函数级注释：判断当前用户是否可见该系统公告
+   * - 基于 PermissionContext 的 isJudge 和当前用户/角色信息
+   * - 使用消息 metadata.visibility 进行细粒度判定
+   */
+  const canViewSystemAnnouncement = useCallback((metadata: SystemAnnouncementMetadata | undefined): boolean => {
+    if (!metadata || !metadata.visibility) return true; // 无可见性配置则默认可见（与现有行为保持兼容）
+    const v = metadata.visibility;
+    const d = metadata.data || {};
+
+    if (v.isVisibleToAll) return true;
+    if (isJudge && v.isVisibleToJudge) return true;
+    if (v.isVisibleToActor && currentUser?.id && currentUser.id === d.actorUserId) return true;
+    if (v.isVisibleToTarget && currentUser?.id && currentUser.id === d.targetUserId) return true;
+
+    // 按角色阵营进行可见性判定
+    const isWerewolf = userRole ? ['werewolf', 'werewolf1', 'werewolf2', 'whitewolf', 'demon'].includes(userRole) : false;
+    const isRescuer = userRole ? ['witch', 'warlock'].includes(userRole) : false;
+
+    if (v.isVisibleToWerewolves && isWerewolf) return true;
+    if (v.isVisibleToRescuers && isRescuer) return true;
+
+    return false;
+  }, [isJudge, currentUser?.id, userRole]);
 
   // 确定可用频道
   const getAvailableChannels = (): ChatChannel[] => {
@@ -195,28 +246,16 @@ export const useMultiChannelChat = ({
     }
   };
 
-  // 过滤消息并应用可见性规则
+  // 过滤消息并应用可见性规则（修复 TODO：实现更完整的权限检查）
   const getFilteredMessages = () => {
     let filteredMessages = currentChannel === 'all' ? messages : messages.filter(msg => msg.chat_type === currentChannel);
     
     // 对系统公告应用可见性规则
     if (currentChannel === 'system' || currentChannel === 'all') {
       filteredMessages = filteredMessages.filter(msg => {
-        if (msg.chat_type !== 'system' || !msg.metadata?.visibility) {
-          return true; // 非系统公告或无可见性配置的消息默认可见
-        }
-        
-        // 应用系统公告可见性规则
-        const visibility = msg.metadata.visibility;
-        const announcementData = msg.metadata.data;
-        
-        // 简化版权限检查（实际应该基于用户角色和权限）
-        if (visibility.isVisibleToAll) return true;
-        if (visibility.isVisibleToActor && currentUser?.id === announcementData?.actorUserId) return true;
-        if (visibility.isVisibleToTarget && currentUser?.id === announcementData?.targetUserId) return true;
-        
-        // TODO: 实现更完整的权限检查
-        return visibility.isVisibleToJudge; // 暂时假设当前用户是法官
+        if (msg.chat_type !== 'system') return true;
+        const metadata = (msg as any).metadata as SystemAnnouncementMetadata | undefined;
+        return canViewSystemAnnouncement(metadata);
       });
     }
     
