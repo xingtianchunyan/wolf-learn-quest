@@ -36,7 +36,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillConfirmation, setSkillConfirmation] = useState(false);
-  const { useSkill, loading, getUserSkillUses, getUserSkillEffects } = useSkillSystem(roomId, gameStateId, userId);
+  const { useSkill, loading, getUserSkillUses, getUserSkillEffects } = useSkillSystem(gameStateId, roomId);
   
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;

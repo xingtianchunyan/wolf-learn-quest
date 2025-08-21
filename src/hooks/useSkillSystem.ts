@@ -1,3 +1,24 @@
+/**
+ * @deprecated 旧版技能系统，请使用 useEnhancedSkillSystem 替代
+ * 
+ * 该 hook 将在未来版本中移除，建议迁移到增强版技能系统：
+ * - 更好的类型安全
+ * - 统一的冲突处理机制  
+ * - 配置化的技能定义
+ * - 改进的错误处理
+ * 
+ * 迁移指南：
+ * 1. 替换 import：useSkillSystem → useEnhancedSkillSystem
+ * 2. 更新方法调用：useSkill → useSkillEnhanced
+ * 3. 检查新的接口定义和参数结构
+ * 
+ * @example
+ * // 旧用法 (已废弃)
+ * const { useSkill } = useSkillSystem();
+ * 
+ * // 新用法 (推荐)
+ * const { useSkillEnhanced } = useEnhancedSkillSystem();
+ */
 
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -50,15 +71,18 @@ export interface SkillTarget {
   target_type: string;
   effect_applied: any;
   effect_duration?: number;
-  effect_start_time: string;
   effect_end_time?: string;
   is_active: boolean;
   stack_count: number;
+  effect_start_time: string;
   created_at: string;
   updated_at: string;
 }
 
-export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: string) => {
+/**
+ * @deprecated 请使用 useEnhancedSkillSystem 替代
+ */
+export const useSkillSystem = (gameStateId: string, roomId: string) => {
   const [skillUses, setSkillUses] = useState<SkillUse[]>([]);
   const [skillEffectsQueue, setSkillEffectsQueue] = useState<SkillEffectsQueue[]>([]);
   const [skillTargets, setSkillTargets] = useState<SkillTarget[]>([]);
@@ -66,79 +90,79 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
   const { toast } = useToast();
 
   // 获取技能使用记录
-  useEffect(() => {
+  const fetchSkillUses = useCallback(async () => {
     if (!gameStateId) return;
-
-    const fetchSkillUses = async () => {
+    
+    try {
       const { data, error } = await supabase
         .from('skill_uses')
         .select('*')
         .eq('game_state_id', gameStateId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching skill uses:', error);
-      } else if (data) {
-        setSkillUses(data as SkillUse[]);
-      }
-    };
-
-    fetchSkillUses();
+      if (error) throw error;
+      setSkillUses(data || []);
+    } catch (error) {
+      console.error('Error fetching skill uses:', error);
+    }
   }, [gameStateId]);
 
   // 获取技能效果队列
-  useEffect(() => {
-    if (!roomId || !gameStateId) return;
-
-    const fetchSkillEffectsQueue = async () => {
+  const fetchSkillEffectsQueue = useCallback(async () => {
+    if (!gameStateId) return;
+    
+    try {
       const { data, error } = await supabase
         .from('skill_effects_queue')
         .select('*')
         .eq('game_state_id', gameStateId)
-        .order('priority', { ascending: true })
-        .order('execution_order', { ascending: true });
+        .order('priority', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching skill effects queue:', error);
-      } else if (data) {
-        setSkillEffectsQueue(data as SkillEffectsQueue[]);
-      }
-    };
-
-    fetchSkillEffectsQueue();
-  }, [roomId, gameStateId]);
-
-  // 获取技能目标
-  useEffect(() => {
-    if (!gameStateId) return;
-
-    const fetchSkillTargets = async () => {
-      const { data, error } = await supabase
-        .from('skill_targets')
-        .select(`
-          *,
-          skill_uses!inner(game_state_id)
-        `)
-        .eq('skill_uses.game_state_id', gameStateId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching skill targets:', error);
-      } else if (data) {
-        setSkillTargets(data as SkillTarget[]);
-      }
-    };
-
-    fetchSkillTargets();
+      if (error) throw error;
+      setSkillEffectsQueue(data || []);
+    } catch (error) {
+      console.error('Error fetching skill effects queue:', error);
+    }
   }, [gameStateId]);
 
-  // 实时订阅技能使用变化
+  // 获取技能目标
+  const fetchSkillTargets = useCallback(async () => {
+    if (!gameStateId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('skill_targets')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSkillTargets(data || []);
+    } catch (error) {
+      console.error('Error fetching skill targets:', error);
+    }
+  }, [gameStateId]);
+
+  // 初始化数据
+  useEffect(() => {
+    const initializeData = async () => {
+      await Promise.all([
+        fetchSkillUses(),
+        fetchSkillEffectsQueue(),
+        fetchSkillTargets()
+      ]);
+    };
+
+    initializeData();
+  }, [fetchSkillUses, fetchSkillEffectsQueue, fetchSkillTargets]);
+
+  // 监听技能使用变化
   useEffect(() => {
     if (!gameStateId) return;
 
     const channel = supabase
       .channel(`skill_uses_${gameStateId}`)
-      .on<SkillUse>(
+      .on(
         'postgres_changes',
         {
           event: '*',
@@ -146,16 +170,13 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
           table: 'skill_uses',
           filter: `game_state_id=eq.${gameStateId}`,
         },
-        (payload: RealtimePostgresChangesPayload<SkillUse>) => {
-          if (payload.new && typeof payload.new === 'object') {
-            const newSkillUse = payload.new as SkillUse;
-            if (payload.eventType === 'INSERT') {
-              setSkillUses(current => [newSkillUse, ...current]);
-            } else if (payload.eventType === 'UPDATE') {
-              setSkillUses(current =>
-                current.map(su => su.id === newSkillUse.id ? newSkillUse : su)
-              );
-            }
+        (payload: RealtimePostgresChangesPayload<any>) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setSkillUses(current => [payload.new as SkillUse, ...current]);
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setSkillUses(current =>
+              current.map(use => use.id === payload.new!.id ? payload.new as SkillUse : use)
+            );
           }
         }
       )
@@ -170,21 +191,22 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
   const useSkill = useCallback(async (
     skillName: string,
     targetUserId?: string,
-    skillData: any = {}
-  ) => {
-    if (!gameStateId || !userId) {
+    skillData?: any
+  ): Promise<string | null> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) {
       toast({
-        title: '使用技能失败',
-        description: '缺少必要的游戏状态或用户信息',
-        variant: 'destructive',
+        title: "错误",
+        description: "请先登录",
+        variant: "destructive",
       });
       return null;
     }
 
     setLoading(true);
     try {
-      const data = await SkillService.useSkill(
-        userId,
+      const skillUseId = await SkillService.useSkill(
+        user.id,
         gameStateId,
         skillName,
         targetUserId,
@@ -192,35 +214,36 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
       );
 
       toast({
-        title: '技能使用成功',
-        description: `成功使用技能: ${skillName}`,
+        title: "技能使用成功",
+        description: `已使用技能：${skillName}`,
       });
 
-      return data;
-    } catch (error) {
+      return skillUseId;
+    } catch (error: any) {
       console.error('Error using skill:', error);
       toast({
-        title: '使用技能失败',
-        description: '系统错误，请重试',
-        variant: 'destructive',
+        title: "技能使用失败",
+        description: error.message || "请重试",
+        variant: "destructive",
       });
       return null;
     } finally {
       setLoading(false);
     }
-  }, [gameStateId, userId, toast]);
+  }, [gameStateId, toast]);
 
   // 队列技能效果
   const queueSkillEffect = useCallback(async (
     skillUseId: string,
     effectType: string,
     effectData: any,
-    priority: number = 100,
-    conditions: any = {},
-    triggerDelaySeconds: number = 0
-  ) => {
+    priority?: number,
+    conditions?: any,
+    triggerDelaySeconds?: number
+  ): Promise<string | null> => {
+    setLoading(true);
     try {
-      const data = await SkillService.queueSkillEffect(
+      const effectId = await SkillService.queueSkillEffect(
         skillUseId,
         effectType,
         effectData,
@@ -229,54 +252,78 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
         triggerDelaySeconds
       );
 
-      return data;
-    } catch (error) {
-      console.error('Error queuing skill effect:', error);
+      return effectId;
+    } catch (error: any) {
+      console.error('Error queueing skill effect:', error);
+      toast({
+        title: "技能效果队列失败",
+        description: error.message || "请重试",
+        variant: "destructive",
+      });
       return null;
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   // 处理技能效果
-  const processSkillEffects = useCallback(async () => {
-    if (!gameStateId) return 0;
-
+  const processSkillEffects = useCallback(async (gameStateId: string): Promise<number> => {
+    setLoading(true);
     try {
-      const data = await SkillService.processSkillEffects(gameStateId);
-      return data;
-    } catch (error) {
+      const processed = await SkillService.processSkillEffects(gameStateId);
+      
+      toast({
+        title: "技能效果处理完成",
+        description: `处理了 ${processed} 个效果`,
+      });
+
+      return processed;
+    } catch (error: any) {
       console.error('Error processing skill effects:', error);
+      toast({
+        title: "技能效果处理失败",
+        description: error.message || "请重试",
+        variant: "destructive",
+      });
       return 0;
+    } finally {
+      setLoading(false);
     }
-  }, [gameStateId]);
+  }, [toast]);
 
   // 清理过期效果
-  const cleanupExpiredEffects = useCallback(async () => {
+  const cleanupExpiredEffects = useCallback(async (): Promise<void> => {
     try {
-      const { error } = await supabase.rpc('cleanup_expired_skill_effects');
-      if (error) {
-        console.error('Error cleaning up expired effects:', error);
-      }
-    } catch (error) {
+      await SkillService.cleanupExpiredEffects();
+      await fetchSkillTargets(); // 刷新目标列表
+    } catch (error: any) {
       console.error('Error cleaning up expired effects:', error);
+      toast({
+        title: "清理过期效果失败",
+        description: error.message || "请重试",
+        variant: "destructive",
+      });
     }
-  }, []);
+  }, [fetchSkillTargets, toast]);
 
-  // 获取用户技能使用记录
+  // 获取用户的技能使用记录
   const getUserSkillUses = useCallback((targetUserId: string): SkillUse[] => {
-    return skillUses.filter(su => su.user_id === targetUserId || su.target_user_id === targetUserId);
+    return skillUses.filter(use => 
+      use.user_id === targetUserId || use.target_user_id === targetUserId
+    );
   }, [skillUses]);
 
-  // 获取用户技能效果
+  // 获取用户的技能效果
   const getUserSkillEffects = useCallback((targetUserId: string): SkillTarget[] => {
-    return skillTargets.filter(st => st.target_user_id === targetUserId && st.is_active);
+    return skillTargets.filter(target => target.target_user_id === targetUserId);
   }, [skillTargets]);
 
   // 检查是否有活跃效果
   const hasActiveEffect = useCallback((targetUserId: string, effectType: string): boolean => {
-    return skillTargets.some(st => 
-      st.target_user_id === targetUserId && 
-      st.is_active && 
-      st.effect_applied?.effect_type === effectType
+    return skillTargets.some(target => 
+      target.target_user_id === targetUserId && 
+      target.is_active &&
+      target.effect_applied?.type === effectType
     );
   }, [skillTargets]);
 
@@ -291,6 +338,6 @@ export const useSkillSystem = (roomId: string, gameStateId?: string, userId?: st
     cleanupExpiredEffects,
     getUserSkillUses,
     getUserSkillEffects,
-    hasActiveEffect,
+    hasActiveEffect
   };
 };

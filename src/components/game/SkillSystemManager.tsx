@@ -37,10 +37,10 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
     loading,
     processSkillEffects,
     cleanupExpiredEffects
-  } = useSkillSystem(roomId, gameStateId, userId);
+  } = useSkillSystem(gameStateId, roomId);
 
   const handleProcessEffects = async () => {
-    const processed = await processSkillEffects();
+    const processed = await processSkillEffects(gameStateId);
     console.log(`处理了 ${processed} 个技能效果`);
   };
 

@@ -36,7 +36,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     skillUses,
     getUserSkillUses,
     getUserSkillEffects
-  } = useSkillSystem(roomId, gameStateId, userId);
+  } = useSkillSystem(gameStateId, roomId);
 
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
