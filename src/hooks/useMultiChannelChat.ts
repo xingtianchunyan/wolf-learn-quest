@@ -195,12 +195,32 @@ export const useMultiChannelChat = ({
     }
   };
 
-  // 过滤消息
+  // 过滤消息并应用可见性规则
   const getFilteredMessages = () => {
-    if (currentChannel === 'all') {
-      return messages;
+    let filteredMessages = currentChannel === 'all' ? messages : messages.filter(msg => msg.chat_type === currentChannel);
+    
+    // 对系统公告应用可见性规则
+    if (currentChannel === 'system' || currentChannel === 'all') {
+      filteredMessages = filteredMessages.filter(msg => {
+        if (msg.chat_type !== 'system' || !msg.metadata?.visibility) {
+          return true; // 非系统公告或无可见性配置的消息默认可见
+        }
+        
+        // 应用系统公告可见性规则
+        const visibility = msg.metadata.visibility;
+        const announcementData = msg.metadata.data;
+        
+        // 简化版权限检查（实际应该基于用户角色和权限）
+        if (visibility.isVisibleToAll) return true;
+        if (visibility.isVisibleToActor && currentUser?.id === announcementData?.actorUserId) return true;
+        if (visibility.isVisibleToTarget && currentUser?.id === announcementData?.targetUserId) return true;
+        
+        // TODO: 实现更完整的权限检查
+        return visibility.isVisibleToJudge; // 暂时假设当前用户是法官
+      });
     }
-    return messages.filter(msg => msg.chat_type === currentChannel);
+    
+    return filteredMessages;
   };
 
   return {

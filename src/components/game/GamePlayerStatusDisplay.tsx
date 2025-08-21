@@ -39,9 +39,11 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   const currentUserRoleState = currentUser ? roleStates.find(rs => rs.user_id === currentUser.id) : null;
   const currentUserRoleSelection = currentUser ? getSelectedRoleByUser(currentUser.id) : null;
 
-  // 检查当前用户是否是狼人阵营
-  const isCurrentUserWerewolf = currentUserRoleSelection?.roleDesign?.role_name === 'werewolf' || 
-                                currentUserRoleSelection?.roleDesign?.role_name === 'whitewolf';
+  // 检查当前用户的角色类型和特殊权限
+  const currentUserRole = currentUserRoleSelection?.roleDesign?.role_name;
+  const isCurrentUserWerewolf = ['werewolf', 'whitewolf'].includes(currentUserRole || '');
+  const isCurrentUserDemon = currentUserRole === 'demon';
+  const isCurrentUserHunter = currentUserRole === 'hunter';
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < players.length) {
@@ -91,15 +93,46 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
       };
     }
 
-    // 狼人可以看到其他狼人的角色
-    const targetIsWerewolf = selectedRole?.roleDesign?.role_name === 'werewolf' || 
-                            selectedRole?.roleDesign?.role_name === 'whitewolf';
+    // 根据设计文档实现角色间的互相识别
+    const targetRole = selectedRole?.roleDesign?.role_name;
+    const targetIsWerewolf = ['werewolf', 'whitewolf'].includes(targetRole || '');
+    const targetIsDemon = targetRole === 'demon';
     
-    if (isCurrentUserWerewolf && targetIsWerewolf) {
+    // 狼人可以看到其他狼人和恶魔的角色（除了白狼）
+    if (isCurrentUserWerewolf && currentUserRole !== 'whitewolf' && 
+        (targetIsWerewolf || targetIsDemon)) {
       return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
         showRole: true
+      };
+    }
+    
+    // 恶魔可以看到所有狼人角色
+    if (isCurrentUserDemon && (targetIsWerewolf || targetIsDemon)) {
+      return {
+        roleName: selectedRole?.roleName || '未分配角色',
+        roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
+        showRole: true
+      };
+    }
+    
+    // 白狼只能看到自己的状态，不能看到其他狼人
+    if (currentUserRole === 'whitewolf' && targetIsWerewolf && targetRole !== 'whitewolf') {
+      return {
+        roleName: '未知角色',
+        roleImageUrl: null,
+        showRole: false
+      };
+    }
+    
+    // 猎人濒死状态下可以查看自身状态
+    if (isCurrentUserHunter && isCurrentPlayer && currentUserRoleState?.role_status === 2) {
+      return {
+        roleName: selectedRole?.roleName || '未分配角色',
+        roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
+        showRole: true,
+        specialStatus: '濒死状态 - 可使用技能'
       };
     }
 

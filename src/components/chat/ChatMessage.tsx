@@ -10,6 +10,11 @@ export interface ChatMessage {
   game_round?: number;
   game_phase?: string;
   sender_name?: string;
+  metadata?: {
+    visibility?: any;
+    data?: any;
+    announcement_type?: string;
+  };
 }
 
 interface ChatMessageProps {
