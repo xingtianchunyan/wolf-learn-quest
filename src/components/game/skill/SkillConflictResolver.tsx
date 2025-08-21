@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, Zap, Shield, Target, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toPhaseName } from '@/utils/phaseUtils';
 
 interface SkillConflict {
   id: string;
@@ -21,7 +22,7 @@ interface SkillConflict {
 interface SkillConflictResolverProps {
   gameStateId: string;
   currentRound: number;
-  currentPhase: string;
+  currentPhase: number;
   isJudge: boolean;
   onConflictResolved?: (conflictId: string) => void;
 }
@@ -95,7 +96,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
       const { data, error } = await supabase.rpc('detect_skill_conflicts', {
         p_game_state_id: gameStateId,
         p_round_number: currentRound,
-        p_phase: currentPhase
+        p_phase: toPhaseName(currentPhase as 1 | 2 | 3 | 4)
       });
 
       if (error) {
@@ -156,7 +157,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   };
 
   const currentPhaseConflicts = conflicts.filter(
-    c => c.round_number === currentRound && c.phase === currentPhase
+    c => c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
   );
 
   return (
@@ -196,7 +197,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-yellow-400 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
-              当前回合冲突 (第{currentRound}轮 - {currentPhase})
+              当前回合冲突 (第{currentRound}轮 - {toPhaseName(currentPhase as 1 | 2 | 3 | 4)})
             </h4>
             
             {currentPhaseConflicts.map(conflict => (
@@ -285,9 +286,9 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
           <h4 className="text-sm font-medium text-werewolf-purple">历史冲突记录</h4>
           <ScrollArea className="h-32">
             <div className="space-y-1">
-              {conflicts.filter(c => !(c.round_number === currentRound && c.phase === currentPhase)).length > 0 ? (
+               {conflicts.filter(c => !(c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4))).length > 0 ? (
                 conflicts
-                  .filter(c => !(c.round_number === currentRound && c.phase === currentPhase))
+                  .filter(c => !(c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)))
                   .slice(0, 5)
                   .map(conflict => (
                     <div key={conflict.id} className="flex items-center justify-between p-2 bg-werewolf-dark/30 rounded text-xs">

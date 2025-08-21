@@ -142,8 +142,19 @@ export class EnhancedSkillService {
    * 获取技能已使用次数
    */
   private static getSkillUsedCount(roleState: any, skillId: string): number {
+    // 检查角色状态中的技能使用记录
     const skillUses = roleState?.skill_uses_remaining || {};
-    return skillUses[skillId]?.used || 0;
+    
+    if (typeof skillUses === 'object' && skillUses[skillId]) {
+      return skillUses[skillId].used || 0;
+    }
+    
+    // 如果 skill_uses_remaining 是旧格式，检查 remaining 字段
+    if (skillUses.total && skillUses.remaining !== undefined) {
+      return (skillUses.total - skillUses.remaining) || 0;
+    }
+    
+    return 0;
   }
 
   /**

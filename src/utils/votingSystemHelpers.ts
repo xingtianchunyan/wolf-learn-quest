@@ -15,9 +15,9 @@ export interface VotingSummary {
   hasMajority: boolean;
 }
 
-// 计算投票摘要信息
+// 计算投票摘要信息（支持投票权重）
 export const calculateVotingSummary = (
-  votes: Array<{ target_id?: string; is_valid: boolean }>,
+  votes: Array<{ target_id?: string; is_valid: boolean; vote_weight?: number }>,
   players: Array<{ userId?: string; name: string }>,
   totalPlayers: number
 ): VotingSummary => {
@@ -25,11 +25,12 @@ export const calculateVotingSummary = (
   const abstentions = validVotes.filter(vote => !vote.target_id).length;
   const targetVotes = validVotes.filter(vote => vote.target_id);
 
-  // 统计每个候选人的得票
+  // 统计每个候选人的得票（考虑权重）
   const voteCounts = new Map<string, number>();
   targetVotes.forEach(vote => {
     if (vote.target_id) {
-      voteCounts.set(vote.target_id, (voteCounts.get(vote.target_id) || 0) + 1);
+      const weight = vote.vote_weight || 1;
+      voteCounts.set(vote.target_id, (voteCounts.get(vote.target_id) || 0) + weight);
     }
   });
 

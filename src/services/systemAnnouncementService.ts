@@ -206,16 +206,24 @@ export class SystemAnnouncementService {
   /**
    * 检查用户是否可以查看特定公告
    */
-  static canUserViewAnnouncement(
+  static async canUserViewAnnouncement(
     userId: string, 
     userRole: string, 
     visibility: AnnouncementVisibility,
     announcementData: SystemAnnouncementData
-  ): boolean {
+  ): Promise<boolean> {
     // 法官可以查看所有公告
     if (visibility.isVisibleToJudge) {
-      // 此处需要检查用户是否为法官，暂时返回true
-      // TODO: 实现法官权限检查
+      // 检查用户是否为该房间的法官
+      const { data: room, error } = await supabase
+        .from('rooms')
+        .select('judge_user_id')
+        .eq('id', announcementData.roomId)
+        .single();
+      
+      if (!error && room?.judge_user_id === userId) {
+        return true;
+      }
     }
 
     // 全体可见
