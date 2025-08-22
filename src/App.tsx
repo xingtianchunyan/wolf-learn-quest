@@ -45,7 +45,7 @@ const App = () => (
                   <GameRoom />
                 </PermissionProvider>
               } />
-              <Route path="/room/:id/game" element={
+              <Route path="/room/:id/game/*" element={
                 <PermissionProvider>
                   <GamePage />
                 </PermissionProvider>
