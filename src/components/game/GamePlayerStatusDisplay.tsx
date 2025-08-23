@@ -3,6 +3,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { canSeeTargetRole, canAccessWerewolfChannel, isDemonRole, isHunterRole } from '@/utils/roleUtils';
 
 interface Player {
   id: string;
@@ -41,11 +42,12 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
 
   // 检查当前用户的角色类型和特殊权限
   const currentUserRole = currentUserRoleSelection?.roleDesign?.role_name;
-  // 定义狼人阵营的四个角色
-  const werewolfRoles = ['werewolf', 'werewolf 1', 'werewolf 2', 'white wolf'];
-  const isCurrentUserWerewolf = werewolfRoles.includes(currentUserRole || '');
-  const isCurrentUserDemon = currentUserRole === 'demon';
-  const isCurrentUserHunter = currentUserRole === 'hunter';
+  const currentUserRoleDesign = currentUserRoleSelection?.roleDesign;
+  
+  // 使用统一的角色工具判断角色类型
+  const isCurrentUserWerewolf = canAccessWerewolfChannel(currentUserRole, currentUserRoleDesign);
+  const isCurrentUserDemon = isDemonRole(currentUserRole || '');
+  const isCurrentUserHunter = isHunterRole(currentUserRole || '');
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < players.length) {
@@ -95,22 +97,12 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
       };
     }
 
-    // 根据设计文档实现角色间的互相识别
+    // 使用统一的角色可见性规则
     const targetRole = selectedRole?.roleDesign?.role_name;
-    const targetIsWerewolf = werewolfRoles.includes(targetRole || '');
-    const targetIsDemon = targetRole === 'demon';
+    const targetRoleDesign = selectedRole?.roleDesign;
     
-    // 狼人阵营四个角色之间可以互相查看完整角色信息
-    if (isCurrentUserWerewolf && targetIsWerewolf) {
-      return {
-        roleName: selectedRole?.roleName || '未分配角色',
-        roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
-        showRole: true
-      };
-    }
-    
-    // 恶魔可以看到所有狼人角色
-    if (isCurrentUserDemon && (targetIsWerewolf || targetIsDemon)) {
+    // 统一的角色可见性判断
+    if (canSeeTargetRole(currentUserRole, targetRole, currentUserRoleDesign, targetRoleDesign)) {
       return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,

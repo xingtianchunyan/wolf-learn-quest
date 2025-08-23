@@ -6,6 +6,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ChatChannel } from '@/components/chat/ChatChannelSelector';
 import { useGameState } from './useGameState';
 import { usePermissions } from '@/contexts/PermissionContext';
+import { normalizeRoleName, isWolfRoleName, mapChatChannelType, getCompatibleChatTypes } from '@/utils/roleUtils';
 
 interface UseMultiChannelChatProps {
   roomId: string | null;
@@ -64,9 +65,10 @@ export const useMultiChannelChat = ({
     if (v.isVisibleToActor && currentUser?.id && currentUser.id === d.actorUserId) return true;
     if (v.isVisibleToTarget && currentUser?.id && currentUser.id === d.targetUserId) return true;
 
-    // 按角色阵营进行可见性判定
-    const isWerewolf = userRole ? ['werewolf', 'werewolf1', 'werewolf2', 'whitewolf', 'demon'].includes(userRole) : false;
-    const isRescuer = userRole ? ['witch', 'warlock'].includes(userRole) : false;
+    // 按角色阵营进行可见性判定 - 使用统一的角色判断
+    const normalizedRole = userRole ? normalizeRoleName(userRole) : '';
+    const isWerewolf = isWolfRoleName(normalizedRole) || normalizedRole === 'demon';
+    const isRescuer = ['witch', 'warlock'].includes(normalizedRole);
 
     if (v.isVisibleToWerewolves && isWerewolf) return true;
     if (v.isVisibleToRescuers && isRescuer) return true;
@@ -78,8 +80,8 @@ export const useMultiChannelChat = ({
   const getAvailableChannels = (): ChatChannel[] => {
     const baseChannels: ChatChannel[] = ['public', 'judge_private', 'system', 'all'];
     
-    // 如果是狼人角色，添加小队聊天
-    if (userRole && ['werewolf', 'werewolf1', 'werewolf2', 'whitewolf'].includes(userRole)) {
+    // 如果是狼人角色，添加小队聊天 - 使用统一的角色判断
+    if (userRole && isWolfRoleName(userRole)) {
       baseChannels.splice(1, 0, 'team');
     }
     
@@ -107,7 +109,7 @@ export const useMultiChannelChat = ({
             room_id
           `)
           .eq('room_id', roomId)
-          .in('chat_type', ['public', 'team', 'judge_private', 'system'])
+          .in('chat_type', ['public', 'werewolf', 'team', 'judge_private', 'system'])
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -188,6 +190,8 @@ export const useMultiChannelChat = ({
 
   // 发送消息
   const sendMessage = async (messageText: string, chatType: string = 'public') => {
+    // 映射UI频道类型到数据库类型
+    const dbChatType = mapChatChannelType(chatType);
     if (!roomId || !currentUser || !messageText.trim()) {
       console.error('Missing required data for sending message:', {
         roomId,
@@ -214,7 +218,7 @@ export const useMultiChannelChat = ({
       const { error } = await supabase
         .from('chat_messages')
         .insert({
-          chat_type: chatType,
+          chat_type: dbChatType,
           room_id: roomId,
           sender_id: user.id, // 使用认证用户ID，与RLS策略一致
           message: messageText.trim(),
@@ -248,7 +252,15 @@ export const useMultiChannelChat = ({
 
   // 过滤消息并应用可见性规则（修复 TODO：实现更完整的权限检查）
   const getFilteredMessages = () => {
-    let filteredMessages = currentChannel === 'all' ? messages : messages.filter(msg => msg.chat_type === currentChannel);
+    let filteredMessages = currentChannel === 'all' 
+      ? messages 
+      : messages.filter(msg => {
+          // 对team频道特殊处理，同时匹配werewolf和team类型
+          if (currentChannel === 'team') {
+            return ['werewolf', 'team'].includes(msg.chat_type);
+          }
+          return msg.chat_type === currentChannel;
+        });
     
     // 对系统公告应用可见性规则
     if (currentChannel === 'system' || currentChannel === 'all') {
