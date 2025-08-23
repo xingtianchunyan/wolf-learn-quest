@@ -1244,7 +1244,62 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      standardized_skill_targets: {
+        Row: {
+          created_at: string | null
+          effect_applied: Json | null
+          effect_duration: number | null
+          effect_end_time: string | null
+          effect_start_time: string | null
+          id: string | null
+          is_active: boolean | null
+          skill_effects_queue_id: string | null
+          skill_use_id: string | null
+          stack_count: number | null
+          target_type: string | null
+          target_user_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          effect_applied?: never
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          skill_effects_queue_id?: string | null
+          skill_use_id?: string | null
+          stack_count?: number | null
+          target_type?: string | null
+          target_user_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          effect_applied?: never
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          skill_effects_queue_id?: string | null
+          skill_use_id?: string | null
+          stack_count?: number | null
+          target_type?: string | null
+          target_user_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_skill_targets_skill_use_id"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       advance_game_phase: {
@@ -1294,6 +1349,14 @@ export type Database = {
           p_voting_session_id: string
         }
         Returns: boolean
+      }
+      check_skill_data_quality: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          description: string
+          issue_count: number
+          issue_type: string
+        }[]
       }
       cleanup_expired_skill_effects: {
         Args: Record<PropertyKey, never>
@@ -1414,6 +1477,10 @@ export type Database = {
           p_trigger_delay_seconds?: number
         }
         Returns: string
+      }
+      standardize_effect_applied_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       start_game: {
         Args: { p_room_id: string }
