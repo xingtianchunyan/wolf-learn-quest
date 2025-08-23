@@ -41,7 +41,9 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
 
   // 检查当前用户的角色类型和特殊权限
   const currentUserRole = currentUserRoleSelection?.roleDesign?.role_name;
-  const isCurrentUserWerewolf = ['werewolf', 'whitewolf'].includes(currentUserRole || '');
+  // 定义狼人阵营的四个角色
+  const werewolfRoles = ['werewolf', 'werewolf 1', 'werewolf 2', 'white wolf'];
+  const isCurrentUserWerewolf = werewolfRoles.includes(currentUserRole || '');
   const isCurrentUserDemon = currentUserRole === 'demon';
   const isCurrentUserHunter = currentUserRole === 'hunter';
 
@@ -95,12 +97,11 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
 
     // 根据设计文档实现角色间的互相识别
     const targetRole = selectedRole?.roleDesign?.role_name;
-    const targetIsWerewolf = ['werewolf', 'whitewolf'].includes(targetRole || '');
+    const targetIsWerewolf = werewolfRoles.includes(targetRole || '');
     const targetIsDemon = targetRole === 'demon';
     
-    // 狼人可以看到其他狼人和恶魔的角色（除了白狼）
-    if (isCurrentUserWerewolf && currentUserRole !== 'whitewolf' && 
-        (targetIsWerewolf || targetIsDemon)) {
+    // 狼人阵营四个角色之间可以互相查看完整角色信息
+    if (isCurrentUserWerewolf && targetIsWerewolf) {
       return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
@@ -114,15 +115,6 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
         showRole: true
-      };
-    }
-    
-    // 白狼只能看到自己的状态，不能看到其他狼人
-    if (currentUserRole === 'whitewolf' && targetIsWerewolf && targetRole !== 'whitewolf') {
-      return {
-        roleName: '未知角色',
-        roleImageUrl: null,
-        showRole: false
       };
     }
     
