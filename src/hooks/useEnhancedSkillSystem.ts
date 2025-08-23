@@ -4,9 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedSkillService, type SkillUsageContext } from '@/services/enhancedSkillService';
 import { SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
-import { processSkillEffects, processQueuedSkillEffects } from '@/services/skillEffectProcessor';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { logger } from '@/lib/logger';
 
 // 扩展原有接口
 export interface EnhancedSkillUse {
@@ -243,20 +241,9 @@ export const useEnhancedSkillSystem = (
 
       const result = await EnhancedSkillService.useSkillEnhanced(context);
 
-      // 立即处理技能效果
-      const skillEffects = [{
-        skillName,
-        targetUserId: targetUserId || '',
-        actorUserId: userId,
-        effect: getEffectTypeFromSkill(skillName),
-        priority: getSkillPriorityFromName(skillName)
-      }];
-
-      const effectsProcessed = await processSkillEffects(roomId, gameStateId, skillEffects);
-      
       toast({
         title: '技能使用成功',
-        description: `成功使用技能: ${skillName}${effectsProcessed ? '，效果已应用' : ''}`,
+        description: `成功使用技能: ${skillName}`,
       });
 
       // 使用后刷新数据
@@ -352,33 +339,6 @@ export const useEnhancedSkillSystem = (
     };
   }, [userId, skillUses, skillEffectsQueue, skillTargets]);
 
-  // 处理阶段结束时的技能效果
-  const processPhaseEndEffects = useCallback(async (): Promise<boolean> => {
-    if (!gameStateId) {
-      logger.error('游戏状态ID未提供');
-      return false;
-    }
-
-    try {
-      const success = await processQueuedSkillEffects(roomId, gameStateId);
-      
-      if (success) {
-        toast({
-          title: '阶段效果处理完成',
-          description: '所有技能效果已处理完成'
-        });
-        
-        // 刷新数据
-        await fetchAllSkillData();
-      }
-      
-      return success;
-    } catch (error) {
-      logger.error('处理阶段效果失败:', error);
-      return false;
-    }
-  }, [gameStateId, roomId, toast, fetchAllSkillData]);
-
   // 检查技能可用性
   const canUseSkill = useCallback((
     skillName: string,
@@ -421,9 +381,6 @@ export const useEnhancedSkillSystem = (
     getUserSkillData,
     canUseSkill,
 
-    // 新增功能
-    processPhaseEndEffects,
-
     // 兼容性 - 保持原有接口
     useSkill: useSkillEnhanced,
     getUserSkillUses: (targetUserId: string) => getUserSkillData(targetUserId).uses,
@@ -433,50 +390,4 @@ export const useEnhancedSkillSystem = (
       return targets.some(t => t.effect_applied?.effect_type === effectType);
     }
   };
-};
-
-/**
- * 函数级注释：根据技能名称获取效果类型
- */
-const getEffectTypeFromSkill = (skillName: string): 'attack' | 'protect' | 'heal' | 'investigate' | 'eliminate' => {
-  switch (skillName) {
-    case 'werewolf_attack':
-    case 'demon_attack':
-    case 'night_attack':
-      return 'attack';
-    case 'guard_protect':
-    case 'vigil':
-      return 'protect';
-    case 'witch_heal':
-    case 'magic_potion':
-      return 'heal';
-    case 'seer_investigate':
-    case 'prophecy':
-      return 'investigate';
-    default:
-      return 'attack';
-  }
-};
-
-/**
- * 函数级注释：根据技能名称获取优先级
- */
-const getSkillPriorityFromName = (skillName: string): number => {
-  switch (skillName) {
-    case 'witch_heal':
-    case 'magic_potion':
-      return 110; // 最高优先级
-    case 'werewolf_attack':
-    case 'demon_attack':
-    case 'night_attack':
-      return 100;
-    case 'guard_protect':
-    case 'vigil':
-      return 90;
-    case 'seer_investigate':
-    case 'prophecy':
-      return 80;
-    default:
-      return 50;
-  }
 };

@@ -250,7 +250,6 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     
     if (phaseIndex === -1) {
       console.log('学生系统：无效的游戏阶段:', currentPhase);
-      setCurrentQuestionIndex(-1);
       return;
     }
     
@@ -259,14 +258,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     // 转换为数据库中的question_order（1基）
     const targetQuestionOrder = questionIndex + 1;
     
-    // 保存当前题目索引供其他地方使用（修复：确保传入正确的索引）
+    // 保存当前题目索引供其他地方使用
     setCurrentQuestionIndex(questionIndex);
 
     console.log('学生系统：计算目标题目序号', {
       currentRound,
       currentPhase,
-      phaseIndex,
-      questionIndex,
       targetQuestionOrder,
       availableOrders: roomQuestions.map(rq => rq.question_order)
     });
