@@ -246,8 +246,8 @@ export const useEnhancedSkillSystem = (
         description: `成功使用技能: ${skillName}`,
       });
 
-      // 使用后刷新数据
-      setTimeout(() => fetchAllSkillData(), 500);
+      // 移除 setTimeout 刷新，依赖实时订阅更新
+      // setTimeout(() => fetchAllSkillData(), 500);
 
       return result;
     } catch (error: any) {

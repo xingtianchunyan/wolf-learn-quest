@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
-import { useSkillSystem } from '@/hooks/useSkillSystem';
+import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
 
 interface SkillUsePanelProps {
@@ -32,11 +32,10 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   
   const {
     loading,
-    useSkill,
+    useSkillEnhanced: useSkill,
     skillUses,
-    getUserSkillUses,
-    getUserSkillEffects
-  } = useSkillSystem(gameStateId, roomId);
+    getUserSkillData
+  } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
@@ -51,8 +50,9 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   const skillPriority = getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
 
   // 获取当前用户的技能使用记录
-  const userSkillUses = getUserSkillUses(userId);
-  const userSkillEffects = getUserSkillEffects(userId);
+  const userData = getUserSkillData(userId);
+  const userSkillUses = userData.uses;
+  const userSkillEffects = userData.targets;
 
   // 获取可选目标玩家
   const availableTargets = players.filter(player => 
@@ -65,7 +65,10 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     const result = await useSkill(
       roleDesign.skill_name,
       selectedTarget || undefined,
-      skillData
+      skillData,
+      roleState,
+      roleDesign,
+      currentPhase
     );
 
     if (result) {

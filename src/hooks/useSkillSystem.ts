@@ -125,14 +125,18 @@ export const useSkillSystem = (gameStateId: string, roomId: string) => {
     }
   }, [gameStateId]);
 
-  // 获取技能目标
+  // 获取技能目标 - 修复安全漏洞：必须过滤 game_state_id
   const fetchSkillTargets = useCallback(async () => {
     if (!gameStateId) return;
     
     try {
       const { data, error } = await supabase
         .from('skill_targets')
-        .select('*')
+        .select(`
+          *,
+          skill_uses!inner(game_state_id)
+        `)
+        .eq('skill_uses.game_state_id', gameStateId)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -318,12 +322,12 @@ export const useSkillSystem = (gameStateId: string, roomId: string) => {
     return skillTargets.filter(target => target.target_user_id === targetUserId);
   }, [skillTargets]);
 
-  // 检查是否有活跃效果
+  // 检查是否有活跃效果 - 修复字段不一致问题：统一使用 effect_type
   const hasActiveEffect = useCallback((targetUserId: string, effectType: string): boolean => {
     return skillTargets.some(target => 
       target.target_user_id === targetUserId && 
       target.is_active &&
-      target.effect_applied?.type === effectType
+      (target.effect_applied?.effect_type === effectType || target.effect_applied?.type === effectType)
     );
   }, [skillTargets]);
 
