@@ -98,8 +98,9 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
     const targetIsWerewolf = ['werewolf', 'whitewolf'].includes(targetRole || '');
     const targetIsDemon = targetRole === 'demon';
     
-    // 狼人可以看到其他狼人和恶魔的角色
-    if (isCurrentUserWerewolf && (targetIsWerewolf || targetIsDemon)) {
+    // 狼人可以看到其他狼人和恶魔的角色（除了白狼）
+    if (isCurrentUserWerewolf && currentUserRole !== 'whitewolf' && 
+        (targetIsWerewolf || targetIsDemon)) {
       return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
@@ -116,12 +117,12 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
       };
     }
     
-    // 白狼王可以看到其他狼人（但其他狼人看不到白狼王）
-    if (currentUserRole === 'whitewolf' && targetIsWerewolf) {
+    // 白狼只能看到自己的状态，不能看到其他狼人
+    if (currentUserRole === 'whitewolf' && targetIsWerewolf && targetRole !== 'whitewolf') {
       return {
-        roleName: selectedRole?.roleName || '未分配角色',
-        roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
-        showRole: true
+        roleName: '未知角色',
+        roleImageUrl: null,
+        showRole: false
       };
     }
     
