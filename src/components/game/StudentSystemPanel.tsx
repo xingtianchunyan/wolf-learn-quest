@@ -50,7 +50,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [questionNotFound, setQuestionNotFound] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [hasQuestionsInRoom, setHasQuestionsInRoom] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   console.log('学生系统：完整状态调试信息', {
     roomId,
