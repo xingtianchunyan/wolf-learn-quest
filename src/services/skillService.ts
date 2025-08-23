@@ -59,14 +59,13 @@ export class SkillService {
     
     await this.requireAuth();
     
-    const { data, error } = await supabase
-      .rpc('use_skill', {
-        p_user_id: userId,
-        p_game_state_id: gameStateId,
-        p_skill_name: skillName,
-        p_target_user_id: targetUserId || null,
-        p_skill_data: skillData || {}
-      });
+    // 调用修复后的 RPC 函数 - 移除 p_user_id 参数
+    const { data, error } = await supabase.rpc('use_skill', {
+      p_game_state_id: gameStateId,
+      p_skill_name: skillName,
+      p_target_user_id: targetUserId || undefined,
+      p_skill_data: skillData || {}
+    });
 
     if (error) {
       throw new SkillServiceError(error.message, error.code);

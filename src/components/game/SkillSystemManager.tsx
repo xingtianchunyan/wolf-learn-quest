@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Play, Trash2, RefreshCw } from 'lucide-react';
-import { useSkillSystem } from '@/hooks/useSkillSystem';
+import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import SkillUsePanel from './SkillUsePanel';
 import SkillEffectsDisplay from './SkillEffectsDisplay';
 
@@ -34,19 +34,17 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
     skillUses,
     skillEffectsQueue,
     skillTargets,
-    loading,
-    processSkillEffects,
-    cleanupExpiredEffects
-  } = useSkillSystem(gameStateId, roomId);
+    loading
+  } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   const handleProcessEffects = async () => {
-    const processed = await processSkillEffects(gameStateId);
-    console.log(`处理了 ${processed} 个技能效果`);
+    // 这里需要实现处理技能效果的逻辑
+    console.log('处理技能效果 - 需要实现');
   };
 
   const handleCleanupEffects = async () => {
-    await cleanupExpiredEffects();
-    console.log('清理过期效果完成');
+    // 这里需要实现清理过期效果的逻辑
+    console.log('清理过期效果 - 需要实现');
   };
 
   // 统计数据

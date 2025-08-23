@@ -199,11 +199,11 @@ export class EnhancedSkillService {
       console.warn('技能冲突检测到:', conflictCheck.conflicts);
     }
 
-    // 调用原始技能使用函数 - 移除 p_user_id 传参，RPC 内部使用 auth.uid()
+    // 调用修复后的技能使用函数 - 移除 p_user_id 传参，RPC 内部使用 auth.uid()
     const { data, error } = await supabase.rpc('use_skill', {
       p_game_state_id: context.gameStateId,
       p_skill_name: skillConfig.englishName,
-      p_target_user_id: context.targetUserId || null,
+      p_target_user_id: context.targetUserId,
       p_skill_data: {
         ...(context.additionalData || {}),
         skill_config_id: skillConfig.id,

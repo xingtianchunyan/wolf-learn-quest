@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Clock, Zap, Users, Target, AlertCircle } from 'lucide-react';
-import { useSkillSystem } from '@/hooks/useSkillSystem';
+import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { formatVoteTime } from '@/utils/votingSystemHelpers';
 
 interface SkillEffectsDisplayProps {
@@ -21,9 +21,8 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   const {
     skillEffectsQueue,
     skillTargets,
-    processSkillEffects,
     loading
-  } = useSkillSystem(roomId, gameStateId);
+  } = useEnhancedSkillSystem(roomId, gameStateId);
 
   // 获取活跃的技能效果
   const activeEffects = skillTargets.filter(target => target.is_active);
@@ -165,9 +164,9 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
                     <Target className="w-4 h-4" />
                     <span className="font-medium">{getPlayerName(userId)}</span>
                   </div>
-                  <div className="space-y-2">
-                    {effects.map((effect) => (
-                      <div 
+                   <div className="space-y-2">
+                     {effects && Array.isArray(effects) && effects.map((effect) => (
+                       <div
                         key={effect.id} 
                         className="flex items-center justify-between p-2 bg-muted rounded"
                       >
@@ -195,9 +194,9 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
                             />
                           )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                       </div>
+                     ))}
+                   </div>
                 </div>
               ))}
             </div>

@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedSkillService, type SkillUsageContext } from '@/services/enhancedSkillService';
 import { SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
+import { matchesEffectType, standardizeSkillTargets } from '@/utils/skillEffectStandardization';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // 扩展原有接口
@@ -121,7 +122,9 @@ export const useEnhancedSkillSystem = (
       }
 
       if (targetsResult.data) {
-        setSkillTargets(targetsResult.data);
+        // 标准化技能目标数据结构
+        const standardizedTargets = standardizeSkillTargets(targetsResult.data);
+        setSkillTargets(standardizedTargets);
       }
 
       setLastSyncTime(new Date());
@@ -387,7 +390,7 @@ export const useEnhancedSkillSystem = (
     getUserSkillEffects: (targetUserId: string) => getUserSkillData(targetUserId).targets,
     hasActiveEffect: (targetUserId: string, effectType: string) => {
       const targets = getUserSkillData(targetUserId).targets;
-      return targets.some(t => t.effect_applied?.effect_type === effectType);
+      return targets.some(t => matchesEffectType(t.effect_applied, effectType));
     }
   };
 };

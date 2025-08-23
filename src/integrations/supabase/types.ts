@@ -870,7 +870,22 @@ export type Database = {
           trigger_time?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_skill_effects_queue_game_state_id"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_effects_queue_skill_use_id"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_targets: {
         Row: {
@@ -918,7 +933,15 @@ export type Database = {
           target_user_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_skill_targets_skill_use_id"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_uses: {
         Row: {
@@ -1406,7 +1429,6 @@ export type Database = {
           p_skill_data?: Json
           p_skill_name: string
           p_target_user_id?: string
-          p_user_id: string
         }
         Returns: string
       }
