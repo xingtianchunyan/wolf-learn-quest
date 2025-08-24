@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
@@ -21,6 +20,8 @@ interface GameSkillPanelProps {
     status?: string;
   }>;
   currentRound?: number;
+  selectedTargetId?: string;
+  onTargetSelect?: (targetId: string) => void;
 }
 
 const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
@@ -31,9 +32,10 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   roleState,
   roleDesign,
   players,
-  currentRound = 1
+  currentRound = 1,
+  selectedTargetId,
+  onTargetSelect
 }) => {
-  const [selectedTarget, setSelectedTarget] = useState<string>('');
 
   const {
     skillUses,
@@ -71,7 +73,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
 
     await useSkill(
       skillConfig.englishName,
-      selectedTarget || undefined,
+      selectedTargetId || undefined,
       {},
       roleState,
       roleDesign,
@@ -79,7 +81,8 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
       currentRound || 1
     );
 
-    setSelectedTarget('');
+    // 清空选择的目标
+    onTargetSelect?.('');
   };
 
   if (!skillConfig) {
@@ -127,24 +130,18 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           </p>
         </div>
 
-        {/* 目标选择器 */}
+        {/* 目标选择提示 */}
         {skillConfig.targetType === 'single' && availableTargets.length > 0 && (
-          <div>
-            <label className="text-sm font-medium text-gray-300 mb-2 block">
-              选择目标
-            </label>
-            <Select value={selectedTarget} onValueChange={setSelectedTarget}>
-              <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
-                <SelectValue placeholder="请选择目标玩家" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTargets.map((player) => (
-                  <SelectItem key={player.userId} value={player.userId}>
-                    {player.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="bg-werewolf-dark/30 border border-werewolf-purple/20 rounded-lg p-3">
+            <p className="text-sm text-gray-300 mb-1">
+              <Target className="inline w-4 h-4 mr-1" />
+              请在左侧玩家列表中点击选择目标玩家
+            </p>
+            {selectedTargetId && (
+              <p className="text-sm text-werewolf-purple">
+                已选择: {availableTargets.find(p => p.userId === selectedTargetId)?.name || '未知玩家'}
+              </p>
+            )}
           </div>
         )}
 
@@ -154,7 +151,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           disabled={
             loading || 
             !canUseSkill || 
-            (skillConfig.targetType === 'single' && !selectedTarget)
+            (skillConfig.targetType === 'single' && !selectedTargetId)
           }
           className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
         >

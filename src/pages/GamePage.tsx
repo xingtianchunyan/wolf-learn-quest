@@ -158,6 +158,8 @@ const GamePage = () => {
                          roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
                        }))}
                        currentRound={gameState.currentRound}
+                       selectedTargetId={selectedTargetId}
+                       onTargetSelect={setSelectedTargetId}
                      />
                    )}
                   
