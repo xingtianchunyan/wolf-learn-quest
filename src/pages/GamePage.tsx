@@ -18,6 +18,7 @@ import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
+import MultiChannelChat from '@/components/chat/MultiChannelChat';
 
 const GamePage = () => {
   const { id: roomId } = useParams();
@@ -101,24 +102,22 @@ const GamePage = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
+      <div className="container mx-auto py-6 px-4 h-[calc(100vh-4rem)] flex flex-col">
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{
-          height: 'calc(100vh - 12rem)'
-        }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
           {/* Left Column - Student System and Answer Records */}
-          <div className="lg:col-span-3 flex flex-col gap-6 h-full">
-            <div className="h-1/2">
+          <div className="lg:col-span-3 flex flex-col gap-6 h-full overflow-hidden">
+            <div className="flex-1 min-h-0">
               <StudentSystemPanel roomId={roomId} />
             </div>
-            <div className="h-1/2">
+            <div className="flex-1 min-h-0">
               <StudentAnswerRecordPanel roomId={roomId} />
             </div>
           </div>
           
           {/* Center Column - Game Info and Main Content */}
-          <div className="lg:col-span-6 flex flex-col gap-6 h-full">
-            <div className="h-2/5">
+          <div className="lg:col-span-6 flex flex-col gap-6 h-full overflow-hidden">
+            <div className="flex-shrink-0" style={{height: '40%'}}>
               <GameInfoPanel 
                 roomId={roomId} 
                 selectedTargetId={selectedTargetId}
@@ -126,7 +125,7 @@ const GamePage = () => {
                 canSelectTargets={isVotingPhase || isSkillPhase}
               />
             </div>
-            <div className="h-3/5">
+            <div className="flex-1 min-h-0">
               <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
                 <CardContent className="p-6 h-full overflow-y-auto">
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
@@ -175,13 +174,19 @@ const GamePage = () => {
           </div>
           
           {/* Right Column - Side Panel */}
-          <div className="lg:col-span-3">
-            <div className="space-y-4 h-full overflow-y-auto">              
+          <div className="lg:col-span-3 h-full overflow-hidden">
+            <div className="h-full flex flex-col">              
               {/* 聊天区 */}
-              <div className="bg-werewolf-card border-werewolf-purple/30 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-werewolf-purple mb-3">聊天区</h3>
-                <p className="text-sm text-gray-400">游戏聊天和讨论区域</p>
-              </div>
+              <MultiChannelChat
+                roomId={roomId}
+                currentUser={currentUser}
+                gamePhase={gameState?.currentPhase === 1 ? 'day' : gameState?.currentPhase === 2 ? 'evening' : gameState?.currentPhase === 3 ? 'night' : gameState?.currentPhase === 4 ? 'dawn' : 'preparation'}
+                gameRound={gameState?.currentRound}
+                userRole={currentRoleDesign?.name}
+                isGameRoom={true}
+                title="游戏聊天"
+                height="100%"
+              />
             </div>
           </div>
         </div>
