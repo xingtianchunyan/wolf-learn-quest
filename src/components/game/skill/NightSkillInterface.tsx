@@ -1,12 +1,3 @@
-/**
- * 夜晚技能界面（已迁移至增强版技能系统）
- *
- * 说明：
- * - 从 useSkillSystem（旧版，内部调用 SkillService.useSkill）迁移到 useEnhancedSkillSystem（新版）
- * - 新版统一使用 EnhancedSkillService.useSkillEnhanced，内部强制使用 auth.uid()，不再传入 p_user_id
- * - 新版通过 getUserSkillData(userId) 同时获取 uses 和 targets，替代 getUserSkillUses/getUserSkillEffects
- */
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Moon, Target, Clock, Zap, Shield, Skull, Eye } from 'lucide-react';
-import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
+import { useSkillSystem } from '@/hooks/useSkillSystem';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
 
@@ -45,19 +36,8 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillConfirmation, setSkillConfirmation] = useState(false);
-
-  // 旧版 API（需移除）
-  // const { useSkill, loading, getUserSkillUses, getUserSkillEffects } = useSkillSystem(gameStateId, roomId);
-
-  // 新版 API（增强版技能系统）
-  // - useSkillEnhanced: (skillName, targetUserId, additionalData, roleState, roleDesign, currentPhase) => Promise<string>
-  // - getUserSkillData: (userId) => { uses, targets }
-  const {
-    useSkillEnhanced,
-    loading,
-    getUserSkillData
-  } = useEnhancedSkillSystem(roomId, gameStateId, userId);
-
+  const { useSkill, loading, getUserSkillUses, getUserSkillEffects } = useSkillSystem(gameStateId, roomId);
+  
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;
   
@@ -86,16 +66,6 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   // 获取用户当前的技能效果
   const userSkillEffects = getUserSkillEffects(userId);
 
-  // 获取用户的技能使用与效果（新版统一入口）
-  const userData = getUserSkillData(userId);
-  const userSkillUses = userData.uses;
-  const userSkillEffects = userData.targets;
-
-  /**
-   * 处理使用技能（迁移到 useSkillEnhanced）
-   * - 适配新版签名：新增 roleState/roleDesign/currentPhase 以便服务端完整校验
-   * - additionalData 中带上夜晚阶段标识与用户确认信息
-   */
   const handleUseSkill = async () => {
     if (!selectedTarget && needsTarget()) {
       return;
@@ -107,17 +77,10 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
       confirmation: skillConfirmation
     };
 
-    // 旧版调用（需移除）
-    // const result = await useSkill(roleDesign?.skill_name || 'unknown', selectedTarget || undefined, skillData);
-
-    // 新版调用（增强版）
-    const result = await useSkillEnhanced(
+    const result = await useSkill(
       roleDesign?.skill_name || 'unknown',
       selectedTarget || undefined,
-      skillData,
-      roleState,
-      roleDesign,
-      currentPhase
+      skillData
     );
 
     if (result) {
