@@ -816,7 +816,22 @@ export type Database = {
           round_number?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_skill_conflicts_game_state"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_conflicts_resolved_skill"
+            columns: ["resolved_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_effects_queue: {
         Row: {
@@ -872,10 +887,31 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_skill_effects_queue_game_state"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_skill_effects_queue_game_state_id"
             columns: ["game_state_id"]
             isOneToOne: false
             referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_effects_queue_room"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_effects_queue_skill_use"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
             referencedColumns: ["id"]
           },
           {
@@ -934,6 +970,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_skill_targets_skill_effects_queue"
+            columns: ["skill_effects_queue_id"]
+            isOneToOne: false
+            referencedRelation: "skill_effects_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_targets_skill_use"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_skill_targets_skill_use_id"
             columns: ["skill_use_id"]
@@ -998,7 +1048,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_skill_uses_game_state"
+            columns: ["game_state_id"]
+            isOneToOne: false
+            referencedRelation: "game_states"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       uploaded_files: {
         Row: {
@@ -1291,6 +1349,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_skill_targets_skill_effects_queue"
+            columns: ["skill_effects_queue_id"]
+            isOneToOne: false
+            referencedRelation: "skill_effects_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_skill_targets_skill_use"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_skill_targets_skill_use_id"
             columns: ["skill_use_id"]
