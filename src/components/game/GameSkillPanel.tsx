@@ -84,11 +84,11 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
 
   if (!skillConfig) {
     return (
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
+      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
         <CardHeader>
           <CardTitle>技能面板</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-full overflow-y-auto">
           <p className="text-sm text-muted-foreground">没有可用的技能</p>
         </CardContent>
       </Card>
@@ -96,7 +96,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   }
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="w-4 h-4" />
@@ -106,7 +106,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 h-full overflow-y-auto">
         {/* 技能信息 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">

@@ -85,3 +85,34 @@
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+/* 自定义滚动条样式 - 与werewolf主题保持一致 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1F2C; /* werewolf-dark */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #212635; /* werewolf-card */
+  border-radius: 4px;
+  border: 1px solid #8B5CF6; /* werewolf-purple */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2f3d; /* slightly lighter werewolf-card */
+}
+
+::-webkit-scrollbar-corner {
+  background: #1A1F2C; /* werewolf-dark */
+}
+
+/* Firefox滚动条样式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #212635 #1A1F2C; /* thumb track */
+}

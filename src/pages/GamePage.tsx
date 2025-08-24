@@ -118,7 +118,7 @@ const GamePage = () => {
           
           {/* Center Column - Game Info and Main Content */}
           <div className="lg:col-span-6 flex flex-col gap-6 h-full">
-            <div className="h-1/3">
+            <div className="h-2/5">
               <GameInfoPanel 
                 roomId={roomId} 
                 selectedTargetId={selectedTargetId}
@@ -126,7 +126,7 @@ const GamePage = () => {
                 canSelectTargets={isVotingPhase || isSkillPhase}
               />
             </div>
-            <div className="h-2/3">
+            <div className="h-3/5">
               <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
                 <CardContent className="p-6 h-full overflow-y-auto">
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
