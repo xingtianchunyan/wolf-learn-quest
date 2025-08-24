@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
-import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
+import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 
 interface GameSkillPanelProps {
   roomId: string;
@@ -13,9 +14,13 @@ interface GameSkillPanelProps {
   currentPhase: number;
   roleState: any;
   roleDesign: any;
-  players: Array<{ userId: string; name: string; roleStatus: number }>;
-  selectedTargetId?: string;
-  onTargetSelect?: (targetId: string) => void;
+  players?: Array<{
+    userId: string;
+    name: string;
+    roleStatus?: number;
+    status?: string;
+  }>;
+  currentRound?: number;
 }
 
 const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
@@ -26,232 +31,185 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   roleState,
   roleDesign,
   players,
-  selectedTargetId,
-  onTargetSelect
+  currentRound = 1
 }) => {
+  const [selectedTarget, setSelectedTarget] = useState<string>('');
+
   const {
+    skillUses,
     loading,
     useSkillEnhanced: useSkill,
-    getUserSkillData
+    getUserSkillData,
+    canUseSkill: canUseSkillFromHook
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
+  // 获取技能配置
+  const skillConfig = useMemo(() => {
+    if (!roleDesign?.skill_name) return null;
+    return getSkillConfigByEnglish(roleDesign.skill_name);
+  }, [roleDesign]);
+
   // 检查是否可以使用技能
-  const canUseSkill = canUseSkillInGameState(
-    roleDesign?.skill_effects || {},
-    roleState?.role_status || 1,
-    currentPhase,
-    roleDesign?.skill_name
+  const canUseSkill = canUseSkillFromHook(
+    roleDesign?.skill_name || '',
+    roleState,
+    roleDesign,
+    currentPhase
   );
 
-  // 获取技能效果类型
-  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects || {});
-  const skillPriority = getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
+  // 获取用户的技能使用数据
+  const userSkillData = getUserSkillData(userId);
 
-  // 获取当前用户的技能使用记录
-  const userData = getUserSkillData(userId);
-  const userSkillUses = userData.uses;
-  const userSkillEffects = userData.targets;
-
-  // 检查技能是否需要目标
-  const needsTarget = skillEffectTypes.includes('investigation') || 
-                     skillEffectTypes.includes('elimination') || 
-                     skillEffectTypes.includes('protection');
+  // 获取可选择的目标玩家
+  const availableTargets = players?.filter(player => 
+    player.userId !== userId && 
+    (player.status !== 'eliminated' && player.roleStatus !== 4)
+  ) || [];
 
   const handleUseSkill = async () => {
-    if (!roleDesign?.skill_name) return;
+    if (!skillConfig || !canUseSkill) return;
 
-    const result = await useSkill(
-      roleDesign.skill_name,
-      needsTarget ? selectedTargetId : undefined,
+    await useSkill(
+      skillConfig.englishName,
+      selectedTarget || undefined,
       {},
       roleState,
       roleDesign,
-      currentPhase
+      currentPhase,
+      currentRound || 1
     );
 
-    if (result && onTargetSelect) {
-      onTargetSelect(''); // 清除选中状态
-    }
+    setSelectedTarget('');
   };
 
-  const getEffectIcon = (effectType: string) => {
-    switch (effectType) {
-      case 'elimination': return <Skull className="w-4 h-4" />;
-      case 'protection': return <Shield className="w-4 h-4" />;
-      case 'investigation': return <Search className="w-4 h-4" />;
-      case 'status_change': return <Zap className="w-4 h-4" />;
-      default: return <Target className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'processing': return 'bg-blue-500';
-      case 'completed': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      case 'cancelled': return 'bg-gray-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  if (!roleDesign?.skill_name) {
+  if (!skillConfig) {
     return (
       <Card className="bg-werewolf-card border-werewolf-purple/30">
         <CardHeader>
           <CardTitle>技能面板</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">当前角色没有可用技能</p>
+          <p className="text-sm text-muted-foreground">没有可用的技能</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* 技能使用界面 */}
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-werewolf-purple">
-            {getEffectIcon(skillEffectTypes[0] || 'default')}
-            {roleDesign.skill_name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              {roleDesign.skill_description}
-            </p>
-            <div className="flex gap-2 mb-4">
-              <Badge variant="outline">优先级: {skillPriority}</Badge>
-              {skillEffectTypes.map((type, index) => (
-                <Badge key={index} variant="secondary">
+    <Card className="bg-werewolf-card border-werewolf-purple/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="w-4 h-4" />
+          技能面板
+          <Badge variant="outline" className="ml-auto">
+            优先级: {skillConfig.priority}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* 技能信息 */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-werewolf-purple">
+              {skillConfig.chineseName}
+            </span>
+            <div className="flex gap-1">
+              {skillConfig.effectType.map((type, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
                   {type}
                 </Badge>
               ))}
             </div>
           </div>
+          
+          <p className="text-sm text-muted-foreground">
+            {roleDesign.skill_description}
+          </p>
+        </div>
 
-          {canUseSkill ? (
-            <div className="space-y-3">
-              {/* 目标选择提示 */}
-              {needsTarget && (
-                <div className="p-3 bg-werewolf-dark/40 rounded-md">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-300">
-                      {selectedTargetId ? '已选择目标' : '请在上方玩家状态区选择目标'}
-                    </span>
-                    {selectedTargetId && (
-                      <Badge variant="outline" className="text-werewolf-purple">
-                        {players.find(p => p.userId === selectedTargetId)?.name || '未知玩家'}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
+        {/* 目标选择器 */}
+        {skillConfig.targetType === 'single' && availableTargets.length > 0 && (
+          <div>
+            <label className="text-sm font-medium text-gray-300 mb-2 block">
+              选择目标
+            </label>
+            <Select value={selectedTarget} onValueChange={setSelectedTarget}>
+              <SelectTrigger className="bg-werewolf-dark border-werewolf-purple/30">
+                <SelectValue placeholder="请选择目标玩家" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableTargets.map((player) => (
+                  <SelectItem key={player.userId} value={player.userId}>
+                    {player.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
-              <Button 
-                onClick={handleUseSkill}
-                disabled={loading || (needsTarget && !selectedTargetId)}
-                className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    使用中...
-                  </>
-                ) : (
-                  `使用 ${roleDesign.skill_name}`
-                )}
-              </Button>
-            </div>
+        {/* 使用按钮 */}
+        <Button 
+          onClick={handleUseSkill}
+          disabled={
+            loading || 
+            !canUseSkill || 
+            (skillConfig.targetType === 'single' && !selectedTarget)
+          }
+          className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              使用中...
+            </>
           ) : (
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground">
-                当前阶段或状态不能使用技能
-              </p>
-            </div>
+            `使用 ${skillConfig.chineseName}`
           )}
-        </CardContent>
-      </Card>
+        </Button>
 
-      {/* 技能使用历史 */}
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-werewolf-purple">
-            <Clock className="w-4 h-4" />
-            技能使用记录
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userSkillUses.length > 0 ? (
-            <div className="space-y-2">
-              {userSkillUses.slice(0, 5).map((skillUse) => (
-                <div 
-                  key={skillUse.id} 
-                  className="flex items-center justify-between p-2 bg-werewolf-dark/40 rounded"
-                >
-                  <div>
-                    <span className="font-medium text-white">{skillUse.skill_name}</span>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      第{skillUse.round_number}轮 {skillUse.phase}阶段
-                    </span>
-                  </div>
-                  <Badge 
-                    variant="outline" 
-                    className={getStatusColor(skillUse.execution_status)}
-                  >
-                    {skillUse.execution_status}
+        {/* 技能使用记录 */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-300">使用记录</h4>
+          {userSkillData.uses.length > 0 ? (
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {userSkillData.uses.slice(0, 5).map((use) => (
+                <div key={use.id} className="flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded">
+                  <span>{use.chinese_name || use.skill_name}</span>
+                  <span className="text-muted-foreground">
+                    第{use.round_number}轮 {use.phase}阶段
+                  </span>
+                  <Badge variant="outline" className="text-xs">
+                    {use.execution_status}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">暂无技能使用记录</p>
+            <p className="text-xs text-muted-foreground">暂无使用记录</p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* 当前技能效果 */}
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-werewolf-purple">
-            <Zap className="w-4 h-4" />
-            当前技能效果
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userSkillEffects.length > 0 ? (
+        {/* 当前效果 */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-300">当前效果</h4>
+          {userSkillData.targets.length > 0 ? (
             <div className="space-y-2">
-              {userSkillEffects.map((effect) => (
-                <div 
-                  key={effect.id} 
-                  className="flex items-center justify-between p-2 bg-werewolf-dark/40 rounded"
-                >
-                  <div className="flex items-center gap-2">
-                    {getEffectIcon(effect.target_type)}
-                    <span className="font-medium text-white">{effect.target_type}</span>
-                  </div>
-                  <div className="text-right">
-                    {effect.effect_end_time && (
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(effect.effect_end_time).toLocaleTimeString()}
-                      </div>
-                    )}
-                    <Badge variant={effect.is_active ? "default" : "secondary"}>
-                      {effect.is_active ? "生效中" : "已失效"}
-                    </Badge>
-                  </div>
+              {userSkillData.targets.map((effect) => (
+                <div key={effect.id} className="flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded">
+                  <span>{effect.target_type}</span>
+                  <Badge variant={effect.is_active ? "default" : "secondary"} className="text-xs">
+                    {effect.is_active ? "生效中" : "已失效"}
+                  </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">当前没有活跃的技能效果</p>
+            <p className="text-xs text-muted-foreground">暂无活跃效果</p>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

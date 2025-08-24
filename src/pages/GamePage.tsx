@@ -144,23 +144,22 @@ const GamePage = () => {
                      />
                    )}
                   
-                  {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
-                    <GameSkillPanel
-                      roomId={roomId}
-                      gameStateId={gameState.id}
-                      userId={currentUserId}
-                      currentPhase={gameState.currentPhase}
-                      roleState={currentRoleState}
-                      roleDesign={currentRoleDesign}
-                      players={players.map(p => ({
-                        userId: p.userId || p.id,
-                        name: p.name || '未知玩家',
-                        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
-                      }))}
-                      selectedTargetId={selectedTargetId}
-                      onTargetSelect={setSelectedTargetId}
-                    />
-                  )}
+                   {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
+                     <GameSkillPanel
+                       roomId={roomId}
+                       gameStateId={gameState.id}
+                       userId={currentUserId}
+                       currentPhase={gameState.currentPhase}
+                       roleState={currentRoleState}
+                       roleDesign={currentRoleDesign}
+                       players={players.map(p => ({
+                         userId: p.userId || p.id,
+                         name: p.name || '未知玩家',
+                         roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
+                       }))}
+                       currentRound={gameState.currentRound}
+                     />
+                   )}
                   
                   {/* 等待阶段或游戏未开始 */}
                   {!gameState && (

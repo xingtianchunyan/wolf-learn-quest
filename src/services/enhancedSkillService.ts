@@ -57,7 +57,12 @@ export class EnhancedSkillService {
    * 获取角色的技能配置
    */
   private static getRoleSkillConfig(roleDesign: any): SkillConfig | null {
-    if (!roleDesign?.skill_name) return null;
+    if (!roleDesign?.skill_name) {
+      console.log('角色设计没有技能名称', { roleDesign });
+      return null;
+    }
+    
+    console.log('尝试获取技能配置', { skillName: roleDesign.skill_name });
     
     // 尝试通过英文名匹配
     let skillConfig = getSkillConfigByEnglish(roleDesign.skill_name);
@@ -67,6 +72,68 @@ export class EnhancedSkillService {
       skillConfig = getSkillConfigByChinese(roleDesign.skill_description);
     }
     
+    // 如果都没找到，尝试用映射配置直接查找
+    if (!skillConfig) {
+      // 检查是否是已知的技能名称，提供默认配置
+      const defaultConfigs: Record<string, SkillConfig> = {
+        'Sleep': {
+          id: 'villager_sleep',
+          chineseName: '睡觉',
+          englishName: 'Sleep',
+          priority: 1,
+          phase: 'night',
+          usageLimit: 'unlimited',
+          requiredStatus: ['normal'],
+          targetType: 'none',
+          effectType: ['passive'],
+          isPassive: true,
+          conflictsWith: []
+        },
+        'night_attack': {
+          id: 'werewolf_attack',
+          chineseName: '夜袭',
+          englishName: 'night_attack',
+          priority: 3,
+          phase: 'night',
+          usageLimit: 'unlimited',
+          requiredStatus: ['normal'],
+          targetType: 'single',
+          effectType: ['elimination'],
+          isPassive: false,
+          conflictsWith: []
+        },
+        'prophecy': {
+          id: 'seer_prophecy',
+          chineseName: '占卜',
+          englishName: 'prophecy',
+          priority: 4,
+          phase: 'night',
+          usageLimit: 'unlimited',
+          requiredStatus: ['normal'],
+          targetType: 'single',
+          effectType: ['investigation'],
+          isPassive: false,
+          conflictsWith: []
+        },
+        'magic_potion': {
+          id: 'witch_potion',
+          chineseName: '魔药',
+          englishName: 'magic_potion',
+          priority: 6,
+          phase: 'night',
+          usageLimit: 2,
+          requiredStatus: ['normal'],
+          targetType: 'single',
+          effectType: ['protection', 'elimination'],
+          isPassive: false,
+          conflictsWith: []
+        }
+      };
+      
+      skillConfig = defaultConfigs[roleDesign.skill_name];
+    }
+    
+    console.log('技能配置获取结果', { skillName: roleDesign.skill_name, found: !!skillConfig, skillConfig });
     return skillConfig;
   }
 
@@ -79,6 +146,7 @@ export class EnhancedSkillService {
     // 获取技能配置
     const skillConfig = this.getRoleSkillConfig(roleDesign);
     if (!skillConfig) {
+      console.log('验证失败：未找到技能配置', { roleDesign });
       return {
         isValid: false,
         reason: '未找到技能配置',
@@ -86,9 +154,12 @@ export class EnhancedSkillService {
       };
     }
 
+    console.log('技能配置获取成功', { skillConfig });
+
     // 验证角色状态
     const currentStatus = this.getStatusName(roleState?.role_status || 1);
     if (!skillConfig.requiredStatus.includes(currentStatus as any)) {
+      console.log('验证失败：角色状态不满足', { currentStatus, requiredStatus: skillConfig.requiredStatus });
       return {
         isValid: false,
         reason: `当前状态 "${currentStatus}" 不满足技能使用要求`,
@@ -99,6 +170,7 @@ export class EnhancedSkillService {
     // 验证使用阶段
     const currentPhaseName = this.PHASE_NAMES[currentPhase - 1] || 'day';
     if (skillConfig.phase !== currentPhaseName) {
+      console.log('验证失败：阶段不匹配', { currentPhaseName, requiredPhase: skillConfig.phase });
       return {
         isValid: false,
         reason: `当前阶段 "${currentPhaseName}" 不是技能使用阶段`,
@@ -106,8 +178,9 @@ export class EnhancedSkillService {
       };
     }
 
-    // 验证目标选择
+    // 验证目标选择 - 修复村民技能不需要目标的问题
     if (skillConfig.targetType === 'single' && !targetUserId) {
+      console.log('验证失败：需要目标但未选择', { targetType: skillConfig.targetType, targetUserId });
       return {
         isValid: false,
         reason: '该技能需要选择目标',
@@ -116,6 +189,7 @@ export class EnhancedSkillService {
     }
 
     if (skillConfig.targetType === 'none' && targetUserId) {
+      console.log('验证失败：不需要目标但选择了', { targetType: skillConfig.targetType, targetUserId });
       return {
         isValid: false,
         reason: '该技能不需要选择目标',
@@ -127,6 +201,7 @@ export class EnhancedSkillService {
     if (skillConfig.usageLimit !== 'unlimited') {
       const usedCount = this.getSkillUsedCount(roleState, skillConfig.id);
       if (usedCount >= skillConfig.usageLimit) {
+        console.log('验证失败：使用次数已达上限', { usedCount, usageLimit: skillConfig.usageLimit });
         return {
           isValid: false,
           reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`,
@@ -135,6 +210,7 @@ export class EnhancedSkillService {
       }
     }
 
+    console.log('技能验证通过', { skillConfig: skillConfig.chineseName, currentPhaseName, currentStatus });
     return { isValid: true };
   }
 
