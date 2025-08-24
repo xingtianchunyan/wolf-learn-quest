@@ -182,7 +182,7 @@ const GamePage = () => {
                 currentUser={currentUser}
                 gamePhase={gameState?.currentPhase === 1 ? 'day' : gameState?.currentPhase === 2 ? 'evening' : gameState?.currentPhase === 3 ? 'night' : gameState?.currentPhase === 4 ? 'dawn' : 'preparation'}
                 gameRound={gameState?.currentRound}
-                userRole={currentRoleDesign?.name}
+                userRole={currentRoleDesign?.role_name}
                 isGameRoom={true}
                 title="游戏聊天"
                 height="100%"
