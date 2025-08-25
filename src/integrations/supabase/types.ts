@@ -1365,7 +1365,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      skill_system_performance: {
+        Row: {
+          recent_rows: number | null
+          table_name: string | null
+          table_size: string | null
+          total_rows: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       advance_game_phase: {
@@ -1432,6 +1440,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_old_skill_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_voice_signals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1461,6 +1473,16 @@ export type Database = {
           p_round_number: number
         }
         Returns: string
+      }
+      get_active_skill_effects_for_user: {
+        Args: { p_game_state_id: string; p_user_id: string }
+        Returns: {
+          effect_duration: number
+          effect_end_time: string
+          effect_type: string
+          skill_name: string
+          stack_count: number
+        }[]
       }
       get_phase_duration: {
         Args: { p_phase: number; p_room_id: string }
@@ -1493,6 +1515,36 @@ export type Database = {
       get_room_judge_id: {
         Args: { p_room_id: string }
         Returns: string
+      }
+      get_skill_effects_by_type: {
+        Args: { p_effect_type: string; p_game_state_id: string }
+        Returns: {
+          created_at: string
+          effect_data: Json
+          is_active: boolean
+          target_user_id: string
+        }[]
+      }
+      get_skill_system_status: {
+        Args: { p_game_state_id: string }
+        Returns: {
+          active_effects: number
+          expired_effects: number
+          pending_effects: number
+          total_conflicts: number
+          total_skill_uses: number
+        }[]
+      }
+      get_skill_table_index_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          index_name: string
+          index_scans: number
+          index_size: string
+          table_name: string
+          tuples_fetched: number
+          tuples_read: number
+        }[]
       }
       get_skill_target_room_id: {
         Args: { p_skill_effects_queue_id: string }
@@ -1584,6 +1636,18 @@ export type Database = {
       }
       use_skill_charge: {
         Args: { p_role_state_id: string }
+        Returns: boolean
+      }
+      user_has_effect_type: {
+        Args: {
+          p_effect_type: string
+          p_game_state_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      validate_skill_data_consistency: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }
