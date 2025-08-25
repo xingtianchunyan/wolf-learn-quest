@@ -62,36 +62,53 @@ export const handleVoteResult = async (
   }
 };
 
-// 获取投票统计信息（使用 game_actions 表）
+// 获取投票统计信息（使用新的投票系统）
 export const getVoteStats = async (
   gameStateId: string,
   currentRound: number,
   currentPhase: number
 ) => {
   try {
-    // 从 game_actions 表获取投票记录
-    const { data: voteActions, error } = await supabase
-      .from('game_actions')
-      .select('actor_id, target_id')
-      .eq('game_id', gameStateId)
-      .eq('round', currentRound)
-      .eq('phase', currentPhase.toString())
-      .eq('action_type', 'vote');
+    // 获取当前活跃的投票会话
+    const { data: session, error: sessionError } = await supabase
+      .from('voting_sessions')
+      .select('id')
+      .eq('game_state_id', gameStateId)
+      .eq('round_number', currentRound)
+      .eq('phase', currentPhase)
+      .eq('status', 'active')
+      .maybeSingle();
 
-    if (error) {
-      console.error('获取投票统计失败:', error);
+    if (sessionError) {
+      console.error('获取投票会话失败:', sessionError);
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
-    if (!voteActions || voteActions.length === 0) {
+    if (!session) {
+      return { voteCount: 0, mostVotedPlayer: null };
+    }
+
+    // 获取投票记录
+    const { data: votes, error } = await supabase
+      .from('votes')
+      .select('voter_id, target_id, vote_weight')
+      .eq('voting_session_id', session.id)
+      .eq('is_valid', true);
+
+    if (error) {
+      console.error('获取投票记录失败:', error);
+      return { voteCount: 0, mostVotedPlayer: null };
+    }
+
+    if (!votes || votes.length === 0) {
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
     // 统计得票
     const voteCounts: Record<string, number> = {};
-    voteActions.forEach(action => {
-      if (action.target_id) {
-        voteCounts[action.target_id] = (voteCounts[action.target_id] || 0) + 1;
+    votes.forEach(vote => {
+      if (vote.target_id) {
+        voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + (vote.vote_weight || 1);
       }
     });
 
@@ -100,7 +117,7 @@ export const getVoteStats = async (
       .sort(([,a], [,b]) => b - a)[0]?.[0];
 
     return {
-      voteCount: voteActions.length,
+      voteCount: votes.length,
       mostVotedPlayer: mostVotedPlayerId || null,
       voteCounts
     };
