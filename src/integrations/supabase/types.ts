@@ -1058,6 +1058,69 @@ export type Database = {
           },
         ]
       }
+      standardized_skill_targets: {
+        Row: {
+          created_at: string
+          effect_applied: Json
+          effect_duration: number | null
+          effect_end_time: string | null
+          effect_start_time: string
+          id: string
+          is_active: boolean
+          skill_effects_queue_id: string | null
+          skill_use_id: string
+          stack_count: number
+          target_type: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id: string
+          stack_count?: number
+          target_type: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect_applied?: Json
+          effect_duration?: number | null
+          effect_end_time?: string | null
+          effect_start_time?: string
+          id?: string
+          is_active?: boolean
+          skill_effects_queue_id?: string | null
+          skill_use_id?: string
+          stack_count?: number
+          target_type?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_standardized_skill_targets_skill_effects_queue_id"
+            columns: ["skill_effects_queue_id"]
+            isOneToOne: false
+            referencedRelation: "skill_effects_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_standardized_skill_targets_skill_use_id"
+            columns: ["skill_use_id"]
+            isOneToOne: false
+            referencedRelation: "skill_uses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       uploaded_files: {
         Row: {
           file_name: string
@@ -1302,76 +1365,7 @@ export type Database = {
       }
     }
     Views: {
-      standardized_skill_targets: {
-        Row: {
-          created_at: string | null
-          effect_applied: Json | null
-          effect_duration: number | null
-          effect_end_time: string | null
-          effect_start_time: string | null
-          id: string | null
-          is_active: boolean | null
-          skill_effects_queue_id: string | null
-          skill_use_id: string | null
-          stack_count: number | null
-          target_type: string | null
-          target_user_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          effect_applied?: never
-          effect_duration?: number | null
-          effect_end_time?: string | null
-          effect_start_time?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          skill_effects_queue_id?: string | null
-          skill_use_id?: string | null
-          stack_count?: number | null
-          target_type?: string | null
-          target_user_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          effect_applied?: never
-          effect_duration?: number | null
-          effect_end_time?: string | null
-          effect_start_time?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          skill_effects_queue_id?: string | null
-          skill_use_id?: string | null
-          stack_count?: number | null
-          target_type?: string | null
-          target_user_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_skill_targets_skill_effects_queue"
-            columns: ["skill_effects_queue_id"]
-            isOneToOne: false
-            referencedRelation: "skill_effects_queue"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_skill_targets_skill_use"
-            columns: ["skill_use_id"]
-            isOneToOne: false
-            referencedRelation: "skill_uses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_skill_targets_skill_use_id"
-            columns: ["skill_use_id"]
-            isOneToOne: false
-            referencedRelation: "skill_uses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       advance_game_phase: {
@@ -1431,6 +1425,10 @@ export type Database = {
         }[]
       }
       cleanup_expired_skill_effects: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_expired_standardized_skill_effects: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -1499,6 +1497,19 @@ export type Database = {
       get_skill_target_room_id: {
         Args: { p_skill_effects_queue_id: string }
         Returns: string
+      }
+      get_standardized_skill_targets_by_game: {
+        Args: { p_game_state_id: string }
+        Returns: {
+          created_at: string
+          effect_duration: number
+          effect_type: string
+          id: string
+          is_active: boolean
+          skill_use_id: string
+          target_type: string
+          target_user_id: string
+        }[]
       }
       get_waiting_room_player_counts: {
         Args: Record<PropertyKey, never>
