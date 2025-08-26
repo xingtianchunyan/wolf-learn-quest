@@ -85,13 +85,12 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
     if (!skillConfig) return;
 
     const result = await useSkillEnhanced(
+      userId,
+      gameStateId,
       skillConfig.englishName,
       selectedTarget || undefined,
       {},
-      roleState,
-      roleDesign,
-      currentPhase,
-      currentRound
+      skillConfig.priority
     );
 
     if (result) {

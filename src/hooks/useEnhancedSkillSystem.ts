@@ -211,13 +211,12 @@ export const useEnhancedSkillSystem = (
 
   // 增强的技能使用函数
   const useSkillEnhanced = useCallback(async (
+    userId: string,
+    gameStateId: string,
     skillName: string,
     targetUserId?: string,
     additionalData: Record<string, any> = {},
-    roleState?: any,
-    roleDesign?: any,
-    currentPhase?: number,
-    currentRound?: number
+    priority?: number
   ) => {
     if (!gameStateId || !userId) {
       toast({
@@ -234,10 +233,10 @@ export const useEnhancedSkillSystem = (
         userId,
         gameStateId,
         roomId,
-        currentPhase: currentPhase || 1,
-        currentRound: currentRound || 1,
-        roleState,
-        roleDesign,
+        currentPhase: 1,
+        currentRound: 1,
+        roleState: null,
+        roleDesign: null,
         targetUserId,
         additionalData
       };
@@ -264,7 +263,7 @@ export const useEnhancedSkillSystem = (
     } finally {
       setLoading(false);
     }
-  }, [gameStateId, userId, roomId, toast, fetchAllSkillData]);
+  }, [roomId, toast, fetchAllSkillData]);
 
   // 获取技能使用建议
   const getSkillSuggestion = useCallback((

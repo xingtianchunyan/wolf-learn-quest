@@ -72,13 +72,12 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     if (!skillConfig || !canUseSkill) return;
 
     await useSkill(
+      userId,
+      gameStateId,
       skillConfig.englishName,
       selectedTargetId || undefined,
       {},
-      roleState,
-      roleDesign,
-      currentPhase,
-      currentRound || 1
+      skillConfig.priority
     );
 
     // 清空选择的目标
