@@ -23,6 +23,10 @@ import MultiChannelChat from '@/components/chat/MultiChannelChat';
 const GamePage = () => {
   const { id: roomId } = useParams();
   const { t } = useLanguage();
+  
+  // 目标选择状态 - 必须在所有条件检查之前
+  const [selectedTargetId, setSelectedTargetId] = useState<string>('');
+  
   const { gameState } = useGameState(roomId!);
   useEveningRefresh(gameState);
   const { players } = usePlayersRealtime(roomId!);
@@ -53,9 +57,6 @@ const GamePage = () => {
   const currentUserId = currentUser!.id; // 此时已确保用户已登录
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
-  
-  // 目标选择状态
-  const [selectedTargetId, setSelectedTargetId] = useState<string>('');
   
   // Check current phase to determine which system to show
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
