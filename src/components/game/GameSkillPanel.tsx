@@ -6,6 +6,15 @@ import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 
+/**
+ * 文件: GameSkillPanel.tsx
+ * 描述: 夜晚/拂晓阶段的技能使用面板。展示技能信息、目标选择提示、使用按钮与记录。
+ * 依赖: useEnhancedSkillSystem 钩子提供技能可用性校验与执行。
+ */
+
+/**
+ * 组件属性接口：用于描述技能面板所需的上下文信息与回调
+ */
 interface GameSkillPanelProps {
   roomId: string;
   gameStateId: string;
@@ -24,6 +33,12 @@ interface GameSkillPanelProps {
   onTargetSelect?: (targetId: string) => void;
 }
 
+/**
+ * GameSkillPanel 组件
+ * - 展示当前角色技能的基础信息
+ * - 引导用户在左侧玩家列表中点击选择目标
+ * - 根据 useEnhancedSkillSystem.canUseSkill 返回结果与是否选择目标控制按钮可点击状态
+ */
 const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   roomId,
   gameStateId,
@@ -51,12 +66,14 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     return getSkillConfigByEnglish(roleDesign.skill_name);
   }, [roleDesign]);
 
-  // 检查是否可以使用技能
+  // 检查是否可以使用技能（关键：将选择的目标与轮次一起传入，避免单体技能误判不可用）
   const canUseSkill = canUseSkillFromHook(
     roleDesign?.skill_name || '',
     roleState,
     roleDesign,
-    currentPhase
+    currentPhase,
+    selectedTargetId,
+    currentRound
   );
 
   // 获取用户的技能使用数据
@@ -68,16 +85,22 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     (player.status !== 'eliminated' && player.roleStatus !== 4)
   ) || [];
 
+  /**
+   * 处理技能使用点击
+   * - 若技能配置或可用性校验不通过则直接返回
+   * - 执行技能后清空已选目标
+   */
   const handleUseSkill = async () => {
     if (!skillConfig || !canUseSkill) return;
 
     await useSkill(
-      userId,
-      gameStateId,
       skillConfig.englishName,
       selectedTargetId || undefined,
       {},
-      skillConfig.priority
+      roleState,
+      roleDesign,
+      currentPhase,
+      currentRound || 1
     );
 
     // 清空选择的目标

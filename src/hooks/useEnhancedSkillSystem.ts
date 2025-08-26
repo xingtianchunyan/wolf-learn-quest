@@ -211,12 +211,13 @@ export const useEnhancedSkillSystem = (
 
   // 增强的技能使用函数
   const useSkillEnhanced = useCallback(async (
-    userId: string,
-    gameStateId: string,
     skillName: string,
     targetUserId?: string,
     additionalData: Record<string, any> = {},
-    priority?: number
+    roleState?: any,
+    roleDesign?: any,
+    currentPhase?: number,
+    currentRound?: number
   ) => {
     if (!gameStateId || !userId) {
       toast({
@@ -233,10 +234,10 @@ export const useEnhancedSkillSystem = (
         userId,
         gameStateId,
         roomId,
-        currentPhase: 1,
-        currentRound: 1,
-        roleState: null,
-        roleDesign: null,
+        currentPhase: currentPhase || 1,
+        currentRound: currentRound || 1,
+        roleState,
+        roleDesign,
         targetUserId,
         additionalData
       };
@@ -263,7 +264,7 @@ export const useEnhancedSkillSystem = (
     } finally {
       setLoading(false);
     }
-  }, [roomId, toast, fetchAllSkillData]);
+  }, [gameStateId, userId, roomId, toast, fetchAllSkillData]);
 
   // 获取技能使用建议
   const getSkillSuggestion = useCallback((
@@ -342,11 +343,24 @@ export const useEnhancedSkillSystem = (
   }, [userId, skillUses, skillEffectsQueue, skillTargets]);
 
   // 检查技能可用性
+  /**
+   * 检查技能在当前上下文是否可用
+   *
+   * 参数说明:
+   * - skillName: 技能英文名，用于兼容性描述（当前实现主要依赖 roleDesign 中的配置）
+   * - roleState: 当前用户的角色状态（含 role_status 等）
+   * - roleDesign: 当前用户的角色设计（含技能配置）
+   * - currentPhase: 当前的阶段编号（1=day, 2=evening, 3=night, 4=dawn）
+   * - targetUserId: 可选，若技能为单体目标类型，需要传入被选中的目标用户ID以通过校验
+   * - currentRound: 可选，当前轮次，缺省为 1
+   */
   const canUseSkill = useCallback((
     skillName: string,
     roleState?: any,
     roleDesign?: any,
-    currentPhase?: number
+    currentPhase?: number,
+    targetUserId?: string,
+    currentRound?: number
   ): boolean => {
     if (!gameStateId || !userId) return false;
 
@@ -355,9 +369,11 @@ export const useEnhancedSkillSystem = (
       gameStateId,
       roomId,
       currentPhase: currentPhase || 1,
-      currentRound: 1,
+      currentRound: currentRound || 1,
       roleState,
-      roleDesign
+      roleDesign,
+      // 关键：将目标一并传入，以便单体技能在选择目标后通过校验
+      targetUserId
     };
 
     const validation = EnhancedSkillService.validateSkillUsage(context);
