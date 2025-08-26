@@ -110,14 +110,14 @@ export class PassiveSkillService {
         .from('skill_uses')
         .select(`
           *,
-          standardized_skill_targets!inner (
+          skill_targets!inner (
             target_user_id,
             effect_applied
           )
         `)
         .eq('game_state_id', gameStateId)
         .eq('round_number', currentRound)
-        .eq('standardized_skill_targets.target_user_id', targetUserId)
+        .eq('skill_targets.target_user_id', targetUserId)
         .in('skill_name', ['vigil', 'magic_potion']) // 守卫守夜、女巫解药
         .eq('execution_status', 'completed');
 

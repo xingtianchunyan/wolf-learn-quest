@@ -131,7 +131,7 @@ export const useSkillSystem = (gameStateId: string, roomId: string) => {
     
     try {
       const { data, error } = await supabase
-        .from('standardized_skill_targets')
+        .from('skill_targets')
         .select(`
           *,
           skill_uses!inner(game_state_id)

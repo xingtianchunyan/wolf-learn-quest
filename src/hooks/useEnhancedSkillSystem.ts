@@ -95,7 +95,7 @@ export const useEnhancedSkillSystem = (
           .order('execution_order', { ascending: true }),
         
         supabase
-          .from('standardized_skill_targets')
+          .from('skill_targets')
           .select(`
             *,
             skill_uses!inner(game_state_id)
