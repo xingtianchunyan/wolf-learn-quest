@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // 处理投票结果的主函数
@@ -14,7 +13,38 @@ export const handleVoteResult = async (
       mostVotedPlayerId
     });
 
-    // 简化的投票结果处理：直接更新被投票最多的玩家状态
+    // 获取最新的投票结果
+    const { data: votingResults, error: resultsError } = await supabase
+      .from('voting_results')
+      .select('*')
+      .eq('target_id', mostVotedPlayerId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (resultsError) {
+      console.error('获取投票结果失败:', resultsError);
+      return false;
+    }
+
+    if (votingResults && votingResults.length > 0) {
+      const votingResult = votingResults[0];
+      
+      // 使用数据库函数处理投票结果
+      const { data: processResult, error: processError } = await supabase
+        .rpc('process_voting_result', {
+          p_voting_result_id: votingResult.id
+        });
+
+      if (processError) {
+        console.error('处理投票结果失败:', processError);
+        return false;
+      }
+
+      console.log('投票结果处理成功');
+      return processResult;
+    }
+
+    // 如果没有找到投票结果记录，进行简化处理
     if (mostVotedPlayerId) {
       // 检查目标玩家是否存在
       const { data: targetPlayer, error: playerError } = await supabase
@@ -34,11 +64,11 @@ export const handleVoteResult = async (
         return false;
       }
 
-      // 更新玩家状态为淘汰
+      // 更新玩家状态为虚弱（按新的游戏规则）
       const { error: updateError } = await supabase
         .from('role_states')
         .update({ 
-          role_status: 4, // 淘汰状态
+          role_status: 3, // 虚弱状态
           updated_at: new Date().toISOString()
         })
         .eq('user_id', mostVotedPlayerId)
@@ -49,11 +79,11 @@ export const handleVoteResult = async (
         return false;
       }
 
-      console.log('投票结果处理成功，玩家已淘汰:', mostVotedPlayerId);
+      console.log('投票结果处理成功，玩家状态更新为虚弱:', mostVotedPlayerId);
       return true;
     }
 
-    console.log('没有玩家被淘汰');
+    console.log('没有玩家被投票');
     return true;
 
   } catch (error) {
@@ -62,36 +92,55 @@ export const handleVoteResult = async (
   }
 };
 
-// 获取投票统计信息（使用 game_actions 表）
+// 获取投票统计信息（使用新的投票系统表）
 export const getVoteStats = async (
   gameStateId: string,
   currentRound: number,
   currentPhase: number
 ) => {
   try {
-    // 从 game_actions 表获取投票记录
-    const { data: voteActions, error } = await supabase
-      .from('game_actions')
-      .select('actor_id, target_id')
-      .eq('game_id', gameStateId)
-      .eq('round', currentRound)
-      .eq('phase', currentPhase.toString())
-      .eq('action_type', 'vote');
+    // 获取当前投票会话
+    const { data: votingSessions, error: sessionError } = await supabase
+      .from('voting_sessions')
+      .select('id')
+      .eq('game_state_id', gameStateId)
+      .eq('round_number', currentRound)
+      .eq('phase', currentPhase)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (sessionError) {
+      console.error('获取投票会话失败:', sessionError);
+      return { voteCount: 0, mostVotedPlayer: null };
+    }
+
+    if (!votingSessions || votingSessions.length === 0) {
+      return { voteCount: 0, mostVotedPlayer: null };
+    }
+
+    const sessionId = votingSessions[0].id;
+
+    // 从 votes 表获取投票记录
+    const { data: votes, error } = await supabase
+      .from('votes')
+      .select('voter_id, target_id')
+      .eq('voting_session_id', sessionId)
+      .eq('is_valid', true);
 
     if (error) {
       console.error('获取投票统计失败:', error);
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
-    if (!voteActions || voteActions.length === 0) {
+    if (!votes || votes.length === 0) {
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
     // 统计得票
     const voteCounts: Record<string, number> = {};
-    voteActions.forEach(action => {
-      if (action.target_id) {
-        voteCounts[action.target_id] = (voteCounts[action.target_id] || 0) + 1;
+    votes.forEach(vote => {
+      if (vote.target_id) {
+        voteCounts[vote.target_id] = (voteCounts[vote.target_id] || 0) + 1;
       }
     });
 
@@ -100,7 +149,7 @@ export const getVoteStats = async (
       .sort(([,a], [,b]) => b - a)[0]?.[0];
 
     return {
-      voteCount: voteActions.length,
+      voteCount: votes.length,
       mostVotedPlayer: mostVotedPlayerId || null,
       voteCounts
     };

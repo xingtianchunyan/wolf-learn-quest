@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGameState } from './useGameState';
@@ -46,25 +45,48 @@ export const useVoteResults = (roomId: string) => {
     setLoading(true);
 
     try {
-      // 使用 gameState.id 作为 game_id 来查询
-      const gameId = gameState.id;
+      // 获取当前活跃的投票会话
+      const { data: votingSessions, error: sessionError } = await supabase
+        .from('voting_sessions')
+        .select('id')
+        .eq('room_id', roomId)
+        .eq('game_state_id', gameState.id)
+        .eq('round_number', gameState.currentRound)
+        .eq('phase', gameState.currentPhase)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      // 获取当前回合和阶段的投票动作
-      const { data: voteActions, error: actionsError } = await supabase
-        .from('game_actions')
-        .select('actor_id, target_id')
-        .eq('game_id', gameId)
-        .eq('round', gameState.currentRound)
-        .eq('phase', gameState.currentPhase.toString()); // 转换为字符串
+      if (sessionError) {
+        console.error('获取投票会话失败:', sessionError);
+        setVoteRecords([]);
+        setLoading(false);
+        return;
+      }
+
+      if (!votingSessions || votingSessions.length === 0) {
+        setVoteRecords([]);
+        setLoading(false);
+        return;
+      }
+
+      const currentSessionId = votingSessions[0].id;
+
+      // 获取投票记录
+      const { data: votes, error: votesError } = await supabase
+        .from('votes')
+        .select('voter_id, target_id')
+        .eq('voting_session_id', currentSessionId)
+        .eq('is_valid', true);
       
-      if (actionsError) {
-        console.error('获取投票动作失败:', actionsError);
+      if (votesError) {
+        console.error('获取投票记录失败:', votesError);
         setVoteRecords([]);
         setLoading(false);
         return;
       }
       
-      if (!voteActions || voteActions.length === 0) {
+      if (!votes || votes.length === 0) {
         setVoteRecords([]);
         setLoading(false);
         return;
@@ -74,14 +96,14 @@ export const useVoteResults = (roomId: string) => {
       const allPlayerIds = new Set<string>();
       const voteCounts: Record<string, {voters: string[]}> = {};
       
-      voteActions.forEach(action => {
-        if (action.target_id && action.actor_id) {
-          if (!voteCounts[action.target_id]) {
-            voteCounts[action.target_id] = { voters: [] };
+      votes.forEach(vote => {
+        if (vote.target_id && vote.voter_id) {
+          if (!voteCounts[vote.target_id]) {
+            voteCounts[vote.target_id] = { voters: [] };
           }
-          voteCounts[action.target_id].voters.push(action.actor_id);
-          allPlayerIds.add(action.target_id);
-          allPlayerIds.add(action.actor_id);
+          voteCounts[vote.target_id].voters.push(vote.voter_id);
+          allPlayerIds.add(vote.target_id);
+          allPlayerIds.add(vote.voter_id);
         }
       });
       
@@ -117,19 +139,27 @@ export const useVoteResults = (roomId: string) => {
   // 设置实时订阅
   useEffect(() => {
     const channel = supabase
-      .channel(`game-actions-votes-${roomId}`)
+      .channel(`votes-${roomId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'game_actions',
+          table: 'votes',
         },
-        (payload) => {
-            const newAction = payload.new as { action_type: string };
-            if (newAction.action_type === 'vote') {
-                fetchVoteResults();
-            }
+        () => {
+          fetchVoteResults();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'votes',
+        },
+        () => {
+          fetchVoteResults();
         }
       )
       .subscribe();

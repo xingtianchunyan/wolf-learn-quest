@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,13 +39,35 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   const handleProcessEffects = async () => {
-    // 这里需要实现处理技能效果的逻辑
-    console.log('处理技能效果 - 需要实现');
+    try {
+      const { data, error } = await supabase.rpc('process_skill_effects', {
+        p_game_state_id: gameStateId
+      });
+      
+      if (error) {
+        console.error('处理技能效果失败:', error);
+        return;
+      }
+      
+      console.log(`成功处理了 ${data} 个技能效果`);
+    } catch (error) {
+      console.error('处理技能效果时发生错误:', error);
+    }
   };
 
   const handleCleanupEffects = async () => {
-    // 这里需要实现清理过期效果的逻辑
-    console.log('清理过期效果 - 需要实现');
+    try {
+      const { error } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
+      
+      if (error) {
+        console.error('清理过期效果失败:', error);
+        return;
+      }
+      
+      console.log('成功清理过期效果');
+    } catch (error) {
+      console.error('清理过期效果时发生错误:', error);
+    }
   };
 
   // 统计数据

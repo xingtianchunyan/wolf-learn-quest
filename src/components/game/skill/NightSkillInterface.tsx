@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Moon, Target, Clock, Zap, Shield, Skull, Eye } from 'lucide-react';
-import { useSkillSystem } from '@/hooks/useSkillSystem';
+import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
 
@@ -36,7 +36,12 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillConfirmation, setSkillConfirmation] = useState(false);
-  const { useSkill, loading, getUserSkillUses, getUserSkillEffects } = useSkillSystem(gameStateId, roomId);
+  const { 
+    useSkillEnhanced, 
+    loading, 
+    skillUses, 
+    skillTargets 
+  } = useEnhancedSkillSystem(roomId, gameStateId, userId);
   
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;
@@ -60,11 +65,11 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   );
 
   // 获取用户的技能使用记录
-  const userSkillUses = getUserSkillUses(userId);
+  const userSkillUses = skillUses.filter(skill => skill.user_id === userId);
   const lastSkillUse = userSkillUses[0]; // 最近的技能使用
 
   // 获取用户当前的技能效果
-  const userSkillEffects = getUserSkillEffects(userId);
+  const userSkillEffects = skillTargets.filter(target => target.target_user_id === userId && target.is_active);
 
   const handleUseSkill = async () => {
     if (!selectedTarget && needsTarget()) {
@@ -77,11 +82,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
       confirmation: skillConfirmation
     };
 
-    const result = await useSkill(
-      roleDesign?.skill_name || 'unknown',
-      selectedTarget || undefined,
-      skillData
-    );
+    const result = await useSkillEnhanced({
+      userId,
+      gameStateId,
+      skillName: roleDesign?.skill_name || 'unknown',
+      targetUserId: selectedTarget || undefined,
+      skillData,
+      priority: 100
+    });
 
     if (result) {
       setSelectedTarget('');
