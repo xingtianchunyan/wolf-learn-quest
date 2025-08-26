@@ -86,7 +86,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
 
     const result = await useSkillEnhanced(
       skillConfig.englishName,
-      selectedTarget || undefined,
+      selectedTarget,
       {},
       roleState,
       roleDesign,
