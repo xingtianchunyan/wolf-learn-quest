@@ -82,14 +82,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
       confirmation: skillConfirmation
     };
 
-    const result = await useSkillEnhanced({
+    const result = await useSkillEnhanced(
       userId,
       gameStateId,
-      skillName: roleDesign?.skill_name || 'unknown',
-      targetUserId: selectedTarget || undefined,
+      roleDesign?.skill_name || 'unknown',
+      selectedTarget || undefined,
       skillData,
-      priority: 100
-    });
+      100
+    );
 
     if (result) {
       setSelectedTarget('');

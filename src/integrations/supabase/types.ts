@@ -1485,10 +1485,6 @@ export type Database = {
         }
         Returns: string
       }
-      standardize_effect_applied_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       start_game: {
         Args: { p_room_id: string }
         Returns: string
