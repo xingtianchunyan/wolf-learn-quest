@@ -1506,6 +1506,15 @@ export type Database = {
         Args: { p_role_state_id: string }
         Returns: boolean
       }
+      use_skill_enhanced: {
+        Args: {
+          p_game_state_id: string
+          p_skill_data?: Json
+          p_skill_name: string
+          p_target_user_id?: string
+        }
+        Returns: string
+      }
       user_has_effect_type: {
         Args: {
           p_effect_type: string

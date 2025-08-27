@@ -275,8 +275,8 @@ export class EnhancedSkillService {
       console.warn('技能冲突检测到:', conflictCheck.conflicts);
     }
 
-    // 调用修复后的技能使用函数 - 移除 p_user_id 传参，RPC 内部使用 auth.uid()
-    const { data, error } = await supabase.rpc('use_skill', {
+    // 调用增强版技能使用函数，确保同步到所有相关表
+    const { data, error } = await supabase.rpc('use_skill_enhanced', {
       p_game_state_id: context.gameStateId,
       p_skill_name: skillConfig.englishName,
       p_target_user_id: context.targetUserId,
@@ -298,6 +298,12 @@ export class EnhancedSkillService {
 
     // 更新角色状态中的技能使用计数
     await this.updateSkillUsageCount(context.userId, context.gameStateId, skillConfig.id);
+
+    console.log('技能使用成功，已同步到所有相关表', { 
+      skillUseId: data,
+      skillName: skillConfig.chineseName,
+      targetUserId: context.targetUserId
+    });
 
     return data;
   }
