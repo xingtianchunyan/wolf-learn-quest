@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -160,59 +160,99 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   );
 
   // 女巫技能
-  const WitchSkill = () => (
-    <Card className="bg-green-900/20 border-green-500/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-400">
-          <Heart className="w-5 h-5" />
-          女巫技能 - 药剂
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-sm text-gray-300">
-          <p>你拥有解药和毒药各一瓶，可以在夜晚使用。</p>
-          <p className="text-green-400 mt-2">• 解药：救活当晚死亡的玩家</p>
-          <p className="text-red-400">• 毒药：毒死一名玩家</p>
-          <p className="text-yellow-400">• 每种药剂整局游戏只能使用一次</p>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-3">
-          <Button
-            variant="outline"
-            className="justify-start border-green-500/30 hover:bg-green-500/20"
-            onClick={() => onUseSkill({ 
-              skillType: 'antidote',
-              effectType: 'witch_antidote'
-            })}
-            disabled={!canUseSkill || currentPhase !== 3}
-          >
-            <Heart className="w-4 h-4 mr-2" />
-            使用解药
-          </Button>
+  const WitchSkill = () => {
+    const [showPotionMenu, setShowPotionMenu] = useState(false);
+    
+    return (
+      <Card className="bg-green-900/20 border-green-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-green-400">
+            <Heart className="w-5 h-5" />
+            女巫技能 - 魔药
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-gray-300">
+            <p>你拥有魔药，可以在夜晚使用。</p>
+            <p className="text-green-400 mt-2">• 保护效果：救活当晚死亡的玩家</p>
+            <p className="text-red-400">• 攻击效果：毒死一名玩家</p>
+            <p className="text-yellow-400">• 每种效果整局游戏只能使用一次</p>
+          </div>
           
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-red-400">使用毒药</h4>
-            {availableTargets.map(target => (
+          <div className="space-y-3">
+            {!showPotionMenu ? (
               <Button
-                key={target.userId}
                 variant="outline"
-                className="justify-start border-red-500/30 hover:bg-red-500/20 w-full"
-                onClick={() => onUseSkill({ 
-                  skillType: 'poison',
-                  targetId: target.userId,
-                  effectType: 'witch_poison'
-                })}
+                className="justify-start border-green-500/30 hover:bg-green-500/20 w-full"
+                onClick={() => setShowPotionMenu(true)}
                 disabled={!canUseSkill || currentPhase !== 3}
               >
-                <Skull className="w-4 h-4 mr-2" />
-                毒死 {target.name}
+                <Heart className="w-4 h-4 mr-2" />
+                使用 魔药
               </Button>
-            ))}
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-green-400">选择魔药效果</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPotionMenu(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    ✕
+                  </Button>
+                </div>
+                
+                {/* 保护效果 */}
+                <Button
+                  variant="outline"
+                  className="justify-start border-green-500/30 hover:bg-green-500/20 w-full"
+                  onClick={() => {
+                    onUseSkill({ 
+                      skillType: 'protection',
+                      effectType: 'witch_protection',
+                      potionType: 'protection'
+                    });
+                    setShowPotionMenu(false);
+                  }}
+                  disabled={!canUseSkill || currentPhase !== 3}
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  保护
+                </Button>
+                
+                {/* 攻击效果 */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-red-400">攻击目标</h5>
+                  {availableTargets.map(target => (
+                    <Button
+                      key={target.userId}
+                      variant="outline"
+                      className="justify-start border-red-500/30 hover:bg-red-500/20 w-full"
+                      onClick={() => {
+                        onUseSkill({ 
+                          skillType: 'elimination',
+                          targetId: target.userId,
+                          effectType: 'witch_attack',
+                          potionType: 'attack'
+                        });
+                        setShowPotionMenu(false);
+                      }}
+                      disabled={!canUseSkill || currentPhase !== 3}
+                    >
+                      <Skull className="w-4 h-4 mr-2" />
+                      攻击 {target.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   // 猎人技能
   const HunterSkill = () => (
