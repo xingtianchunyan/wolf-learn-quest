@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
+import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
+import { RoleBasedSkillRecords } from './skill/RoleBasedSkillRecords';
 
 interface SkillUsePanelProps {
   roomId: string;
@@ -111,158 +113,45 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     );
   }
 
+  // 使用角色特定技能组件
+  const handleSkillUse = async (skillData: any) => {
+    if (!roleDesign?.skill_name) return;
+
+    const result = await useSkill(
+      roleDesign.skill_name,
+      skillData.targetId || undefined,
+      skillData,
+      roleState,
+      roleDesign,
+      currentPhase
+    );
+
+    if (result) {
+      setSelectedTarget('');
+      setSkillData({});
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* 技能使用界面 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {getEffectIcon(skillEffectTypes[0] || 'default')}
-            {roleDesign.skill_name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              {roleDesign.skill_description}
-            </p>
-            <div className="flex gap-2 mb-4">
-              <Badge variant="outline">优先级: {skillPriority}</Badge>
-              {skillEffectTypes.map((type, index) => (
-                <Badge key={index} variant="secondary">
-                  {type}
-                </Badge>
-              ))}
-            </div>
-          </div>
+      {/* 角色特定技能界面 */}
+      <RoleSpecificSkills
+        roleName={roleDesign.role_name || ''}
+        skillEffects={roleDesign.skill_effects || {}}
+        roleAttributes={roleDesign.role_attributes || {}}
+        canUseSkill={canUseSkill}
+        onUseSkill={handleSkillUse}
+        availableTargets={availableTargets}
+        currentPhase={currentPhase}
+      />
 
-          {canUseSkill ? (
-            <div className="space-y-3">
-              {/* 目标选择 */}
-              {skillEffectTypes.includes('investigation') || 
-               skillEffectTypes.includes('elimination') || 
-               skillEffectTypes.includes('protection') ? (
-                <div>
-                  <label className="text-sm font-medium">选择目标</label>
-                  <Select value={selectedTarget} onValueChange={setSelectedTarget}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择技能目标" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTargets.map((player) => (
-                        <SelectItem key={player.userId} value={player.userId}>
-                          {player.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
-
-              <Button 
-                onClick={handleUseSkill}
-                disabled={loading || (
-                  (skillEffectTypes.includes('investigation') || 
-                   skillEffectTypes.includes('elimination') || 
-                   skillEffectTypes.includes('protection')) && !selectedTarget
-                )}
-                className="w-full"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    使用中...
-                  </>
-                ) : (
-                  `使用 ${roleDesign.skill_name}`
-                )}
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground">
-                当前阶段或状态不能使用技能
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 技能使用历史 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            技能使用记录
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userSkillUses.length > 0 ? (
-            <div className="space-y-2">
-              {userSkillUses.slice(0, 5).map((skillUse) => (
-                <div 
-                  key={skillUse.id} 
-                  className="flex items-center justify-between p-2 bg-muted rounded"
-                >
-                  <div>
-                    <span className="font-medium">{skillUse.skill_name}</span>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      第{skillUse.round_number}轮 {skillUse.phase}阶段
-                    </span>
-                  </div>
-                  <Badge 
-                    variant="outline" 
-                    className={getStatusColor(skillUse.execution_status)}
-                  >
-                    {skillUse.execution_status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">暂无技能使用记录</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 当前技能效果 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            当前技能效果
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userSkillEffects.length > 0 ? (
-            <div className="space-y-2">
-              {userSkillEffects.map((effect) => (
-                <div 
-                  key={effect.id} 
-                  className="flex items-center justify-between p-2 bg-muted rounded"
-                >
-                  <div className="flex items-center gap-2">
-                    {getEffectIcon(effect.target_type)}
-                    <span className="font-medium">{effect.target_type}</span>
-                  </div>
-                  <div className="text-right">
-                    {effect.effect_end_time && (
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(effect.effect_end_time).toLocaleTimeString()}
-                      </div>
-                    )}
-                    <Badge variant={effect.is_active ? "default" : "secondary"}>
-                      {effect.is_active ? "生效中" : "已失效"}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">当前没有活跃的技能效果</p>
-          )}
-        </CardContent>
-      </Card>
+      {/* 基于角色的技能记录显示 */}
+      <RoleBasedSkillRecords
+        roleName={roleDesign.role_name || ''}
+        skillRecords={userSkillUses}
+        players={players}
+        currentUserId={userId}
+      />
     </div>
   );
 };

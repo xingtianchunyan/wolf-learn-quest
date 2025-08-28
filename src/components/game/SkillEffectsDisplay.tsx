@@ -144,70 +144,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
         </CardContent>
       </Card>
 
-      {/* 活跃技能效果 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            活跃技能效果
-            {activeEffects.length > 0 && (
-              <Badge variant="secondary">{activeEffects.length}</Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {Object.keys(effectsByUser).length > 0 ? (
-            <div className="space-y-4">
-              {Object.entries(effectsByUser).map(([userId, effects]) => (
-                <div key={userId} className="border rounded p-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Target className="w-4 h-4" />
-                    <span className="font-medium">{getPlayerName(userId)}</span>
-                  </div>
-                   <div className="space-y-2">
-                     {effects && Array.isArray(effects) && effects.map((effect) => (
-                       <div
-                        key={effect.id} 
-                        className="flex items-center justify-between p-2 bg-muted rounded"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Badge className={getEffectColor(effect.target_type)}>
-                            {effect.target_type}
-                          </Badge>
-                          {effect.stack_count > 1 && (
-                            <Badge variant="outline">x{effect.stack_count}</Badge>
-                          )}
-                        </div>
-                        <div className="text-right space-y-1">
-                          {effect.effect_end_time && (
-                            <div className="text-xs text-muted-foreground">
-                              剩余: {getRemainingTime(effect.effect_end_time)}
-                            </div>
-                          )}
-                          {effect.effect_end_time && effect.effect_duration && (
-                            <Progress 
-                              value={getProgressPercentage(
-                                effect.effect_start_time, 
-                                effect.effect_end_time
-                              )}
-                              className="w-20 h-2"
-                            />
-                          )}
-                        </div>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <AlertCircle className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">当前没有活跃的技能效果</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* 移除当前技能效果显示 - 根据需求第4点删除 */}
     </div>
   );
 };

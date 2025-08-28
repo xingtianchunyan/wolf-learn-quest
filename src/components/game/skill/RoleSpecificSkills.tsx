@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -159,60 +159,92 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </Card>
   );
 
-  // 女巫技能
-  const WitchSkill = () => (
-    <Card className="bg-green-900/20 border-green-500/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-400">
-          <Heart className="w-5 h-5" />
-          女巫技能 - 药剂
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-sm text-gray-300">
-          <p>你拥有解药和毒药各一瓶，可以在夜晚使用。</p>
-          <p className="text-green-400 mt-2">• 解药：救活当晚死亡的玩家</p>
-          <p className="text-red-400">• 毒药：毒死一名玩家</p>
-          <p className="text-yellow-400">• 每种药剂整局游戏只能使用一次</p>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-3">
-          <Button
-            variant="outline"
-            className="justify-start border-green-500/30 hover:bg-green-500/20"
-            onClick={() => onUseSkill({ 
-              skillType: 'antidote',
-              effectType: 'witch_antidote'
-            })}
-            disabled={!canUseSkill || currentPhase !== 3}
-          >
-            <Heart className="w-4 h-4 mr-2" />
-            使用解药
-          </Button>
+  // 女巫技能 - 添加二级菜单
+  const WitchSkill = () => {
+    const [showPotionMenu, setShowPotionMenu] = useState(false);
+    
+    return (
+      <Card className="bg-green-900/20 border-green-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-green-400">
+            <Heart className="w-5 h-5" />
+            女巫技能 - 魔药
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-gray-300">
+            <p>你拥有解药和毒药各一瓶，可以在夜晚使用。</p>
+            <p className="text-green-400 mt-2">• 保护：救活当晚死亡的玩家</p>
+            <p className="text-red-400">• 攻击：毒死一名玩家</p>
+            <p className="text-yellow-400">• 每种药剂最多使用一次</p>
+          </div>
           
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-red-400">使用毒药</h4>
-            {availableTargets.map(target => (
+          {!showPotionMenu ? (
+            <Button
+              variant="outline"
+              className="justify-start border-green-500/30 hover:bg-green-500/20 w-full"
+              onClick={() => setShowPotionMenu(true)}
+              disabled={!canUseSkill || currentPhase !== 3}
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              使用 魔药
+            </Button>
+          ) : (
+            <div className="space-y-3">
               <Button
-                key={target.userId}
                 variant="outline"
-                className="justify-start border-red-500/30 hover:bg-red-500/20 w-full"
-                onClick={() => onUseSkill({ 
-                  skillType: 'poison',
-                  targetId: target.userId,
-                  effectType: 'witch_poison'
-                })}
+                className="justify-start border-green-500/30 hover:bg-green-500/20 w-full"
+                onClick={() => {
+                  onUseSkill({ 
+                    skillType: 'protection',
+                    potionType: 'protection',
+                    effectType: 'witch_antidote'
+                  });
+                  setShowPotionMenu(false);
+                }}
                 disabled={!canUseSkill || currentPhase !== 3}
               >
-                <Skull className="w-4 h-4 mr-2" />
-                毒死 {target.name}
+                <Heart className="w-4 h-4 mr-2" />
+                保护
               </Button>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+              
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-red-400">攻击</h4>
+                {availableTargets.map(target => (
+                  <Button
+                    key={target.userId}
+                    variant="outline"
+                    className="justify-start border-red-500/30 hover:bg-red-500/20 w-full"
+                    onClick={() => {
+                      onUseSkill({ 
+                        skillType: 'elimination',
+                        targetId: target.userId,
+                        potionType: 'attack',
+                        effectType: 'witch_poison'
+                      });
+                      setShowPotionMenu(false);
+                    }}
+                    disabled={!canUseSkill || currentPhase !== 3}
+                  >
+                    <Skull className="w-4 h-4 mr-2" />
+                    攻击 {target.name}
+                  </Button>
+                ))}
+              </div>
+              
+              <Button
+                variant="ghost"
+                onClick={() => setShowPotionMenu(false)}
+                className="w-full text-gray-400"
+              >
+                取消
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   // 猎人技能
   const HunterSkill = () => (
@@ -240,24 +272,48 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </Card>
   );
 
-  // 村民技能（无特殊技能）
-  const VillagerSkill = () => (
-    <Card className="bg-gray-900/20 border-gray-500/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-gray-400">
-          <Sun className="w-5 h-5" />
-          村民
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-sm text-gray-300">
-          <p>村民没有特殊的夜晚技能。</p>
-          <p className="text-gray-400 mt-2">• 你的任务是在白天发言和投票</p>
-          <p className="text-gray-400">• 帮助好人阵营找出狼人</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // 村民技能 - 睡觉技能自动使用
+  const VillagerSkill = () => {
+    React.useEffect(() => {
+      // 进入夜晚阶段时自动使用睡觉技能
+      if (currentPhase === 3 && canUseSkill) {
+        onUseSkill({
+          skillType: 'passive',
+          effectType: 'villager_sleep'
+        });
+      }
+    }, [currentPhase, canUseSkill]);
+
+    return (
+      <Card className="bg-gray-900/20 border-gray-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-gray-400">
+            <Moon className="w-5 h-5" />
+            村民技能 - 睡觉
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-gray-300">
+            <p>夜晚阶段会自动进入睡眠状态。</p>
+            <p className="text-gray-400 mt-2">• 睡觉技能会自动触发</p>
+            <p className="text-gray-400">• 你的任务是在白天发言和投票</p>
+            <p className="text-gray-400">• 帮助好人阵营找出狼人</p>
+          </div>
+          
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              className="justify-start border-gray-500/30 w-full"
+              disabled={true}
+            >
+              <Moon className="w-4 h-4 mr-2" />
+              睡觉（自动触发）
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   // 根据角色名称渲染对应的技能界面
   const renderRoleSkill = () => {

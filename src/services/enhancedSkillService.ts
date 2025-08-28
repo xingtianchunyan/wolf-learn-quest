@@ -197,16 +197,30 @@ export class EnhancedSkillService {
       };
     }
 
-    // 验证使用次数
+    // 验证使用次数 - 修正单次使用规则
     if (skillConfig.usageLimit !== 'unlimited') {
-      const usedCount = this.getSkillUsedCount(roleState, skillConfig.id);
-      if (usedCount >= skillConfig.usageLimit) {
-        console.log('验证失败：使用次数已达上限', { usedCount, usageLimit: skillConfig.usageLimit });
-        return {
-          isValid: false,
-          reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`,
-          suggestedAction: '该技能在本局游戏中不能再次使用'
-        };
+      // 对于女巫，检查当前轮次的使用情况
+      if (skillConfig.id === 'witch_potion') {
+        const usedCount = this.getSkillUsedCount(roleState, skillConfig.id);
+        if (usedCount >= skillConfig.usageLimit) {
+          console.log('验证失败：女巫魔药使用次数已达上限', { usedCount, usageLimit: skillConfig.usageLimit });
+          return {
+            isValid: false,
+            reason: `魔药使用次数已达上限 (${skillConfig.usageLimit})`,
+            suggestedAction: '每种药剂只能使用一次'
+          };
+        }
+      } else {
+        // 其他角色技能：检查当前回合是否已使用
+        const usedInCurrentRound = this.hasSkillUsedInCurrentRound(roleState, skillConfig.id, context.currentRound);
+        if (usedInCurrentRound) {
+          console.log('验证失败：本轮已使用该技能', { skillId: skillConfig.id, currentRound: context.currentRound });
+          return {
+            isValid: false,
+            reason: '本轮已使用该技能',
+            suggestedAction: '每轮只能使用一次'
+          };
+        }
       }
     }
 
@@ -231,6 +245,17 @@ export class EnhancedSkillService {
     }
     
     return 0;
+  }
+
+  /**
+   * 检查技能是否在当前回合已使用
+   */
+  private static hasSkillUsedInCurrentRound(roleState: any, skillId: string, currentRound: number): boolean {
+    // 检查当前回合的使用记录
+    const roundUses = roleState?.round_skill_uses || {};
+    const currentRoundUses = roundUses[currentRound] || [];
+    
+    return currentRoundUses.includes(skillId);
   }
 
   /**
@@ -297,7 +322,7 @@ export class EnhancedSkillService {
     }
 
     // 更新角色状态中的技能使用计数
-    await this.updateSkillUsageCount(context.userId, context.gameStateId, skillConfig.id);
+    await this.updateSkillUsageCount(context.userId, context.gameStateId, skillConfig.id, context.currentRound);
 
     console.log('技能使用成功，已同步到所有相关表', { 
       skillUseId: data,
@@ -368,7 +393,8 @@ export class EnhancedSkillService {
   private static async updateSkillUsageCount(
     userId: string, 
     gameStateId: string, 
-    skillId: string
+    skillId: string,
+    currentRound: number
   ): Promise<void> {
     // 获取当前角色状态
     const { data: roleState, error: fetchError } = await supabase
@@ -387,6 +413,10 @@ export class EnhancedSkillService {
     const currentUses = (roleState?.skill_uses_remaining as Record<string, any>) || {};
     const skillUses = currentUses[skillId] as { used?: number; remaining?: number } || { used: 0, remaining: 0 };
     
+    // 更新回合使用记录
+    const roundUses = (roleState as any)?.round_skill_uses || {};
+    const currentRoundUses = roundUses[currentRound] || [];
+    
     const updatedUses = {
       ...currentUses,
       [skillId]: {
@@ -395,10 +425,18 @@ export class EnhancedSkillService {
       }
     };
 
+    const updatedRoundUses = {
+      ...roundUses,
+      [currentRound]: [...currentRoundUses, skillId]
+    };
+
     // 保存更新
     const { error: updateError } = await supabase
       .from('role_states')
-      .update({ skill_uses_remaining: updatedUses })
+      .update({ 
+        skill_uses_remaining: updatedUses,
+        round_skill_uses: updatedRoundUses 
+      })
       .eq('user_id', userId)
       .eq('game_state_id', gameStateId);
 
