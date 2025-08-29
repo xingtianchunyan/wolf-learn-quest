@@ -1,5 +1,6 @@
 // 增强的技能服务 - 实现完整的技能逻辑和安全验证
 import { supabase } from '@/integrations/supabase/client';
+import { createLogger } from '@/lib/logger';
 import { 
   SKILL_MAPPING_CONFIG, 
   getSkillConfigByChinese,
@@ -7,6 +8,13 @@ import {
   resolveSkillConflicts,
   type SkillConfig 
 } from '@/utils/skillMappingConfig';
+import {
+  validateSkillUseLimits,
+  validateRoleStatus,
+  validateSkillPhase,
+  validateSkillTarget,
+  createSkillValidationError
+} from '@/utils/skillSystemValidation';
 
 export class EnhancedSkillServiceError extends Error {
   code?: string;
@@ -39,6 +47,8 @@ export interface SkillValidationResult {
   suggestedAction?: string;
 }
 
+const logger = createLogger('enhanced-skill-service');
+
 export class EnhancedSkillService {
   private static readonly PHASE_NAMES = ['day', 'evening', 'night', 'dawn'] as const;
   
@@ -58,11 +68,8 @@ export class EnhancedSkillService {
    */
   private static getRoleSkillConfig(roleDesign: any): SkillConfig | null {
     if (!roleDesign?.skill_name) {
-      console.log('角色设计没有技能名称', { roleDesign });
       return null;
     }
-    
-    console.log('尝试获取技能配置', { skillName: roleDesign.skill_name });
     
     // 尝试通过英文名匹配
     let skillConfig = getSkillConfigByEnglish(roleDesign.skill_name);
@@ -133,12 +140,11 @@ export class EnhancedSkillService {
       skillConfig = defaultConfigs[roleDesign.skill_name];
     }
     
-    console.log('技能配置获取结果', { skillName: roleDesign.skill_name, found: !!skillConfig, skillConfig });
     return skillConfig;
   }
 
   /**
-   * 验证技能使用条件
+   * 验证技能使用条件 - 使用统一验证模块
    */
   public static validateSkillUsage(context: SkillUsageContext): SkillValidationResult {
     const { roleState, roleDesign, currentPhase, targetUserId } = context;
@@ -146,7 +152,7 @@ export class EnhancedSkillService {
     // 获取技能配置
     const skillConfig = this.getRoleSkillConfig(roleDesign);
     if (!skillConfig) {
-      console.log('验证失败：未找到技能配置', { roleDesign });
+      logger.warn('技能配置获取失败', { roleDesign });
       return {
         isValid: false,
         reason: '未找到技能配置',
@@ -154,77 +160,53 @@ export class EnhancedSkillService {
       };
     }
 
-    console.log('技能配置获取成功', { skillConfig });
+    logger.debug('开始验证技能使用条件', { 
+      skillName: skillConfig.chineseName,
+      currentPhase,
+      roleStatus: roleState?.role_status
+    });
 
     // 验证角色状态
-    const currentStatus = this.getStatusName(roleState?.role_status || 1);
-    if (!skillConfig.requiredStatus.includes(currentStatus as any)) {
-      console.log('验证失败：角色状态不满足', { currentStatus, requiredStatus: skillConfig.requiredStatus });
+    const statusValidation = validateRoleStatus(skillConfig.requiredStatus, roleState?.role_status || 1);
+    if (!statusValidation.valid) {
       return {
         isValid: false,
-        reason: `当前状态 "${currentStatus}" 不满足技能使用要求`,
+        reason: statusValidation.reason!,
         suggestedAction: `需要状态：${skillConfig.requiredStatus.join(' 或 ')}`
       };
     }
 
     // 验证使用阶段
-    const currentPhaseName = this.PHASE_NAMES[currentPhase - 1] || 'day';
-    if (skillConfig.phase !== currentPhaseName) {
-      console.log('验证失败：阶段不匹配', { currentPhaseName, requiredPhase: skillConfig.phase });
+    const phaseValidation = validateSkillPhase(skillConfig.phase, currentPhase);
+    if (!phaseValidation.valid) {
       return {
         isValid: false,
-        reason: `当前阶段 "${currentPhaseName}" 不是技能使用阶段`,
+        reason: phaseValidation.reason!,
         suggestedAction: `需要在 "${skillConfig.phase}" 阶段使用`
       };
     }
 
-    // 验证目标选择 - 修复村民技能不需要目标的问题
-    if (skillConfig.targetType === 'single' && !targetUserId) {
-      console.log('验证失败：需要目标但未选择', { targetType: skillConfig.targetType, targetUserId });
+    // 验证目标选择
+    const targetValidation = validateSkillTarget(skillConfig.targetType, targetUserId);
+    if (!targetValidation.valid) {
       return {
         isValid: false,
-        reason: '该技能需要选择目标',
-        suggestedAction: '请先选择一个目标玩家'
+        reason: targetValidation.reason!,
+        suggestedAction: skillConfig.targetType === 'single' ? '请先选择一个目标玩家' : '取消目标选择'
       };
     }
 
-    if (skillConfig.targetType === 'none' && targetUserId) {
-      console.log('验证失败：不需要目标但选择了', { targetType: skillConfig.targetType, targetUserId });
+    // 验证使用次数限制
+    const useLimitValidation = validateSkillUseLimits(skillConfig, roleState, context.currentRound);
+    if (!useLimitValidation.canUse) {
       return {
         isValid: false,
-        reason: '该技能不需要选择目标',
-        suggestedAction: '取消目标选择'
+        reason: useLimitValidation.reason!,
+        suggestedAction: skillConfig.usageLimit === 'unlimited' ? '每轮只能使用一次' : '技能使用次数已用完'
       };
     }
 
-    // 验证使用次数 - 修正单次使用规则
-    if (skillConfig.usageLimit !== 'unlimited') {
-      // 对于女巫，检查当前轮次的使用情况
-      if (skillConfig.id === 'witch_potion') {
-        const usedCount = this.getSkillUsedCount(roleState, skillConfig.id);
-        if (usedCount >= skillConfig.usageLimit) {
-          console.log('验证失败：女巫魔药使用次数已达上限', { usedCount, usageLimit: skillConfig.usageLimit });
-          return {
-            isValid: false,
-            reason: `魔药使用次数已达上限 (${skillConfig.usageLimit})`,
-            suggestedAction: '每种药剂只能使用一次'
-          };
-        }
-      } else {
-        // 其他角色技能：检查当前回合是否已使用
-        const usedInCurrentRound = this.hasSkillUsedInCurrentRound(roleState, skillConfig.id, context.currentRound);
-        if (usedInCurrentRound) {
-          console.log('验证失败：本轮已使用该技能', { skillId: skillConfig.id, currentRound: context.currentRound });
-          return {
-            isValid: false,
-            reason: '本轮已使用该技能',
-            suggestedAction: '每轮只能使用一次'
-          };
-        }
-      }
-    }
-
-    console.log('技能验证通过', { skillConfig: skillConfig.chineseName, currentPhaseName, currentStatus });
+    logger.debug('技能验证通过', { skillName: skillConfig.chineseName });
     return { isValid: true };
   }
 
@@ -297,7 +279,7 @@ export class EnhancedSkillService {
     
     if (conflictCheck.hasConflicts) {
       // 记录冲突但继续执行，让系统后续解决冲突
-      console.warn('技能冲突检测到:', conflictCheck.conflicts);
+      
     }
 
     // 调用增强版技能使用函数，确保同步到所有相关表
@@ -324,12 +306,6 @@ export class EnhancedSkillService {
     // 更新角色状态中的技能使用计数
     await this.updateSkillUsageCount(context.userId, context.gameStateId, skillConfig.id, context.currentRound);
 
-    console.log('技能使用成功，已同步到所有相关表', { 
-      skillUseId: data,
-      skillName: skillConfig.chineseName,
-      targetUserId: context.targetUserId
-    });
-
     return data;
   }
 
@@ -345,7 +321,7 @@ export class EnhancedSkillService {
       .eq('execution_status', 'pending');
 
     if (error) {
-      console.error('获取活跃技能失败:', error);
+      
       return [];
     }
 
@@ -405,7 +381,7 @@ export class EnhancedSkillService {
       .single();
 
     if (fetchError) {
-      console.error('获取角色状态失败:', fetchError);
+      
       return;
     }
 
@@ -441,7 +417,7 @@ export class EnhancedSkillService {
       .eq('game_state_id', gameStateId);
 
     if (updateError) {
-      console.error('更新技能使用次数失败:', updateError);
+      
     }
   }
 
@@ -453,7 +429,7 @@ export class EnhancedSkillService {
     gameStateId: string, 
     roundNumber: number
   ): Promise<{ resolved: number; cancelled: number }> {
-    console.warn('前端冲突处理已废弃，请使用数据库 detect_skill_conflicts 函数');
+    
     
     await this.validateUserAuth();
 
@@ -465,7 +441,7 @@ export class EnhancedSkillService {
     });
 
     if (error) {
-      console.error('调用冲突检测函数失败:', error);
+      
       return { resolved: 0, cancelled: 0 };
     }
 

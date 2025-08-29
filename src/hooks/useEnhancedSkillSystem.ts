@@ -1,6 +1,7 @@
 // 增强的技能系统Hook - 统一状态管理和性能优化
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedSkillService, type SkillUsageContext } from '@/services/enhancedSkillService';
 import { SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
@@ -46,6 +47,8 @@ export interface SkillSuggestion {
   timing: string;
   conflicts?: string[];
 }
+
+const logger = createLogger('enhanced-skill-system');
 
 export const useEnhancedSkillSystem = (
   roomId: string, 
@@ -129,7 +132,7 @@ export const useEnhancedSkillSystem = (
 
       setLastSyncTime(new Date());
     } catch (error) {
-      console.error('获取技能数据失败:', error);
+      logger.error('获取技能数据失败', error);
       toast({
         title: '数据加载失败',
         description: '无法获取技能系统数据，请刷新页面重试',
@@ -254,7 +257,7 @@ export const useEnhancedSkillSystem = (
 
       return result;
     } catch (error: any) {
-      console.error('技能使用失败:', error);
+      logger.error('技能使用失败', error);
       toast({
         title: '技能使用失败',
         description: error.message || '系统错误，请重试',
@@ -317,7 +320,7 @@ export const useEnhancedSkillSystem = (
 
       return result;
     } catch (error) {
-      console.error('解决技能冲突失败:', error);
+      logger.error('解决技能冲突失败', error);
       toast({
         title: '冲突解决失败',
         description: '无法解决技能冲突，请联系管理员',

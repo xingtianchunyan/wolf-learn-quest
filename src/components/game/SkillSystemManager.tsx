@@ -45,13 +45,13 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
       });
       
       if (error) {
-        console.error('处理技能效果失败:', error);
+        
         return;
       }
       
-      console.log(`成功处理了 ${data} 个技能效果`);
+      
     } catch (error) {
-      console.error('处理技能效果时发生错误:', error);
+      
     }
   };
 
@@ -60,13 +60,13 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
       const { error } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
       
       if (error) {
-        console.error('清理过期效果失败:', error);
+        
         return;
       }
       
-      console.log('成功清理过期效果');
+      
     } catch (error) {
-      console.error('清理过期效果时发生错误:', error);
+      
     }
   };
 
