@@ -69,24 +69,23 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
 
     const handleEnded = async () => {
       try {
-        // Fetch judge and next_room info
+        // Fetch judge info (next_room_id might not exist yet)
         const { data: room, error } = await supabase
           .from('rooms')
-          .select('judge_user_id, next_room_id')
+          .select('judge_user_id')
           .eq('id', roomId)
-          .single();
+          .maybeSingle();
         if (error) {
           console.error('Fetch room failed:', error);
           return;
         }
-        const isJudge = room?.judge_user_id && room.judge_user_id === currentUser.id;
+        if (!room) {
+          console.error('Room not found:', roomId);
+          return;
+        }
+        const isJudge = room.judge_user_id && room.judge_user_id === currentUser.id;
 
-        // 仅监听 next_room_id 的出现，不再由法官自动创建新房间
-        // 保持 judge 端为手动创建/进入下一局
-        // （玩家端仍然会在 next_room_id 出现后自动迁移）
-
-
-        // For players (or if judge RPC failed), subscribe and wait for next_room_id
+        // Subscribe to room changes for next_room_id
         roomSub = supabase
           .channel(`room_transition_${roomId}`)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, async (payload: any) => {
@@ -98,10 +97,8 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
           })
           .subscribe();
 
-        // If already set, act immediately
-        if (room?.next_room_id && !handledRef.current) {
-          await joinNewRoom(room.next_room_id as string, Boolean(room?.judge_user_id === currentUser.id));
-        }
+        // Note: next_room_id will be handled via real-time subscription
+        // when the column is available in the database
       } catch (e) {
         console.error('handleEnded error:', e);
       }
