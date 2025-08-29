@@ -686,7 +686,6 @@ export type Database = {
           judge_user_id: string | null
           last_human_activity: string | null
           max_players: number | null
-          next_room_id: string | null
           room_id: string
           status: string | null
         }
@@ -698,7 +697,6 @@ export type Database = {
           judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
-          next_room_id?: string | null
           room_id: string
           status?: string | null
         }
@@ -710,7 +708,6 @@ export type Database = {
           judge_user_id?: string | null
           last_human_activity?: string | null
           max_players?: number | null
-          next_room_id?: string | null
           room_id?: string
           status?: string | null
         }
