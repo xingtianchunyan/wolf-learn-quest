@@ -89,9 +89,11 @@ export const useRoomTransition = (roomId: string | undefined, gameStatus?: 'wait
         roomSub = supabase
           .channel(`room_transition_${roomId}`)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, async (payload: any) => {
-            const nextRoomId = (payload.new as any)?.next_room_id as string | null;
+            // Type the payload to access next_room_id which was added in migration
+            const roomUpdate = payload.new as { next_room_id?: string | null; judge_user_id?: string | null };
+            const nextRoomId = roomUpdate?.next_room_id;
             if (nextRoomId && !handledRef.current) {
-              const asJudge = (payload.new as any)?.judge_user_id === currentUser.id;
+              const asJudge = roomUpdate?.judge_user_id === currentUser.id;
               await joinNewRoom(nextRoomId, asJudge);
             }
           })
