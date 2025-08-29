@@ -61,16 +61,6 @@ const GamePage = () => {
   // Check current phase to determine which system to show
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
   const isSkillPhase = gameState?.currentPhase === 3 || gameState?.currentPhase === 4; // Night and dawn
-  
-  // 调试信息
-  console.log('GamePage Debug:', {
-    gameState: gameState,
-    currentPhase: gameState?.currentPhase,
-    isSkillPhase,
-    isVotingPhase,
-    currentRoleState,
-    currentRoleDesign
-  });
 
   if (!roomId) {
     return (
@@ -141,47 +131,37 @@ const GamePage = () => {
                 <CardContent className="p-6 h-full overflow-y-auto">
                   <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
                   
-                   {/* 根据游戏阶段显示不同的系统 */}
-                    {isVotingPhase && gameState && (
-                      <VotingPanel 
-                        roomId={roomId} 
-                        gameStateId={gameState.id}
-                        currentPhase={gameState.currentPhase}
-                        currentRound={gameState.currentRound}
-                        isJudge={isJudge}
-                        selectedTargetId={selectedTargetId}
-                        onTargetSelect={setSelectedTargetId}
-                      />
-                    )}
-                   
-                    {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
-                      <GameSkillPanel
-                        roomId={roomId}
-                        gameStateId={gameState.id}
-                        userId={currentUserId}
-                        currentPhase={gameState.currentPhase}
-                        roleState={currentRoleState}
-                        roleDesign={currentRoleDesign}
-                        players={players.map(p => ({
-                          userId: p.userId || p.id,
-                          name: p.name || '未知玩家',
-                          roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
-                        }))}
-                        currentRound={gameState.currentRound}
-                        selectedTargetId={selectedTargetId}
-                        onTargetSelect={setSelectedTargetId}
-                      />
-                    )}
-                    
-                    {/* 显示当前状态信息用于调试 */}
-                    {!isVotingPhase && !isSkillPhase && gameState && (
-                      <div className="text-center py-8">
-                        <p className="text-gray-400 mb-2">当前阶段: {gameState.currentPhase}</p>
-                        <p className="text-gray-400 mb-2">当前轮次: {gameState.currentRound}</p>
-                        <p className="text-gray-400 mb-2">游戏状态: {gameState.status}</p>
-                        <p className="text-gray-400">角色状态: {currentRoleState ? '已分配' : '未分配'}</p>
-                      </div>
-                    )}
+                  {/* 根据游戏阶段显示不同的系统 */}
+                   {isVotingPhase && gameState && (
+                     <VotingPanel 
+                       roomId={roomId} 
+                       gameStateId={gameState.id}
+                       currentPhase={gameState.currentPhase}
+                       currentRound={gameState.currentRound}
+                       isJudge={isJudge}
+                       selectedTargetId={selectedTargetId}
+                       onTargetSelect={setSelectedTargetId}
+                     />
+                   )}
+                  
+                   {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
+                     <GameSkillPanel
+                       roomId={roomId}
+                       gameStateId={gameState.id}
+                       userId={currentUserId}
+                       currentPhase={gameState.currentPhase}
+                       roleState={currentRoleState}
+                       roleDesign={currentRoleDesign}
+                       players={players.map(p => ({
+                         userId: p.userId || p.id,
+                         name: p.name || '未知玩家',
+                         roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
+                       }))}
+                       currentRound={gameState.currentRound}
+                       selectedTargetId={selectedTargetId}
+                       onTargetSelect={setSelectedTargetId}
+                     />
+                   )}
                   
                   {/* 等待阶段或游戏未开始 */}
                   {!gameState && (
