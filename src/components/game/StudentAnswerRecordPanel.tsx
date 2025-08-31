@@ -7,6 +7,7 @@ import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useGameState } from '@/hooks/useGameState';
 import { supabase } from '@/integrations/supabase/client';
+import { createLogger } from '@/lib/logger';
 
 interface Question {
   id: string;
@@ -41,6 +42,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
   const [userAnswers, setUserAnswers] = useState<any[]>([]);
   const { currentUser } = useAuth();
   const { gameState } = useGameState(roomId);
+  const logger = createLogger('StudentAnswerRecordPanel');
 
   // 获取题目和用户答题记录
   React.useEffect(() => {
@@ -67,7 +69,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
           .order('question_order');
 
         if (questionsError) {
-          console.error('Error fetching questions:', questionsError);
+          logger.error('Error fetching questions:', questionsError);
           return;
         }
 
@@ -84,13 +86,13 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
           .order('question_order');
 
         if (answersError) {
-          console.error('Error fetching user answers:', answersError);
+          logger.error('Error fetching user answers:', answersError);
           return;
         }
 
         setUserAnswers(answers || []);
       } catch (error) {
-        console.error('Error in fetchData:', error);
+        logger.error('Error in fetchData:', error);
       }
     };
 

@@ -6,6 +6,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { createLogger } from '@/lib/logger';
 import StudentTimerDisplay from './student/StudentTimerDisplay';
 import StudentQuestionDisplay from './student/StudentQuestionDisplay';
 import StudentPreviousQuestionDisplay from './student/StudentPreviousQuestionDisplay';
@@ -51,15 +52,13 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [hasQuestionsInRoom, setHasQuestionsInRoom] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const logger = createLogger('StudentSystemPanel');
 
-  console.log('学生系统：完整状态调试信息', {
+  logger.debug('学生系统状态', {
     roomId,
     gameState: gameState?.status,
-    roomQuestionsLength: roomQuestions.length,
-    isLoadingQuestions,
-    hasQuestionsInRoom,
-    currentQuestion: currentQuestion?.id,
-    previousQuestion: previousQuestion?.id
+    questionsLoaded: roomQuestions.length > 0,
+    currentQuestion: currentQuestion?.id
   });
 
   // 获取房间题目列表

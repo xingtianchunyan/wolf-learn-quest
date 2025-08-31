@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createLogger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,6 +28,7 @@ const LoginDialog: React.FC = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isLoggedIn, initializing, isLoginOpen, setIsLoginOpen } = useAuth();
+  const logger = createLogger('LoginDialog');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ const LoginDialog: React.FC = () => {
       setEmail('');
       setPassword('');
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error:', error);
       toast({
         title: t('login_failed'),
         description: t('unexpected_error'),
@@ -137,7 +139,7 @@ const LoginDialog: React.FC = () => {
         });
         
         if (updateError) {
-          console.error('Error updating display name:', updateError);
+          logger.error('Error updating display name:', updateError);
         }
       }
       
@@ -153,7 +155,7 @@ const LoginDialog: React.FC = () => {
       setPlayerId('');
       setConfirmPassword('');
     } catch (error) {
-      console.error('Signup error:', error);
+      logger.error('Signup error:', error);
       toast({
         title: t('registration_failed'),
         description: t('unexpected_error'),
