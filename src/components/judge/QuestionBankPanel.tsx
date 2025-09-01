@@ -6,8 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BookOpen, Upload, File, Database, Sparkles, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { createLogger } from '@/lib/logger';
 import QuestionBankDialog from './QuestionBankDialog';
 import QuestionBankTooltip from './QuestionBankTooltip';
+
+const logger = createLogger('QuestionBankPanel');
 
 interface QuestionBankPanelProps {
   className?: string;
@@ -61,7 +64,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
           table: 'preprocessed_files'
         },
         (payload) => {
-          console.log('检测到新的预处理文件:', payload);
+          logger.debug('检测到新的预处理文件:', payload);
           toast({
             title: '预处理完成',
             description: '文件预处理已完成，页面数据已更新',
@@ -86,7 +89,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
           table: 'generated_questions'
         },
         (payload) => {
-          console.log('检测到新的生成题目:', payload);
+          logger.debug('检测到新的生成题目:', payload);
           toast({
             title: '题目生成完成',
             description: 'AI题目生成已完成，页面数据已更新',
@@ -109,7 +112,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
 
   const fetchUploadedFiles = async () => {
     try {
-      console.log('获取文件列表...');
+      logger.debug('获取文件列表...');
       
       // 获取已上传的文件
       const { data: uploadedData, error: uploadedError } = await supabase
@@ -118,7 +121,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
         .order('uploaded_at', { ascending: false });
 
       if (uploadedError) {
-        console.error('Error fetching uploaded files:', uploadedError);
+        logger.error('Error fetching uploaded files:', uploadedError);
         setError(`获取文件列表失败: ${uploadedError.message}`);
         return;
       }
@@ -143,9 +146,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       }));
 
       setUploadedFiles(filesWithStatus);
-      console.log('文件列表获取成功:', filesWithStatus.length, '个文件');
+      logger.debug('文件列表获取成功:', filesWithStatus.length, '个文件');
     } catch (error) {
-      console.error('Error fetching uploaded files:', error);
+      logger.error('Error fetching uploaded files:', error);
       setError('获取文件列表时发生错误');
     }
   };
