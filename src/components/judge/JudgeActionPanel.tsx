@@ -22,6 +22,9 @@ import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 import { useJudgePage } from '@/contexts/JudgePageContext';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('judge-action-panel');
 
 interface JudgeActionPanelProps {
   roomId: string;
@@ -70,7 +73,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   };
 
   const handleGameSettlement = () => {
-    console.log('游戏结算');
+    logger.debug('游戏结算');
   };
 
   // 更新题目功能
@@ -85,7 +88,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         description: '已重新加载题目信息',
       });
     } catch (error) {
-      console.error('更新题目失败:', error);
+      logger.error('更新题目失败:', error);
       toast({
         title: '题目更新失败',
         description: '请稍后重试',

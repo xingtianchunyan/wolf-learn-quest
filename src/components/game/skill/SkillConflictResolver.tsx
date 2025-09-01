@@ -7,6 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, Zap, Shield, Target, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toPhaseName } from '@/utils/phaseUtils';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('skill-conflict-resolver');
 
 interface SkillConflict {
   id: string;
@@ -48,7 +51,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching skill conflicts:', error);
+        logger.error('Error fetching skill conflicts:', error);
       } else if (data) {
         setConflicts(data as SkillConflict[]);
       }
@@ -100,12 +103,12 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
       });
 
       if (error) {
-        console.error('Error detecting conflicts:', error);
+        logger.error('Error detecting conflicts:', error);
       } else if (data) {
-        console.log('Conflicts detected:', data);
+        logger.debug('Conflicts detected:', data);
       }
     } catch (error) {
-      console.error('Error detecting conflicts:', error);
+      logger.error('Error detecting conflicts:', error);
     } finally {
       setLoading(false);
     }
@@ -124,12 +127,12 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
         .eq('id', conflictId);
 
       if (error) {
-        console.error('Error resolving conflict:', error);
+        logger.error('Error resolving conflict:', error);
       } else {
         onConflictResolved?.(conflictId);
       }
     } catch (error) {
-      console.error('Error resolving conflict:', error);
+      logger.error('Error resolving conflict:', error);
     } finally {
       setProcessingConflictId(null);
     }

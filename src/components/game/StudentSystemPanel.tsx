@@ -64,7 +64,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   // 获取房间题目列表
   const fetchRoomQuestions = async () => {
     if (!roomId) {
-      console.log('学生系统：没有房间ID，跳过查询');
+      logger.debug('学生系统：没有房间ID，跳过查询');
       setRoomQuestions([]);
       setIsLoadingQuestions(false);
       setHasQuestionsInRoom(false);
@@ -73,7 +73,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
     try {
       setIsLoadingQuestions(true);
-      console.log('学生系统：开始获取房间题目，房间ID:', roomId);
+      logger.debug('学生系统：开始获取房间题目，房间ID:', roomId);
       
       // 直接查询 room_questions 表，现在RLS策略已经修复
       const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
@@ -99,19 +99,19 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         .eq('room_id', roomId)
         .order('question_order', { ascending: true });
 
-      console.log('学生系统：题目查询结果', { 
+      logger.debug('学生系统：题目查询结果', { 
         data: roomQuestionsData, 
         error: roomQuestionsError,
         dataLength: roomQuestionsData?.length || 0
       });
 
       if (roomQuestionsError) {
-        console.error('学生系统：获取房间题目失败:', roomQuestionsError);
+        logger.error('学生系统：获取房间题目失败:', roomQuestionsError);
         throw roomQuestionsError;
       }
 
       if (!roomQuestionsData || roomQuestionsData.length === 0) {
-        console.log('学生系统：房间未设置题目');
+        logger.debug('学生系统：房间未设置题目');
         setRoomQuestions([]);
         setHasQuestionsInRoom(false);
         setIsLoadingQuestions(false);
@@ -130,24 +130,24 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                        rq.questions.correct_option;
         
         if (!isValid) {
-          console.warn('学生系统：发现无效题目数据:', rq);
+          logger.warn('学生系统：发现无效题目数据:', rq);
         }
         
         return isValid;
       });
       
-      console.log('学生系统：有效题目验证结果', {
+      logger.debug('学生系统：有效题目验证结果', {
         totalQuestions: roomQuestionsData.length,
         validQuestions: validQuestions.length,
         invalidCount: roomQuestionsData.length - validQuestions.length
       });
 
       if (validQuestions.length === 0) {
-        console.log('学生系统：没有有效的题目数据');
+        logger.debug('学生系统：没有有效的题目数据');
         setRoomQuestions([]);
         setHasQuestionsInRoom(false);
       } else {
-        console.log('学生系统：成功加载题目', validQuestions.map(rq => ({
+        logger.debug('学生系统：成功加载题目', validQuestions.map(rq => ({
           order: rq.question_order,
           questionId: rq.questions.id,
           questionPreview: rq.questions.question.substring(0, 50) + '...'
@@ -157,7 +157,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       }
 
     } catch (error: any) {
-      console.error('学生系统：获取题目过程中发生错误:', error);
+      logger.error('学生系统：获取题目过程中发生错误:', error);
       setRoomQuestions([]);
       setHasQuestionsInRoom(false);
       toast({
@@ -178,7 +178,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   useEffect(() => {
     if (!roomId) return;
 
-    console.log('学生系统：设置实时监听，房间ID:', roomId);
+    logger.debug('学生系统：设置实时监听，房间ID:', roomId);
 
     const channel = supabase
       .channel(`student_room_questions_${roomId}`)
@@ -191,7 +191,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('学生系统：房间题目发生变化:', payload);
+          logger.debug('学生系统：房间题目发生变化:', payload);
           // 重新获取题目数据
           fetchRoomQuestions();
         }
@@ -199,14 +199,14 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       .subscribe();
 
     return () => {
-      console.log('学生系统：清理实时监听');
+      logger.debug('学生系统：清理实时监听');
       supabase.removeChannel(channel);
     };
   }, [roomId]);
 
   // 获取当前题目
   useEffect(() => {
-    console.log('学生系统：开始计算当前题目', {
+    logger.debug('学生系统：开始计算当前题目', {
       gameStatus: gameState?.status,
       currentRound: gameState?.currentRound,
       currentPhase: gameState?.currentPhase,
@@ -221,17 +221,17 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
 
     // 检查必要条件
     if (isLoadingQuestions) {
-      console.log('学生系统：题目仍在加载中');
+      logger.debug('学生系统：题目仍在加载中');
       return;
     }
 
     if (!hasQuestionsInRoom || roomQuestions.length === 0) {
-      console.log('学生系统：房间没有题目或题目加载失败');
+      logger.debug('学生系统：房间没有题目或题目加载失败');
       return;
     }
 
     if (!gameState || gameState.status !== 'active') {
-      console.log('学生系统：游戏未开始或未活跃，状态:', gameState?.status);
+      logger.debug('学生系统：游戏未开始或未活跃，状态:', gameState?.status);
       return;
     }
 
@@ -239,7 +239,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     
     // 检查是否为答题阶段（傍晚=2, 黎明=4）
     if (currentPhase !== 2 && currentPhase !== 4) {
-      console.log('学生系统：当前非答题阶段，阶段:', currentPhase);
+      logger.debug('学生系统：当前非答题阶段，阶段:', currentPhase);
       return;
     }
 
@@ -248,7 +248,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const phaseIndex = currentPhase === 2 ? 0 : currentPhase === 4 ? 1 : -1;
     
     if (phaseIndex === -1) {
-      console.log('学生系统：无效的游戏阶段:', currentPhase);
+      logger.debug('学生系统：无效的游戏阶段:', currentPhase);
       return;
     }
     
@@ -260,7 +260,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     // 保存当前题目索引供其他地方使用
     setCurrentQuestionIndex(questionIndex);
 
-    console.log('学生系统：计算目标题目序号', {
+    logger.debug('学生系统：计算目标题目序号', {
       currentRound,
       currentPhase,
       targetQuestionOrder,
@@ -271,7 +271,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const roomQuestion = roomQuestions.find(rq => rq.question_order === targetQuestionOrder);
     
     if (roomQuestion && roomQuestion.questions) {
-      console.log('学生系统：找到当前题目', {
+      logger.debug('学生系统：找到当前题目', {
         questionOrder: targetQuestionOrder,
         questionId: roomQuestion.questions.id,
         questionText: roomQuestion.questions.question.substring(0, 100) + '...'
@@ -279,7 +279,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       setCurrentQuestion(roomQuestion.questions);
       setQuestionNotFound(false);
     } else {
-      console.log('学生系统：未找到目标题目', {
+      logger.debug('学生系统：未找到目标题目', {
         targetQuestionOrder,
         availableQuestions: roomQuestions.map(rq => ({
           order: rq.question_order,
@@ -309,7 +309,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       return;
     }
 
-    console.log('学生系统：计算上一题目序号', {
+    logger.debug('学生系统：计算上一题目序号', {
       currentRound,
       currentPhase,
       previousQuestionOrder
@@ -318,7 +318,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const roomQuestion = roomQuestions.find(rq => rq.question_order === previousQuestionOrder);
     if (roomQuestion && roomQuestion.questions) {
       setPreviousQuestion(roomQuestion.questions);
-      console.log('学生系统：找到上一题目:', roomQuestion.questions.question.substring(0, 50) + '...');
+      logger.debug('学生系统：找到上一题目:', roomQuestion.questions.question.substring(0, 50) + '...');
     } else {
       setPreviousQuestion(null);
     }
@@ -340,7 +340,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       const questionIndex = (currentRound - 1) * 2 + phaseIndex;
       const questionOrder = questionIndex + 1;
 
-      console.log('学生系统：检查用户答案，题目序号:', questionOrder);
+      logger.debug('学生系统：检查用户答案，题目序号:', questionOrder);
 
       try {
         const { data: userAnswer, error: answerError } = await supabase
@@ -351,7 +351,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           .eq('question_order', questionOrder)
           .maybeSingle();
 
-        console.log('学生系统：用户答案查询结果:', { userAnswer, answerError });
+        logger.debug('学生系统：用户答案查询结果:', { userAnswer, answerError });
 
         if (userAnswer) {
           setSelectedOption(userAnswer.selected_option);
@@ -361,7 +361,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
           setHasSubmitted(false);
         }
       } catch (error) {
-        console.error('学生系统：检查用户答案失败:', error);
+        logger.error('学生系统：检查用户答案失败:', error);
         setSelectedOption(null);
         setHasSubmitted(false);
       }
@@ -392,7 +392,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const questionOrder = questionIndex + 1;
     const isCorrect = optionNumber === currentQuestion.correct_option;
 
-    console.log('学生系统：提交答案:', {
+    logger.debug('学生系统：提交答案:', {
       roomId,
       userId: currentUser.id,
       questionOrder,
@@ -414,7 +414,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         });
 
       if (error) {
-        console.error('学生系统：保存答案失败:', error);
+        logger.error('学生系统：保存答案失败:', error);
         // 若已存在记录（唯一键冲突），则视为已提交并同步状态
         if ((error as any).code === '23505') {
           try {
@@ -449,7 +449,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         });
       }
     } catch (error) {
-      console.error('学生系统：提交答案时发生错误:', error);
+      logger.error('学生系统：提交答案时发生错误:', error);
       toast({
         title: '提交答案时发生错误',
         description: '请稍后重试',
@@ -476,7 +476,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
   };
 
   // 决定显示内容的逻辑
-  console.log('学生系统：显示逻辑判断', {
+  logger.debug('学生系统：显示逻辑判断', {
     isLoadingQuestions,
     hasQuestionsInRoom,
     gameActive: gameState?.status === 'active',

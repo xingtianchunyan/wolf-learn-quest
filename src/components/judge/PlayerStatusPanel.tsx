@@ -11,6 +11,9 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('player-status-panel');
 
 interface Player {
   id: string;
@@ -46,7 +49,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
         .single();
       
       if (error) {
-        console.error('Error fetching max players for PlayerStatusPanel:', error);
+        logger.error('Error fetching max players for PlayerStatusPanel:', error);
       } else if (data && data.max_players) {
         setMaxPlayers(data.max_players);
       }
