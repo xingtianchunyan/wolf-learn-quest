@@ -1351,7 +1351,7 @@ export type Database = {
           p_phase: string
           p_round_number: number
         }
-        Returns: string
+        Returns: Json
       }
       get_active_skill_effects_for_user: {
         Args: { p_game_state_id: string; p_user_id: string }
