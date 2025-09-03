@@ -1303,6 +1303,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_demon_immunity: {
+        Args: {
+          p_attacker_user_id: string
+          p_game_state_id: string
+          p_target_user_id: string
+        }
+        Returns: boolean
+      }
+      check_multiple_protection: {
+        Args: {
+          p_game_state_id: string
+          p_round_number: number
+          p_target_user_id: string
+        }
+        Returns: Json
+      }
       check_skill_data_quality: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1500,6 +1516,14 @@ export type Database = {
         Args: { p_room_id: string }
         Returns: boolean
       }
+      trigger_hunter_dying_skill: {
+        Args: {
+          p_game_state_id: string
+          p_hunter_user_id: string
+          p_trigger_reason?: string
+        }
+        Returns: boolean
+      }
       use_skill: {
         Args: {
           p_game_state_id: string
@@ -1533,6 +1557,15 @@ export type Database = {
       validate_skill_data_consistency: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      validate_witch_potion_usage: {
+        Args: {
+          p_game_state_id: string
+          p_potion_type: string
+          p_target_user_id?: string
+          p_user_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {

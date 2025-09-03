@@ -422,6 +422,145 @@ export class EnhancedSkillService {
   }
 
   /**
+   * 触发技能冲突检测 - 增强版本
+   */
+  public static async detectSkillConflicts(
+    gameStateId: string, 
+    roundNumber: number,
+    phaseName: string
+  ): Promise<{ conflicts: number; details: any }> {
+    await this.validateUserAuth();
+
+    logger.debug('开始检测技能冲突', { gameStateId, roundNumber, phaseName });
+
+    // 调用增强的数据库冲突检测函数
+    const { data, error } = await supabase.rpc('detect_skill_conflicts', {
+      p_game_state_id: gameStateId,
+      p_round_number: roundNumber,
+      p_phase: phaseName
+    });
+
+    if (error) {
+      logger.error('技能冲突检测失败', error);
+      throw new EnhancedSkillServiceError(
+        `冲突检测失败: ${error.message}`,
+        error.code
+      );
+    }
+
+    logger.debug('技能冲突检测完成', { result: data });
+    return { 
+      conflicts: (data as any)?.conflicts_detected || 0, 
+      details: data 
+    };
+  }
+
+  /**
+   * 验证女巫药剂使用
+   */
+  public static async validateWitchPotion(
+    userId: string,
+    gameStateId: string,
+    potionType: 'protection' | 'attack',
+    targetUserId?: string
+  ): Promise<{ canUse: boolean; reason?: string; nightDeaths?: any[] }> {
+    await this.validateUserAuth();
+
+    const { data, error } = await supabase.rpc('validate_witch_potion_usage', {
+      p_user_id: userId,
+      p_game_state_id: gameStateId,
+      p_potion_type: potionType,
+      p_target_user_id: targetUserId
+    });
+
+    if (error) {
+      logger.error('女巫药剂验证失败', error);
+      throw new EnhancedSkillServiceError(
+        `药剂验证失败: ${error.message}`,
+        error.code
+      );
+    }
+
+    return {
+      canUse: (data as any)?.can_use || false,
+      reason: (data as any)?.reason,
+      nightDeaths: (data as any)?.night_deaths
+    };
+  }
+
+  /**
+   * 触发猎人濒死技能
+   */
+  public static async triggerHunterDyingSkill(
+    hunterUserId: string,
+    gameStateId: string,
+    triggerReason: string = 'elimination'
+  ): Promise<boolean> {
+    await this.validateUserAuth();
+
+    const { data, error } = await supabase.rpc('trigger_hunter_dying_skill', {
+      p_hunter_user_id: hunterUserId,
+      p_game_state_id: gameStateId,
+      p_trigger_reason: triggerReason
+    });
+
+    if (error) {
+      logger.error('猎人濒死技能触发失败', error);
+      return false;
+    }
+
+    return data || false;
+  }
+
+  /**
+   * 检查恶魔免疫
+   */
+  public static async checkDemonImmunity(
+    targetUserId: string,
+    attackerUserId: string,
+    gameStateId: string
+  ): Promise<boolean> {
+    const { data, error } = await supabase.rpc('check_demon_immunity', {
+      p_target_user_id: targetUserId,
+      p_attacker_user_id: attackerUserId,
+      p_game_state_id: gameStateId
+    });
+
+    if (error) {
+      logger.error('恶魔免疫检查失败', error);
+      return false;
+    }
+
+    return data || false;
+  }
+
+  /**
+   * 检查多重保护
+   */
+  public static async checkMultipleProtection(
+    targetUserId: string,
+    gameStateId: string,
+    roundNumber: number
+  ): Promise<{ shouldEliminate: boolean; reason?: string; protectionCount?: number }> {
+    const { data, error } = await supabase.rpc('check_multiple_protection', {
+      p_target_user_id: targetUserId,
+      p_game_state_id: gameStateId,
+      p_round_number: roundNumber
+    });
+
+    if (error) {
+      logger.error('多重保护检查失败', error);
+      return { shouldEliminate: false };
+    }
+
+    return {
+      shouldEliminate: (data as any)?.should_eliminate || false,
+      reason: (data as any)?.reason,
+      protectionCount: (data as any)?.protection_count
+    };
+  }
+
+  /**
    * 处理技能效果冲突解决 - 统一在数据库层处理
    * @deprecated 冲突处理现在统一在数据库层进行，前端只负责触发检测
    */
@@ -429,7 +568,7 @@ export class EnhancedSkillService {
     gameStateId: string, 
     roundNumber: number
   ): Promise<{ resolved: number; cancelled: number }> {
-    
+    logger.warn('此方法已废弃，请使用 detectSkillConflicts');
     
     await this.validateUserAuth();
 
@@ -441,12 +580,12 @@ export class EnhancedSkillService {
     });
 
     if (error) {
-      
+      logger.error('技能冲突处理失败', error);
       return { resolved: 0, cancelled: 0 };
     }
 
     // 返回处理结果（具体格式依赖数据库函数的实现）
-    return { resolved: data ? 1 : 0, cancelled: 0 };
+    return { resolved: (data as any)?.conflicts_detected || 0, cancelled: 0 };
   }
 
   /**

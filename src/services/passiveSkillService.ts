@@ -1,6 +1,9 @@
 // 被动技能服务 - 处理恶魔免疫、多重保护等被动技能逻辑
 import { supabase } from '@/integrations/supabase/client';
 import { SystemAnnouncementService } from './systemAnnouncementService';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('passive-skill-service');
 
 export interface SkillEffect {
   skillUseId: string;
@@ -13,7 +16,7 @@ export interface SkillEffect {
 
 export class PassiveSkillService {
   /**
-   * 处理恶魔免疫狼杀的被动技能
+   * 处理恶魔免疫狼杀的被动技能 - 增强版本，使用数据库函数
    */
   static async processDemonImmunity(
     targetUserId: string,
@@ -22,54 +25,26 @@ export class PassiveSkillService {
     roomId: string
   ): Promise<{ isImmune: boolean; reason?: string }> {
     try {
-      // 检查目标的角色状态和设计
-      const { data: targetRoleState } = await supabase
-        .from('role_states')
-        .select('*, role_id')
-        .eq('user_id', targetUserId)
-        .eq('game_state_id', gameStateId)
-        .single();
+      logger.debug('检查恶魔免疫', { targetUserId, attackerUserId, gameStateId });
 
-      if (!targetRoleState) {
+      // 使用数据库函数检查恶魔免疫
+      const { data, error } = await supabase.rpc('check_demon_immunity', {
+        p_target_user_id: targetUserId,
+        p_attacker_user_id: attackerUserId,
+        p_game_state_id: gameStateId
+      });
+
+      if (error) {
+        logger.error('恶魔免疫检查失败', error);
         return { isImmune: false };
       }
 
-      // 获取角色设计信息
-      const { data: targetRoleDesign } = await supabase
-        .from('role_design')
-        .select('role_name, skill_name')
-        .eq('id', targetRoleState.role_id)
-        .single();
+      const isImmune = data || false;
 
-      if (!targetRoleDesign || targetRoleDesign.role_name !== 'demon') {
-        return { isImmune: false };
-      }
-
-      // 检查攻击者的角色状态和设计
-      const { data: attackerRoleState } = await supabase
-        .from('role_states')
-        .select('*, role_id')
-        .eq('user_id', attackerUserId)
-        .eq('game_state_id', gameStateId)
-        .single();
-
-      if (!attackerRoleState) {
-        return { isImmune: false };
-      }
-
-      // 获取攻击者角色设计信息
-      const { data: attackerRoleDesign } = await supabase
-        .from('role_design')
-        .select('role_name')
-        .eq('id', attackerRoleState.role_id)
-        .single();
-
-      const isWerewolfAttack = ['werewolf', 'whitewolf'].includes(
-        attackerRoleDesign?.role_name || ''
-      );
-
-      if (isWerewolfAttack) {
-        // 恶魔免疫狼人攻击
+      if (isImmune) {
+        logger.info('恶魔免疫狼人攻击', { targetUserId, attackerUserId });
+        
+        // 创建系统公告
         await SystemAnnouncementService.createSkillUsageAnnouncement({
           type: 'skill_usage',
           actorUserId: targetUserId,
@@ -90,13 +65,13 @@ export class PassiveSkillService {
 
       return { isImmune: false };
     } catch (error) {
-      console.error('Error processing demon immunity:', error);
+      logger.error('恶魔免疫处理异常', error);
       return { isImmune: false };
     }
   }
 
   /**
-   * 处理多重保护导致淘汰的逻辑
+   * 处理多重保护导致淘汰的逻辑 - 增强版本，使用数据库函数
    */
   static async processMultipleProtection(
     targetUserId: string,
@@ -105,32 +80,30 @@ export class PassiveSkillService {
     currentRound: number
   ): Promise<{ shouldEliminate: boolean; reason?: string }> {
     try {
-      // 获取当前轮次对目标的所有保护技能
-      const { data: protectionSkills } = await supabase
-        .from('skill_uses')
-        .select(`
-          *,
-          standardized_skill_targets!inner (
-            target_user_id,
-            effect_applied
-          )
-        `)
-        .eq('game_state_id', gameStateId)
-        .eq('round_number', currentRound)
-        .eq('standardized_skill_targets.target_user_id', targetUserId)
-        .in('skill_name', ['vigil', 'magic_potion']) // 守卫守夜、女巫解药
-        .eq('execution_status', 'completed');
+      logger.debug('检查多重保护', { targetUserId, gameStateId, currentRound });
 
-      if (!protectionSkills || protectionSkills.length < 2) {
+      // 使用数据库函数检查多重保护
+      const { data, error } = await supabase.rpc('check_multiple_protection', {
+        p_target_user_id: targetUserId,
+        p_game_state_id: gameStateId,
+        p_round_number: currentRound
+      });
+
+      if (error) {
+        logger.error('多重保护检查失败', error);
         return { shouldEliminate: false };
       }
 
-      // 检查是否有多个不同来源的保护
-      const protectionSources = protectionSkills.map(skill => skill.user_id);
-      const uniqueSources = [...new Set(protectionSources)];
+      const shouldEliminate = (data as any)?.should_eliminate || false;
 
-      if (uniqueSources.length >= 2) {
-        // 多重保护导致淘汰
+      if (shouldEliminate) {
+        logger.info('多重保护导致淘汰', { 
+          targetUserId, 
+          protectionCount: (data as any)?.protection_count,
+          reason: (data as any)?.reason 
+        });
+
+        // 创建系统公告
         await SystemAnnouncementService.createStatusChangeAnnouncement({
           type: 'status_change',
           actorUserId: '',
@@ -149,64 +122,61 @@ export class PassiveSkillService {
 
         return { 
           shouldEliminate: true, 
-          reason: '多重保护导致淘汰' 
+          reason: (data as any)?.reason || '多重保护导致淘汰' 
         };
       }
 
       return { shouldEliminate: false };
     } catch (error) {
-      console.error('Error processing multiple protection:', error);
+      logger.error('多重保护处理异常', error);
       return { shouldEliminate: false };
     }
   }
 
   /**
-   * 处理猎人濒死被动技能触发
+   * 处理猎人濒死被动技能触发 - 增强版本，使用数据库函数
    */
   static async processHunterDyingTrigger(
     hunterUserId: string,
     gameStateId: string,
-    roomId: string
+    roomId: string,
+    triggerReason: string = 'elimination'
   ): Promise<boolean> {
     try {
-      // 更新猎人状态为濒死，并设置技能可用
-      const { error: updateError } = await supabase
-        .from('role_states')
-        .update({
-          role_status: 2, // 濒死状态
-          status_effects: {
-            can_chat: false,
-            can_vote: false,
-            can_use_skill: true, // 可以使用技能
-            can_be_targeted: true,
-            can_answer_questions: true,
-            can_be_voted: false,
-            is_hunter_revenge: true,
-            hunter_revenge_end_time: new Date(Date.now() + 40000).toISOString() // 40秒后结束
-          }
-        })
-        .eq('user_id', hunterUserId)
-        .eq('game_state_id', gameStateId);
+      logger.debug('触发猎人濒死技能', { hunterUserId, gameStateId, triggerReason });
 
-      if (updateError) {
-        console.error('Error updating hunter status:', updateError);
+      // 使用数据库函数触发猎人濒死技能
+      const { data, error } = await supabase.rpc('trigger_hunter_dying_skill', {
+        p_hunter_user_id: hunterUserId,
+        p_game_state_id: gameStateId,
+        p_trigger_reason: triggerReason
+      });
+
+      if (error) {
+        logger.error('猎人濒死技能触发失败', error);
         return false;
       }
 
-      // 发送猎人濒死广播
-      await SystemAnnouncementService.createHunterDeathBroadcast({
-        type: 'hunter_broadcast',
-        actorUserId: hunterUserId,
-        actorName: 'Unknown', // 需要获取实际姓名
-        actorRole: 'hunter',
-        roomId,
-        gameRound: 1, // 需要获取实际轮次
-        gamePhase: 'day'
-      });
+      const success = data || false;
 
-      return true;
+      if (success) {
+        logger.info('猎人濒死技能触发成功', { hunterUserId, triggerReason });
+
+        // 发送猎人濒死广播
+        await SystemAnnouncementService.createHunterDeathBroadcast({
+          type: 'hunter_broadcast',
+          actorUserId: hunterUserId,
+          actorName: 'Unknown', // 需要获取实际姓名
+          actorRole: 'hunter',
+          roomId,
+          gameRound: 1, // 需要获取实际轮次
+          gamePhase: 'day'
+        });
+      }
+
+      return success;
     } catch (error) {
-      console.error('Error processing hunter dying trigger:', error);
+      logger.error('猎人濒死技能处理异常', error);
       return false;
     }
   }

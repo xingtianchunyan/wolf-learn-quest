@@ -159,12 +159,19 @@ export const createSkillValidationError = (
 };
 
 /**
- * 女巫技能特殊验证
+ * 女巫技能特殊验证 - 增强版本
  */
 export const validateWitchPotionUsage = (
   potionType: 'protection' | 'attack',
-  roleState: any
+  roleState: any,
+  gameContext?: {
+    gameStateId: string;
+    currentRound: number;
+    nightDeaths?: any[];
+  }
 ): SkillUseLimitValidation => {
+  logger.debug('验证女巫药剂使用', { potionType, roleState: roleState?.id });
+  
   const witchUses = roleState?.skill_uses_remaining?.witch_potion || { 
     protection_used: false, 
     attack_used: false 
@@ -179,5 +186,106 @@ export const validateWitchPotionUsage = (
     };
   }
   
+  // 解药特殊验证：需要有死亡信息才能使用
+  if (potionType === 'protection') {
+    if (!gameContext?.nightDeaths || gameContext.nightDeaths.length === 0) {
+      return {
+        canUse: false,
+        reason: '当夜没有死亡信息，无法使用解药'
+      };
+    }
+  }
+  
   return { canUse: true };
+};
+
+/**
+ * 被动技能触发条件验证
+ */
+export const validatePassiveSkillTrigger = (
+  skillType: string,
+  triggerContext: {
+    userRole: string;
+    targetRole?: string;
+    attackerRole?: string;
+    currentStatus: number;
+    gamePhase: number;
+  }
+): { canTrigger: boolean; reason?: string } => {
+  switch (skillType) {
+    case 'demon_immunity':
+      if (triggerContext.userRole !== 'demon') {
+        return { canTrigger: false, reason: '只有恶魔角色具有免疫能力' };
+      }
+      if (!['werewolf', 'whitewolf'].includes(triggerContext.attackerRole || '')) {
+        return { canTrigger: false, reason: '恶魔只免疫狼人攻击' };
+      }
+      return { canTrigger: true };
+      
+    case 'hunter_dying':
+      if (triggerContext.userRole !== 'hunter') {
+        return { canTrigger: false, reason: '只有猎人角色可以触发濒死技能' };
+      }
+      if (triggerContext.currentStatus === 4) {
+        return { canTrigger: false, reason: '猎人已经淘汰，无法触发濒死技能' };
+      }
+      return { canTrigger: true };
+      
+    case 'multiple_protection':
+      // 多重保护检查不需要特殊条件，由系统自动检测
+      return { canTrigger: true };
+      
+    default:
+      logger.warn('未知的被动技能类型', { skillType });
+      return { canTrigger: false, reason: '未知的被动技能类型' };
+  }
+};
+
+/**
+ * 技能执行优先级验证
+ */
+export const validateSkillExecutionOrder = (
+  skillQueue: Array<{
+    skillName: string;
+    priority: number;
+    userId: string;
+    targetUserId?: string;
+  }>
+): { validOrder: boolean; conflicts: string[]; suggestedOrder: any[] } => {
+  const conflicts: string[] = [];
+  const sortedQueue = [...skillQueue].sort((a, b) => a.priority - b.priority);
+  
+  // 检查是否有相同目标的冲突技能
+  const targetMap = new Map<string, any[]>();
+  
+  sortedQueue.forEach(skill => {
+    if (skill.targetUserId) {
+      if (!targetMap.has(skill.targetUserId)) {
+        targetMap.set(skill.targetUserId, []);
+      }
+      targetMap.get(skill.targetUserId)!.push(skill);
+    }
+  });
+  
+  // 检查每个目标是否有冲突技能
+  targetMap.forEach((skills, targetId) => {
+    if (skills.length > 1) {
+      const conflictingSkills = skills.map(s => s.skillName);
+      
+      // 检查特定冲突组合
+      if (conflictingSkills.includes('vigil') && conflictingSkills.includes('night_attack')) {
+        conflicts.push(`目标 ${targetId}: 守卫保护与狼人攻击冲突`);
+      }
+      
+      if (conflictingSkills.includes('magic_potion') && conflictingSkills.includes('night_attack')) {
+        conflicts.push(`目标 ${targetId}: 女巫解药与狼人攻击冲突`);
+      }
+    }
+  });
+  
+  return {
+    validOrder: conflicts.length === 0,
+    conflicts,
+    suggestedOrder: sortedQueue
+  };
 };
