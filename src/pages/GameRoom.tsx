@@ -185,6 +185,7 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
+              users!rooms_host_id_fkey(player_name),
               judge_user_id,
               room_players(id, user_id)
             `)
@@ -203,41 +204,20 @@ const GameRoom = () => {
 
           if (roomData) {
             console.log('Room data found:', roomData);
-            
-            // Fetch host name separately
-            let hostPlayerName = 'Unknown';
-            if (roomData.host_id) {
-              const { data: hostData } = await supabase
-                .from('users')
-                .select('player_name')
-                .eq('user_id', roomData.host_id)
-                .maybeSingle();
-              if (hostData) {
-                hostPlayerName = hostData.player_name;
-              }
-            }
-            
             setRoomData({
               id: roomData.id,
               roomId: roomData.room_id,
-              hostPlayerId: hostPlayerName,
+              hostPlayerId: roomData.users?.player_name || 'Unknown',
               maxPlayers: roomData.max_players,
               judge_user_id: roomData.judge_user_id,
             });
-            
-            console.log('Host ID:', roomData.host_id, 'Host Name:', hostPlayerName);
-            console.log('Judge ID:', roomData.judge_user_id);
-            
             if (roomData.judge_user_id) {
               const { data: judgeData } = await supabase
                 .from('users')
                 .select('player_name')
                 .eq('user_id', roomData.judge_user_id)
-                .maybeSingle();
-              if(judgeData) {
-                setJudgeName(judgeData.player_name);
-                console.log('Judge Name:', judgeData.player_name);
-              }
+                .single();
+              if(judgeData) setJudgeName(judgeData.player_name);
             } else {
               setJudgeName(null);
             }
