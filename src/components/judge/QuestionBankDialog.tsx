@@ -255,9 +255,27 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     setSelectedQuestions(newSelected);
   };
 
+  /**
+   * 随机全选题目
+   * 
+   * 修复说明：
+   * - 从当前过滤的题目范围内进行随机选择，而不是从所有题目中选择
+   * - 尊重用户选择的题目源过滤条件
+   * - 确保随机选择的题目数量不超过18道
+   */
   const randomSelectAll = () => {
-    const shuffled = [...questions].sort(() => 0.5 - Math.random());
+    // 修复：使用 filteredQuestions 而不是 questions，确保只在用户选择的题目源范围内随机选择
+    const availableQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+    const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 18).map(q => ({ ...q, selected: true }));
+    
+    console.log('随机全选执行:', {
+      可用题目总数: availableQuestions.length,
+      已选择的题目源: selectedSources,
+      随机选择的题目数: selected.length,
+      选择的题目ID: selected.map(q => q.id)
+    });
+    
     setSelectedQuestions(selected);
   };
 

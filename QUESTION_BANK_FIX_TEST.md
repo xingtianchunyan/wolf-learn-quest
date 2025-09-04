@@ -10,7 +10,12 @@
 - **问题**: 查询使用了 `generated_questions!inner(file_name)`，导致手动编辑的题目被过滤掉
 - **修复**: 将 `inner join` 改为 `left join`，确保手动编辑的题目也能被查询到
 
-### 2. 改进内容
+### 2. 随机全选功能修复
+- **文件**: `src/components/judge/QuestionBankDialog.tsx`
+- **问题**: `randomSelectAll` 函数从所有题目中随机选择，忽略了用户选择的题目源过滤条件
+- **修复**: 改为从 `filteredQuestions` 中随机选择，尊重用户的题目源选择
+
+### 3. 改进内容
 - 添加详细的调试日志
 - 改善错误处理和用户反馈
 - 优化题目分类逻辑
@@ -76,7 +81,23 @@ ORDER BY created_at DESC;
 4. 检查是否显示成功提示
 5. 切换回"生成题目"标签，验证新添加的题目是否出现在"手动编辑"来源中
 
-#### 步骤6: 测试题目选择和链接
+#### 步骤6: 测试随机全选功能
+1. 在题目源列表中选择特定的题目源（如只选择"手动编辑"）
+2. 点击"随机全选"按钮
+3. 验证随机选择的题目是否只来自于选中的题目源
+4. 检查浏览器控制台，应该看到随机全选的调试信息：
+   ```
+   随机全选执行: {
+     可用题目总数: X,
+     已选择的题目源: ['manual'],
+     随机选择的题目数: Y,
+     选择的题目ID: [...]
+   }
+   ```
+5. 尝试选择多个题目源，再次测试随机全选功能
+6. 验证随机选择的题目确实来自于所有选中的题目源
+
+#### 步骤7: 测试题目选择和链接
 1. 选择一些手动编辑的题目
 2. 点击"链接到系统"按钮
 3. 验证题目是否成功链接到房间
@@ -87,11 +108,13 @@ ORDER BY created_at DESC;
 - 手动编辑的题目不显示在题库中
 - "手动编辑"来源显示0道题目
 - 无法选择和使用手动编辑的题目
+- 随机全选功能忽略题目源过滤条件，从所有题目中随机选择
 
 ### 修复后
 - 手动编辑的题目正常显示在题库中
 - "手动编辑"来源显示正确的题目数量
 - 可以正常选择、预览和使用手动编辑的题目
+- 随机全选功能正确地只从用户选择的题目源中进行随机选择
 - 控制台显示详细的调试信息
 - 错误信息更加详细和有用
 
@@ -130,6 +153,7 @@ ORDER BY created_at DESC;
 
 ### 修复的核心代码变更
 
+#### 1. 题目查询修复
 ```typescript
 // 修复前（错误）
 const { data, error } = await supabase
@@ -148,6 +172,25 @@ const { data, error } = await supabase
     generated_questions(file_name)  // left join 包含所有题目
   `)
   .order('id', { ascending: true });
+```
+
+#### 2. 随机全选功能修复
+```typescript
+// 修复前（错误）
+const randomSelectAll = () => {
+  const shuffled = [...questions].sort(() => 0.5 - Math.random());  // 从所有题目中选择
+  const selected = shuffled.slice(0, 18).map(q => ({ ...q, selected: true }));
+  setSelectedQuestions(selected);
+};
+
+// 修复后（正确）
+const randomSelectAll = () => {
+  // 从当前过滤的题目范围内进行随机选择
+  const availableQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+  const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 18).map(q => ({ ...q, selected: true }));
+  setSelectedQuestions(selected);
+};
 ```
 
 ### 数据库表关系
