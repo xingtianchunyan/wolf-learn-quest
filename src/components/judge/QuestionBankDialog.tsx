@@ -1,4 +1,19 @@
 
+/**
+ * 题库对话框组件
+ * 
+ * 功能说明：
+ * - 显示和管理题库中的所有题目（AI生成和手动编辑）
+ * - 提供题目选择、预览、编辑和排序功能
+ * - 支持将选中的题目链接到房间
+ * 
+ * 修复说明：
+ * - 修复手动编辑题目无法显示的问题
+ * - 将 inner join 改为 left join，确保手动编辑的题目不被过滤
+ * - 优化题目分类和来源显示逻辑
+ * - 改善错误处理和用户反馈机制
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X } from 'lucide-react';
@@ -110,14 +125,23 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     setCurrentQuestionIndex(0);
   }, [selectedSources, questions]);
 
+  /**
+   * 获取所有题目（包括手动编辑和AI生成的题目）
+   * 
+   * 修复说明：
+   * - 移除 inner join，改为 left join 以包含手动编辑的题目
+   * - 手动编辑的题目没有 generated_questions_id，不应被过滤掉
+   * - 确保所有类型的题目都能正确显示
+   */
   const fetchGeneratedQuestions = async () => {
     setLoading(true);
     try {
+      // 修复：使用 left join 而不是 inner join，以包含手动编辑的题目
       const { data, error } = await supabase
         .from('questions')
         .select(`
           *,
-          generated_questions!inner(file_name)
+          generated_questions(file_name)
         `)
         .order('id', { ascending: true });
 
@@ -135,8 +159,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         correct_option: q.correct_option,
         explanation: q.explanation,
         difficulty: q.difficulty || 1,
-        source_file: q.generated_questions?.file_name || '未知来源',
-        category: q.category || '生成题目',
+        source_file: q.generated_questions?.file_name || '手动编辑',
+        category: q.category || (q.generated_questions_id ? '生成题目' : '手动编辑'),
         generated_questions_id: q.generated_questions_id
       }));
 
@@ -175,11 +199,20 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       });
 
       setQuestionSources(Array.from(sourceMap.values()));
+      
+      // 添加调试信息
+      console.log('题目获取成功:', {
+        总题目数: formattedQuestions.length,
+        手动编辑题目数: formattedQuestions.filter(q => q.category === '手动编辑').length,
+        AI生成题目数: formattedQuestions.filter(q => q.category === '生成题目').length,
+        题目来源: Array.from(sourceMap.values())
+      });
+      
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
         title: '获取题目失败',
-        description: '无法加载已生成的题目',
+        description: `无法加载题目数据: ${error instanceof Error ? error.message : '未知错误'}`,
         variant: 'destructive',
       });
     } finally {
@@ -250,6 +283,15 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
   };
 
+  /**
+   * 提交手动编辑的题目
+   * 
+   * 功能：
+   * - 验证题目信息完整性
+   * - 将题目保存到数据库
+   * - 刷新题目列表以显示新添加的题目
+   * - 提供用户反馈
+   */
   const handleSubmitManualQuestion = async () => {
     if (!manualQuestion.question.trim() || 
         !manualQuestion.option_a.trim() || 
@@ -263,6 +305,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
 
     try {
+      console.log('正在保存手动编辑的题目:', manualQuestion);
+      
       const { data, error } = await supabase
         .from('questions')
         .insert({
@@ -282,6 +326,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       if (error) {
         throw error;
       }
+      
+      console.log('手动题目保存成功:', data);
 
       setManualQuestion({
         question: '',
@@ -306,7 +352,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       console.error('Error adding manual question:', error);
       toast({
         title: '添加题目失败',
-        description: '无法保存手动编辑的题目',
+        description: `无法保存手动编辑的题目: ${error instanceof Error ? error.message : '未知错误'}`,
         variant: 'destructive',
       });
     }

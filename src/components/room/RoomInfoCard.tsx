@@ -1,4 +1,17 @@
 
+/**
+ * 房间信息卡片组件
+ * 
+ * 功能说明：
+ * - 显示房间基本信息（房间ID、房主、人数等）
+ * - 实时更新房间状态
+ * - 处理房主信息的安全获取
+ * 
+ * 修复说明：
+ * - 使用 get_public_user_profile RPC 函数获取房主信息，避免权限问题
+ * - 确保所有玩家都能正确查看房主信息
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +37,23 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
   // 获取玩家列表
   const { players } = usePlayersRealtime(roomId);
 
+  /**
+   * 获取房间信息的副作用钩子
+   * 
+   * 功能：
+   * - 从数据库获取房间基本信息
+   * - 通过 RPC 函数安全获取房主信息
+   * - 处理错误情况并显示适当的提示
+   */
   useEffect(() => {
+    /**
+     * 异步获取房间信息函数
+     * 
+     * 修复要点：
+     * - 分离房间基本信息查询和房主信息查询
+     * - 使用 get_public_user_profile RPC 确保权限正确
+     * - 提供友好的错误处理
+     */
     const fetchRoomInfo = async () => {
       try {
         console.log('Fetching room info for:', roomId);
@@ -35,8 +64,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           .select(`
             room_id,
             max_players,
-            host_id,
-            users!rooms_host_id_fkey(player_name)
+            host_id
           `)
           .eq('id', roomId)
           .single();
@@ -51,9 +79,20 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
           return;
         }
 
+        // 获取房主信息
+        let hostPlayerName = 'Unknown';
+        if (roomData.host_id) {
+          const { data: hostData } = await supabase
+            .rpc('get_public_user_profile', { p_user_id: roomData.host_id });
+          
+          if (hostData && Array.isArray(hostData) && hostData.length > 0) {
+            hostPlayerName = hostData[0].player_name;
+          }
+        }
+
         const roomInfo: RoomInfo = {
           roomId: roomData.room_id,
-          hostPlayerId: roomData.users?.player_name || 'Unknown',
+          hostPlayerId: hostPlayerName,
           maxPlayers: roomData.max_players,
           currentPlayers: players.length
         };
