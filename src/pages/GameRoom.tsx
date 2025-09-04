@@ -1,3 +1,18 @@
+/**
+ * 游戏房间页面组件
+ * 
+ * 功能说明：
+ * - 显示房间信息、玩家列表、角色选择和聊天功能
+ * - 处理房间状态的实时更新
+ * - 管理玩家的准备状态和角色选择
+ * 
+ * 修复说明：
+ * - 修复房主ID和法官ID显示问题
+ * - 使用 get_public_user_profile RPC 函数替代直接的外键关联查询
+ * - 确保所有玩家都能正确查看房主和法官信息
+ * - 统一数据获取方式，提高权限兼容性
+ */
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -151,8 +166,29 @@ const GameRoom = () => {
     setPreviousMaxPlayers(currentMaxPlayers);
   }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast]);
 
-  // Fetch current user and room data
+  /**
+   * 获取当前用户和房间数据的副作用钩子
+   * 
+   * 功能：
+   * - 获取当前用户会话信息
+   * - 根据URL参数或用户最近房间获取房间数据
+   * - 安全获取房主和法官信息
+   * 
+   * 修复要点：
+   * - 使用 get_public_user_profile RPC 函数获取用户信息
+   * - 避免直接使用外键关联查询导致的权限问题
+   * - 确保所有玩家都能查看房主和法官信息
+   */
   useEffect(() => {
+    /**
+     * 异步获取数据函数
+     * 
+     * 处理逻辑：
+     * 1. 获取当前用户会话
+     * 2. 根据房间ID获取房间信息
+     * 3. 分别获取房主和法官的用户信息
+     * 4. 处理fallback情况（无房间ID时获取用户最近房间）
+     */
     const fetchData = async () => {
       try {
         // Get current session
@@ -185,7 +221,6 @@ const GameRoom = () => {
               room_id,
               max_players,
               host_id,
-              users!rooms_host_id_fkey(player_name),
               judge_user_id,
               room_players(id, user_id)
             `)
@@ -204,20 +239,41 @@ const GameRoom = () => {
 
           if (roomData) {
             console.log('Room data found:', roomData);
+            
+            /**
+             * 获取房主信息
+             * 
+             * 修复说明：
+             * - 使用 get_public_user_profile RPC 函数替代外键关联
+             * - 确保所有玩家都有权限查看房主信息
+             * - 提供默认值处理异常情况
+             */
+            let hostPlayerName = 'Unknown';
+            if (roomData.host_id) {
+              const { data: hostData } = await supabase
+                .rpc('get_public_user_profile', { p_user_id: roomData.host_id });
+              
+              if (hostData && Array.isArray(hostData) && hostData.length > 0) {
+                hostPlayerName = hostData[0].player_name;
+              }
+            }
+            
             setRoomData({
               id: roomData.id,
               roomId: roomData.room_id,
-              hostPlayerId: roomData.users?.player_name || 'Unknown',
+              hostPlayerId: hostPlayerName,
               maxPlayers: roomData.max_players,
               judge_user_id: roomData.judge_user_id,
             });
             if (roomData.judge_user_id) {
               const { data: judgeData } = await supabase
-                .from('users')
-                .select('player_name')
-                .eq('user_id', roomData.judge_user_id)
-                .single();
-              if(judgeData) setJudgeName(judgeData.player_name);
+                .rpc('get_public_user_profile', { p_user_id: roomData.judge_user_id });
+              
+              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) {
+                setJudgeName(judgeData[0].player_name);
+              } else {
+                setJudgeName('未知法官');
+              }
             } else {
               setJudgeName(null);
             }
@@ -239,7 +295,6 @@ const GameRoom = () => {
                 room_id,
                 max_players,
                 host_id,
-                users!rooms_host_id_fkey(player_name),
                 judge_user_id
               )
             `)
@@ -250,20 +305,40 @@ const GameRoom = () => {
 
           if (roomPlayerData?.rooms) {
             const room = roomPlayerData.rooms;
+            
+            /**
+             * 获取房主信息（fallback逻辑）
+             * 
+             * 修复说明：
+             * - 与主要逻辑保持一致，使用 RPC 函数获取房主信息
+             * - 确保fallback情况下也能正确显示房主信息
+             */
+            let hostPlayerName = 'Unknown';
+            if (room.host_id) {
+              const { data: hostData } = await supabase
+                .rpc('get_public_user_profile', { p_user_id: room.host_id });
+              
+              if (hostData && Array.isArray(hostData) && hostData.length > 0) {
+                hostPlayerName = hostData[0].player_name;
+              }
+            }
+            
             setRoomData({
               id: room.id,
               roomId: room.room_id,
-              hostPlayerId: room.users?.player_name || 'Unknown',
+              hostPlayerId: hostPlayerName,
               maxPlayers: room.max_players,
               judge_user_id: room.judge_user_id,
             });
              if (room.judge_user_id) {
                const { data: judgeData } = await supabase
-                .from('users')
-                .select('player_name')
-                .eq('user_id', room.judge_user_id)
-                .single();
-              if(judgeData) setJudgeName(judgeData.player_name);
+                .rpc('get_public_user_profile', { p_user_id: room.judge_user_id });
+               
+               if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) {
+                 setJudgeName(judgeData[0].player_name);
+               } else {
+                 setJudgeName('未知法官');
+               }
             } else {
               setJudgeName(null);
             }
