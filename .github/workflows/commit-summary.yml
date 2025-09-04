@@ -1,0 +1,130 @@
+# GitHub Actions工作流：自动生成提交摘要
+# 此工作流会在每次推送时自动分析代码变更并生成摘要
+name: Commit Summary Generator
+
+# 触发条件：推送到任何分支
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+
+# 工作流权限设置
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # 生成提交摘要的任务
+  generate-summary:
+    name: Generate Commit Summary
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整的Git历史
+      
+      # 设置Node.js环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # 安装依赖
+      - name: Install dependencies
+        run: npm ci
+      
+      # 分析代码变更
+      - name: Analyze code changes
+        id: analyze
+        run: |
+          # 获取最新提交的变更统计
+          echo "## 📊 代码变更统计" >> summary.md
+          echo "" >> summary.md
+          
+          # 获取文件变更统计
+          git diff --stat HEAD~1 HEAD >> changes.txt
+          
+          # 统计变更的文件数量
+          FILES_CHANGED=$(git diff --name-only HEAD~1 HEAD | wc -l)
+          LINES_ADDED=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $1} END {print sum}')
+          LINES_DELETED=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $2} END {print sum}')
+          
+          echo "- 📁 变更文件数: **${FILES_CHANGED}** 个" >> summary.md
+          echo "- ➕ 新增代码行: **${LINES_ADDED}** 行" >> summary.md
+          echo "- ➖ 删除代码行: **${LINES_DELETED}** 行" >> summary.md
+          echo "" >> summary.md
+          
+          # 分析变更的文件类型
+          echo "## 📂 变更文件分类" >> summary.md
+          echo "" >> summary.md
+          
+          git diff --name-only HEAD~1 HEAD | while read file; do
+            case "$file" in
+              *.ts|*.tsx) echo "- 🔷 TypeScript: \`$file\`" >> summary.md ;;
+              *.js|*.jsx) echo "- 🟨 JavaScript: \`$file\`" >> summary.md ;;
+              *.css|*.scss) echo "- 🎨 样式文件: \`$file\`" >> summary.md ;;
+              *.md) echo "- 📝 文档文件: \`$file\`" >> summary.md ;;
+              *.json) echo "- ⚙️ 配置文件: \`$file\`" >> summary.md ;;
+              *.sql) echo "- 🗄️ 数据库文件: \`$file\`" >> summary.md ;;
+              *) echo "- 📄 其他文件: \`$file\`" >> summary.md ;;
+            esac
+          done
+          
+          echo "" >> summary.md
+          
+          # 分析提交信息
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          echo "## 💬 提交信息" >> summary.md
+          echo "" >> summary.md
+          echo "\`\`\`" >> summary.md
+          echo "$COMMIT_MSG" >> summary.md
+          echo "\`\`\`" >> summary.md
+          echo "" >> summary.md
+          
+          # 生成详细的文件变更
+          echo "## 📋 详细变更列表" >> summary.md
+          echo "" >> summary.md
+          echo "\`\`\`diff" >> summary.md
+          git diff --stat HEAD~1 HEAD >> summary.md
+          echo "\`\`\`" >> summary.md
+          
+          # 设置输出变量
+          echo "files_changed=${FILES_CHANGED}" >> $GITHUB_OUTPUT
+          echo "lines_added=${LINES_ADDED}" >> $GITHUB_OUTPUT
+          echo "lines_deleted=${LINES_DELETED}" >> $GITHUB_OUTPUT
+      
+      # 如果是Pull Request，添加评论
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `# 🔍 代码变更摘要\n\n${summary}\n\n---\n*此摘要由 GitHub Actions 自动生成*`
+            });
+      
+      # 上传摘要文件作为构建产物
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-summary-${{ github.sha }}
+          path: summary.md
+          retention-days: 30
+      
+      # 输出摘要到控制台
+      - name: Display summary
+        run: |
+          echo "📊 提交摘要已生成:"
+          cat summary.md

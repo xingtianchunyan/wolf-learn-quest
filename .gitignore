@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Commit visualization reports
+commit-reports/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

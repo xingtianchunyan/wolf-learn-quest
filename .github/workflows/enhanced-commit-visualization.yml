@@ -1,0 +1,373 @@
+# 增强的提交可视化工作流
+# 生成更直观的代码变更可视化报告
+name: Enhanced Commit Visualization
+
+# 触发条件
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# 权限设置
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  # 可视化分析任务
+  visualize-changes:
+    name: Generate Visual Change Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 100  # 获取更多历史记录用于趋势分析
+      
+      # 设置Node.js环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # 安装项目依赖
+      - name: Install project dependencies
+        run: npm ci
+      
+      # 安装分析工具
+      - name: Install analysis tools
+        run: |
+          npm install -g cloc
+          sudo apt-get update
+          sudo apt-get install -y git-extras
+      
+      # 生成详细的变更分析
+      - name: Generate detailed change analysis
+        id: analysis
+        run: |
+          # 创建报告目录
+          mkdir -p reports
+          
+          # 获取基础信息
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+          DATE=$(git log -1 --pretty=format:'%ad' --date=format:'%Y-%m-%d %H:%M:%S')
+          
+          # 开始生成HTML报告
+          cat > reports/change-report.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>代码变更可视化报告</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      max-width: 1200px;
+                      margin: 0 auto;
+                      padding: 20px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                  }
+                  .container {
+                      background: white;
+                      border-radius: 12px;
+                      padding: 30px;
+                      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                  }
+                  .header {
+                      text-align: center;
+                      margin-bottom: 30px;
+                      padding-bottom: 20px;
+                      border-bottom: 2px solid #eee;
+                  }
+                  .commit-info {
+                      background: #f8f9fa;
+                      padding: 20px;
+                      border-radius: 8px;
+                      margin-bottom: 30px;
+                  }
+                  .stats-grid {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                      gap: 20px;
+                      margin-bottom: 30px;
+                  }
+                  .stat-card {
+                      background: linear-gradient(135deg, #667eea, #764ba2);
+                      color: white;
+                      padding: 20px;
+                      border-radius: 8px;
+                      text-align: center;
+                  }
+                  .stat-number {
+                      font-size: 2em;
+                      font-weight: bold;
+                      margin-bottom: 5px;
+                  }
+                  .file-list {
+                      background: #f8f9fa;
+                      padding: 20px;
+                      border-radius: 8px;
+                      margin-bottom: 20px;
+                  }
+                  .file-item {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      padding: 10px;
+                      margin: 5px 0;
+                      background: white;
+                      border-radius: 4px;
+                      border-left: 4px solid #667eea;
+                  }
+                  .file-type {
+                      display: inline-block;
+                      padding: 2px 8px;
+                      border-radius: 12px;
+                      font-size: 0.8em;
+                      font-weight: bold;
+                  }
+                  .ts { background: #3178c6; color: white; }
+                  .js { background: #f7df1e; color: black; }
+                  .css { background: #1572b6; color: white; }
+                  .md { background: #083fa1; color: white; }
+                  .json { background: #000; color: white; }
+                  .sql { background: #336791; color: white; }
+                  .other { background: #6c757d; color: white; }
+                  .changes {
+                      font-family: monospace;
+                      font-size: 0.9em;
+                  }
+                  .added { color: #28a745; }
+                  .deleted { color: #dc3545; }
+                  .complexity-meter {
+                      width: 100%;
+                      height: 20px;
+                      background: #e9ecef;
+                      border-radius: 10px;
+                      overflow: hidden;
+                      margin: 10px 0;
+                  }
+                  .complexity-fill {
+                      height: 100%;
+                      transition: width 0.3s ease;
+                  }
+                  .low { background: #28a745; }
+                  .medium { background: #ffc107; }
+                  .high { background: #dc3545; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>🔍 代码变更可视化报告</h1>
+                      <p>自动生成的提交分析报告</p>
+                  </div>
+          EOF
+          
+          # 添加提交信息
+          cat >> reports/change-report.html << EOF
+                  <div class="commit-info">
+                      <h2>📝 提交信息</h2>
+                      <p><strong>提交哈希:</strong> <code>$COMMIT_HASH</code></p>
+                      <p><strong>提交信息:</strong> $COMMIT_MSG</p>
+                      <p><strong>作者:</strong> $AUTHOR</p>
+                      <p><strong>时间:</strong> $DATE</p>
+                  </div>
+          EOF
+          
+          # 计算统计信息
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              FILES_CHANGED=$(git diff --name-only HEAD~1 HEAD | wc -l)
+              LINES_ADDED=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $1} END {print sum+0}')
+              LINES_DELETED=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $2} END {print sum+0}')
+              TOTAL_CHANGES=$((LINES_ADDED + LINES_DELETED))
+          else
+              FILES_CHANGED=0
+              LINES_ADDED=0
+              LINES_DELETED=0
+              TOTAL_CHANGES=0
+          fi
+          
+          # 添加统计卡片
+          cat >> reports/change-report.html << EOF
+                  <div class="stats-grid">
+                      <div class="stat-card">
+                          <div class="stat-number">$FILES_CHANGED</div>
+                          <div>文件变更</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number">$LINES_ADDED</div>
+                          <div>新增行数</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number">$LINES_DELETED</div>
+                          <div>删除行数</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number">$TOTAL_CHANGES</div>
+                          <div>总变更量</div>
+                      </div>
+                  </div>
+          EOF
+          
+          # 分析文件变更
+          echo '                  <div class="file-list">' >> reports/change-report.html
+          echo '                      <h2>📂 变更文件详情</h2>' >> reports/change-report.html
+          
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              git diff --numstat HEAD~1 HEAD | while read added deleted file; do
+                  # 确定文件类型
+                  case "$file" in
+                      *.ts|*.tsx) file_type="ts"; type_label="TypeScript" ;;
+                      *.js|*.jsx) file_type="js"; type_label="JavaScript" ;;
+                      *.css|*.scss|*.sass) file_type="css"; type_label="样式" ;;
+                      *.md) file_type="md"; type_label="文档" ;;
+                      *.json) file_type="json"; type_label="配置" ;;
+                      *.sql) file_type="sql"; type_label="数据库" ;;
+                      *) file_type="other"; type_label="其他" ;;
+                  esac
+                  
+                  echo "                      <div class='file-item'>" >> reports/change-report.html
+                  echo "                          <div>" >> reports/change-report.html
+                  echo "                              <span class='file-type $file_type'>$type_label</span>" >> reports/change-report.html
+                  echo "                              <code>$file</code>" >> reports/change-report.html
+                  echo "                          </div>" >> reports/change-report.html
+                  echo "                          <div class='changes'>" >> reports/change-report.html
+                  echo "                              <span class='added'>+$added</span> / <span class='deleted'>-$deleted</span>" >> reports/change-report.html
+                  echo "                          </div>" >> reports/change-report.html
+                  echo "                      </div>" >> reports/change-report.html
+              done
+          fi
+          
+          # 结束HTML
+          cat >> reports/change-report.html << 'EOF'
+                  </div>
+                  
+                  <div style="text-align: center; margin-top: 30px; color: #6c757d;">
+                      <p>📊 报告生成时间: <span id="timestamp"></span></p>
+                      <p>🤖 由 GitHub Actions 自动生成</p>
+                  </div>
+              </div>
+              
+              <script>
+                  document.getElementById('timestamp').textContent = new Date().toLocaleString('zh-CN');
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          # 生成Markdown摘要
+          cat > reports/summary.md << EOF
+          # 🔍 提交变更摘要
+          
+          ## 📊 统计信息
+          - 📁 变更文件: **$FILES_CHANGED** 个
+          - ➕ 新增代码: **$LINES_ADDED** 行
+          - ➖ 删除代码: **$LINES_DELETED** 行
+          - 📈 总变更量: **$TOTAL_CHANGES** 行
+          
+          ## 💬 提交详情
+          - **哈希**: \`$COMMIT_HASH\`
+          - **信息**: $COMMIT_MSG
+          - **作者**: $AUTHOR
+          - **时间**: $DATE
+          
+          ## 📂 文件变更分布
+          EOF
+          
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              git diff --name-only HEAD~1 HEAD | while read file; do
+                  case "$file" in
+                      *.ts|*.tsx) echo "- 🔷 TypeScript: \`$file\`" >> reports/summary.md ;;
+                      *.js|*.jsx) echo "- 🟨 JavaScript: \`$file\`" >> reports/summary.md ;;
+                      *.css|*.scss) echo "- 🎨 样式文件: \`$file\`" >> reports/summary.md ;;
+                      *.md) echo "- 📝 文档文件: \`$file\`" >> reports/summary.md ;;
+                      *.json) echo "- ⚙️ 配置文件: \`$file\`" >> reports/summary.md ;;
+                      *.sql) echo "- 🗄️ 数据库文件: \`$file\`" >> reports/summary.md ;;
+                      *) echo "- 📄 其他文件: \`$file\`" >> reports/summary.md ;;
+                  esac
+              done
+          fi
+          
+          echo "" >> reports/summary.md
+          echo "---" >> reports/summary.md
+          echo "*📊 详细的可视化报告请查看构建产物中的 change-report.html*" >> reports/summary.md
+          
+          # 设置输出变量
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          echo "lines_added=$LINES_ADDED" >> $GITHUB_OUTPUT
+          echo "lines_deleted=$LINES_DELETED" >> $GITHUB_OUTPUT
+          echo "total_changes=$TOTAL_CHANGES" >> $GITHUB_OUTPUT
+      
+      # 为Pull Request添加评论
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('reports/summary.md', 'utf8');
+            
+            // 检查是否已有机器人评论
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🔍 代码变更摘要')
+            );
+            
+            const commentBody = `${summary}\n\n🔗 [查看详细可视化报告](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            
+            if (botComment) {
+              // 更新现有评论
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            } else {
+              // 创建新评论
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            }
+      
+      # 上传可视化报告
+      - name: Upload visualization reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: change-visualization-${{ github.sha }}
+          path: reports/
+          retention-days: 30
+      
+      # 输出摘要到控制台
+      - name: Display change summary
+        run: |
+          echo "📊 代码变更分析完成!"
+          echo "📁 变更文件数: ${{ steps.analysis.outputs.files_changed }}"
+          echo "➕ 新增代码行: ${{ steps.analysis.outputs.lines_added }}"
+          echo "➖ 删除代码行: ${{ steps.analysis.outputs.lines_deleted }}"
+          echo "📈 总变更量: ${{ steps.analysis.outputs.total_changes }}"
+          echo ""
+          echo "📋 详细摘要:"
+          cat reports/summary.md
