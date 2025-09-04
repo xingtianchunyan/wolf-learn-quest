@@ -197,7 +197,7 @@ export class EnhancedSkillService {
     }
 
     // 验证使用次数限制
-    const useLimitValidation = validateSkillUseLimits(skillConfig, roleState, context.currentRound);
+    const useLimitValidation = validateSkillUseLimits(skillConfig, roleState, context.currentRound, context.currentPhase);
     if (!useLimitValidation.canUse) {
       return {
         isValid: false,

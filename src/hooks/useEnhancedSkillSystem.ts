@@ -336,11 +336,14 @@ export const useEnhancedSkillSystem = (
     if (!queryUserId) return { uses: [], effects: [], targets: [] };
 
     return {
-      uses: skillUses.filter(su => su.user_id === queryUserId || su.target_user_id === queryUserId),
+      // 只显示用户自己使用的技能记录，不显示其他玩家对自己使用技能的记录
+      uses: skillUses.filter(su => su.user_id === queryUserId),
+      // 效果队列也只显示自己使用技能产生的效果
       effects: skillEffectsQueue.filter(eq => {
         const relatedUse = skillUses.find(su => su.id === eq.skill_use_id);
-        return relatedUse && (relatedUse.user_id === queryUserId || relatedUse.target_user_id === queryUserId);
+        return relatedUse && relatedUse.user_id === queryUserId;
       }),
+      // 目标效果仍然显示对自己生效的效果（这是合理的，因为玩家需要知道自己的状态）
       targets: skillTargets.filter(st => st.target_user_id === queryUserId && st.is_active)
     };
   }, [userId, skillUses, skillEffectsQueue, skillTargets]);

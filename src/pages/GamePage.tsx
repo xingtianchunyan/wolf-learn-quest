@@ -59,6 +59,7 @@ const GamePage = () => {
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
   
   // Check current phase to determine which system to show
+  // 白天(1)和傍晚(2)阶段显示投票系统，夜晚(3)和黎明(4)阶段显示技能系统
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
   const isSkillPhase = gameState?.currentPhase === 3 || gameState?.currentPhase === 4; // Night and dawn
 

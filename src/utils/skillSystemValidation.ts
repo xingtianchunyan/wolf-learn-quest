@@ -23,20 +23,32 @@ export interface SkillUseLimitValidation {
 export const validateSkillUseLimits = (
   skillConfig: SkillConfig,
   roleState: any,
-  currentRound: number
+  currentRound: number,
+  currentPhase?: number
 ): SkillUseLimitValidation => {
   logger.debug('验证技能使用次数限制', { 
     skillId: skillConfig.id, 
     usageLimit: skillConfig.usageLimit,
-    currentRound 
+    currentRound,
+    currentPhase
   });
 
-  // 无限使用的技能检查当前回合是否已使用
+  // 无限使用的技能检查当前回合和阶段是否已使用
   if (skillConfig.usageLimit === 'unlimited') {
     const roundUses = roleState?.round_skill_uses || {};
     const currentRoundUses = roundUses[currentRound] || [];
     
-    if (currentRoundUses.includes(skillConfig.id)) {
+    // 对于村民睡觉技能，需要检查当前轮次的夜晚阶段是否已使用
+    if (skillConfig.id === 'villager_sleep' && currentPhase === 3) {
+      // 检查当前轮次的夜晚阶段是否已使用睡觉技能
+      const phaseKey = `${currentRound}_night`;
+      if (currentRoundUses.includes(phaseKey)) {
+        return {
+          canUse: false,
+          reason: '本轮夜晚阶段已使用睡觉技能'
+        };
+      }
+    } else if (currentRoundUses.includes(skillConfig.id)) {
       return {
         canUse: false,
         reason: '本轮已使用该技能'
@@ -132,11 +144,45 @@ export const validateSkillTarget = (
   if (targetType === 'none' && targetUserId) {
     return {
       valid: false,
-      reason: '该技能不需要选择目标'
+      reason: '该技能不需要目标'
     };
   }
   
   return { valid: true };
+};
+
+/**
+ * 狼人夜袭技能目标验证
+ * 验证狼人不能攻击自己和其他狼人、白狼队友
+ */
+export const validateWerewolfAttackTarget = async (
+  attackerUserId: string,
+  targetUserId: string,
+  gameStateId: string
+): Promise<{ valid: boolean; reason?: string }> => {
+  try {
+    // 这里需要从数据库获取攻击者和目标的角色信息
+    // 由于这是前端代码，实际的验证应该在后端RPC函数中进行
+    // 这里只是提供验证逻辑的框架
+    
+    if (attackerUserId === targetUserId) {
+      return {
+        valid: false,
+        reason: '不能攻击自己'
+      };
+    }
+    
+    // 实际的同阵营检查需要在后端进行
+    // 因为前端无法安全地获取其他玩家的角色信息
+    
+    return { valid: true };
+  } catch (error) {
+    logger.error('验证狼人攻击目标时出错', error);
+    return {
+      valid: false,
+      reason: '目标验证失败'
+    };
+  }
 };
 
 /**

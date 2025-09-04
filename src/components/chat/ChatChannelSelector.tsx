@@ -33,9 +33,7 @@ const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
   };
 
   const getDisplayChannels = () => {
-    if (isGameRoom) {
-      return availableChannels.filter(ch => ['public', 'system', 'all'].includes(ch));
-    }
+    // 游戏房间显示所有可用频道，包括法官私聊和小队聊天
     return availableChannels;
   };
 
