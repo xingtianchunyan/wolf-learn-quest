@@ -1489,6 +1489,10 @@ export type Database = {
         Args: { p_room_id: string; p_user_id: string }
         Returns: boolean
       }
+      join_room_as_player: {
+        Args: { p_room_id: string }
+        Returns: boolean
+      }
       process_skill_effects: {
         Args: { p_game_state_id: string }
         Returns: number

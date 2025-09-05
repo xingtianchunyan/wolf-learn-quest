@@ -10,6 +10,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VotingPanelProps {
   roomId: string;
@@ -30,10 +31,26 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
   selectedTargetId,
   onTargetSelect
 }) => {
-  const { currentUser, requireAuth } = useAuth();
+  const { currentUser, requireAuth, isLoggedIn } = useAuth();
+
+  // 自动加入房间
+  useEffect(() => {
+    const joinRoom = async () => {
+      if (!currentUser || !roomId) return;
+      
+      try {
+        await supabase.rpc('join_room_as_player', { p_room_id: roomId });
+        console.log('Successfully joined room');
+      } catch (error) {
+        console.error('Failed to join room:', error);
+      }
+    };
+    
+    joinRoom();
+  }, [currentUser, roomId]);
   
   // 检查认证状态
-  if (!requireAuth() || !currentUser) {
+  if (!isLoggedIn || !currentUser) {
     return (
       <Card className="bg-werewolf-card border-werewolf-purple/30">
         <CardContent className="p-6 text-center">
