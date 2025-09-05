@@ -195,7 +195,12 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
     phase: number,
     sessionType: string = 'day_vote'
   ) => {
-    if (!requireAuth() || !gameStateId) return null;
+    // 检查认证状态
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !gameStateId) {
+      console.error('User not authenticated or gameStateId missing');
+      return null;
+    }
 
     // 先检查是否已存在该轮次阶段的投票会话
     try {
@@ -221,6 +226,8 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
     setLoading(true);
     try {
+      console.log('Creating voting session:', { gameStateId, roomId, roundNumber, phase, sessionType });
+      
       const sessionId = await VotingService.createVotingSession(
         gameStateId,
         roomId,
@@ -228,6 +235,11 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
         phase,
         sessionType
       );
+      
+      console.log('Voting session created successfully:', sessionId);
+      
+      // 获取新创建的会话
+      await fetchCurrentSession(roundNumber, phase);
 
       toast({
         title: '投票开始',
@@ -236,12 +248,32 @@ export const useVotingSystem = (roomId: string, gameStateId?: string) => {
 
       return sessionId;
     } catch (error) {
-      console.error('Error creating voting session:', error);
-      toast({
-        title: '创建投票会话失败',
-        description: '请重试',
-        variant: 'destructive',
-      });
+      console.error('Failed to create voting session:', error);
+      
+      // 检查是否是权限问题
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication required')) {
+          console.error('用户未认证，无法创建投票会话');
+          toast({
+            title: '认证失败',
+            description: '请先登录后再试',
+            variant: 'destructive',
+          });
+        } else if (error.message.includes('not a participant')) {
+          console.error('用户不是房间参与者，无法创建投票会话');
+          toast({
+            title: '权限不足',
+            description: '您不是房间参与者，无法创建投票会话',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: '创建投票会话失败',
+            description: '请重试',
+            variant: 'destructive',
+          });
+        }
+      }
       return null;
     } finally {
       setLoading(false);
