@@ -25,20 +25,29 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
 
   // 自动创建投票会话 - 只在白天阶段创建，傍晚阶段显示白天的投票结果
   useEffect(() => {
-    if (gameState?.currentPhase === 1 && gameStateId) {
-      // 只在白天阶段创建投票会话
-      fetchCurrentSession(gameState.currentRound, gameState.currentPhase).then(() => {
-        setTimeout(() => {
-          if (!currentSession) {
-            createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
+    if (!gameStateId || !gameState) return;
+
+    const handleVotingSession = async () => {
+      if (gameState.currentPhase === 1) {
+        // 白天阶段：确保有投票会话存在
+        await fetchCurrentSession(gameState.currentRound, gameState.currentPhase);
+        
+        // 延迟后检查并创建会话（避免依赖currentSession状态）
+        setTimeout(async () => {
+          try {
+            await createVotingSession(gameState.currentRound, gameState.currentPhase, 'day_vote');
+          } catch (error) {
+            console.log('Voting session may already exist or creation failed:', error);
           }
-        }, 100);
-      });
-    } else if (gameState?.currentPhase === 2 && gameStateId) {
-      // 傍晚阶段，获取白天阶段的投票会话（phase 1）
-      fetchCurrentSession(gameState.currentRound, 1);
-    }
-  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, fetchCurrentSession, createVotingSession, currentSession]);
+        }, 300);
+      } else if (gameState.currentPhase === 2) {
+        // 傍晚阶段：获取白天阶段的投票会话
+        await fetchCurrentSession(gameState.currentRound, 1);
+      }
+    };
+
+    handleVotingSession();
+  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId]);
 
   return (
     <div className="space-y-4">
