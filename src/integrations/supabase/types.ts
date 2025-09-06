@@ -1301,7 +1301,7 @@ export type Database = {
           p_voter_id: string
           p_voting_session_id: string
         }
-        Returns: boolean
+        Returns: undefined
       }
       check_demon_immunity: {
         Args: {
