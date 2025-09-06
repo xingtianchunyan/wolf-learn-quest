@@ -45,7 +45,7 @@ export interface VotingResult {
   updated_at?: string;
 }
 
-export const useVotingSystem = (roomId: string, gameStateId?: string) => {
+export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
   const [currentSession, setCurrentSession] = useState<VotingSession | null>(null);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [results, setResults] = useState<VotingResult[]>([]);

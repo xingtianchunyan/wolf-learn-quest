@@ -17,7 +17,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   isJudge
 }) => {
   const { gameState } = useGameState(roomId);
-  const { currentSession, createVotingSession, fetchCurrentSession } = useVotingSystem(roomId, gameState?.id);
+  const { currentSession, createVotingSession, fetchCurrentSession } = useVotingSystem(gameState?.id, roomId);
 
   // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段

@@ -26,8 +26,6 @@ export class VotingService {
     phase: number,
     sessionType: string = 'day_vote'
   ): Promise<string> {
-    await this.requireAuth();
-    
     const { data, error } = await supabase
       .rpc('create_voting_session', {
         p_game_state_id: gameStateId,
@@ -49,8 +47,6 @@ export class VotingService {
     voterId: string,
     targetId?: string
   ): Promise<void> {
-    await this.requireAuth();
-    
     const { error } = await supabase
       .rpc('cast_vote', {
         p_voting_session_id: votingSessionId,

@@ -81,7 +81,7 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     getTargetVoteCount,
     getVotingSummary,
     getVotersForTarget,
-  } = useVotingSystem(roomId, gameStateId);
+  } = useVotingSystem(gameStateId, roomId);
 
 
   const userVote = currentUser ? getUserVote(currentUser.id) : null;
