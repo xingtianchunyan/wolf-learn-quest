@@ -282,7 +282,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [gameStateId, roomId, toast]);
+  }, [gameStateId, roomId, toast, requireAuth]);
 
   // 确保白天阶段投票会话存在
   const ensureDayVotingSession = useCallback(async (roundNumber: number, phase: number) => {
