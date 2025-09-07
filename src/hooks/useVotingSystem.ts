@@ -202,9 +202,18 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     // 检查认证状态
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || !gameStateId) {
-      console.error('User not authenticated or gameStateId missing');
+      console.error('User not authenticated or gameStateId missing', { user: !!user, gameStateId });
       return null;
     }
+
+    console.log('Creating voting session with params:', {
+      gameStateId,
+      roomId,
+      roundNumber,
+      phase,
+      sessionType,
+      userId: user.id
+    });
 
     // 先检查是否已存在该轮次阶段的投票会话
     try {
@@ -230,7 +239,13 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
     setLoading(true);
     try {
-      console.log('Creating voting session:', { gameStateId, roomId, roundNumber, phase, sessionType });
+      console.log('Calling create_voting_session RPC with:', {
+        p_game_state_id: gameStateId,
+        p_room_id: roomId,
+        p_round_number: roundNumber,
+        p_phase: phase,
+        p_session_type: sessionType
+      });
       
       const sessionId = await VotingService.createVotingSession(
         gameStateId,
@@ -289,20 +304,33 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     if (!gameStateId || !roomId || phase !== 1) return;
 
     try {
+      console.log('Checking for existing voting session:', { gameStateId, roundNumber, phase });
+      
       // 检查是否已存在该轮次阶段的投票会话
       const existingSession = await fetchCurrentSession(roundNumber, phase);
       
       if (!existingSession) {
-        console.log(`Creating missing voting session for round ${roundNumber}, phase ${phase}`);
+        console.log(`Creating missing voting session for round ${roundNumber}, phase ${phase}`, {
+          gameStateId,
+          roomId,
+          roundNumber,
+          phase
+        });
+        
         const sessionId = await createVotingSession(roundNumber, phase, 'day_vote');
         if (sessionId) {
+          console.log('Voting session created successfully:', sessionId);
           // 重新获取创建的会话
           await fetchCurrentSession(roundNumber, phase);
           toast({
             title: '投票会话已创建',
             description: `第${roundNumber}轮白天投票已开始`,
           });
+        } else {
+          console.error('Failed to create voting session - no session ID returned');
         }
+      } else {
+        console.log('Existing voting session found:', existingSession);
       }
     } catch (error) {
       console.error('Error ensuring day voting session:', error);

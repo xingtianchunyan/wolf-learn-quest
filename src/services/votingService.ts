@@ -26,6 +26,14 @@ export class VotingService {
     phase: number,
     sessionType: string = 'day_vote'
   ): Promise<string> {
+    console.log('VotingService.createVotingSession called with:', {
+      gameStateId,
+      roomId,
+      roundNumber,
+      phase,
+      sessionType
+    });
+
     const { data, error } = await supabase
       .rpc('create_voting_session', {
         p_game_state_id: gameStateId,
@@ -36,9 +44,11 @@ export class VotingService {
       });
 
     if (error) {
+      console.error('RPC create_voting_session failed:', error);
       throw new VotingServiceError(error.message, error.code);
     }
 
+    console.log('RPC create_voting_session succeeded, returned:', data);
     return data;
   }
 
