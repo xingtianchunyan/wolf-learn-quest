@@ -72,7 +72,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         if (existingError) throw existingError;
         if (existingData && existingData.length > 0) {
           setCurrentSession(existingData[0]);
-          return;
+          return existingData[0];
         }
       }
 
@@ -86,11 +86,15 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         .limit(1);
 
       if (error) throw error;
-      setCurrentSession(data?.[0] || null);
+      const session = data?.[0] || null;
+      setCurrentSession(session);
+      return session;
     } catch (error) {
       console.error('Error fetching voting session:', error);
+      return null;
     }
   }, [gameStateId]);
+
 
   // 获取投票记录
   const fetchVotes = useCallback(async (sessionId: string) => {
@@ -280,6 +284,31 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     }
   }, [gameStateId, roomId, toast]);
 
+  // 确保白天阶段投票会话存在
+  const ensureDayVotingSession = useCallback(async (roundNumber: number, phase: number) => {
+    if (!gameStateId || !roomId || phase !== 1) return;
+
+    try {
+      // 检查是否已存在该轮次阶段的投票会话
+      const existingSession = await fetchCurrentSession(roundNumber, phase);
+      
+      if (!existingSession) {
+        console.log(`Creating missing voting session for round ${roundNumber}, phase ${phase}`);
+        const sessionId = await createVotingSession(roundNumber, phase, 'day_vote');
+        if (sessionId) {
+          // 重新获取创建的会话
+          await fetchCurrentSession(roundNumber, phase);
+          toast({
+            title: '投票会话已创建',
+            description: `第${roundNumber}轮白天投票已开始`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring day voting session:', error);
+    }
+  }, [gameStateId, roomId, fetchCurrentSession, createVotingSession, toast]);
+
   // 投票
   const castVote = useCallback(async (
     voterId: string,
@@ -440,5 +469,6 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     getVotingSummary,
     getVotersForTarget,
     fetchCurrentSession,
+    ensureDayVotingSession,
   };
 };
