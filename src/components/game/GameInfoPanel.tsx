@@ -59,8 +59,8 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
   const showTimer = gameState?.status === 'active' && gameState.phaseEndTime && !gameState.isPaused;
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-      <CardHeader className="pb-3">
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full overflow-hidden flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
           <div className="flex items-center">
             <GamepadIcon className="mr-2 h-5 w-5" />
@@ -84,74 +84,74 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-col h-full space-y-3 overflow-hidden">
-        {/* 当前游戏轮次和阶段 */}
-        <div className="text-center p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
-          <h2 className="text-lg font-bold text-werewolf-purple mb-2">
-            {getGameStatusDisplay()}
-          </h2>
-          
-          {/* 显示倒计时 */}
-          {showTimer && (
-            <div className="flex items-center justify-center text-sm font-semibold">
-              <Clock className="h-4 w-4 mr-2 text-werewolf-purple" />
-              <span className={`${
-                timeRemaining <= 10 ? 'text-red-400' : 
-                timeRemaining <= 30 ? 'text-yellow-400' : 
-                'text-werewolf-purple'
-              }`}>
-                剩余时间: {formatTime(timeRemaining)}
-              </span>
-            </div>
-          )}
-          
-          {/* 游戏状态说明 */}
-          {gameState && (
-            <div className="text-xs text-gray-400 mt-1">
-              {gameState.status === 'waiting' && '等待法官开始游戏'}
-              {gameState.status === 'active' && gameState.currentPhase === 1 && '白天讨论阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 2 && '傍晚答题阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 3 && '夜晚行动阶段'}
-              {gameState.status === 'active' && gameState.currentPhase === 4 && '黎明答题阶段'}
-              {gameState.status === 'ended' && '游戏结束，可查看结算'}
-            </div>
-          )}
-        </div>
+      {/* 当前游戏轮次和阶段 */}
+      <div className="text-center p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0 m-4 mb-3">
+        <h2 className="text-lg font-bold text-werewolf-purple mb-2">
+          {getGameStatusDisplay()}
+        </h2>
+        
+        {/* 显示倒计时 */}
+        {showTimer && (
+          <div className="flex items-center justify-center text-sm font-semibold">
+            <Clock className="h-4 w-4 mr-2 text-werewolf-purple" />
+            <span className={`${
+              timeRemaining <= 10 ? 'text-red-400' : 
+              timeRemaining <= 30 ? 'text-yellow-400' : 
+              'text-werewolf-purple'
+            }`}>
+              剩余时间: {formatTime(timeRemaining)}
+            </span>
+          </div>
+        )}
+        
+        {/* 游戏状态说明 */}
+        {gameState && (
+          <div className="text-xs text-gray-400 mt-1">
+            {gameState.status === 'waiting' && '等待法官开始游戏'}
+            {gameState.status === 'active' && gameState.currentPhase === 1 && '白天讨论阶段'}
+            {gameState.status === 'active' && gameState.currentPhase === 2 && '傍晚答题阶段'}
+            {gameState.status === 'active' && gameState.currentPhase === 3 && '夜晚行动阶段'}
+            {gameState.status === 'active' && gameState.currentPhase === 4 && '黎明答题阶段'}
+            {gameState.status === 'ended' && '游戏结束，可查看结算'}
+          </div>
+        )}
+      </div>
 
-        {/* 玩家角色和状态 */}
-        <div className="flex flex-col space-y-2 flex-1 min-h-0">
-          <div className="flex items-center justify-between flex-shrink-0">
-            <h3 className="font-semibold text-werewolf-purple text-sm">
-              玩家状态 {canSelectTargets && '(点击选择目标)'}
-            </h3>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full border border-green-400"></span>正常
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full border border-yellow-400"></span>虚弱
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full border border-red-400 animate-pulse"></span>濒死
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full border border-white"></span>淘汰
-              </span>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <GamePlayerStatusDisplay 
-              players={realPlayers}
-              roomId={roomId} 
-              maxPlayers={maxPlayers}
-              selectedTargetId={selectedTargetId}
-              onTargetSelect={onTargetSelect}
-              canSelectTargets={canSelectTargets}
-              currentPhase={gameState?.currentPhase}
-            />
-          </div>
+      {/* 玩家状态标题 */}
+      <div className="flex items-center justify-between flex-shrink-0 mx-4 mb-3">
+        <h3 className="font-semibold text-werewolf-purple text-sm">
+          玩家状态 {canSelectTargets && '(点击选择目标)'}
+        </h3>
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block w-2 h-2 rounded-full border border-green-400"></span>正常
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block w-2 h-2 rounded-full border border-yellow-400"></span>虚弱
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block w-2 h-2 rounded-full border border-red-400 animate-pulse"></span>濒死
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block w-2 h-2 rounded-full border border-white"></span>淘汰
+          </span>
         </div>
-      </CardContent>
+      </div>
+      
+      {/* 玩家状态列表 */}
+      <div className="flex-1 min-h-0 overflow-hidden mx-4 mb-4">
+        <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-werewolf-purple/50 scrollbar-track-transparent">
+        <GamePlayerStatusDisplay 
+            players={realPlayers}
+            roomId={roomId} 
+            maxPlayers={maxPlayers}
+            selectedTargetId={selectedTargetId}
+            onTargetSelect={onTargetSelect}
+            canSelectTargets={canSelectTargets}
+            currentPhase={gameState?.currentPhase}
+          />
+        </div>
+      </div>
     </Card>
   );
 };

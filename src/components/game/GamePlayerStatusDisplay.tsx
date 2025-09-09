@@ -146,7 +146,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   };
 
   const getPlayerCardClass = (player: typeof displayPlayers[0]) => {
-    const baseClass = `relative w-full h-24 rounded-lg p-2 transition-all duration-200`;
+    const baseClass = `relative w-full h-28 rounded-lg p-2 transition-all duration-200 flex-shrink-0 overflow-hidden aspect-square`;
     
     if (!player.userId) {
       return `${baseClass} bg-gray-600/40 border-2 border-gray-500`;
@@ -168,7 +168,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-3 auto-rows-max">
       {displayPlayers.map((player) => {
         const { roleName, roleImageUrl, showRole } = getPlayerDisplayInfo(player);
 
