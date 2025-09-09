@@ -240,32 +240,35 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
 
               {/* 投票详情列表 */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-werewolf-purple">投票详情</h4>
+                <h4 className="text-sm font-medium text-werewolf-purple">投票详情 (按得票数排序)</h4>
                 <ScrollArea className="max-h-48">
                   <div className="space-y-2">
-                    {/* 显示有票数的目标 */}
-                    {Object.entries(votingSummary.votesByTarget).map(([targetId, voteCount]) => {
-                      const targetPlayer = players.find(p => p.userId === targetId);
-                      const voters = getVotersForTarget(targetId);
-                      return (
-                        <div key={targetId} className="border border-werewolf-purple/20 rounded-md p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-gray-300 font-medium">{targetPlayer?.name || '未知玩家'}</span>
-                            <Badge variant="outline" className="text-werewolf-purple">
-                              {voteCount} 票
-                            </Badge>
-                          </div>
-                          {voters.length > 0 && (
-                            <div className="text-xs text-gray-400">
-                              投票者: {voters.map(voter => {
-                                const voterPlayer = players.find(p => p.userId === voter.voterId);
-                                return voterPlayer?.name || '未知玩家';
-                              }).join(', ')}
+                    {/* 显示有票数的目标 - 按得票数从高到低排序 */}
+                    {Object.entries(votingSummary.votesByTarget)
+                      .sort(([, aVoteCount], [, bVoteCount]) => bVoteCount - aVoteCount)
+                      .map(([targetId, voteCount]) => {
+                        const targetPlayer = players.find(p => p.userId === targetId);
+                        const voters = getVotersForTarget(targetId);
+                        return (
+                          <div key={targetId} className="border border-werewolf-purple/20 rounded-md p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-gray-300 font-medium">{targetPlayer?.name || '未知玩家'}</span>
+                              <Badge variant="outline" className="text-werewolf-purple">
+                                {voteCount} 票
+                              </Badge>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {voters.length > 0 && (
+                              <div className="text-xs text-gray-400">
+                                投票者: {voters.map(voter => {
+                                  const voterPlayer = players.find(p => p.userId === voter.voterId);
+                                  return voterPlayer?.name || '未知玩家';
+                                }).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    
                     
                     {/* 显示弃权票 */}
                     {votingSummary.voteDetails['abstention'] && (
