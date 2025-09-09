@@ -431,9 +431,11 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     return votes.find(vote => vote.voter_id === userId) || null;
   }, [votes]);
 
-  // 获取目标得票数
+  // 获取目标得票数（使用权重）
   const getTargetVoteCount = useCallback((targetId: string): number => {
-    return votes.filter(vote => vote.target_id === targetId && vote.is_valid).length;
+    return votes
+      .filter(vote => vote.target_id === targetId && vote.is_valid)
+      .reduce((sum, vote) => sum + (vote.vote_weight || 1), 0);
   }, [votes]);
 
   // 获取投票统计信息

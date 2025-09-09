@@ -1499,7 +1499,7 @@ export type Database = {
       }
       process_voting_result: {
         Args: { p_voting_result_id: string }
-        Returns: boolean
+        Returns: undefined
       }
       queue_skill_effect: {
         Args: {

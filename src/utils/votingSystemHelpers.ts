@@ -22,6 +22,7 @@ export const calculateVotingSummary = (
   totalPlayers: number
 ): VotingSummary => {
   const validVotes = votes.filter(vote => vote.is_valid);
+  const totalVoteWeight = validVotes.reduce((sum, vote) => sum + (vote.vote_weight || 1), 0);
   const abstentions = validVotes.filter(vote => !vote.target_id).length;
   const targetVotes = validVotes.filter(vote => vote.target_id);
 
@@ -45,17 +46,17 @@ export const calculateVotingSummary = (
       playerId,
       playerName: player?.name || '未知玩家',
       voteCount,
-      percentage: Math.round((voteCount / validVotes.length) * 100)
+      percentage: Math.round((voteCount / totalVoteWeight) * 100)
     };
   })() : undefined;
 
   return {
     totalVotes: votes.length,
-    validVotes: validVotes.length,
+    validVotes: totalVoteWeight,
     abstentions,
     topCandidate,
     isTied: topCandidates.length > 1 && maxVotes > 0,
-    hasMajority: topCandidate ? topCandidate.voteCount > totalPlayers / 2 : false
+    hasMajority: topCandidate ? topCandidate.voteCount > totalVoteWeight / 2 : false
   };
 };
 
