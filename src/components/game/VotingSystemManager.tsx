@@ -49,6 +49,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
           roomId={roomId}
           gameStateId={gameStateId}
           currentPhase={gameState?.currentPhase}
+          currentRound={gameState?.currentRound}
           isJudge={isJudge}
         />
       )}

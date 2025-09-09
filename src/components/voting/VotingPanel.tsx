@@ -137,17 +137,65 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     return 'bg-yellow-500/20 text-yellow-400';
   };
 
-  if (!currentSession) {
-    return (
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
-        <CardContent className="p-6 text-center">
-          <div className="text-gray-400">
-            <Vote className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>正在准备投票会话...</p>
+  // 手动创建投票会话
+  const handleCreateSession = async () => {
+    if (!gameStateId || !roomId) return;
+    const sessionId = await createVotingSession(currentRound, currentPhase || 1, 'day_vote');
+    if (sessionId) {
+      console.log('Manual voting session created:', sessionId);
+    }
+  };
+
+  // 渲染无会话状态 - 显示创建选项而不是隐藏整个界面
+  const renderNoSessionState = () => (
+    <Card className="bg-werewolf-card border-werewolf-purple/30">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-werewolf-purple flex items-center justify-between">
+          <div className="flex items-center">
+            <Vote className="mr-2 h-5 w-5" />
+            投票系统
           </div>
-        </CardContent>
-      </Card>
-    );
+          <Badge variant="outline" className="text-yellow-400 border-yellow-400">
+            未激活
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="text-center p-6">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-400 opacity-70" />
+          <p className="text-gray-300 mb-4">投票会话尚未创建</p>
+          <p className="text-sm text-gray-400 mb-4">
+            当前轮次: {currentRound}, 阶段: {currentPhase === 1 ? '白天' : currentPhase === 2 ? '傍晚' : currentPhase === 3 ? '夜晚' : '黎明'}
+          </p>
+          
+          {/* 显示可投票的玩家列表 */}
+          <div className="p-3 bg-werewolf-dark/20 rounded-md mb-4">
+            <h4 className="text-sm font-medium text-werewolf-purple mb-2">可投票玩家列表</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {votablePlayers.map(player => (
+                <div key={player.userId} className="p-2 bg-werewolf-dark/40 rounded text-sm text-gray-300">
+                  {player.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {(isJudge || currentPhase === 1) && (
+            <Button
+              onClick={handleCreateSession}
+              disabled={loading}
+              className="bg-werewolf-purple hover:bg-werewolf-purple/80"
+            >
+              {loading ? '创建中...' : '创建投票会话'}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (!currentSession) {
+    return renderNoSessionState();
   }
 
   return (
