@@ -119,7 +119,7 @@ const GamePage = () => {
           
           {/* Center Column - Game Info and Main Content */}
           <div className="lg:col-span-6 flex flex-col gap-6 h-full overflow-hidden">
-            <div className="flex-shrink-0" style={{height: '40%'}}>
+            <div className="flex-1 min-h-0">
               <GameInfoPanel 
                 roomId={roomId} 
                 selectedTargetId={selectedTargetId}
