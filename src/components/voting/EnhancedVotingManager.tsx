@@ -355,12 +355,6 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
           </div>
         )}
         
-        {/* 状态提示 */}
-        {(!currentSession || gameState?.status !== 'active') && (
-          <div className="text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md flex-shrink-0">
-            {!currentSession ? '无活跃投票会话' : '游戏未进行中'}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
