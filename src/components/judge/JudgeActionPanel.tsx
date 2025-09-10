@@ -36,7 +36,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
   
-  const { gameState, advancePhase, togglePause, endGame, gameSettings, updateGameSettings } = useGameState(roomId);
+  const { gameState, advancePhase, togglePause, endGame } = useGameState(roomId);
   const { players } = usePlayersRealtime(roomId);
   // 移除投票系统相关的hooks，因为已经移到EnhancedVotingManager组件中
   const { toast } = useToast();
@@ -211,22 +211,6 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
             />
           </div>
 
-          {/* 自动化设置 */}
-          {gameState && (
-            <div className="p-4 bg-werewolf-dark/40 rounded-md flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-werewolf-purple">游戏阶段控制</h3>
-                <Switch
-                  checked={gameSettings?.isAutoAdvance ?? true}
-                  onCheckedChange={(checked) => updateGameSettings({ isAutoAdvance: checked })}
-                  disabled={!isGameActive}
-                />
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                {gameSettings?.isAutoAdvance ? '自动切换阶段模式' : '手动切换阶段模式'}
-              </p>
-            </div>
-          )}
 
           {/* 游戏控制按钮 */}
           <div className="grid grid-cols-2 gap-3 flex-shrink-0">
