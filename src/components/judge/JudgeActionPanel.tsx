@@ -23,6 +23,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { createLogger } from '@/lib/logger';
+import EnhancedVotingManager from '@/components/voting/EnhancedVotingManager';
 
 const logger = createLogger('judge-action-panel');
 
@@ -37,13 +38,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
   
   const { gameState, advancePhase, togglePause, endGame, gameSettings, updateGameSettings } = useGameState(roomId);
   const { players } = usePlayersRealtime(roomId);
-  const { 
-    currentSession, 
-    votes, 
-    getVotingSummary, 
-    getVotersForTarget,
-    loading: votesLoading 
-  } = useVotingSystem(gameState?.id, roomId);
+  // 移除投票系统相关的hooks，因为已经移到EnhancedVotingManager组件中
   const { toast } = useToast();
   const { refreshLinkedQuestions } = useJudgePage();
 
@@ -144,54 +139,6 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
   const isGameActive = gameState?.status === 'active';
   const canQuitJudge = !isGameActive; // 只有在游戏非激活状态下才能退出
-  
-  // 获取当前投票统计信息
-  const votingSummary = getVotingSummary();
-  
-  // 格式化投票记录用于法官显示
-  const formatVoteRecordsForJudge = () => {
-    if (!votingSummary.hasVotes) return [];
-    
-    const records = [];
-    
-    // 显示有得票的玩家
-    for (const [targetId, voteCount] of Object.entries(votingSummary.votesByTarget)) {
-      const targetPlayer = players.find(p => p.userId === targetId);
-      const voters = getVotersForTarget(targetId);
-      const voterNames = voters.map(voter => {
-        const voterPlayer = players.find(p => p.userId === voter.voterId);
-        return voterPlayer?.name || '未知玩家';
-      });
-      
-      records.push({
-        votedPlayerId: targetId,
-        votedPlayerName: targetPlayer?.name || '未知玩家',
-        voteCount: voteCount,
-        voters: voterNames
-      });
-    }
-    
-    // 显示弃权票（如果有的话）
-    if (votingSummary.abstentions > 0) {
-      const abstentionVoters = votingSummary.voteDetails?.['abstention'] || [];
-      const abstentionVoterNames = abstentionVoters.map(vote => {
-        const voterPlayer = players.find(p => p.userId === vote.voterId);
-        return voterPlayer?.name || '未知玩家';
-      });
-      
-      records.push({
-        votedPlayerId: 'abstention',
-        votedPlayerName: '弃权',
-        voteCount: votingSummary.abstentions,
-        voters: abstentionVoterNames
-      });
-    }
-    
-    // 按票数降序排序
-    return records.sort((a, b) => b.voteCount - a.voteCount);
-  };
-  
-  const voteRecords = formatVoteRecordsForJudge();
 
   return (
     <>
@@ -256,46 +203,12 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         </CardHeader>
         
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4 min-h-0">
-          {/* 投票结果表格 - 固定高度，支持滚动 */}
-          <div className="border border-werewolf-purple/30 rounded-md flex-shrink-0" style={{ height: '200px' }}>
-            <ScrollArea className="h-full">
-              <Table>
-                <TableHeader className="sticky top-0 bg-werewolf-card z-10">
-                  <TableRow className="border-b border-werewolf-purple/30 hover:bg-transparent">
-                    <TableHead className="text-werewolf-purple">被投票玩家</TableHead>
-                    <TableHead className="text-werewolf-purple">得票数</TableHead>
-                    <TableHead className="text-werewolf-purple">投票玩家</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {votesLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-gray-400">
-                        正在加载投票数据...
-                      </TableCell>
-                    </TableRow>
-                  ) : voteRecords.length > 0 ? (
-                    voteRecords.map((record, index) => (
-                      <TableRow key={`${record.votedPlayerId}-${index}`} className="border-b border-werewolf-purple/30 last:border-b-0">
-                        <TableCell className="text-gray-300">{record.votedPlayerName}</TableCell>
-                        <TableCell className="text-gray-300">{record.voteCount}</TableCell>
-                        <TableCell className="text-gray-300 text-sm">
-                          {record.voters.join(', ')}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-gray-400">
-                        {gameState?.status === 'active' && currentSession ? 
-                          (gameState.currentPhase === 1 ? '当前白天阶段无投票记录' : '当前阶段无投票') : 
-                          '游戏尚未开始或无活跃投票会话'}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+          {/* 增强投票管理组件 */}
+          <div className="flex-1 min-h-0">
+            <EnhancedVotingManager 
+              roomId={roomId}
+              gameStateId={gameState?.id}
+            />
           </div>
 
           {/* 自动化设置 */}
