@@ -493,6 +493,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     createVotingSession,
     castVote,
     calculateResults,
+    calculateVotingResults: calculateResults, // 添加别名以保持兼容性
     processResult,
     getUserVote,
     getTargetVoteCount,

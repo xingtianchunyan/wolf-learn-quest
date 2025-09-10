@@ -64,8 +64,8 @@ export class EnhancedVotingResultService {
         sessionId,
         roomId,
         gameStateId,
-        gameState.currentRound,
-        gameState.currentPhase
+        gameState.current_round,
+        gameState.current_phase
       );
 
       if (!resultData) {
@@ -218,14 +218,8 @@ export class EnhancedVotingResultService {
    */
   private static async getPlayerInfo(userId: string) {
     const { data, error } = await supabase
-      .from('room_participants')
-      .select(`
-        *,
-        users!inner(
-          id,
-          name
-        )
-      `)
+      .from('users')
+      .select('user_id, player_name')
       .eq('user_id', userId)
       .single();
 
@@ -234,7 +228,7 @@ export class EnhancedVotingResultService {
       return null;
     }
 
-    return data?.users;
+    return { name: data?.player_name, id: data?.user_id };
   }
 
   /**

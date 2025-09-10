@@ -49,7 +49,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
     votes, 
     getVotingSummary, 
     getVotersForTarget,
-    calculateVotingResults,
+    calculateResults,
     loading: votesLoading 
   } = useVotingSystem(gameStateId, roomId);
   
@@ -168,8 +168,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
     
     setIsCalculating(true);
     try {
-      if (calculateVotingResults) {
-        await calculateVotingResults(currentSession.id);
+      if (calculateResults) {
+        await calculateResults(currentSession.id);
         toast({
           title: '计算完成',
           description: '投票结果已计算完成',

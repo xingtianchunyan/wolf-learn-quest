@@ -34,7 +34,7 @@ export const useEnhancedVotingHandler = (
   roomId?: string
 ): UseEnhancedVotingHandlerReturn => {
   const { toast } = useToast();
-  const { calculateVotingResults } = useVotingSystem(gameStateId, roomId);
+  const { calculateResults } = useVotingSystem(gameStateId, roomId);
 
   /**
    * 处理增强的投票结果
@@ -106,8 +106,8 @@ export const useEnhancedVotingHandler = (
   ): Promise<boolean> => {
     try {
       // 1. 先计算投票结果
-      if (calculateVotingResults) {
-        await calculateVotingResults(sessionId);
+      if (calculateResults) {
+        await calculateResults(sessionId);
         
         // 等待一小段时间确保数据库更新完成
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -124,7 +124,7 @@ export const useEnhancedVotingHandler = (
       });
       return false;
     }
-  }, [calculateVotingResults, processEnhancedVotingResult, toast]);
+  }, [calculateResults, processEnhancedVotingResult, toast]);
 
   return {
     processEnhancedVotingResult,
