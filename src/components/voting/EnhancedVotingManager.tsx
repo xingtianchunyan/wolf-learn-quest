@@ -202,7 +202,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
     
     setIsProcessing(true);
     try {
-      const success = await calculateAndProcessResults(
+      // 直接调用处理函数，不需要先计算（计算应该已经完成）
+      const success = await processEnhancedVotingResult(
         currentSession.id,
         roomId,
         gameStateId
@@ -210,9 +211,15 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
       
       if (success) {
         // 成功处理后的额外逻辑可以在这里添加
+        console.log('投票结果处理成功');
       }
     } catch (error) {
       console.error('处理投票结果失败:', error);
+      toast({
+        title: '处理失败',
+        description: '处理投票结果时发生错误',
+        variant: 'destructive',
+      });
     } finally {
       setIsProcessing(false);
     }

@@ -4,8 +4,8 @@
  */
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { EnhancedVotingResultService } from '@/services/enhancedVotingResultService';
 import { useVotingSystem } from '@/hooks/useVotingSystem';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * 增强投票处理Hook的返回类型
@@ -49,38 +49,63 @@ export const useEnhancedVotingHandler = (
     gameStateId: string
   ): Promise<boolean> => {
     try {
-      // 检查投票会话是否可以处理
-      const canProcess = await EnhancedVotingResultService.canProcessVotingSession(sessionId);
-      if (!canProcess) {
+      // 首先获取投票结果记录
+      const { data: votingResults, error: resultsError } = await supabase
+        .from('voting_results')
+        .select('id, result_type, target_id, processing_status')
+        .eq('voting_session_id', sessionId)
+        .eq('processing_status', 'pending');
+
+      if (resultsError) {
+        console.error('获取投票结果失败:', resultsError);
         toast({
-          title: '投票处理失败',
-          description: '投票会话状态不允许处理结果',
+          title: '处理失败',
+          description: '无法获取投票结果',
           variant: 'destructive',
         });
         return false;
       }
 
-      // 使用增强的投票结果处理服务
-      const success = await EnhancedVotingResultService.processVotingResult(
-        sessionId,
-        roomId,
-        gameStateId
-      );
+      if (!votingResults || votingResults.length === 0) {
+        toast({
+          title: '无需处理',
+          description: '没有待处理的投票结果',
+        });
+        return true;
+      }
 
-      if (success) {
+      // 处理每个投票结果
+      let allSuccess = true;
+      for (const result of votingResults) {
+        try {
+          const { error: processError } = await supabase.rpc('process_voting_result', {
+            p_voting_result_id: result.id
+          });
+
+          if (processError) {
+            console.error(`处理投票结果 ${result.id} 失败:`, processError);
+            allSuccess = false;
+          }
+        } catch (error) {
+          console.error(`处理投票结果 ${result.id} 异常:`, error);
+          allSuccess = false;
+        }
+      }
+
+      if (allSuccess) {
         toast({
           title: '投票结果处理完成',
-          description: '投票结果已按照游戏规则处理完成',
+          description: '所有投票结果已按照游戏规则处理完成',
         });
       } else {
         toast({
-          title: '投票结果处理失败',
-          description: '处理投票结果时发生错误，请重试',
+          title: '部分处理失败',
+          description: '某些投票结果处理时发生错误',
           variant: 'destructive',
         });
       }
 
-      return success;
+      return allSuccess;
     } catch (error) {
       console.error('处理增强投票结果时发生错误:', error);
       toast({
