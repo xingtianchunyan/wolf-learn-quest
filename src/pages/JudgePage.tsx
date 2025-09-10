@@ -14,6 +14,7 @@ import { JudgePageProvider } from '@/contexts/JudgePageContext';
 import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
+import { useAutoDyingStatusProcessor } from '@/hooks/useAutoDyingStatusProcessor';
 
 
 const JudgePage = () => {
@@ -23,6 +24,8 @@ const JudgePage = () => {
   const { gameState } = useGameState(roomId || '');
   useAutoProcessDayVote(roomId || '', gameState);
   useEveningRefresh(gameState);
+  // 自动处理濒死状态转换
+  useAutoDyingStatusProcessor(roomId || '', gameState);
   // 法官端也需要在结束后创建并进入新房间
   useRoomTransition(roomId, gameState?.status);
 

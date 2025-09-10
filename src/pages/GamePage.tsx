@@ -16,6 +16,7 @@ import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
+import { useAutoDyingStatusProcessor } from '@/hooks/useAutoDyingStatusProcessor';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
@@ -29,6 +30,8 @@ const GamePage = () => {
   
   const { gameState } = useGameState(roomId!);
   useEveningRefresh(gameState);
+  // 自动处理濒死状态转换
+  useAutoDyingStatusProcessor(roomId!, gameState);
   const { players } = usePlayersRealtime(roomId!);
   const { roleDesigns } = useRoleDesigns();
   const { roleStates } = useRoleStates(roomId!);
