@@ -187,19 +187,6 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               </Button>
             </div>
           </div>
-          {/* 游戏状态提示 */}
-          {gameState && (
-            <div className="mt-2 text-sm text-gray-400">
-              当前状态: {gameState.status === 'waiting' ? '等待开始' : 
-                       gameState.status === 'active' ? '游戏进行中' : 
-                       gameState.status === 'ended' ? '游戏已结束' : '未知状态'}
-              {gameState.status === 'active' && 
-                ` - 第${gameState.currentRound}轮 ${gameState.currentPhase === 1 ? '白天' : 
-                     gameState.currentPhase === 2 ? '傍晚' : 
-                     gameState.currentPhase === 3 ? '夜晚' : '黎明'}阶段`
-              }
-            </div>
-          )}
         </CardHeader>
         
         <CardContent className="flex-1 p-4 pt-0 flex flex-col space-y-4 min-h-0">
