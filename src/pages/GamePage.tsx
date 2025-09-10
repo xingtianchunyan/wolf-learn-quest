@@ -104,7 +104,7 @@ const GamePage = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 h-[calc(100vh-4rem)] flex flex-col">
+      <div className="container mx-auto py-6 px-4 h-[calc(100vh-4rem+200px)] flex flex-col">
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
           {/* Left Column - Student System and Answer Records */}

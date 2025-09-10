@@ -43,7 +43,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
     getVotingSummary, 
     getVotersForTarget,
     loading: votesLoading 
-  } = useVotingSystem(roomId, gameState?.id);
+  } = useVotingSystem(gameState?.id, roomId);
   const { toast } = useToast();
   const { refreshLinkedQuestions } = useJudgePage();
 
