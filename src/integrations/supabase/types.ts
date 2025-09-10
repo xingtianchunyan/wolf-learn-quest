@@ -1512,6 +1512,14 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_dying_status: {
+        Args: {
+          p_game_state_id: string
+          p_resolution_type: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       start_game: {
         Args: { p_room_id: string }
         Returns: string

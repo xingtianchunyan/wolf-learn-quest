@@ -4,6 +4,7 @@ import { useRoleStates } from '@/hooks/useRoleStates';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { canSeeTargetRole, canAccessWerewolfChannel, isDemonRole, isHunterRole } from '@/utils/roleUtils';
+import PlayerStatusManager from './PlayerStatusManager';
 
 interface Player {
   id: string;
@@ -168,8 +169,18 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3 auto-rows-max">
-      {displayPlayers.map((player) => {
+    <div className="space-y-4">
+      {/* 濒死状态管理器 - 仅向特定角色显示濒死状态变更 */}
+      <PlayerStatusManager
+        players={displayPlayers.filter(p => p.userId)}
+        roomId={roomId}
+        maxPlayers={maxPlayers}
+        showDyingStatusOnly={true}
+        className="mb-4"
+      />
+      
+      <div className="grid grid-cols-4 gap-3 auto-rows-max">
+        {displayPlayers.map((player) => {
         const { roleName, roleImageUrl, showRole } = getPlayerDisplayInfo(player);
 
         return (
@@ -233,6 +244,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
           </div>
         );
       })}
+      </div>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
+import PlayerStatusManager from '@/components/game/PlayerStatusManager';
 
 interface Player {
   id: string;
@@ -93,8 +94,18 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
   const isFlipped = (playerId: string) => flippedCards.has(playerId);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-      {players.map((player) => {
+    <div className="space-y-4">
+      {/* 濒死状态管理器 - 法官界面显示所有状态变更 */}
+      <PlayerStatusManager
+        players={players}
+        roomId={roomId}
+        maxPlayers={maxPlayers}
+        showDyingStatusOnly={false}
+        className="mb-4"
+      />
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {players.map((player) => {
         const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
         const roleName = selectedRole?.roleName || '未分配角色';
         const roleImageUrl = selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null;
@@ -220,6 +231,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
           </div>
         );
       })}
+      </div>
     </div>
   );
 };
