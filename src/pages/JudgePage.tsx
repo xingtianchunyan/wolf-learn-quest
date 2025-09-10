@@ -14,7 +14,7 @@ import { JudgePageProvider } from '@/contexts/JudgePageContext';
 import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
-import DyingStatusResolutionPanel from '@/components/judge/DyingStatusResolutionPanel';
+
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
@@ -84,16 +84,13 @@ const JudgePage = () => {
         <div className="container mx-auto py-4 px-4 h-screen">
           {/* Main Content Grid - 固定高度，避免内容溢出 */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
-            {/* Left Column - Teacher System, Answer Records and Dying Status */}
+            {/* Left Column - Teacher System and Answer Records */}
             <div className="lg:col-span-3 flex flex-col gap-4 h-full">
-              <div className="h-1/3 min-h-0">
+              <div className="h-1/2 min-h-0">
                 <TeacherSystemPanel roomId={roomId} />
               </div>
-              <div className="h-1/3 min-h-0">
+              <div className="h-1/2 min-h-0">
                 <AnswerRecordPanel roomId={roomId} />
-              </div>
-              <div className="h-1/3 min-h-0">
-                <DyingStatusResolutionPanel roomId={roomId} gameStateId={gameState?.id || ''} />
               </div>
             </div>
             
