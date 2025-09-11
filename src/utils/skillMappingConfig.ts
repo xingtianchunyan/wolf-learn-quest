@@ -1,5 +1,5 @@
-// 技能系统统一配置文件
-// 基于设计文档的完整技能映射和配置
+// 技能系统统一配置文件 - 优化版本
+// 基于设计文档的完整技能映射和配置，支持标准化数据结构
 
 export interface SkillConfig {
   id: string;
@@ -14,6 +14,12 @@ export interface SkillConfig {
   isPassive: boolean;
   conflictsWith: string[]; // 与哪些技能冲突
   triggeredBy?: string[]; // 被动技能的触发条件
+  // 新增字段用于优化
+  cooldownRounds?: number; // 冷却回合数
+  maxStackCount?: number; // 最大叠加层数
+  category?: 'offensive' | 'defensive' | 'utility' | 'passive'; // 技能分类
+  description?: string; // 技能描述
+  compatibilityVersion?: string; // 兼容性版本
 }
 
 // 基于设计表格的完整技能配置
@@ -31,7 +37,10 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = {
     effectType: ['passive'],
     isPassive: true,
     conflictsWith: [],
-    triggeredBy: ['night_phase_start']
+    triggeredBy: ['night_phase_start'],
+    category: 'passive',
+    description: '村民在夜晚安全睡觉，无特殊能力',
+    compatibilityVersion: '2.0'
   },
 
   // 守卫 - 判定顺序2  
@@ -46,8 +55,12 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = {
     targetType: 'single',
     effectType: ['protection'],
     isPassive: false,
-    conflictsWith: ['werewolf_kill'],
-    triggeredBy: []
+    conflictsWith: ['werewolf_attack'],
+    triggeredBy: [],
+    category: 'defensive',
+    description: '守卫可以保护一名玩家免受夜晚攻击',
+    maxStackCount: 1,
+    compatibilityVersion: '2.0'
   },
 
   // 狼人 - 判定顺序3
@@ -63,7 +76,10 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = {
     effectType: ['elimination'],
     isPassive: false,
     conflictsWith: ['guard_vigil'],
-    triggeredBy: []
+    triggeredBy: [],
+    category: 'offensive',
+    description: '狼人在夜晚攻击一名玩家',
+    compatibilityVersion: '2.0'
   },
 
   // 预言家 - 判定顺序4
@@ -111,7 +127,10 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = {
     effectType: ['protection', 'elimination'],
     isPassive: false,
     conflictsWith: [],
-    triggeredBy: []
+    triggeredBy: [],
+    category: 'utility',
+    description: '女巫可以使用解药或毒药，每种只能使用一次',
+    compatibilityVersion: '2.0'
   },
 
   // 暗夜术士 - 判定顺序7
@@ -159,7 +178,10 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = {
     effectType: ['elimination'],
     isPassive: true, // 被动技能
     conflictsWith: [],
-    triggeredBy: ['status_change_to_dying']
+    triggeredBy: ['status_change_to_dying'],
+    category: 'offensive',
+    description: '猎人濒死时可以击毙一名玩家',
+    compatibilityVersion: '2.0'
   }
 };
 
