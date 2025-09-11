@@ -231,37 +231,6 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
           </Button>
         </div>
 
-        <Separator className="bg-werewolf-purple/30" />
-
-        {/* 技能历史 */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-werewolf-purple">技能使用历史</h4>
-          <ScrollArea className="h-24">
-            <div className="space-y-1">
-              {userSkillUses.length > 0 ? (
-                userSkillUses.slice(0, 3).map((skillUse, index) => (
-                  <div key={skillUse.id} className="flex items-center justify-between p-2 bg-werewolf-dark/30 rounded text-xs">
-                    <span className="text-gray-300">
-                      第{skillUse.round_number}轮 - {skillUse.skill_name}
-                    </span>
-                    <Badge 
-                      variant={
-                        skillUse.execution_status === 'completed' ? 'default' :
-                        skillUse.execution_status === 'pending' ? 'secondary' : 'destructive'
-                      }
-                      className="text-xs"
-                    >
-                      {skillUse.execution_status === 'completed' ? '已完成' :
-                       skillUse.execution_status === 'pending' ? '等待中' : '失败'}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400 text-center py-2">暂无技能使用记录</p>
-              )}
-            </div>
-          </ScrollArea>
-        </div>
 
         {/* 当前技能效果 */}
         {userSkillEffects.length > 0 && (

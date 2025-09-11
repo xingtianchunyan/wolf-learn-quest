@@ -207,27 +207,6 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           )}
         </Button>
 
-        {/* 技能使用记录 */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-300">使用记录</h4>
-          {userSkillData.uses.length > 0 ? (
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {userSkillData.uses.slice(0, 5).map((use) => (
-                <div key={use.id} className="flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded">
-                  <span>{use.chinese_name || use.skill_name}</span>
-                  <span className="text-muted-foreground">
-                    第{use.round_number}轮 {use.phase}阶段
-                  </span>
-                  <Badge variant="outline" className="text-xs">
-                    {use.execution_status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">暂无使用记录</p>
-          )}
-        </div>
 
         {/* 当前效果 */}
         <div className="space-y-2">

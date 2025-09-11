@@ -269,68 +269,11 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       </Card>
 
       {/* 详细信息选项卡 */}
-      <Tabs defaultValue="history" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="history">使用记录</TabsTrigger>
+      <Tabs defaultValue="effects" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="effects">当前效果</TabsTrigger>
           {isJudge && <TabsTrigger value="management">管理</TabsTrigger>}
         </TabsList>
-
-        {/* 使用记录 */}
-        <TabsContent value="history">
-          <Card className="bg-werewolf-card border-werewolf-purple/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                技能使用记录
-                <Badge variant="outline" className="ml-auto">
-                  {userSkillData.uses.length} 次
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {userSkillData.uses.length > 0 ? (
-                <div className="space-y-3">
-                  {userSkillData.uses.slice(0, 10).map((use) => (
-                    <div 
-                      key={use.id} 
-                      className="flex items-center justify-between p-3 bg-werewolf-dark/40 rounded"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-white">
-                            {use.chinese_name || use.skill_name}
-                          </span>
-                          {getStatusIcon(use.execution_status)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          第{use.round_number}轮 {use.phase}阶段
-                          {use.target_user_id && (
-                            <span className="ml-2">
-                              目标: {players.find(p => p.userId === use.target_user_id)?.name || '未知'}
-                            </span>
-                          )}
-                        </div>
-                        {use.failure_reason && (
-                          <div className="text-xs text-red-400">
-                            失败原因: {use.failure_reason}
-                          </div>
-                        )}
-                      </div>
-                      <Badge variant="outline">
-                        {use.execution_status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  暂无技能使用记录
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* 当前效果 */}
         <TabsContent value="effects">
