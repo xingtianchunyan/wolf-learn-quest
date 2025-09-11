@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
+import { validateSkillUsage, getSkillUsageHint } from '@/utils/skillUsageRestrictions';
 import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
-import { RoleBasedSkillRecords } from './skill/RoleBasedSkillRecords';
 
 interface SkillUsePanelProps {
   roomId: string;
@@ -51,14 +51,33 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects || {});
   const skillPriority = getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
 
-  // 获取当前用户的技能使用记录
+  // 获取当前用户的技能使用记录（用于限制检查）
   const userData = getUserSkillData(userId);
   const userSkillUses = userData.uses;
-  const userSkillEffects = userData.targets;
 
   // 获取可选目标玩家
   const availableTargets = players.filter(player => 
     player.userId !== userId && player.roleStatus !== 4 // 排除自己和已淘汰的玩家
+  );
+
+  // 检查夜晚技能使用限制（女巫除外）
+  const checkSkillUsageRestriction = () => {
+    const currentRound = Math.floor(Date.now() / (24 * 60 * 60 * 1000)); // 简化的回合计算
+    
+    return validateSkillUsage(
+      roleDesign?.role_name || '',
+      roleDesign?.skill_name || '',
+      currentPhase,
+      currentRound,
+      userSkillUses
+    );
+  };
+
+  const usageRestriction = checkSkillUsageRestriction();
+  const skillUsageHint = getSkillUsageHint(
+    roleDesign?.role_name || '',
+    roleDesign?.skill_name || '',
+    currentPhase
   );
 
   const handleUseSkill = async () => {
@@ -134,23 +153,31 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* 技能使用限制提示 */}
+      {!usageRestriction.canUse && (
+        <Card className="border-yellow-500/30 bg-yellow-900/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-yellow-400">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-medium">技能使用限制</span>
+            </div>
+            <p className="text-sm text-yellow-300 mt-1">{usageRestriction.reason}</p>
+            <p className="text-xs text-yellow-400 mt-2">{skillUsageHint}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 角色特定技能界面 */}
       <RoleSpecificSkills
         roleName={roleDesign.role_name || ''}
         skillEffects={roleDesign.skill_effects || {}}
         roleAttributes={roleDesign.role_attributes || {}}
-        canUseSkill={canUseSkill}
+        canUseSkill={canUseSkill && usageRestriction.canUse}
         onUseSkill={handleSkillUse}
         availableTargets={availableTargets}
         currentPhase={currentPhase}
-      />
-
-      {/* 基于角色的技能记录显示 */}
-      <RoleBasedSkillRecords
-        roleName={roleDesign.role_name || ''}
-        skillRecords={userSkillUses}
-        players={players}
-        currentUserId={userId}
+        userSkillUses={userSkillUses}
+        usageRestriction={usageRestriction}
       />
     </div>
   );

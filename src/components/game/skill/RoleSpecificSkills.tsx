@@ -24,6 +24,8 @@ interface RoleSpecificSkillsProps {
   onUseSkill: (skillData: any) => void;
   availableTargets: Array<{ userId: string; name: string; roleStatus: number }>;
   currentPhase: number;
+  userSkillUses?: Array<{ round_number: number; phase: string; skill_name: string }>;
+  usageRestriction?: { canUse: boolean; reason?: string; remainingUses?: number };
 }
 
 export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
@@ -33,9 +35,35 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   canUseSkill,
   onUseSkill,
   availableTargets,
-  currentPhase
+  currentPhase,
+  userSkillUses = [],
+  usageRestriction
 }) => {
   
+  // 检查是否已在当晚使用过技能（女巫除外）
+  const hasUsedSkillTonight = () => {
+    const roleNameLower = roleName?.toLowerCase() || '';
+    const isWitch = roleNameLower.includes('witch') || roleNameLower.includes('女巫');
+    
+    // 女巫不受限制
+    if (isWitch) return false;
+    
+    // 检查其他角色是否已在当前夜晚使用过技能
+    const currentRound = Math.floor(Date.now() / (24 * 60 * 60 * 1000)); // 简化的回合计算
+    return userSkillUses.some(use => 
+      use.round_number === currentRound && 
+      use.phase === 'night' && 
+      currentPhase === 3
+    );
+  };
+
+  // 技能按钮的禁用状态
+  const isSkillDisabled = (baseDisabled: boolean) => {
+    if (baseDisabled) return true;
+    if (currentPhase === 3 && hasUsedSkillTonight()) return true;
+    return false;
+  };
+
   // 狼人技能
   const WerewolfSkill = () => (
     <Card className="bg-red-900/20 border-red-500/30">
@@ -43,6 +71,11 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
         <CardTitle className="flex items-center gap-2 text-red-400">
           <Skull className="w-5 h-5" />
           狼人技能 - 噬咬
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <Badge variant="secondary" className="ml-2 text-xs">
+              今夜已使用
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -50,6 +83,9 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
           <p>在夜晚阶段，你可以选择一名玩家进行攻击。</p>
           <p className="text-red-400 mt-2">• 每晚只能攻击一次</p>
           <p className="text-red-400">• 攻击会在夜晚结束时生效</p>
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <p className="text-yellow-400">• 你今夜已经使用过技能</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -65,7 +101,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                   targetId: target.userId,
                   effectType: 'werewolf_kill'
                 })}
-                disabled={!canUseSkill || currentPhase !== 3}
+                disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
               >
                 <Target className="w-4 h-4 mr-2" />
                 攻击 {target.name}
@@ -84,13 +120,21 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
         <CardTitle className="flex items-center gap-2 text-blue-400">
           <Shield className="w-5 h-5" />
           守卫技能 - 保护
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <Badge variant="secondary" className="ml-2 text-xs">
+              今夜已使用
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-gray-300">
           <p>在夜晚阶段，你可以选择一名玩家进行保护。</p>
           <p className="text-blue-400 mt-2">• 被保护的玩家免疫当夜的攻击</p>
-          <p className="text-blue-400">• 不能连续两晚保护同一人</p>
+          <p className="text-blue-400">• 每晚只能保护一次</p>
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <p className="text-yellow-400">• 你今夜已经使用过技能</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -106,7 +150,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                   targetId: target.userId,
                   effectType: 'guard_protect'
                 })}
-                disabled={!canUseSkill || currentPhase !== 3}
+                disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
               >
                 <Shield className="w-4 h-4 mr-2" />
                 保护 {target.name}
@@ -125,6 +169,11 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
         <CardTitle className="flex items-center gap-2 text-purple-400">
           <Eye className="w-5 h-5" />
           预言家技能 - 查验
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <Badge variant="secondary" className="ml-2 text-xs">
+              今夜已使用
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -132,6 +181,9 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
           <p>在夜晚阶段，你可以查验一名玩家的身份。</p>
           <p className="text-purple-400 mt-2">• 可以得知目标是否为狼人</p>
           <p className="text-purple-400">• 每晚只能查验一次</p>
+          {hasUsedSkillTonight() && currentPhase === 3 && (
+            <p className="text-yellow-400">• 你今夜已经使用过技能</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -147,7 +199,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                   targetId: target.userId,
                   effectType: 'seer_investigation'
                 })}
-                disabled={!canUseSkill || currentPhase !== 3}
+                disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 查验 {target.name}
@@ -159,7 +211,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </Card>
   );
 
-  // 女巫技能 - 添加二级菜单
+  // 女巫技能 - 添加二级菜单（女巫不受夜晚使用限制）
   const WitchSkill = () => {
     const [showPotionMenu, setShowPotionMenu] = useState(false);
     
@@ -169,6 +221,9 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
           <CardTitle className="flex items-center gap-2 text-green-400">
             <Heart className="w-5 h-5" />
             女巫技能 - 魔药
+            <Badge variant="default" className="ml-2 text-xs bg-green-600">
+              夜晚无限制
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,6 +232,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
             <p className="text-green-400 mt-2">• 保护：救活当晚死亡的玩家</p>
             <p className="text-red-400">• 攻击：毒死一名玩家</p>
             <p className="text-yellow-400">• 每种药剂最多使用一次</p>
+            <p className="text-blue-400">• 女巫可在夜晚多次使用技能</p>
           </div>
           
           {!showPotionMenu ? (
