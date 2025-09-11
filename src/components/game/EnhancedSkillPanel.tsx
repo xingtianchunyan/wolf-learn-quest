@@ -13,7 +13,9 @@ import {
   AlertTriangle, CheckCircle, XCircle, Info, Settings, RefreshCw
 } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
+import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import { SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
+import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
 
 interface EnhancedSkillPanelProps {
   roomId: string;
@@ -52,6 +54,14 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
     resolveSkillConflicts
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
+  // 女巫魔药管理器
+  const {
+    potionStatus,
+    useProtectionPotion,
+    useAttackPotion,
+    loading: potionLoading
+  } = useWitchPotionManager(gameStateId || '', userId || '', currentRound || 1);
+
   // 获取当前角色的技能配置
   const skillConfig = useMemo(() => {
     if (!roleDesign?.skill_name) return null;
@@ -83,6 +93,34 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
   // 技能使用处理
   const handleUseSkill = async () => {
     if (!skillConfig) return;
+
+    // 特殊处理女巫魔药
+    if (skillConfig.englishName === 'magic_potion') {
+      // 女巫魔药需要通过专门的处理逻辑
+      return;
+    }
+
+    // 验证夜晚技能使用限制
+    const userSkillUses = getUserSkillData().uses.map(use => ({
+      id: use.id,
+      user_id: use.user_id,
+      skill_name: use.skill_name,
+      round_number: use.round_number,
+      phase: use.phase,
+      created_at: use.created_at
+    }));
+
+    const usageRestriction = validateSkillUsage(
+      roleDesign.role_name,
+      roleDesign.skill_name,
+      currentPhase,
+      currentRound || 1,
+      userSkillUses
+    );
+
+    if (!usageRestriction.canUse) {
+      return;
+    }
 
     const result = await useSkillEnhanced(
       skillConfig.englishName,
@@ -243,6 +281,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
                 onClick={handleUseSkill}
                 disabled={
                   loading || 
+                  potionLoading ||
                   (skillConfig.targetType === 'single' && !selectedTarget)
                 }
                 className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"

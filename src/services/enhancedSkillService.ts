@@ -128,9 +128,9 @@ export class EnhancedSkillService {
           englishName: 'magic_potion',
           priority: 6,
           phase: 'night',
-          usageLimit: 2,
+          usageLimit: 'unlimited', // 女巫可以多次使用技能，但每种魔药限制1次
           requiredStatus: ['normal'],
-          targetType: 'single',
+          targetType: 'single', // 魔药技能需要目标选择
           effectType: ['protection', 'elimination'],
           isPassive: false,
           conflictsWith: []
@@ -291,7 +291,10 @@ export class EnhancedSkillService {
         ...(context.additionalData || {}),
         skill_config_id: skillConfig.id,
         chinese_name: skillConfig.chineseName,
-        priority: skillConfig.priority
+        priority: skillConfig.priority,
+        // 女巫魔药的特殊处理
+        potionType: context.additionalData?.potionType,
+        effectType: context.additionalData?.effectType
       }
     });
 

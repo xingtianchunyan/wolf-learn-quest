@@ -45,16 +45,15 @@ export function checkNightSkillRestriction(
     };
   }
 
-  // 检查其他角色是否已在当前回合的夜晚阶段使用过技能
+  // 检查其他角色是否已在当前夜晚阶段使用过技能（不区分回合，只看当前夜晚）
   const hasUsedInCurrentNight = userSkillUses.some(use => 
-    use.round_number === currentRound && 
     use.phase === 'night'
   );
 
   if (hasUsedInCurrentNight) {
     return {
       canUse: false,
-      reason: '你在本轮夜晚已经使用过技能，每轮夜晚只能使用一次',
+      reason: '你在当前夜晚已经使用过技能，每个夜晚只能使用一次',
       nextAvailableRound: currentRound + 1
     };
   }
@@ -73,26 +72,51 @@ export function checkSkillSpecificRestrictions(
     currentRound: number;
     currentPhase: number;
     totalGameRounds?: number;
+    potionType?: 'protection' | 'attack';
   }
 ): UsageRestriction {
   const roleNameLower = roleName?.toLowerCase() || '';
   
-  // 女巫魔药限制检查
+  // 女巫魔药限制检查 - 按类型分别检查
   if (skillName === 'magic_potion' && (roleNameLower.includes('witch') || roleNameLower.includes('女巫'))) {
-    const potionUses = userSkillUses.filter(use => use.skill_name === 'magic_potion');
+    // 检查特定魔药类型的使用情况
+    const potionType = gameContext?.potionType || 'protection'; // 默认为保护类型
     
-    // 女巫总共只能使用2次魔药（解药1次，毒药1次）
-    if (potionUses.length >= 2) {
-      return {
-        canUse: false,
-        reason: '魔药已全部使用完毕（解药和毒药各1次）',
-        remainingUses: 0
-      };
+    // 检查保护魔药使用次数
+    if (potionType === 'protection') {
+      const protectionUses = userSkillUses.filter(use => 
+        use.skill_name === 'magic_potion' && 
+        (use as any).potionType === 'protection'
+      );
+      
+      if (protectionUses.length >= 1) {
+        return {
+          canUse: false,
+          reason: '保护魔药已经使用过了',
+          remainingUses: 0
+        };
+      }
+    }
+    
+    // 检查攻击魔药使用次数
+    if (potionType === 'attack') {
+      const attackUses = userSkillUses.filter(use => 
+        use.skill_name === 'magic_potion' && 
+        (use as any).potionType === 'attack'
+      );
+      
+      if (attackUses.length >= 1) {
+        return {
+          canUse: false,
+          reason: '攻击魔药已经使用过了',
+          remainingUses: 0
+        };
+      }
     }
 
     return {
       canUse: true,
-      remainingUses: 2 - potionUses.length
+      remainingUses: 1
     };
   }
 
