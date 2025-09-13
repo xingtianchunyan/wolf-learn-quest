@@ -84,7 +84,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
       records.push({
         votedPlayerId: targetId,
         votedPlayerName: targetPlayer?.name || '未知玩家',
-        voteCount: voteCount,
+        voteCount,
         voters: voterNames,
         isHighest: false // 稍后计算
       });

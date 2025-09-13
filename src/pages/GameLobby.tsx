@@ -223,7 +223,7 @@ const GameLobby = () => {
             isPrivate: false,
             status: room.status,
             judgeUserId: room.judge_user_id,
-            judgeName: judgeName
+            judgeName
           };
         })
       );

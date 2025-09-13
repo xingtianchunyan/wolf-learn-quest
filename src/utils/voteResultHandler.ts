@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 // 处理投票结果的主函数
 export const handleVoteResult = async (
@@ -7,7 +8,7 @@ export const handleVoteResult = async (
   mostVotedPlayerId: string
 ): Promise<boolean> => {
   try {
-    console.log('开始处理投票结果:', {
+    logger.info('开始处理投票结果', {
       roomId,
       gameStateId,
       mostVotedPlayerId
@@ -22,7 +23,7 @@ export const handleVoteResult = async (
       .limit(1);
 
     if (resultsError) {
-      console.error('获取投票结果失败:', resultsError);
+      logger.error('获取投票结果失败', resultsError);
       return false;
     }
 
@@ -36,11 +37,11 @@ export const handleVoteResult = async (
         });
 
       if (processError) {
-        console.error('处理投票结果失败:', processError);
+        logger.error('处理投票结果失败', processError);
         return false;
       }
 
-      console.log('投票结果处理成功');
+      logger.info('投票结果处理成功');
       return processResult;
     }
 
@@ -55,12 +56,12 @@ export const handleVoteResult = async (
         .maybeSingle();
 
       if (playerError) {
-        console.error('查询目标玩家失败:', playerError);
+        logger.error('查询目标玩家失败', playerError);
         return false;
       }
 
       if (!targetPlayer) {
-        console.error('未找到目标玩家');
+        logger.error('未找到目标玩家');
         return false;
       }
 
@@ -75,19 +76,19 @@ export const handleVoteResult = async (
         .eq('game_state_id', gameStateId);
 
       if (updateError) {
-        console.error('更新玩家状态失败:', updateError);
+        logger.error('更新玩家状态失败', updateError);
         return false;
       }
 
-      console.log('投票结果处理成功，玩家状态更新为虚弱:', mostVotedPlayerId);
+      logger.info('投票结果处理成功，玩家状态更新为虚弱', { playerId: mostVotedPlayerId });
       return true;
     }
 
-    console.log('没有玩家被投票');
+    logger.info('没有玩家被投票');
     return true;
 
   } catch (error) {
-    console.error('处理投票结果时发生未知错误:', error);
+    logger.error('处理投票结果时发生未知错误', error);
     return false;
   }
 };
@@ -110,7 +111,7 @@ export const getVoteStats = async (
       .limit(1);
 
     if (sessionError) {
-      console.error('获取投票会话失败:', sessionError);
+      logger.error('获取投票会话失败', sessionError);
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
@@ -128,7 +129,7 @@ export const getVoteStats = async (
       .eq('is_valid', true);
 
     if (error) {
-      console.error('获取投票统计失败:', error);
+      logger.error('获取投票统计失败', error);
       return { voteCount: 0, mostVotedPlayer: null };
     }
 
@@ -155,7 +156,7 @@ export const getVoteStats = async (
     };
 
   } catch (error) {
-    console.error('获取投票统计失败:', error);
+    logger.error('获取投票统计失败', error);
     return { voteCount: 0, mostVotedPlayer: null };
   }
 };

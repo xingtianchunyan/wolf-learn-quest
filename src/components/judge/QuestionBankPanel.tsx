@@ -216,7 +216,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
     clearError();
 
     const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const fileExtension = `.${  file.name.split('.').pop()?.toLowerCase()}`;
     
     if (!allowedFormats.includes(fileExtension)) {
       const errorMsg = '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';

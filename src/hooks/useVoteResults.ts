@@ -113,7 +113,7 @@ export const useVoteResults = (roomId: string) => {
       // 格式化投票记录
       const formattedRecords: VoteRecord[] = Object.entries(voteCounts).map(([votedPlayerId, {voters}]) => {
         return {
-          votedPlayerId: votedPlayerId,
+          votedPlayerId,
           votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
           voteCount: voters.length,
           voters: voters.map(voterId => playerNamesMap.get(voterId) || '未知玩家'),

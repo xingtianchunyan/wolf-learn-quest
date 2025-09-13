@@ -180,14 +180,14 @@ export class SystemAnnouncementService {
         .insert({
           room_id: roomId,
           sender_id: 'system', // 系统消息
-          message: message,
+          message,
           chat_type: 'system',
           game_round: data.gameRound,
           game_phase: data.gamePhase,
           metadata: {
             announcement_type: data.type,
-            visibility: visibility,
-            data: data
+            visibility,
+            data
           }
         });
 

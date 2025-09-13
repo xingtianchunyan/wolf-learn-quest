@@ -29,7 +29,7 @@ export default tseslint.config(
         "varsIgnorePattern": "^_" 
       }],
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/prefer-const": "error",
+      // "@typescript-eslint/prefer-const": "error", // 规则已移除，使用原生prefer-const
       // 生产环境禁用 console
       "no-console": process.env.NODE_ENV === "production" ? "error" : "warn",
       // 其他代码质量规则

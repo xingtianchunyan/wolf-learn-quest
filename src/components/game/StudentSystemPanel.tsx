@@ -150,7 +150,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
         logger.debug('学生系统：成功加载题目', validQuestions.map(rq => ({
           order: rq.question_order,
           questionId: rq.questions.id,
-          questionPreview: rq.questions.question.substring(0, 50) + '...'
+          questionPreview: `${rq.questions.question.substring(0, 50)  }...`
         })));
         setRoomQuestions(validQuestions as RoomQuestion[]);
         setHasQuestionsInRoom(true);
@@ -274,7 +274,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       logger.debug('学生系统：找到当前题目', {
         questionOrder: targetQuestionOrder,
         questionId: roomQuestion.questions.id,
-        questionText: roomQuestion.questions.question.substring(0, 100) + '...'
+        questionText: `${roomQuestion.questions.question.substring(0, 100)  }...`
       });
       setCurrentQuestion(roomQuestion.questions);
       setQuestionNotFound(false);
@@ -318,7 +318,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
     const roomQuestion = roomQuestions.find(rq => rq.question_order === previousQuestionOrder);
     if (roomQuestion && roomQuestion.questions) {
       setPreviousQuestion(roomQuestion.questions);
-      logger.debug('学生系统：找到上一题目:', roomQuestion.questions.question.substring(0, 50) + '...');
+      logger.debug('学生系统：找到上一题目:', `${roomQuestion.questions.question.substring(0, 50)  }...`);
     } else {
       setPreviousQuestion(null);
     }

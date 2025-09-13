@@ -1,6 +1,6 @@
 // 技能系统验证和错误处理统一模块
 import { createLogger } from '@/lib/logger';
-import { SKILL_MAPPING_CONFIG, type SkillConfig } from '@/utils/skillMappingConfig';
+import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig } from '@/utils/skillMappingConfig';
 
 const logger = createLogger('skill-validation');
 
@@ -158,7 +158,7 @@ export const validateSkillTarget = (
 export const validateWerewolfAttackTarget = async (
   attackerUserId: string,
   targetUserId: string,
-  gameStateId: string
+  _gameStateId: string
 ): Promise<{ valid: boolean; reason?: string }> => {
   try {
     // 这里需要从数据库获取攻击者和目标的角色信息

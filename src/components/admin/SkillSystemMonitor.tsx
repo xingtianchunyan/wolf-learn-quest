@@ -1,5 +1,5 @@
 // 技能系统性能监控面板
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +49,7 @@ interface PerformanceMetrics {
 
 export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
   gameStateId,
-  roomId,
+  _roomId,
   isJudge = false
 }) => {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
@@ -81,7 +81,7 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
   });
 
   // 获取系统状态
-  const fetchSystemMetrics = async () => {
+  const fetchSystemMetrics = useCallback(async () => {
     if (!gameStateId) return;
 
     setIsLoading(true);
@@ -114,22 +114,28 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
       const health = evaluateSystemHealth(metrics, processor.stats);
       setSystemHealth(health);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
       logger.error('获取系统指标失败', error);
       toast({
         title: '监控数据获取失败',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [gameStateId, processor.stats, metrics, toast]);
 
   // 评估系统健康状况
   const evaluateSystemHealth = (
     metrics: PerformanceMetrics, 
-    processorStats: any
+    processorStats: {
+      totalProcessed: number;
+      successCount: number;
+      failureCount: number;
+      averageProcessTime: number;
+    }
   ): SystemHealth => {
     const health: SystemHealth = {
       overall: 'healthy',
@@ -177,10 +183,11 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
         title: '清理完成',
         description: '已清理所有过期的技能效果'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
       toast({
         title: '清理失败',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     }
@@ -220,7 +227,7 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
     fetchSystemMetrics();
     const interval = setInterval(fetchSystemMetrics, 10000); // 10秒刷新
     return () => clearInterval(interval);
-  }, [gameStateId]);
+  }, [gameStateId, fetchSystemMetrics]);
 
   if (!gameStateId) {
     return (

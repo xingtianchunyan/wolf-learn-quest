@@ -109,7 +109,7 @@ export class PassiveSkillService {
           actorUserId: '',
           actorName: '',
           actorRole: '',
-          targetUserId: targetUserId,
+          targetUserId,
           targetName: 'Unknown', // 需要获取实际姓名
           targetRole: 'Unknown', // 需要获取实际角色
           skillName: '多重保护',

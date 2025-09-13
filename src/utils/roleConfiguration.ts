@@ -95,7 +95,7 @@ export const expandRolesWithDesigns = (
     // 查找匹配的角色设计，优先匹配带序号的角色名
     const baseDesigns = roleDesigns.filter(design => 
       design.role_name === role.roleName || 
-      design.role_name.startsWith(role.roleName + '_')
+      design.role_name.startsWith(`${role.roleName  }_`)
     );
     
     // 如果没有找到带序号的设计，使用基础角色设计

@@ -86,7 +86,7 @@ export function checkSkillSpecificRestrictions(
     if (potionType === 'protection') {
       const protectionUses = userSkillUses.filter(use => 
         use.skill_name === 'magic_potion' && 
-        (use as any).potionType === 'protection'
+        (use as SkillUseRecord & { potionType?: string }).potionType === 'protection'
       );
       
       if (protectionUses.length >= 1) {
@@ -102,7 +102,7 @@ export function checkSkillSpecificRestrictions(
     if (potionType === 'attack') {
       const attackUses = userSkillUses.filter(use => 
         use.skill_name === 'magic_potion' && 
-        (use as any).potionType === 'attack'
+        (use as SkillUseRecord & { potionType?: string }).potionType === 'attack'
       );
       
       if (attackUses.length >= 1) {

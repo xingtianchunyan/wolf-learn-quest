@@ -19,7 +19,7 @@ export interface VotingSummary {
 export const calculateVotingSummary = (
   votes: Array<{ target_id?: string; is_valid: boolean; vote_weight?: number }>,
   players: Array<{ userId?: string; name: string }>,
-  totalPlayers: number
+  _totalPlayers: number
 ): VotingSummary => {
   const validVotes = votes.filter(vote => vote.is_valid);
   const totalVoteWeight = validVotes.reduce((sum, vote) => sum + (vote.vote_weight || 1), 0);
@@ -116,7 +116,7 @@ export const getSessionTypeDisplayName = (sessionType: string): string => {
 
 // 检查玩家是否有投票权限
 export const hasVotingPermission = (
-  statusEffects: any,
+  statusEffects: { can_vote?: boolean } | null,
   roleStatus: number
 ): boolean => {
   // 检查状态效果中的投票权限
@@ -141,7 +141,7 @@ export const hasVotingPermission = (
 
 // 检查玩家是否可以被投票
 export const canBeVoted = (
-  statusEffects: any,
+  statusEffects: { can_be_voted?: boolean } | null,
   roleStatus: number
 ): boolean => {
   // 检查状态效果中的被投票权限
@@ -166,8 +166,8 @@ export const canBeVoted = (
 
 // 计算投票权重（用于特殊角色）
 export const calculateVoteWeight = (
-  roleEffects: any,
-  statusEffects: any
+  roleEffects: { vote_weight?: number } | null,
+  statusEffects: { vote_weight?: number } | null
 ): number => {
   // 检查角色特殊技能是否影响投票权重
   if (roleEffects?.vote_weight) {
