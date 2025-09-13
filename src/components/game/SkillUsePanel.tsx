@@ -9,14 +9,15 @@ import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, _getSkillEffectTypes, getSkillPriority as _getSkillPriority } from '@/utils/skillSystemHelpers';
 import { validateSkillUsage, getSkillUsageHint } from '@/utils/skillUsageRestrictions';
 import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface SkillUsePanelProps {
   roomId: string;
   gameStateId: string;
   userId: string;
   currentPhase: number;
-  roleState: any;
-  roleDesign: any;
+  roleState: Tables<'role_states'> | null;
+  roleDesign: Tables<'role_design'> | null;
   players: Array<{ userId: string; name: string; roleStatus: number }>;
 }
 
@@ -30,7 +31,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   players
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
-  const [skillData, setSkillData] = useState<any>({});
+  const [skillData, setSkillData] = useState<Record<string, unknown>>({});
   
   const {
     _loading,
@@ -133,7 +134,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   }
 
   // 使用角色特定技能组件
-  const handleSkillUse = async (skillData: any) => {
+  const handleSkillUse = async (skillData: Record<string, unknown>) => {
     if (!roleDesign?.skill_name) return;
 
     const result = await useSkill(

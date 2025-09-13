@@ -16,6 +16,7 @@ import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface EnhancedSkillPanelProps {
   roomId: string;
@@ -23,8 +24,8 @@ interface EnhancedSkillPanelProps {
   userId: string;
   currentPhase: number;
   currentRound: number;
-  roleState: any;
-  roleDesign: any;
+  roleState: Tables<'role_states'> | null;
+  roleDesign: Tables<'role_design'> | null;
   players: Array<{ userId: string; name: string; roleStatus: number }>;
   isJudge?: boolean;
 }
