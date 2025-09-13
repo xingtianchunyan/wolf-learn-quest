@@ -2,16 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GameService, GameServiceError } from '../gameService';
 
 // Mock supabase
-const mockSupabase = {
-  auth: {
-    getUser: vi.fn()
-  },
-  rpc: vi.fn()
-};
-
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: mockSupabase
+  supabase: {
+    auth: {
+      getUser: vi.fn()
+    },
+    rpc: vi.fn()
+  }
 }));
+
+// Import the mocked module
+import { supabase } from '@/integrations/supabase/client';
+const mockSupabase = vi.mocked(supabase);
 
 describe('GameService', () => {
   beforeEach(() => {

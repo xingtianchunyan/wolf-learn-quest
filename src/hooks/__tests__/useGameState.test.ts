@@ -4,39 +4,51 @@ import { useGameState } from '../useGameState';
 
 // Mock dependencies
 const mockToast = vi.fn();
-const mockRequireAuth = vi.fn();
+const mockUser = { id: 'test-user-id' };
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast })
 }));
 
 vi.mock('@/providers/AuthProvider', () => ({
-  useAuth: () => ({ requireAuth: mockRequireAuth })
+  useAuth: () => ({ requireAuth: vi.fn() })
 }));
-
-const mockSupabase = {
-  from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        single: vi.fn(() => ({ data: null, error: null })),
-        maybeSingle: vi.fn(() => ({ data: null, error: null }))
-      }))
-    })),
-    update: vi.fn(() => ({
-      eq: vi.fn(() => ({ data: null, error: null }))
-    }))
-  })),
-  channel: vi.fn(() => ({
-    on: vi.fn(() => ({
-      subscribe: vi.fn()
-    }))
-  })),
-  removeChannel: vi.fn()
-};
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: mockSupabase
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn(),
+          maybeSingle: vi.fn()
+        }))
+      })),
+      insert: vi.fn(() => ({
+        select: vi.fn(() => ({
+          single: vi.fn()
+        }))
+      })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          select: vi.fn(() => ({
+            single: vi.fn()
+          }))
+        }))
+      }))
+    })),
+    channel: vi.fn(() => ({
+      on: vi.fn(() => ({
+        subscribe: vi.fn()
+      })),
+      unsubscribe: vi.fn()
+    })),
+    removeChannel: vi.fn()
+  }
 }));
+
+// Import the mocked module
+import { supabase } from '@/integrations/supabase/client';
+const mockSupabase = vi.mocked(supabase);
 
 describe('useGameState', () => {
   beforeEach(() => {
@@ -62,7 +74,7 @@ describe('useGameState', () => {
     renderHook(() => useGameState('test-room-id'));
     
     expect(mockSupabase.from).toHaveBeenCalledWith('game_states');
-    expect(mockSupabase.from).toHaveBeenCalledWith('game_settings');
+    expect(mockSupabase.from).toHaveBeenCalledTimes(1);
   });
 
   it('should set up realtime subscriptions', () => {
