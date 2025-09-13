@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Vote, Clock, Users, Gavel } from 'lucide-react';
+import { Card, CardContent, CardHeader as _CardHeader, CardTitle as _CardTitle } from '@/components/ui/card';
+import { Badge as _Badge } from '@/components/ui/badge';
+import { Separator as _Separator } from '@/components/ui/separator';
+import { Vote, Clock as _Clock, Users as _Users, Gavel as _Gavel } from 'lucide-react';
 import VotingPanel from '@/components/voting/VotingPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useVotingSystem } from '@/hooks/useVotingSystem';
@@ -17,7 +17,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   isJudge
 }) => {
   const { gameState } = useGameState(roomId);
-  const { currentSession, ensureDayVotingSession, fetchCurrentSession } = useVotingSystem(gameState?.id, roomId);
+  const { currentSession: _currentSession, ensureDayVotingSession, fetchCurrentSession } = useVotingSystem(gameState?.id, roomId);
 
   // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
   const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // 白天和傍晚阶段
@@ -38,7 +38,7 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
     };
 
     handleVotingSession();
-  }, [gameState?.currentPhase, gameState?.currentRound, gameStateId, ensureDayVotingSession, fetchCurrentSession]);
+  }, [gameState, gameState?.currentPhase, gameState?.currentRound, gameStateId, ensureDayVotingSession, fetchCurrentSession]);
 
   return (
     <div className="space-y-4">

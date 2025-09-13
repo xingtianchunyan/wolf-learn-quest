@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
+import { Loader2, Target, Clock, Zap, _Shield, _Search, _Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 

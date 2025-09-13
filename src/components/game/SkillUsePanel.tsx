@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
+import { _Select, _SelectContent, _SelectItem, _SelectTrigger, _SelectValue } from '@/components/ui/select';
+import { _Badge } from '@/components/ui/badge';
+import { _Loader2, Target, Clock, Zap, _Shield, _Search, _Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
-import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
+import { canUseSkillInGameState, _getSkillEffectTypes, getSkillPriority as _getSkillPriority } from '@/utils/skillSystemHelpers';
 import { validateSkillUsage, getSkillUsageHint } from '@/utils/skillUsageRestrictions';
 import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
 
@@ -33,9 +33,9 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   const [skillData, setSkillData] = useState<any>({});
   
   const {
-    loading,
+    _loading,
     useSkillEnhanced: useSkill,
-    skillUses,
+    _skillUses,
     getUserSkillData
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
@@ -48,8 +48,8 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   );
 
   // 获取技能效果类型
-  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects || {});
-  const skillPriority = getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
+  const _skillEffectTypes = _getSkillEffectTypes(roleDesign?.skill_effects || {});
+  const _skillPriority = _getSkillPriority(roleDesign?.skill_effects || {}, roleDesign?.skill_name);
 
   // 获取当前用户的技能使用记录（用于限制检查）
   const userData = getUserSkillData(userId);
@@ -80,7 +80,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     currentPhase
   );
 
-  const handleUseSkill = async () => {
+  const _handleUseSkill = async () => {
     if (!roleDesign?.skill_name) return;
 
     const result = await useSkill(
@@ -98,17 +98,17 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     }
   };
 
-  const getEffectIcon = (effectType: string) => {
+  const _getEffectIcon = (effectType: string) => {
     switch (effectType) {
-      case 'elimination': return <Skull className="w-4 h-4" />;
-      case 'protection': return <Shield className="w-4 h-4" />;
-      case 'investigation': return <Search className="w-4 h-4" />;
+      case 'elimination': return <_Skull className="w-4 h-4" />;
+      case 'protection': return <_Shield className="w-4 h-4" />;
+      case 'investigation': return <_Search className="w-4 h-4" />;
       case 'status_change': return <Zap className="w-4 h-4" />;
       default: return <Target className="w-4 h-4" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-500';
       case 'processing': return 'bg-blue-500';
