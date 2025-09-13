@@ -49,7 +49,7 @@ interface PerformanceMetrics {
 
 export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({
   gameStateId,
-  _roomId,
+  roomId,
   isJudge = false
 }) => {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({

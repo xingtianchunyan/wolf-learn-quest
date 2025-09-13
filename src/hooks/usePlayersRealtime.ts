@@ -56,7 +56,7 @@ export const usePlayersRealtime = (roomId: string) => {
             .filter(player => !player.is_ai && player.user_id)
             .map(player => player.user_id);
 
-          let usersData = [];
+          let usersData: any[] = [];
           if (userIds.length > 0) {
             const { data: users, error: usersError } = await supabase
               .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds });

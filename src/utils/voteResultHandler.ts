@@ -93,12 +93,18 @@ export const handleVoteResult = async (
   }
 };
 
+interface VoteStatsResult {
+  voteCount: number;
+  mostVotedPlayer: string | null;
+  voteCounts?: Record<string, number>;
+}
+
 // 获取投票统计信息（使用新的投票系统表）
 export const getVoteStats = async (
   gameStateId: string,
   currentRound: number,
   currentPhase: number
-) => {
+): Promise<VoteStatsResult> => {
   try {
     // 获取当前投票会话
     const { data: votingSessions, error: sessionError } = await supabase
@@ -146,12 +152,16 @@ export const getVoteStats = async (
     });
 
     // 找出得票最多的玩家
-    const mostVotedPlayerId = Object.entries(voteCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0];
+    const mostVotedPlayer: { playerId: string; voteCount: number } | null = 
+      Object.entries(voteCounts).length > 0 
+        ? Object.entries(voteCounts)
+            .sort(([,a], [,b]) => b - a)
+            .map(([playerId, voteCount]) => ({ playerId, voteCount }))[0]
+        : null;
 
     return {
       voteCount: votes.length,
-      mostVotedPlayer: mostVotedPlayerId || null,
+      mostVotedPlayer: mostVotedPlayer?.playerId || null,
       voteCounts
     };
 
