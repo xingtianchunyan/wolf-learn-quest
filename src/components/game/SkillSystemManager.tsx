@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Play, Trash2, RefreshCw } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
+import { useSkillEffectAutoProcessor } from '@/hooks/useSkillEffectAutoProcessor';
 import SkillUsePanel from './SkillUsePanel';
 import SkillEffectsDisplay from './SkillEffectsDisplay';
 import type { Tables } from '@/integrations/supabase/types';
@@ -39,21 +40,17 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
     loading
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
+  // 自动技能效果处理
+  const {
+    stats: processorStats,
+    isProcessing,
+    manualProcess,
+    startAutoProcess,
+    stopAutoProcess
+  } = useSkillEffectAutoProcessor(gameStateId, currentPhase, isJudge);
+
   const handleProcessEffects = async () => {
-    try {
-      const { data, error } = await supabase.rpc('process_skill_effects', {
-        p_game_state_id: gameStateId
-      });
-      
-      if (error) {
-        
-        return;
-      }
-      
-      
-    } catch (error) {
-      
-    }
+    await manualProcess();
   };
 
   const handleCleanupEffects = async () => {
@@ -111,30 +108,55 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
 
           {/* 法官控制面板 */}
           {isJudge && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex gap-2">
+            <div className="mt-4 pt-4 border-t space-y-3">
+              {/* 自动处理状态 */}
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <span className="font-medium">自动处理状态: </span>
+                  <span className={processorStats.isRunning ? 'text-green-400' : 'text-yellow-400'}>
+                    {processorStats.isRunning ? '运行中' : '已停止'}
+                  </span>
+                  {isProcessing && <span className="text-blue-400 ml-2">处理中...</span>}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  已处理: {processorStats.totalProcessed} | 成功: {processorStats.successCount} | 失败: {processorStats.failureCount}
+                </div>
+              </div>
+              
+              {/* 控制按钮 */}
+              <div className="flex gap-2 flex-wrap">
                 <Button 
                   onClick={handleProcessEffects}
-                  disabled={loading || stats.queuedEffects === 0}
+                  disabled={loading || isProcessing || stats.queuedEffects === 0}
                   size="sm"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  处理技能效果
+                  手动处理效果
                   {stats.queuedEffects > 0 && (
                     <Badge variant="secondary" className="ml-2">
                       {stats.queuedEffects}
                     </Badge>
                   )}
                 </Button>
+                
+                <Button 
+                  onClick={processorStats.isRunning ? stopAutoProcess : startAutoProcess}
+                  variant={processorStats.isRunning ? "destructive" : "outline"}
+                  size="sm"
+                >
+                  {processorStats.isRunning ? '停止自动处理' : '启动自动处理'}
+                </Button>
+                
                 <Button 
                   onClick={handleCleanupEffects}
-                  disabled={loading}
+                  disabled={loading || isProcessing}
                   variant="outline"
                   size="sm"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   清理过期效果
                 </Button>
+                
                 <Button 
                   onClick={() => window.location.reload()}
                   variant="ghost"

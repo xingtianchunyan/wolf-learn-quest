@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
-import { validateSkillUsage, getSkillUsageHint } from '@/utils/skillUsageRestrictions';
+import { validateSkillUsageSimplified, getSkillUsageSuggestion } from '@/utils/skillSystemValidationEnhanced';
 import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -61,24 +61,19 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     player.userId !== userId && player.roleStatus !== 4 // 排除自己和已淘汰的玩家
   );
 
-  // 检查夜晚技能使用限制（女巫除外）
-  const checkSkillUsageRestriction = () => {
-    const currentRound = Math.floor(Date.now() / (24 * 60 * 60 * 1000)); // 简化的回合计算
-    
-    return validateSkillUsage(
-      roleDesign?.role_name || '',
-      roleDesign?.skill_name || '',
-      currentPhase,
-      currentRound,
-      userSkillUses
-    );
-  };
+  // 简化的技能使用验证
+  const usageValidation = validateSkillUsageSimplified(
+    roleDesign,
+    roleState,
+    currentPhase,
+    selectedTarget || undefined
+  );
 
-  const usageRestriction = checkSkillUsageRestriction();
-  const skillUsageHint = getSkillUsageHint(
-    roleDesign?.role_name || '',
-    roleDesign?.skill_name || '',
-    currentPhase
+  const skillUsageHint = getSkillUsageSuggestion(
+    roleDesign,
+    roleState,
+    currentPhase,
+    availableTargets
   );
 
   const _handleUseSkill = async () => {
@@ -154,31 +149,36 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 技能使用限制提示 */}
-      {!usageRestriction.canUse && (
-        <Card className="border-yellow-500/30 bg-yellow-900/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-yellow-400">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm font-medium">技能使用限制</span>
-            </div>
-            <p className="text-sm text-yellow-300 mt-1">{usageRestriction.reason}</p>
-            <p className="text-xs text-yellow-400 mt-2">{skillUsageHint}</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* 技能使用状态提示 */}
+      <Card className={`border-opacity-30 ${!usageValidation.valid ? 'border-yellow-500 bg-yellow-900/20' : 'border-blue-500 bg-blue-900/20'}`}>
+        <CardContent className="p-4">
+          <div className={`flex items-center gap-2 ${!usageValidation.valid ? 'text-yellow-400' : 'text-blue-400'}`}>
+            <Clock className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {!usageValidation.valid ? '技能使用限制' : '技能使用建议'}
+            </span>
+          </div>
+          {!usageValidation.valid && (
+            <>
+              <p className="text-sm text-yellow-300 mt-1">{usageValidation.reason}</p>
+              <p className="text-xs text-yellow-400 mt-2">{usageValidation.suggestedAction}</p>
+            </>
+          )}
+          <p className="text-xs text-blue-300 mt-2">{skillUsageHint}</p>
+        </CardContent>
+      </Card>
 
       {/* 角色特定技能界面 */}
       <RoleSpecificSkills
         roleName={roleDesign.role_name || ''}
         skillEffects={roleDesign.skill_effects || {}}
         roleAttributes={roleDesign.role_attributes || {}}
-        canUseSkill={canUseSkill && usageRestriction.canUse}
+        canUseSkill={canUseSkill && usageValidation.valid}
         onUseSkill={handleSkillUse}
         availableTargets={availableTargets}
         currentPhase={currentPhase}
         userSkillUses={userSkillUses}
-        usageRestriction={usageRestriction}
+        usageRestriction={usageValidation}
       />
     </div>
   );
