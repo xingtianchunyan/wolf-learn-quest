@@ -22,7 +22,7 @@ const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
   currentChannel,
   onChannelChange,
   availableChannels,
-  isGameRoom = false
+  isGameRoom: _isGameRoom = false
 }) => {
   const channelNames = {
     public: '公共聊天',

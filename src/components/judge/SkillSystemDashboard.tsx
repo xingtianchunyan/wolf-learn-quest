@@ -43,12 +43,12 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
   
   // 技能系统数据
   const {
-    skillUses,
-    skillEffectsQueue,
-    skillTargets,
-    loading,
+    skillUses: _skillUses,
+    skillEffectsQueue: _skillEffectsQueue,
+    skillTargets: _skillTargets,
+    loading: _loading,
     stats,
-    useSkillEnhanced,
+    useSkillEnhanced: _useSkillEnhanced,
     fetchAllSkillData
   } = useEnhancedSkillSystem(roomId || '', gameStateId, userId);
 
@@ -93,7 +93,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
 
   // 获取系统状态
   const getSystemStatus = () => {
-    if (loading) return { status: 'loading', message: '加载中...' };
+    if (_loading) return { status: 'loading', message: '加载中...' };
     
     const errorRate = stats.totalUses > 0 ? ((stats.totalUses - stats.activeEffects) / stats.totalUses) * 100 : 0;
     
@@ -196,7 +196,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
                 <CardTitle className="text-lg">当前活跃技能</CardTitle>
               </CardHeader>
               <CardContent>
-                {skillUses.length === 0 ? (
+                {_skillUses.length === 0 ? (
                   <div className="text-center text-gray-500 py-4">
                     暂无活跃技能
                   </div>

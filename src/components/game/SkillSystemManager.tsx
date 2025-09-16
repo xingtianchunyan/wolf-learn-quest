@@ -9,6 +9,7 @@ import { Settings, Play, Trash2, RefreshCw } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import SkillUsePanel from './SkillUsePanel';
 import SkillEffectsDisplay from './SkillEffectsDisplay';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface SkillSystemManagerProps {
   roomId: string;
@@ -16,8 +17,8 @@ interface SkillSystemManagerProps {
   userId: string;
   isJudge: boolean;
   currentPhase: number;
-  roleState: any;
-  roleDesign: any;
+  roleState: Tables<'role_states'> | null;
+  roleDesign: Tables<'role_design'> | null;
   players: Array<{ userId: string; name: string; roleStatus: number }>;
 }
 

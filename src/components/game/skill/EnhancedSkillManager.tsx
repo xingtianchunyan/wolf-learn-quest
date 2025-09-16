@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { EnhancedSkillService } from '@/services/enhancedSkillService';
 import { PassiveSkillService } from '@/services/passiveSkillService';
+import type { Tables } from '@/integrations/supabase/types';
 
 const logger = createLogger('enhanced-skill-manager');
 
@@ -33,14 +34,14 @@ interface EnhancedSkillManagerProps {
   currentRound: number;
   currentPhase: number;
   isJudge: boolean;
-  roleDesign?: any;
-  roleState?: any;
+  roleDesign?: Tables<'role_design'> | null;
+  roleState?: Tables<'role_states'> | null;
 }
 
 interface WitchPotionState {
   canUseProtection: boolean;
   canUseAttack: boolean;
-  nightDeaths?: any[];
+  nightDeaths?: Array<{ userId: string; reason: string; [key: string]: unknown }>;
   protectionReason?: string;
   attackReason?: string;
 }
@@ -57,7 +58,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
 }) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [conflictData, setConflictData] = useState<any>(null);
+  const [conflictData, setConflictData] = useState<{ conflicts: number; details: unknown } | null>(null);
   const [witchPotionState, setWitchPotionState] = useState<WitchPotionState>({
     canUseProtection: false,
     canUseAttack: false
@@ -303,7 +304,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                 <h5 className="text-xs font-medium text-red-400 mb-2">当夜死亡信息</h5>
                 <ScrollArea className="h-20">
                   <div className="space-y-1">
-                    {witchPotionState.nightDeaths.map((death: any, index: number) => (
+                    {witchPotionState.nightDeaths.map((death: { userId: string; reason: string; [key: string]: unknown }, index: number) => (
                       <div key={index} className="text-xs text-gray-300 p-1 bg-werewolf-dark/50 rounded">
                         目标: {death.target_user_id?.slice(-8)} | 技能: {death.skill_name}
                       </div>

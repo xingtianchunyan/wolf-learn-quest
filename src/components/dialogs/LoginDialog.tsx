@@ -35,7 +35,7 @@ const LoginDialog: React.FC = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: _data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -95,7 +95,7 @@ const LoginDialog: React.FC = () => {
     
     try {
       // Check if Player ID already exists
-      const { data: existingUserRows, error: checkError } = await supabase
+      const { data: existingUserRows, error: _checkError } = await supabase
         .rpc('get_public_user_by_name', { p_name: playerId.trim() });
         
       if (existingUserRows && Array.isArray(existingUserRows) && existingUserRows.length > 0) {

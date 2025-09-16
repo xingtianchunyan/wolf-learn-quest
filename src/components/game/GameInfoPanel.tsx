@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { GamepadIcon, Clock, Play, Pause } from 'lucide-react';
 import GamePlayerStatusDisplay from './GamePlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GameInfoPanelProps {
@@ -22,7 +21,6 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
 }) => {
   const { gameState, getPhaseDisplayName, formatTime, timeRemaining } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
-  const { currentUser } = useAuth();
   const [maxPlayers, setMaxPlayers] = useState(8);
 
   useEffect(() => {

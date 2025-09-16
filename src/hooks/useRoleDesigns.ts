@@ -44,10 +44,10 @@ export const useRoleDesigns = () => {
           const processedRole = {
             ...role,
             skill_effects: role.skill_effects ? 
-              (role.skill_effects as any as SkillEffects) : 
+              (role.skill_effects as unknown as SkillEffects) : 
               undefined,
             role_attributes: role.role_attributes ? 
-              (role.role_attributes as any as RoleAttributes) : 
+              (role.role_attributes as unknown as RoleAttributes) : 
               undefined,
           } as RoleDesign;
           return processedRole;

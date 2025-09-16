@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
+import { Loader2, Target, Clock, Zap, _Shield, _Search, _Skull } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
+import type { Tables } from '@/integrations/supabase/types';
 
 /**
  * 文件: GameSkillPanel.tsx
@@ -20,8 +21,8 @@ interface GameSkillPanelProps {
   gameStateId: string;
   userId: string;
   currentPhase: number;
-  roleState: any;
-  roleDesign: any;
+  roleState: Tables<'role_states'> | null;
+  roleDesign: Tables<'role_design'> | null;
   players?: Array<{
     userId: string;
     name: string;

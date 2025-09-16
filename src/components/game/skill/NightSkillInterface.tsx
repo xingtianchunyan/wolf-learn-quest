@@ -2,21 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Moon, Target, Clock, Zap, Shield, Skull, Eye } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Target, Clock, Zap, Shield, Search, Skull, CheckCircle, XCircle } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
-import { useRoleDesigns } from '@/hooks/useRoleDesigns';
-import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
+import { canUseSkillInGameState } from '@/utils/skillSystemHelpers';
+import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
+import { WitchPotionInterface } from './WitchPotionInterface';
+import { SeerInvestigationInterface } from './SeerInvestigationInterface';
+import { WolfKillInterface } from './WolfKillInterface';
+import { HunterRevengeInterface } from './HunterRevengeInterface';
+import { GuardProtectionInterface } from './GuardProtectionInterface';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface NightSkillInterfaceProps {
   roomId: string;
   gameStateId: string;
   userId: string;
   currentPhase: number;
-  roleState: any;
-  roleDesign: any;
+  roleState: Tables<'role_states'> | null;
+  roleDesign: Tables<'role_design'> | null;
   players: Array<{
     userId: string;
     name: string;

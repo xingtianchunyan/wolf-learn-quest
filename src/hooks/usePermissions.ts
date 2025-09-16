@@ -47,11 +47,11 @@ export const usePermissions = (roomId?: string) => {
           .eq('user_id', currentUser.id)
           .single();
 
-        const isRoomParticipant = !!roomPlayer || isJudge;
+        const _isRoomParticipant = !!roomPlayer || isJudge;
 
         setPermissions({
           isJudge,
-          isRoomParticipant,
+          isRoomParticipant: _isRoomParticipant,
           loading: false
         });
       } catch (error) {
