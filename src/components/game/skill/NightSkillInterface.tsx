@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Target, Clock, Zap, Shield, Search, Skull, CheckCircle, XCircle, Eye, Moon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
-import { canUseSkillInGameState } from '@/utils/skillSystemHelpers';
+import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
 import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
 import WitchPotionInterface from './WitchPotionInterface';
 import SeerInvestigationInterface from './SeerInvestigationInterface';
@@ -52,14 +53,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
-    roleDesign?.skill_effects || {},
+    roleDesign?.skill_effects as any || {},
     roleState?.role_status || 1,
     currentPhase,
     roleDesign?.skill_name
   );
 
   // 获取技能效果类型
-  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects || {});
+  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects as any || {});
   
   // 获取可选目标（排除自己和已死亡的玩家）
   const availableTargets = players.filter(player => 
@@ -87,12 +88,12 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
     };
 
     const result = await useSkillEnhanced(
-      userId,
-      gameStateId,
-      roleDesign?.skill_name || 'unknown',
+      roleDesign?.skill_name as string || 'unknown',
       selectedTarget || undefined,
-      skillData,
-      100
+      skillData as Record<string, any>,
+      roleState,
+      roleDesign,
+      currentPhase
     );
 
     if (result) {
@@ -103,7 +104,8 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 
   // 检查技能是否需要目标
   const needsTarget = () => {
-    const targetTypes = roleDesign?.skill_effects?.target_type || [];
+    const skillEffects = roleDesign?.skill_effects as any;
+    const targetTypes = skillEffects?.target_type || [];
     return targetTypes.includes('player') || targetTypes.includes('other_player');
   };
 

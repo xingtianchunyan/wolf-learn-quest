@@ -306,7 +306,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                   <div className="space-y-1">
                     {witchPotionState.nightDeaths.map((death: { userId: string; reason: string; [key: string]: unknown }, index: number) => (
                       <div key={index} className="text-xs text-gray-300 p-1 bg-werewolf-dark/50 rounded">
-                        目标: {death.target_user_id?.slice(-8)} | 技能: {death.skill_name}
+                        目标: {(death.target_user_id as string)?.slice(-8)} | 技能: {death.skill_name as string}
                       </div>
                     ))}
                   </div>

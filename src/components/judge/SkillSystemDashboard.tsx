@@ -202,7 +202,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {skillUses.slice(0, 5).map((skill) => (
+                    {_skillUses.slice(0, 5).map((skill: any) => (
                       <div key={skill.id} className="flex items-center justify-between p-2 border rounded">
                         <div>
                           <span className="font-medium">{skill.chinese_name || skill.skill_name}</span>
@@ -254,13 +254,13 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               <CardTitle className="text-lg">最近技能活动</CardTitle>
             </CardHeader>
             <CardContent>
-              {skillUses.length === 0 ? (
+              {_skillUses.length === 0 ? (
                 <div className="text-center text-gray-500 py-4">
                   暂无技能活动记录
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {skillUses.slice(0, 10).map((skill) => (
+                  {_skillUses.slice(0, 10).map((skill: any) => (
                     <div key={skill.id} className="flex items-center gap-3 p-2 border-l-4 border-blue-200">
                       <div className="flex-1">
                         <div className="font-medium">{skill.chinese_name || skill.skill_name}</div>
@@ -339,10 +339,10 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
                   <Button 
                     onClick={handleRefreshData} 
                     className="w-full"
-                    disabled={loading}
+                    disabled={_loading}
                   >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    {loading ? '刷新中...' : '刷新数据'}
+                    <RefreshCw className={`h-4 w-4 mr-2 ${_loading ? 'animate-spin' : ''}`} />
+                    {_loading ? '刷新中...' : '刷新数据'}
                   </Button>
                   
                   <Button 
