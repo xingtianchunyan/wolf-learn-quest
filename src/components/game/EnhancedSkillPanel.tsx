@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress as _Progress } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,9 +14,8 @@ import {
 } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
-import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
+import { SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
-import type { Tables } from '@/integrations/supabase/types';
 
 interface EnhancedSkillPanelProps {
   roomId: string;
@@ -24,8 +23,8 @@ interface EnhancedSkillPanelProps {
   userId: string;
   currentPhase: number;
   currentRound: number;
-  roleState: Tables<'role_states'> | null;
-  roleDesign: Tables<'role_design'> | null;
+  roleState: any;
+  roleDesign: any;
   players: Array<{ userId: string; name: string; roleStatus: number }>;
   isJudge?: boolean;
 }
@@ -42,24 +41,24 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
   isJudge = false
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
-  const [_showDetails, _setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const {
-    skillUses: _skillUses,
+    skillUses,
     loading,
     stats,
     useSkillEnhanced,
     getSkillSuggestion,
     getUserSkillData,
-    canUseSkill: _canUseSkill,
+    canUseSkill,
     resolveSkillConflicts
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 女巫魔药管理器
   const {
-    potionStatus: _potionStatus,
-    useProtectionPotion: _useProtectionPotion,
-    useAttackPotion: _useAttackPotion,
+    potionStatus,
+    useProtectionPotion,
+    useAttackPotion,
     loading: potionLoading
   } = useWitchPotionManager(gameStateId || '', userId || '', currentRound || 1);
 
@@ -123,7 +122,6 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       return;
     }
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const result = await useSkillEnhanced(
       skillConfig.englishName,
       selectedTarget || undefined,
@@ -168,7 +166,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
   };
 
   // 获取状态图标
-  const _getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;

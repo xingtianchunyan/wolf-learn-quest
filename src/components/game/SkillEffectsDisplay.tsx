@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Clock, Zap, _Users, _Target, _AlertCircle } from 'lucide-react';
+import { Clock, Zap, Users, Target, AlertCircle } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { formatVoteTime } from '@/utils/votingSystemHelpers';
 
@@ -21,11 +21,11 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   const {
     skillEffectsQueue,
     skillTargets,
-    loading: _loading
+    loading
   } = useEnhancedSkillSystem(roomId, gameStateId);
 
   // 获取活跃的技能效果
-  const _activeEffects = skillTargets.filter(target => target.is_active);
+  const activeEffects = skillTargets.filter(target => target.is_active);
   
   // 获取排队中的技能效果
   const queuedEffects = skillEffectsQueue.filter(effect => 
@@ -33,7 +33,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   );
 
   // 按目标用户分组效果
-  const _effectsByUser = _activeEffects.reduce((acc, effect) => {
+  const effectsByUser = activeEffects.reduce((acc, effect) => {
     const userId = effect.target_user_id;
     if (!userId) return acc;
     
@@ -42,13 +42,13 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
     }
     acc[userId].push(effect);
     return acc;
-  }, {} as Record<string, typeof _activeEffects>);
+  }, {} as Record<string, typeof activeEffects>);
 
-  const _getPlayerName = (userId: string) => {
+  const getPlayerName = (userId: string) => {
     return players.find(p => p.userId === userId)?.name || '未知玩家';
   };
 
-  const _getEffectColor = (effectType: string) => {
+  const getEffectColor = (effectType: string) => {
     switch (effectType) {
       case 'protection': return 'bg-green-500';
       case 'elimination': return 'bg-red-500';
@@ -69,7 +69,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
     }
   };
 
-  const _getRemainingTime = (endTime: string) => {
+  const getRemainingTime = (endTime: string) => {
     const now = new Date().getTime();
     const end = new Date(endTime).getTime();
     const remaining = Math.max(0, end - now);
@@ -82,7 +82,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const _getProgressPercentage = (startTime: string, endTime?: string) => {
+  const getProgressPercentage = (startTime: string, endTime?: string) => {
     if (!endTime) return 100;
     
     const start = new Date(startTime).getTime();

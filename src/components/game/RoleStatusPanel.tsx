@@ -27,7 +27,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
   const { roleStates, loading } = useRoleStates(roomId);
   const { players } = usePlayersRealtime(roomId);
   const { roleDesigns, getSkillEffects, getRoleAttributes } = useRoleDesigns();
-  const [_currentTime, setCurrentTime] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(Date.now());
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
 
   // 每秒更新时间，用于猎人反击倒计时

@@ -82,7 +82,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
   // 监听角色状态变更
   useEffect(() => {
     const newDyingPlayers: string[] = [];
-    const changes = new Map();
+    const changes = new Map(recentChanges);
     
     roleStates.forEach(roleState => {
       const player = players.find(p => p.userId === roleState.user_id);
@@ -93,51 +93,33 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
         newDyingPlayers.push(roleState.user_id);
         
         // 检查是否是新的状态变更
-        const existingChange = recentChanges.get(roleState.user_id);
+        const existingChange = changes.get(roleState.user_id);
         if (!existingChange || existingChange.toStatus !== ROLE_STATUS.DYING) {
           changes.set(roleState.user_id, {
             fromStatus: existingChange?.toStatus || ROLE_STATUS.NORMAL,
             toStatus: ROLE_STATUS.DYING,
             timestamp: Date.now()
           });
-        } else {
-          // 保留现有的变更记录
-          changes.set(roleState.user_id, existingChange);
         }
       }
     });
     
     setDyingPlayers(newDyingPlayers);
+    setRecentChanges(changes);
     
-    // 只有当changes不为空时才更新recentChanges
-    if (changes.size > 0) {
-      setRecentChanges(prevChanges => {
-        const newChanges = new Map(prevChanges);
-        changes.forEach((change, userId) => {
-          newChanges.set(userId, change);
-        });
-        return newChanges;
-      });
+    // 清理超过10秒的变更记录
+    const now = Date.now();
+    const filteredChanges = new Map();
+    changes.forEach((change, userId) => {
+      if (now - change.timestamp < 10000) {
+        filteredChanges.set(userId, change);
+      }
+    });
+    
+    if (filteredChanges.size !== changes.size) {
+      setRecentChanges(filteredChanges);
     }
-  }, [roleStates, players]);
-
-  // 清理超过10秒的变更记录
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRecentChanges(prevChanges => {
-        const now = Date.now();
-        const filteredChanges = new Map();
-        prevChanges.forEach((change, userId) => {
-          if (now - change.timestamp < 10000) {
-            filteredChanges.set(userId, change);
-          }
-        });
-        return filteredChanges.size !== prevChanges.size ? filteredChanges : prevChanges;
-      });
-    }, 1000); // 每秒检查一次
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [roleStates, players, recentChanges]);
 
   // 获取玩家状态显示信息
   const getPlayerStatusInfo = (player: Player) => {

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Sword, Eye, Ban } from 'lucide-react';
 import type { SkillEffects, RoleAttributes } from '@/utils/skillSystemHelpers';
-import { getSkillEffectTypes, getSkillTargetTypes, _hasSpecialAbility } from '@/utils/skillSystemHelpers';
+import { getSkillEffectTypes, getSkillTargetTypes, hasSpecialAbility } from '@/utils/skillSystemHelpers';
 
 interface RoleSkillInfoProps {
   roleName: string;

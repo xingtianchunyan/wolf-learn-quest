@@ -150,8 +150,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     return (
       <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
         <CardHeader className="flex-shrink-0">
-           <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
-         </CardHeader>
+          <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+        </CardHeader>
         <CardContent className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple"></div>
         </CardContent>
@@ -162,7 +162,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   return (
     <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
-         <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+        <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
         <div className="space-y-2">
           <p className="text-sm text-gray-400">
             {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})

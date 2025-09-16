@@ -39,15 +39,15 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
 
   // 获取当前用户的角色信息
   const currentUserRoleState = currentUser ? roleStates.find(rs => rs.user_id === currentUser.id) : null;
-  const _currentUserRoleSelection = currentUser ? getSelectedRoleByUser(currentUser.id) : null;
+  const currentUserRoleSelection = currentUser ? getSelectedRoleByUser(currentUser.id) : null;
 
   // 检查当前用户的角色类型和特殊权限
-  const currentUserRole = _currentUserRoleSelection?.roleDesign?.role_name;
-  const currentUserRoleDesign = _currentUserRoleSelection?.roleDesign;
+  const currentUserRole = currentUserRoleSelection?.roleDesign?.role_name;
+  const currentUserRoleDesign = currentUserRoleSelection?.roleDesign;
   
   // 使用统一的角色工具判断角色类型
-  const _isCurrentUserWerewolf = canAccessWerewolfChannel(currentUserRole, currentUserRoleDesign);
-  const _isCurrentUserDemon = isDemonRole(currentUserRole || '');
+  const isCurrentUserWerewolf = canAccessWerewolfChannel(currentUserRole, currentUserRoleDesign);
+  const isCurrentUserDemon = isDemonRole(currentUserRole || '');
   const isCurrentUserHunter = isHunterRole(currentUserRole || '');
 
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
