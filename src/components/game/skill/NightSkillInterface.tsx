@@ -7,11 +7,11 @@ import { Loader2, Target, Clock, Zap, Shield, Search, Skull, CheckCircle, XCircl
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState } from '@/utils/skillSystemHelpers';
 import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
-import { WitchPotionInterface } from './WitchPotionInterface';
-import { SeerInvestigationInterface } from './SeerInvestigationInterface';
-import { WolfKillInterface } from './WolfKillInterface';
-import { HunterRevengeInterface } from './HunterRevengeInterface';
-import { GuardProtectionInterface } from './GuardProtectionInterface';
+import WitchPotionInterface from './WitchPotionInterface';
+import SeerInvestigationInterface from './SeerInvestigationInterface';
+import WolfKillInterface from './WolfKillInterface';
+import HunterRevengeInterface from './HunterRevengeInterface';
+import GuardProtectionInterface from './GuardProtectionInterface';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface NightSkillInterfaceProps {
