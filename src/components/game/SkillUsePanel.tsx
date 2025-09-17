@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
+import { Loader2, Target, Clock, Zap, Shield, Search, Skull, AlertCircle } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
 import { validateSkillUsageSimplified, getSkillUsageSuggestion } from '@/utils/skillSystemValidationEnhanced';
@@ -37,7 +36,8 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     loading,
     useSkillEnhanced: useSkill,
     skillUses,
-    getUserSkillData
+    getUserSkillData,
+    validateSkillFrontend
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 检查是否可以使用技能
@@ -78,6 +78,11 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
 
   const _handleUseSkill = async () => {
     if (!roleDesign?.skill_name) return;
+
+    // 前端验证技能是否可用
+    if (!usageValidation.valid) {
+      return; // 不执行技能使用，按钮已禁用
+    }
 
     const result = await useSkill(
       roleDesign.skill_name,
@@ -132,6 +137,21 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
   const handleSkillUse = async (skillData: Record<string, unknown>) => {
     if (!roleDesign?.skill_name) return;
 
+    // 前端验证 - 避免无效请求
+    const frontendValidation = validateSkillFrontend?.(
+      roleDesign.skill_name,
+      roleState,
+      roleDesign,
+      currentPhase,
+      skillData.targetId as string,
+      1 // currentRound - 默认为1
+    );
+
+    if (frontendValidation && !frontendValidation.canUse) {
+      // 不显示错误弹窗，只是不执行操作
+      return;
+    }
+
     const result = await useSkill(
       roleDesign.skill_name,
       skillData.targetId as string || undefined,
@@ -161,10 +181,14 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
           {!usageValidation.valid && (
             <>
               <p className="text-sm text-yellow-300 mt-1">{usageValidation.reason}</p>
-              <p className="text-xs text-yellow-400 mt-2">{usageValidation.suggestedAction}</p>
+              {usageValidation.suggestedAction && (
+                <p className="text-xs text-yellow-400 mt-2">{usageValidation.suggestedAction}</p>
+              )}
             </>
           )}
-          <p className="text-xs text-blue-300 mt-2">{skillUsageHint}</p>
+          {usageValidation.valid && (
+            <p className="text-xs text-blue-300 mt-2">{skillUsageHint}</p>
+          )}
         </CardContent>
       </Card>
 

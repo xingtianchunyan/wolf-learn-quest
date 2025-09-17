@@ -212,7 +212,39 @@ export const useEnhancedSkillSystem = (
     };
   }, [gameStateId, fetchAllSkillData]);
 
-  // 增强的技能使用函数
+  // 前端技能验证 - 避免发送无效请求到后端
+  const validateSkillFrontend = useCallback((
+    skillName: string,
+    roleState?: any,
+    roleDesign?: any,
+    currentPhase?: number,
+    targetUserId?: string,
+    currentRound?: number
+  ): { canUse: boolean; reason?: string; suggestion?: string } => {
+    if (!gameStateId || !userId) {
+      return { canUse: false, reason: '缺少必要的游戏状态或用户信息' };
+    }
+
+    const context: SkillUsageContext = {
+      userId,
+      gameStateId,
+      roomId,
+      currentPhase: currentPhase || 1,
+      currentRound: currentRound || 1,
+      roleState,
+      roleDesign,
+      targetUserId
+    };
+
+    const validation = EnhancedSkillService.validateSkillUsage(context);
+    return {
+      canUse: validation.isValid,
+      reason: validation.reason,
+      suggestion: validation.suggestedAction
+    };
+  }, [gameStateId, userId, roomId]);
+
+  // 增强的技能使用函数 - 加强前端验证
   const useSkillEnhanced = useCallback(async (
     skillName: string,
     targetUserId?: string,
@@ -223,10 +255,25 @@ export const useEnhancedSkillSystem = (
     currentRound?: number
   ) => {
     if (!gameStateId || !userId) {
-      toast({
-        title: '技能使用失败',
-        description: '缺少必要的游戏状态或用户信息',
-        variant: 'destructive',
+      return null;
+    }
+
+    // 前端预验证 - 避免无效请求
+    const frontendValidation = validateSkillFrontend(
+      skillName,
+      roleState,
+      roleDesign,
+      currentPhase,
+      targetUserId,
+      currentRound
+    );
+
+    if (!frontendValidation.canUse) {
+      // 不显示错误弹窗，只记录日志
+      logger.warn('技能使用被前端验证阻止', {
+        skillName,
+        reason: frontendValidation.reason,
+        suggestion: frontendValidation.suggestion
       });
       return null;
     }
@@ -252,22 +299,27 @@ export const useEnhancedSkillSystem = (
         description: `成功使用技能: ${skillName}`,
       });
 
-      // 移除 setTimeout 刷新，依赖实时订阅更新
-      // setTimeout(() => fetchAllSkillData(), 500);
-
       return result;
     } catch (error: any) {
       logger.error('技能使用失败', error);
-      toast({
-        title: '技能使用失败',
-        description: error.message || '系统错误，请重试',
-        variant: 'destructive',
-      });
+      
+      // 根据错误类型决定是否显示弹窗
+      if (error.code === 'VALIDATION_FAILED' || error.reason?.includes('限制')) {
+        // 游戏规则相关错误，不显示弹窗，只记录日志
+        logger.warn('技能使用违反游戏规则', error);
+      } else {
+        // 系统错误，显示错误弹窗
+        toast({
+          title: '技能使用失败',
+          description: error.message || '系统错误，请重试',
+          variant: 'destructive',
+        });
+      }
       return null;
     } finally {
       setLoading(false);
     }
-  }, [gameStateId, userId, roomId, toast, fetchAllSkillData]);
+  }, [gameStateId, userId, roomId, toast, validateSkillFrontend]);
 
   // 获取技能使用建议
   const getSkillSuggestion = useCallback((
@@ -404,6 +456,7 @@ export const useEnhancedSkillSystem = (
     getSkillSuggestion,
     getUserSkillData,
     canUseSkill,
+    validateSkillFrontend,
 
     // 兼容性 - 保持原有接口
     useSkill: useSkillEnhanced,
