@@ -50,7 +50,12 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
   } = useSkillEffectAutoProcessor(gameStateId, currentPhase, isJudge);
 
   const handleProcessEffects = async () => {
-    await manualProcess();
+    try {
+      const processed = await manualProcess();
+      console.log(`处理了 ${processed} 个技能效果`);
+    } catch (error) {
+      console.error('处理技能效果失败:', error);
+    }
   };
 
   const handleCleanupEffects = async () => {
@@ -58,13 +63,13 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
       const { error } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
       
       if (error) {
-        
+        console.error('清理过期效果失败:', error);
         return;
       }
       
-      
+      console.log('成功清理过期技能效果');
     } catch (error) {
-      
+      console.error('清理过期效果异常:', error);
     }
   };
 
