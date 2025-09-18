@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { WitchSkillInterface } from './WitchSkillInterface';
 import { 
   Skull, 
   Shield, 
@@ -26,6 +27,9 @@ interface RoleSpecificSkillsProps {
   currentPhase: number;
   userSkillUses?: Array<{ round_number: number; phase: string; skill_name: string }>;
   usageRestriction?: { canUse: boolean; reason?: string; remainingUses?: number };
+  gameStateId?: string;
+  userId?: string;
+  currentRound?: number;
 }
 
 export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
@@ -37,7 +41,10 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   availableTargets,
   currentPhase,
   userSkillUses = [],
-  usageRestriction
+  usageRestriction,
+  gameStateId = '',
+  userId = '',
+  currentRound = 1
 }) => {
   
   // 检查是否已在当晚使用过技能（女巫除外）
@@ -209,103 +216,18 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </Card>
   );
 
-  // 女巫技能 - 重构为独立的保护魔药和攻击魔药按钮
+  // 女巫技能 - 使用专门的女巫技能接口组件
   const WitchSkill = () => {
-    // 检查各种魔药的使用状态
-    const hasUsedProtectionPotion = userSkillUses.some(use => 
-      use.skill_name === 'magic_potion' && 
-      use.phase === 'night'
-    );
-    
-    const hasUsedAttackPotion = userSkillUses.some(use => 
-      use.skill_name === 'magic_potion' && 
-      use.phase === 'night'
-    );
-    
     return (
-      <Card className="bg-green-900/20 border-green-500/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-400">
-            <Heart className="w-5 h-5" />
-            女巫技能 - 魔药
-            <Badge variant="default" className="ml-2 text-xs bg-green-600">
-              夜晚无限制
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-gray-300">
-            <p>你拥有解药和毒药各一瓶，可以在夜晚使用。</p>
-            <p className="text-green-400 mt-2">• 保护魔药：救活当晚死亡的玩家</p>
-            <p className="text-red-400">• 攻击魔药：毒死一名玩家</p>
-            <p className="text-yellow-400">• 每种药剂最多使用一次</p>
-            <p className="text-blue-400">• 女巫可在夜晚多次使用技能</p>
-          </div>
-          
-          <div className="space-y-3">
-            {/* 保护魔药按钮 */}
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="justify-start border-green-500/30 hover:bg-green-500/20 w-full"
-                onClick={() => {
-                  onUseSkill({ 
-                    skillType: 'protection',
-                    potionType: 'protection',
-                    effectType: 'witch_antidote'
-                  });
-                }}
-                disabled={!canUseSkill || currentPhase !== 3 || hasUsedProtectionPotion}
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                保护魔药
-                {hasUsedProtectionPotion && (
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    已使用
-                  </Badge>
-                )}
-              </Button>
-              {hasUsedProtectionPotion && (
-                <p className="text-xs text-gray-400 ml-6">解药已经使用过了</p>
-              )}
-            </div>
-            
-            {/* 攻击魔药按钮组 */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-red-400">攻击魔药</h4>
-              {hasUsedAttackPotion ? (
-                <div className="flex items-center justify-center p-3 border border-red-500/30 rounded-md">
-                  <Badge variant="secondary" className="text-xs">
-                    毒药已使用
-                  </Badge>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2">
-                  {availableTargets.map(target => (
-                    <Button
-                      key={target.userId}
-                      variant="outline"
-                      className="justify-start border-red-500/30 hover:bg-red-500/20"
-                      onClick={() => {
-                        onUseSkill({ 
-                          skillType: 'elimination',
-                          targetId: target.userId,
-                          potionType: 'attack',
-                          effectType: 'witch_poison'
-                        });
-                      }}
-                      disabled={!canUseSkill || currentPhase !== 3}
-                    >
-                      <Skull className="w-4 h-4 mr-2" />
-                      毒杀 {target.name}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <WitchSkillInterface
+        gameStateId={gameStateId}
+        userId={userId}
+        currentRound={currentRound}
+        currentPhase={currentPhase}
+        canUseSkill={canUseSkill}
+        onUseSkill={onUseSkill}
+        availableTargets={availableTargets}
+      />
     );
   };
 
