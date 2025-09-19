@@ -21,6 +21,7 @@ interface NightSkillInterfaceProps {
   gameStateId: string;
   userId: string;
   currentPhase: number;
+  currentRound: number;
   roleState: Tables<'role_states'> | null;
   roleDesign: Tables<'role_design'> | null;
   players: Array<{
@@ -36,6 +37,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   gameStateId,
   userId,
   currentPhase,
+  currentRound,
   roleState,
   roleDesign,
   players
@@ -55,7 +57,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
     useProtectionPotion,
     useAttackPotion,
     loading: potionLoading
-  } = useWitchPotionManager(roomId, gameStateId, userId);
+  } = useWitchPotionManager(gameStateId, userId, currentRound || 1);
   
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;
@@ -64,7 +66,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   const canUseSkill = canUseSkillInGameState(
     roleDesign?.skill_effects as any || {},
     roleState?.role_status || 1,
-    currentPhase,
+    Number(currentPhase),
     roleDesign?.skill_name
   );
 
