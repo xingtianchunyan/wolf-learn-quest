@@ -57,14 +57,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
-    roleDesign?.skill_effects as Record<string, any> || {},
+    (roleDesign?.skill_effects as any) || {},
     roleState?.role_status || 1,
     Number(currentPhase),
     roleDesign?.skill_name
   );
 
   // 获取技能效果类型
-  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects as Record<string, any> || {});
+  const skillEffectTypes = getSkillEffectTypes((roleDesign?.skill_effects as any) || {});
   
   // 获取可选目标（排除自己和已死亡的玩家）
   const availableTargets = players.filter(player => 
