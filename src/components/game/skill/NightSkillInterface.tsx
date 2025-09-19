@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull, CheckCircle, XCircle, Eye, Moon } from 'lucide-react';
+import { Target, Clock, Zap, Shield, Skull, Eye, Moon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
-import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
 import WitchPotionInterface from './WitchPotionInterface';
-import SeerInvestigationInterface from './SeerInvestigationInterface';
-import WolfKillInterface from './WolfKillInterface';
-import HunterRevengeInterface from './HunterRevengeInterface';
-import GuardProtectionInterface from './GuardProtectionInterface';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -55,8 +49,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   const {
     potionStatus,
     useProtectionPotion,
-    useAttackPotion,
-    loading: potionLoading
+    useAttackPotion
   } = useWitchPotionManager(gameStateId, userId, currentRound || 1);
   
   // 检查是否是夜晚阶段
@@ -64,14 +57,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
-    roleDesign?.skill_effects as any || {},
+    roleDesign?.skill_effects as Record<string, any> || {},
     roleState?.role_status || 1,
     Number(currentPhase),
     roleDesign?.skill_name
   );
 
   // 获取技能效果类型
-  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects as any || {});
+  const skillEffectTypes = getSkillEffectTypes(roleDesign?.skill_effects as Record<string, any> || {});
   
   // 获取可选目标（排除自己和已死亡的玩家）
   const availableTargets = players.filter(player => 
@@ -101,7 +94,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
     const result = await useSkillEnhanced(
       roleDesign?.skill_name as string || 'unknown',
       selectedTarget || undefined,
-      skillData as Record<string, any>,
+      skillData,
       roleState,
       roleDesign,
       currentPhase
@@ -115,7 +108,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 
   // 检查技能是否需要目标
   const needsTarget = () => {
-    const skillEffects = roleDesign?.skill_effects as any;
+    const skillEffects = roleDesign?.skill_effects as Record<string, any>;
     const targetTypes = skillEffects?.target_type || [];
     return targetTypes.includes('player') || targetTypes.includes('other_player');
   };
@@ -162,12 +155,8 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   if (isWitch) {
     return (
       <WitchPotionInterface
-        onSavePlayer={(playerId) => {
-          useProtectionPotion(playerId);
-        }}
-        onKillPlayer={(playerId) => {
-          useAttackPotion(playerId);
-        }}
+        onSavePlayer={useProtectionPotion}
+        onKillPlayer={useAttackPotion}
         availablePlayers={availableTargets}
         hasPoisonPotion={potionStatus.canUseAttack}
         hasAntidotePotion={potionStatus.canUseProtection}
@@ -274,7 +263,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-werewolf-purple">当前效果</h4>
             <div className="space-y-1">
-              {userSkillEffects.map((effect, index) => (
+              {userSkillEffects.map((effect) => (
                 <div key={effect.id} className="flex items-center justify-between p-2 bg-blue-500/10 border border-blue-500/30 rounded text-xs">
                   <span className="text-blue-300">
                     {effect.effect_applied?.effect_type || '未知效果'}
