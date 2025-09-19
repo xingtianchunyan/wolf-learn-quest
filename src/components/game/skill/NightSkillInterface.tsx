@@ -39,7 +39,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillConfirmation, setSkillConfirmation] = useState(false);
   const { 
-    useSkillEnhanced, 
+    useSkillEnhanced: executeSkill, 
     loading, 
     skillUses, 
     skillTargets 
@@ -57,6 +57,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (roleDesign?.skill_effects as any) || {},
     roleState?.role_status || 1,
     Number(currentPhase),
@@ -64,6 +65,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   );
 
   // 获取技能效果类型
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const skillEffectTypes = getSkillEffectTypes((roleDesign?.skill_effects as any) || {});
   
   // 获取可选目标（排除自己和已死亡的玩家）
@@ -91,7 +93,7 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
       confirmation: skillConfirmation
     };
 
-    const result = await useSkillEnhanced(
+    const result = await executeSkill(
       roleDesign?.skill_name as string || 'unknown',
       selectedTarget || undefined,
       skillData,
@@ -108,7 +110,8 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
 
   // 检查技能是否需要目标
   const needsTarget = () => {
-    const skillEffects = roleDesign?.skill_effects as Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const skillEffects = roleDesign?.skill_effects as any;
     const targetTypes = skillEffects?.target_type || [];
     return targetTypes.includes('player') || targetTypes.includes('other_player');
   };
