@@ -13,6 +13,7 @@ import SeerInvestigationInterface from './SeerInvestigationInterface';
 import WolfKillInterface from './WolfKillInterface';
 import HunterRevengeInterface from './HunterRevengeInterface';
 import GuardProtectionInterface from './GuardProtectionInterface';
+import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface NightSkillInterfaceProps {
@@ -47,6 +48,14 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
     skillUses, 
     skillTargets 
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
+  
+  // 女巫魔药管理钩子
+  const {
+    potionStatus,
+    useProtectionPotion,
+    useAttackPotion,
+    loading: potionLoading
+  } = useWitchPotionManager(roomId, gameStateId, userId);
   
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;
@@ -141,6 +150,26 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
           <p className="text-sm text-gray-400">夜晚技能只能在夜晚阶段使用</p>
         </CardContent>
       </Card>
+    );
+  }
+
+  // 检查是否是女巫角色
+  const isWitch = roleDesign?.skill_name === 'witch_potion' || roleDesign?.role_name === '女巫';
+
+  // 如果是女巫，使用专门的女巫魔药界面
+  if (isWitch) {
+    return (
+      <WitchPotionInterface
+        onSavePlayer={(playerId) => {
+          useProtectionPotion(playerId);
+        }}
+        onKillPlayer={(playerId) => {
+          useAttackPotion(playerId);
+        }}
+        availablePlayers={availableTargets}
+        hasPoisonPotion={potionStatus.canUseAttack}
+        hasAntidotePotion={potionStatus.canUseProtection}
+      />
     );
   }
 

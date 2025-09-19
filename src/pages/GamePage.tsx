@@ -7,6 +7,8 @@ import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel
 import GameInfoPanel from '@/components/game/GameInfoPanel';
 import VotingPanel from '@/components/voting/VotingPanel';
 import GameSkillPanel from '@/components/game/GameSkillPanel';
+import { RoleSpecificSkills } from '@/components/game/skill/RoleSpecificSkills';
+import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { Card, CardContent } from '@/components/ui/card';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -60,6 +62,15 @@ const GamePage = () => {
   const currentUserId = currentUser!.id; // 此时已确保用户已登录
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
   const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
+  
+  // 技能系统钩子
+  const {
+    skillUses,
+    loading: skillLoading,
+    useSkillEnhanced,
+    getUserSkillData,
+    canUseSkill
+  } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
   
   // Check current phase to determine which system to show
   // 白天(1)和傍晚(2)阶段显示投票系统，夜晚(3)和黎明(4)阶段显示技能系统
@@ -149,21 +160,43 @@ const GamePage = () => {
                    )}
                   
                    {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
-                     <GameSkillPanel
-                       roomId={roomId}
+                     <RoleSpecificSkills
+                       roleName={currentRoleDesign.role_name}
+                       skillEffects={currentRoleDesign.skill_effects}
+                       roleAttributes={currentRoleDesign.role_attributes}
+                       canUseSkill={canUseSkill(
+                         currentRoleDesign.skill_name || '',
+                         currentRoleState,
+                         currentRoleDesign,
+                         gameState.currentPhase,
+                         selectedTargetId,
+                         gameState.currentRound
+                       )}
+                       onUseSkill={async (skillData) => {
+                         await useSkillEnhanced(
+                           currentRoleDesign.skill_name || '',
+                           skillData.targetId,
+                           skillData,
+                           currentRoleState,
+                           currentRoleDesign,
+                           gameState.currentPhase,
+                           gameState.currentRound
+                         );
+                         setSelectedTargetId('');
+                       }}
+                       availableTargets={players
+                         .filter(p => p.userId !== currentUserId && 
+                                     roleStates.find(rs => rs.user_id === p.userId)?.role_status !== 4)
+                         .map(p => ({
+                           userId: p.userId || p.id,
+                           name: p.name || '未知玩家',
+                           roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
+                         }))}
+                       currentPhase={gameState.currentPhase}
+                       userSkillUses={skillUses}
                        gameStateId={gameState.id}
                        userId={currentUserId}
-                       currentPhase={gameState.currentPhase}
-                       roleState={currentRoleState}
-                       roleDesign={currentRoleDesign}
-                       players={players.map(p => ({
-                         userId: p.userId || p.id,
-                         name: p.name || '未知玩家',
-                         roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
-                       }))}
                        currentRound={gameState.currentRound}
-                       selectedTargetId={selectedTargetId}
-                       onTargetSelect={setSelectedTargetId}
                      />
                    )}
                   
