@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
 
 // 处理投票结果的主函数
 export const handleVoteResult = async (
