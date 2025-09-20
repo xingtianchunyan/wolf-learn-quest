@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/table';
 import { Gavel, Calculator, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useVotingSystem } from '@/hooks/useVotingSystem';
-import { useEnhancedVotingHandler } from '@/hooks/useEnhancedVotingHandler';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
@@ -47,16 +46,14 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
   const { 
     currentSession, 
     votes, 
+    results,
     getVotingSummary, 
     getVotersForTarget,
     calculateResults,
+    processEnhancedVotingResult,
+    calculateAndProcessResults,
     loading: votesLoading 
   } = useVotingSystem(gameStateId, roomId);
-  
-  const { 
-    processEnhancedVotingResult, 
-    calculateAndProcessResults 
-  } = useEnhancedVotingHandler(gameStateId, roomId);
   
   const { toast } = useToast();
 
