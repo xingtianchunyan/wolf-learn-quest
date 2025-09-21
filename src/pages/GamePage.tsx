@@ -30,6 +30,10 @@ const GamePage = () => {
   // 目标选择状态 - 必须在所有条件检查之前
   const [selectedTargetId, setSelectedTargetId] = useState<string>('');
   
+  // 权限和认证检查 - 移动到最前面
+  const { currentUser, requireAuth } = useAuth();
+  const { isJudge, isRoomParticipant, loading: permissionsLoading } = usePermissions(roomId);
+  
   const { gameState } = useGameState(roomId!);
   useEveningRefresh(gameState);
   // 自动处理濒死状态转换
@@ -41,9 +45,19 @@ const GamePage = () => {
   // 自动在游戏结束后迁移到新房间
   useRoomTransition(roomId, gameState?.status);
   
-  // 权限和认证检查
-  const { currentUser, requireAuth } = useAuth();
-  const { isJudge, isRoomParticipant, loading: permissionsLoading } = usePermissions(roomId);
+  // Get current user's role information - 只有登录用户才能获取
+  const currentUserId = currentUser?.id || '';
+  const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
+  const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
+  
+  // 技能系统钩子 - 必须在所有条件返回之前调用
+  const {
+    skillUses,
+    loading: skillLoading,
+    useSkillEnhanced,
+    getUserSkillData,
+    canUseSkill
+  } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
   
   // 要求用户登录
   if (!requireAuth()) {
@@ -57,20 +71,6 @@ const GamePage = () => {
       </PageLayout>
     );
   }
-
-  // Get current user's role information - 只有登录用户才能获取
-  const currentUserId = currentUser!.id; // 此时已确保用户已登录
-  const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
-  const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
-  
-  // 技能系统钩子
-  const {
-    skillUses,
-    loading: skillLoading,
-    useSkillEnhanced,
-    getUserSkillData,
-    canUseSkill
-  } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
   
   // Check current phase to determine which system to show
   // 白天(1)和傍晚(2)阶段显示投票系统，夜晚(3)和黎明(4)阶段显示技能系统
