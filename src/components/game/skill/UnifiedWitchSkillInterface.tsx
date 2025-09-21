@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Heart, Skull, Target } from 'lucide-react';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 
-interface WitchSkillInterfaceProps {
+interface UnifiedWitchSkillInterfaceProps {
   gameStateId: string;
   userId: string;
   currentRound: number;
@@ -16,7 +16,7 @@ interface WitchSkillInterfaceProps {
   availableTargets: Array<{ userId: string; name: string; roleStatus: number }>;
 }
 
-export const WitchSkillInterface: React.FC<WitchSkillInterfaceProps> = ({
+export const UnifiedWitchSkillInterface: React.FC<UnifiedWitchSkillInterfaceProps> = ({
   gameStateId,
   userId,
   currentRound,

@@ -6,7 +6,7 @@ import { Target, Clock, Zap, Shield, Skull, Eye, Moon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
-import WitchPotionInterface from './WitchPotionInterface';
+import { UnifiedWitchSkillInterface } from './UnifiedWitchSkillInterface';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -154,15 +154,17 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
   // 检查是否是女巫角色
   const isWitch = roleDesign?.skill_name === 'witch_potion' || roleDesign?.role_name === '女巫';
 
-  // 如果是女巫，使用专门的女巫魔药界面
+  // 如果是女巫，使用统一的女巫技能界面
   if (isWitch) {
     return (
-      <WitchPotionInterface
-        onSavePlayer={useProtectionPotion}
-        onKillPlayer={useAttackPotion}
-        availablePlayers={availableTargets}
-        hasPoisonPotion={potionStatus.canUseAttack}
-        hasAntidotePotion={potionStatus.canUseProtection}
+      <UnifiedWitchSkillInterface
+        gameStateId={gameStateId}
+        userId={userId}
+        currentRound={currentRound}
+        currentPhase={currentPhase}
+        canUseSkill={true}
+        onUseSkill={() => {}}
+        availableTargets={availableTargets}
       />
     );
   }

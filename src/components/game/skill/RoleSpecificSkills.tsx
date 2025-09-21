@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { WitchSkillInterface } from './WitchSkillInterface';
+import { UnifiedWitchSkillInterface } from './UnifiedWitchSkillInterface';
 import { 
   Skull, 
   Shield, 
@@ -216,10 +216,10 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </Card>
   );
 
-  // 女巫技能 - 使用专门的女巫技能接口组件
+  // 女巫技能 - 使用统一的女巫技能接口组件
   const WitchSkill = () => {
     return (
-      <WitchSkillInterface
+      <UnifiedWitchSkillInterface
         gameStateId={gameStateId}
         userId={userId}
         currentRound={currentRound}

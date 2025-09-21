@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Target, Clock, Zap, Shield, Search, Skull, AlertCircle } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
-import { validateSkillUsageSimplified, getSkillUsageSuggestion } from '@/utils/skillSystemValidationEnhanced';
+import { validateSkillUsageSimplified, getSkillUsageSuggestion } from '@/utils/skillSystemValidation';
 import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
 import type { Tables } from '@/integrations/supabase/types';
 
