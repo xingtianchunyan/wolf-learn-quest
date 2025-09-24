@@ -7,8 +7,8 @@ import { BookOpen, Upload, File, Database, Sparkles, AlertCircle, CheckCircle, L
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
-import QuestionBankDialog from '../QuestionBankDialog';
-import QuestionBankTooltip from '../QuestionBankTooltip';
+import QuestionBankDialog from './QuestionBankDialog';
+import QuestionBankTooltip from './QuestionBankTooltip';
 
 const logger = createLogger('QuestionBankPanel');
 

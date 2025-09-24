@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Question } from './types/questionBank';
+import { Question } from '../types/questionBank';
 
 interface QuestionPreviewProps {
   questions: Question[];

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Database, Shuffle, X } from 'lucide-react';
-import { QuestionSource } from './types/questionBank';
+import { QuestionSource } from '../types/questionBank';
 
 interface QuestionSourceListProps {
   questionSources: QuestionSource[];

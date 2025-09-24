@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Play, Trash2, RefreshCw } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useSkillEffectAutoProcessor } from '@/hooks/useSkillEffectAutoProcessor';
-import SkillUsePanel from '../SkillUsePanel';
+import SkillUsePanel from './SkillUsePanel';
 import SkillEffectsDisplay from '../displays/SkillEffectsDisplay';
 import type { Tables } from '@/integrations/supabase/types';
 
