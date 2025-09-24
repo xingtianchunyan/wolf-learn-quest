@@ -7,10 +7,10 @@ import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
-import StudentTimerDisplay from './student/StudentTimerDisplay';
-import StudentQuestionDisplay from './student/StudentQuestionDisplay';
-import StudentPreviousQuestionDisplay from './student/StudentPreviousQuestionDisplay';
-import StudentQuestionNotFound from './student/StudentQuestionNotFound';
+import StudentTimerDisplay from '../student/StudentTimerDisplay';
+import StudentQuestionDisplay from '../student/StudentQuestionDisplay';
+import StudentPreviousQuestionDisplay from '../student/StudentPreviousQuestionDisplay';
+import StudentQuestionNotFound from '../student/StudentQuestionNotFound';
 
 interface Question {
   id: string;

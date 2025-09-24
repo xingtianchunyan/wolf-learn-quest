@@ -331,3 +331,5 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
     </Card>
   );
 };
+
+export default SkillConflictResolver;

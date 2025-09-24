@@ -4,7 +4,7 @@ import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
-import PlayerStatusManager from '@/components/game/PlayerStatusManager';
+import PlayerStatusManager from '@/components/game/panels/PlayerStatusManager';
 
 interface Player {
   id: string;

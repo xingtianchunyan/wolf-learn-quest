@@ -12,7 +12,7 @@ interface VotingSystemManagerProps {
   isJudge: boolean; // 移除默认值，强制上层传入
 }
 
-export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
+const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
   roomId,
   isJudge
 }) => {
@@ -75,3 +75,5 @@ export const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({
     </div>
   );
 };
+
+export default VotingSystemManager;

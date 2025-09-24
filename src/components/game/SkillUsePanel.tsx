@@ -7,7 +7,7 @@ import { Loader2, Target, Clock, Zap, Shield, Search, Skull, AlertCircle } from 
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority } from '@/utils/skillSystemHelpers';
 import { validateSkillUsageSimplified, getSkillUsageSuggestion } from '@/utils/skillSystemValidation';
-import { RoleSpecificSkills } from './skill/RoleSpecificSkills';
+import { RoleSpecificSkills } from './interfaces/RoleSpecificSkills';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface SkillUsePanelProps {

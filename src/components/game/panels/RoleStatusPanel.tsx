@@ -16,7 +16,7 @@ import {
   canUseSkillWithCurrentStatus
 } from '@/utils/roleStateHelpers';
 import { canUseSkillInPhase, getSkillEffectTypes } from '@/utils/skillSystemHelpers';
-import RoleSkillInfo from './RoleSkillInfo';
+import RoleSkillInfo from '../displays/RoleSkillInfo';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface RoleStatusPanelProps {

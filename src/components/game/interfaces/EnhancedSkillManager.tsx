@@ -374,3 +374,5 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
     </Card>
   );
 };
+
+export default EnhancedSkillManager;

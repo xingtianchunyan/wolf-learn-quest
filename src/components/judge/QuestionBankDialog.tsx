@@ -21,8 +21,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import QuestionSourceList from './QuestionSourceList';
 import QuestionPreview from './QuestionPreview';
-import ManualQuestionEditor from './ManualQuestionEditor';
-import QuestionOrderEditor from './QuestionOrderEditor';
+import ManualQuestionEditor from './management/ManualQuestionEditor';
+import QuestionOrderEditor from './management/QuestionOrderEditor';
 import { Question, QuestionSource, ManualQuestionForm } from './types/questionBank';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 

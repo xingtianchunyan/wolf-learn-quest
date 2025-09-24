@@ -409,3 +409,5 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
     </div>
   );
 };
+
+export default SkillSystemDashboard;

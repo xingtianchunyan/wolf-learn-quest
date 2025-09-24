@@ -4,7 +4,7 @@ import { useRoleStates } from '@/hooks/useRoleStates';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { canSeeTargetRole, canAccessWerewolfChannel, isDemonRole, isHunterRole } from '@/utils/roleUtils';
-import PlayerStatusManager from './PlayerStatusManager';
+import PlayerStatusManager from '../panels/PlayerStatusManager';
 
 interface Player {
   id: string;

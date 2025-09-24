@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { GamepadIcon, Clock, Play, Pause } from 'lucide-react';
-import GamePlayerStatusDisplay from './GamePlayerStatusDisplay';
+import GamePlayerStatusDisplay from '../displays/GamePlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { supabase } from '@/integrations/supabase/client';

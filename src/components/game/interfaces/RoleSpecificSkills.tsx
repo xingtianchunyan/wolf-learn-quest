@@ -375,3 +375,5 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     </div>
   );
 };
+
+export default RoleSpecificSkills;

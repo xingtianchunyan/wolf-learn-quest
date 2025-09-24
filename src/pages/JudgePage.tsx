@@ -1,11 +1,11 @@
 
 import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import EnhancedGameStateDisplay from '@/components/judge/EnhancedGameStateDisplay';
+import EnhancedGameStateDisplay from '@/components/judge/monitoring/EnhancedGameStateDisplay';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
-import TeacherSystemPanel from '@/components/judge/TeacherSystemPanel';
-import AnswerRecordPanel from '@/components/judge/AnswerRecordPanel';
-import JudgeActionPanel from '@/components/judge/JudgeActionPanel';
+import TeacherSystemPanel from '@/components/judge/management/TeacherSystemPanel';
+import AnswerRecordPanel from '@/components/judge/management/AnswerRecordPanel';
+import JudgeActionPanel from '@/components/judge/management/JudgeActionPanel';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePermissions } from '@/contexts/PermissionContext';

@@ -164,3 +164,5 @@ export const UnifiedWitchSkillInterface: React.FC<UnifiedWitchSkillInterfaceProp
     </>
   );
 };
+
+export default UnifiedWitchSkillInterface;

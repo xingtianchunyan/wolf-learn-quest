@@ -285,3 +285,5 @@ export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({
     </Card>
   );
 };
+
+export default NightSkillInterface;

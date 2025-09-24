@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import GameStateDisplay from '@/components/game/GameStateDisplay';
-import StudentSystemPanel from '@/components/game/StudentSystemPanel';
-import StudentAnswerRecordPanel from '@/components/game/StudentAnswerRecordPanel';
-import GameInfoPanel from '@/components/game/GameInfoPanel';
+import GameStateDisplay from '@/components/game/displays/GameStateDisplay';
+import StudentSystemPanel from '@/components/game/panels/StudentSystemPanel';
+import StudentAnswerRecordPanel from '@/components/game/panels/StudentAnswerRecordPanel';
+import GameInfoPanel from '@/components/game/panels/GameInfoPanel';
 import VotingPanel from '@/components/voting/VotingPanel';
-import GameSkillPanel from '@/components/game/GameSkillPanel';
-import { RoleSpecificSkills } from '@/components/game/skill/RoleSpecificSkills';
+import GameSkillPanel from '@/components/game/panels/GameSkillPanel';
+import { RoleSpecificSkills } from '@/components/game/interfaces/RoleSpecificSkills';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { Card, CardContent } from '@/components/ui/card';
 import { useParams } from 'react-router-dom';
@@ -171,8 +171,8 @@ const GamePage = () => {
                          gameState.currentPhase,
                          selectedTargetId,
                          gameState.currentRound
-                       )}
-                       onUseSkill={async (skillData) => {
+                        )}
+                        onUseSkill={async (skillData: any) => {
                          await useSkillEnhanced(
                            currentRoleDesign.skill_name || '',
                            skillData.targetId,

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GripVertical } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Question } from './types/questionBank';
+import { Question } from '../types/questionBank';
 import { Button } from '@/components/ui/button';
 
 interface QuestionOrderEditorProps {

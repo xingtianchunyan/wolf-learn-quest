@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import RoomInfoCard from '@/components/room/RoomInfoCard';
-import QuestionBankPanel from './QuestionBankPanel';
-import PlayerStatusPanel from './PlayerStatusPanel';
+import QuestionBankPanel from './management/QuestionBankPanel';
+import PlayerStatusPanel from './management/PlayerStatusPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 

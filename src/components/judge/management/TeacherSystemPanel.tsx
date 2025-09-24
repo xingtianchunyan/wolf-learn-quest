@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Clock } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
-import { Question } from './types/questionBank';
+import { Question } from '../types/questionBank';
 import { useGameState } from '@/hooks/useGameState';
 
 interface TeacherSystemPanelProps {

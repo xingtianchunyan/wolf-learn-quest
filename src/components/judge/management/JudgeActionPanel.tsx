@@ -13,7 +13,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, RefreshCw } from 'lucide-react';
-import PreparationPhaseDialog from './PreparationPhaseDialog';
+import PreparationPhaseDialog from '../PreparationPhaseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
