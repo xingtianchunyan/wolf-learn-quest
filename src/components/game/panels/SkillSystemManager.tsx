@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Play, Trash2, RefreshCw } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useSkillEffectAutoProcessor } from '@/hooks/useSkillEffectAutoProcessor';
+import { devLog } from '@/lib/debugUtils';
 import SkillUsePanel from './SkillUsePanel';
 import SkillEffectsDisplay from '../displays/SkillEffectsDisplay';
 import type { Tables } from '@/integrations/supabase/types';
@@ -52,9 +53,9 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
   const handleProcessEffects = async () => {
     try {
       const processed = await manualProcess();
-      console.log(`处理了 ${processed} 个技能效果`);
+      devLog.info(`处理了 ${processed} 个技能效果`, { processed });
     } catch (error) {
-      console.error('处理技能效果失败:', error);
+      devLog.error('处理技能效果失败', error);
     }
   };
 
@@ -63,13 +64,13 @@ const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({
       const { error } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
       
       if (error) {
-        console.error('清理过期效果失败:', error);
+        devLog.error('清理过期效果失败', error);
         return;
       }
       
-      console.log('成功清理过期技能效果');
+      devLog.info('成功清理过期技能效果');
     } catch (error) {
-      console.error('清理过期效果异常:', error);
+      devLog.error('清理过期效果异常', error);
     }
   };
 
