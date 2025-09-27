@@ -1,5 +1,5 @@
 // 增强的技能面板组件 - 基于新的技能系统设计
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +43,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
 }) => {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [_showDetails, _setShowDetails] = useState(false);
+  const [suggestion, setSuggestion] = useState<any>(null);
 
   const {
     skillUses: _skillUses,
@@ -70,14 +71,26 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
   }, [roleDesign]);
 
   // 获取技能使用建议
-  const suggestion = useMemo(() => {
-    return getSkillSuggestion(
-      roleState,
-      roleDesign,
-      currentPhase,
-      currentRound,
-      selectedTarget
-    );
+  useEffect(() => {
+    const fetchSuggestion = async () => {
+      try {
+        const result = await getSkillSuggestion(
+          roleState,
+          roleDesign,
+          currentPhase,
+          currentRound,
+          selectedTarget
+        );
+        setSuggestion(result);
+      } catch (error) {
+        console.error('获取技能建议失败:', error);
+        setSuggestion(null);
+      }
+    };
+
+    if (roleState && roleDesign) {
+      fetchSuggestion();
+    }
   }, [getSkillSuggestion, roleState, roleDesign, currentPhase, currentRound, selectedTarget]);
 
   // 获取用户技能数据

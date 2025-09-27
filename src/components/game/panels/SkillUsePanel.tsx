@@ -138,7 +138,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
     if (!roleDesign?.skill_name) return;
 
     // 前端验证 - 避免无效请求
-    const frontendValidation = validateSkillFrontend?.(
+    const frontendValidation = await validateSkillFrontend?.(
       roleDesign.skill_name,
       roleState,
       roleDesign,

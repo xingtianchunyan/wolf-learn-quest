@@ -128,13 +128,13 @@ export const useSkillValidation = (
   }, [gameStateId, userId, roomId, toast, validateSkillFrontend]);
 
   // 获取技能使用建议
-  const getSkillSuggestion = useCallback((
+  const getSkillSuggestion = useCallback(async (
     roleState?: any,
     roleDesign?: any,
     currentPhase?: number,
     currentRound?: number,
     targetUserId?: string
-  ): SkillSuggestion => {
+  ): Promise<SkillSuggestion> => {
     if (!gameStateId || !userId) {
       return {
         canUse: false,
@@ -155,7 +155,7 @@ export const useSkillValidation = (
       targetUserId
     };
 
-    return EnhancedSkillService.getSkillUsageSuggestion(context);
+    return await EnhancedSkillService.getSkillUsageSuggestion(context);
   }, [gameStateId, userId, roomId]);
 
   // 检查技能可用性

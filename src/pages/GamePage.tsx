@@ -164,14 +164,7 @@ const GamePage = () => {
                        roleName={currentRoleDesign.role_name}
                        skillEffects={currentRoleDesign.skill_effects}
                        roleAttributes={currentRoleDesign.role_attributes}
-                       canUseSkill={canUseSkill(
-                         currentRoleDesign.skill_name || '',
-                         currentRoleState,
-                         currentRoleDesign,
-                         gameState.currentPhase,
-                         selectedTargetId,
-                         gameState.currentRound
-                        )}
+                        canUseSkill={true}
                         onUseSkill={async (skillData: any) => {
                          await useSkillEnhanced(
                            currentRoleDesign.skill_name || '',
