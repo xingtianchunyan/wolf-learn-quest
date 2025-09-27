@@ -1,4 +1,4 @@
-// 增强的技能服务 - 实现完整的技能逻辑和安全验证
+// 增强的技能服务 - 使用统一验证和错误处理
 import { supabase } from '@/integrations/supabase/client';
 import { createLogger } from '@/lib/logger';
 import { 
@@ -8,13 +8,12 @@ import {
   resolveSkillConflicts,
   type SkillConfig 
 } from '@/utils/skillMappingConfig';
-import {
-  validateSkillUseLimits,
-  validateRoleStatus,
-  validateSkillPhase,
-  validateSkillTarget,
-  createSkillValidationError
-} from '@/utils/skillSystemValidation';
+import { validateSkillUnified } from '@/utils/skillValidationRules';
+import { 
+  SkillErrorHandler, 
+  SkillErrorType, 
+  handleSkillErrors 
+} from '@/utils/skillErrorHandler';
 
 export class EnhancedSkillServiceError extends Error {
   code?: string;
@@ -146,13 +145,13 @@ export class EnhancedSkillService {
   /**
    * 验证技能使用条件 - 使用统一验证模块
    */
-  public static validateSkillUsage(context: SkillUsageContext): SkillValidationResult {
-    const { roleState, roleDesign, currentPhase, targetUserId } = context;
+  public static async validateSkillUsage(context: SkillUsageContext): Promise<SkillValidationResult> {
+    const { userId, gameStateId, currentPhase, targetUserId } = context;
     
     // 获取技能配置
-    const skillConfig = this.getRoleSkillConfig(roleDesign);
+    const skillConfig = this.getRoleSkillConfig(context.roleDesign);
     if (!skillConfig) {
-      logger.warn('技能配置获取失败', { roleDesign });
+      logger.warn('技能配置获取失败', { roleDesign: context.roleDesign });
       return {
         isValid: false,
         reason: '未找到技能配置',
@@ -163,51 +162,32 @@ export class EnhancedSkillService {
     logger.debug('开始验证技能使用条件', { 
       skillName: skillConfig.chineseName,
       currentPhase,
-      roleStatus: roleState?.role_status
+      roleStatus: context.roleState?.role_status
     });
 
-    // 验证角色状态
-    const statusValidation = validateRoleStatus(skillConfig.requiredStatus, roleState?.role_status || 1);
-    if (!statusValidation.valid) {
-      return {
-        isValid: false,
-        reason: statusValidation.reason!,
-        suggestedAction: `需要状态：${skillConfig.requiredStatus.join(' 或 ')}`
-      };
-    }
+    // 使用统一的验证函数
+    const validation = await validateSkillUnified(
+      skillConfig.englishName,
+      userId,
+      gameStateId,
+      currentPhase,
+      { 
+        targetUserId,
+        ...(context.additionalData || {})
+      }
+    );
 
-    // 验证使用阶段
-    const phaseValidation = validateSkillPhase(skillConfig.phase, currentPhase);
-    if (!phaseValidation.valid) {
-      return {
-        isValid: false,
-        reason: phaseValidation.reason!,
-        suggestedAction: `需要在 "${skillConfig.phase}" 阶段使用`
-      };
-    }
+    logger.debug('技能验证结果', { 
+      skillName: skillConfig.chineseName,
+      valid: validation.valid,
+      reason: validation.reason
+    });
 
-    // 验证目标选择
-    const targetValidation = validateSkillTarget(skillConfig.targetType, targetUserId);
-    if (!targetValidation.valid) {
-      return {
-        isValid: false,
-        reason: targetValidation.reason!,
-        suggestedAction: skillConfig.targetType === 'single' ? '请先选择一个目标玩家' : '取消目标选择'
-      };
-    }
-
-    // 验证使用次数限制
-    const useLimitValidation = validateSkillUseLimits(skillConfig, roleState, context.currentRound, context.currentPhase);
-    if (!useLimitValidation.canUse) {
-      return {
-        isValid: false,
-        reason: useLimitValidation.reason!,
-        suggestedAction: skillConfig.usageLimit === 'unlimited' ? '每轮只能使用一次' : '技能使用次数已用完'
-      };
-    }
-
-    logger.debug('技能验证通过', { skillName: skillConfig.chineseName });
-    return { isValid: true };
+    return {
+      isValid: validation.valid,
+      reason: validation.reason,
+      suggestedAction: validation.valid ? undefined : '请检查技能使用条件'
+    };
   }
 
   /**
@@ -254,18 +234,25 @@ export class EnhancedSkillService {
   }
 
   /**
-   * 使用技能 - 增强版本
+   * 使用技能 - 增强版本，带错误处理
    */
   public static async useSkillEnhanced(context: SkillUsageContext): Promise<string> {
     await this.validateUserAuth();
 
     // 验证技能使用条件
-    const validation = this.validateSkillUsage(context);
+    const validation = await this.validateSkillUsage(context);
     if (!validation.isValid) {
-      throw new EnhancedSkillServiceError(
+      const skillError = SkillErrorHandler.createError(
+        SkillErrorType.VALIDATION_ERROR,
+        'VALIDATION_FAILED',
         validation.reason || '技能使用条件不满足',
-        'VALIDATION_FAILED'
+        validation,
+        this.getRoleSkillConfig(context.roleDesign)?.chineseName,
+        context.userId,
+        context.gameStateId
       );
+      
+      throw skillError;
     }
 
     const skillConfig = this.getRoleSkillConfig(context.roleDesign);
@@ -273,43 +260,63 @@ export class EnhancedSkillService {
       throw new EnhancedSkillServiceError('技能配置不存在', 'CONFIG_NOT_FOUND');
     }
 
-    // 检查技能冲突
-    const activeSkills = await this.getActiveSkills(context.gameStateId, context.currentRound);
-    const conflictCheck = this.checkForConflicts([skillConfig], activeSkills);
-    
-    if (conflictCheck.hasConflicts) {
-      // 记录冲突但继续执行，让系统后续解决冲突
-      
-    }
+    try {
+      // 调用增强版技能使用函数，使用统一验证
+      const { data, error } = await supabase.rpc('use_skill_enhanced', {
+        p_game_state_id: context.gameStateId,
+        p_skill_name: skillConfig.englishName,
+        p_target_user_id: context.targetUserId,
+        p_skill_data: {
+          ...(context.additionalData || {}),
+          skill_config_id: skillConfig.id,
+          chinese_name: skillConfig.chineseName,
+          priority: skillConfig.priority,
+          // 女巫魔药的特殊处理
+          potionType: context.additionalData?.potionType,
+          effectType: context.additionalData?.effectType
+        }
+      });
 
-    // 调用增强版技能使用函数，确保同步到所有相关表
-    const { data, error } = await supabase.rpc('use_skill_enhanced', {
-      p_game_state_id: context.gameStateId,
-      p_skill_name: skillConfig.englishName,
-      p_target_user_id: context.targetUserId,
-      p_skill_data: {
-        ...(context.additionalData || {}),
-        skill_config_id: skillConfig.id,
-        chinese_name: skillConfig.chineseName,
-        priority: skillConfig.priority,
-        // 女巫魔药的特殊处理
-        potionType: context.additionalData?.potionType,
-        effectType: context.additionalData?.effectType
+      if (error) {
+        const skillError = SkillErrorHandler.createError(
+          SkillErrorType.EXECUTION_ERROR,
+          error.code || 'EXECUTION_FAILED',
+          `技能使用失败: ${error.message}`,
+          error,
+          skillConfig.chineseName,
+          context.userId,
+          context.gameStateId
+        );
+        
+        throw skillError;
       }
-    });
 
-    if (error) {
-      throw new EnhancedSkillServiceError(
-        `技能使用失败: ${error.message}`,
-        error.code,
-        skillConfig.id
-      );
+      logger.info('技能使用成功', {
+        skillName: skillConfig.chineseName,
+        userId: context.userId,
+        gameStateId: context.gameStateId,
+        targetUserId: context.targetUserId
+      });
+
+      return data;
+    } catch (error: any) {
+      // 网络错误处理
+      if (error.name === 'NetworkError' || error.message?.includes('fetch')) {
+        const networkError = SkillErrorHandler.createError(
+          SkillErrorType.NETWORK_ERROR,
+          'NETWORK_ERROR',
+          '网络连接失败',
+          error,
+          skillConfig.chineseName,
+          context.userId,
+          context.gameStateId
+        );
+        
+        throw networkError;
+      }
+      
+      throw error;
     }
-
-    // 更新角色状态中的技能使用计数
-    await this.updateSkillUsageCount(context.userId, context.gameStateId, skillConfig.id, context.currentRound);
-
-    return data;
   }
 
   /**
@@ -594,13 +601,13 @@ export class EnhancedSkillService {
   /**
    * 获取技能使用建议
    */
-  public static getSkillUsageSuggestion(context: SkillUsageContext): {
+  public static async getSkillUsageSuggestion(context: SkillUsageContext): Promise<{
     canUse: boolean;
     suggestion: string;
     priority: 'high' | 'medium' | 'low';
     timing: string;
-  } {
-    const validation = this.validateSkillUsage(context);
+  }> {
+    const validation = await this.validateSkillUsage(context);
     const skillConfig = this.getRoleSkillConfig(context.roleDesign);
     
     if (!validation.isValid || !skillConfig) {

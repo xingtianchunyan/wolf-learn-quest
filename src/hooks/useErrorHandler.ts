@@ -79,7 +79,7 @@ export const useErrorHandler = (): ErrorHandlerReturn => {
         
         // 如果是 Promise，处理异步错误
         if (result instanceof Promise) {
-          return result.catch(error => {
+          return result.catch((error: any): null => {
             handleError(error, options);
             return null;
           });

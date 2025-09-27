@@ -292,7 +292,7 @@ export class SkillErrorHandler {
 export function handleSkillErrors(target: any, propertyName: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
   
-  descriptor.value = async function (...args: any[]) {
+  descriptor.value = async function (...args: any[]): Promise<any> {
     try {
       return await method.apply(this, args);
     } catch (error: any) {

@@ -80,7 +80,7 @@ export const usePlayersRealtime = (roomId: string) => {
                 isReady: player.is_ready || false,
                 isHost: false,
                 isAI: true,
-                userId: undefined, // AI玩家没有userId                
+                userId: undefined as string | undefined, // AI玩家没有userId                
                 role: player.role,
               };
             } else {

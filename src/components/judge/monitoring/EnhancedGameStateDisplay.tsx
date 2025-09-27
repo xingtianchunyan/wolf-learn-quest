@@ -69,8 +69,8 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         role: '',
         status: 'waiting' as const,
         avatar: '',
-        roleImageUrl: null,
-        userId: undefined,
+        roleImageUrl: null as string | null,
+        userId: undefined as string | undefined,
       };
     }
   });

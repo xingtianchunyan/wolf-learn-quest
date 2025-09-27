@@ -22,14 +22,14 @@ export const useSkillValidation = (
   const { toast } = useToast();
 
   // 前端技能验证 - 避免发送无效请求到后端
-  const validateSkillFrontend = useCallback((
+  const validateSkillFrontend = useCallback(async (
     skillName: string,
     roleState?: any,
     roleDesign?: any,
     currentPhase?: number,
     targetUserId?: string,
     currentRound?: number
-  ): { canUse: boolean; reason?: string; suggestion?: string } => {
+  ): Promise<{ canUse: boolean; reason?: string; suggestion?: string }> => {
     if (!gameStateId || !userId) {
       return { canUse: false, reason: '缺少必要的游戏状态或用户信息' };
     }
@@ -45,7 +45,7 @@ export const useSkillValidation = (
       targetUserId
     };
 
-    const validation = EnhancedSkillService.validateSkillUsage(context);
+    const validation = await EnhancedSkillService.validateSkillUsage(context);
     return {
       canUse: validation.isValid,
       reason: validation.reason,
@@ -68,7 +68,7 @@ export const useSkillValidation = (
     }
 
     // 前端预验证 - 避免无效请求
-    const frontendValidation = validateSkillFrontend(
+    const frontendValidation = await validateSkillFrontend(
       skillName,
       roleState,
       roleDesign,
@@ -159,14 +159,14 @@ export const useSkillValidation = (
   }, [gameStateId, userId, roomId]);
 
   // 检查技能可用性
-  const canUseSkill = useCallback((
+  const canUseSkill = useCallback(async (
     skillName: string,
     roleState?: any,
     roleDesign?: any,
     currentPhase?: number,
     targetUserId?: string,
     currentRound?: number
-  ): boolean => {
+  ): Promise<boolean> => {
     if (!gameStateId || !userId) return false;
 
     const context: SkillUsageContext = {
@@ -180,7 +180,7 @@ export const useSkillValidation = (
       targetUserId
     };
 
-    const validation = EnhancedSkillService.validateSkillUsage(context);
+    const validation = await EnhancedSkillService.validateSkillUsage(context);
     return validation.isValid;
   }, [gameStateId, userId, roomId]);
 
