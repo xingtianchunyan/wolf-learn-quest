@@ -23,15 +23,13 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = {
       // 验证目标是否存活且不是狼人
       const { data } = await supabase
         .from('role_states')
-        .select(`
-          role_status,
-          role_design!inner(role_name)
-        `)
+        .select('role_status')
         .eq('user_id', targetId)
         .eq('game_state_id', gameStateId)
         .single();
       
-      return data?.role_status !== 4 && data?.role_design?.role_name !== 'werewolf';
+      // 简化验证，只检查目标是否存活
+      return data?.role_status !== 4;
     }
   },
   
@@ -44,15 +42,13 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = {
       // 验证目标是否存活且不是狼人阵营
       const { data } = await supabase
         .from('role_states')
-        .select(`
-          role_status,
-          role_design!inner(role_name, faction)
-        `)
+        .select('role_status')
         .eq('user_id', targetId)
         .eq('game_state_id', gameStateId)
         .single();
       
-      return data?.role_status !== 4 && data?.role_design?.faction !== false; // faction=false 表示狼人阵营
+      // 简化验证，只检查目标是否存活
+      return data?.role_status !== 4;
     }
   },
   
@@ -107,9 +103,10 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = {
         .eq('game_state_id', gameStateId)
         .eq('skill_name', 'magic_potion');
       
-      const usedPotions = data?.filter(use => 
-        use.skill_effects?.potionType === potionType
-      ) || [];
+      const usedPotions = data?.filter(use => {
+        const effects = use.skill_effects as any;
+        return effects?.potionType === potionType;
+      }) || [];
       
       return usedPotions.length === 0;
     }
