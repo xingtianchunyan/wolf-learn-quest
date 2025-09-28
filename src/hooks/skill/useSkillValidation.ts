@@ -3,6 +3,8 @@ import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { EnhancedSkillService, type SkillUsageContext } from '@/services/enhancedSkillService';
+import { skillCache } from '@/utils/skillCache';
+import { skillBatchProcessor } from '@/utils/skillBatchProcessor';
 
 export interface SkillSuggestion {
   canUse: boolean;
@@ -34,6 +36,20 @@ export const useSkillValidation = (
       return { canUse: false, reason: '缺少必要的游戏状态或用户信息' };
     }
 
+    // 检查缓存
+    const cached = skillCache.getValidationCache(
+      skillName,
+      userId,
+      gameStateId,
+      currentPhase || 1,
+      targetUserId
+    );
+
+    if (cached) {
+      logger.debug('使用缓存的验证结果', { skillName, cached });
+      return cached;
+    }
+
     const context: SkillUsageContext = {
       userId,
       gameStateId,
@@ -45,15 +61,32 @@ export const useSkillValidation = (
       targetUserId
     };
 
-    const validation = await EnhancedSkillService.validateSkillUsage(context);
-    return {
-      canUse: validation.isValid,
-      reason: validation.reason,
-      suggestion: validation.suggestedAction
-    };
+    try {
+      const validation = await EnhancedSkillService.validateSkillUsage(context);
+      const result = {
+        canUse: validation.isValid,
+        reason: validation.reason,
+        suggestion: validation.suggestedAction
+      };
+
+      // 缓存验证结果
+      skillCache.setValidationCache(
+        skillName,
+        userId,
+        gameStateId,
+        currentPhase || 1,
+        result,
+        targetUserId
+      );
+
+      return result;
+    } catch (error) {
+      logger.error('技能验证失败', error);
+      return { canUse: false, reason: '验证失败，请重试' };
+    }
   }, [gameStateId, userId, roomId]);
 
-  // 增强的技能使用函数 - 加强前端验证
+  // 增强的技能使用函数 - 加强前端验证和批处理
   const useSkillEnhanced = useCallback(async (
     skillName: string,
     targetUserId?: string,
@@ -100,14 +133,36 @@ export const useSkillValidation = (
         additionalData
       };
 
-      const result = await EnhancedSkillService.useSkillEnhanced(context);
+      // 使用批处理器来处理技能使用
+      await skillBatchProcessor.addOperation({
+        type: 'skill_use',
+        data: {
+          user_id: userId,
+          game_state_id: gameStateId,
+          skill_name: skillName,
+          target_user_id: targetUserId,
+          phase: currentPhase === 1 ? 'day' : 
+                 currentPhase === 2 ? 'evening' : 
+                 currentPhase === 3 ? 'night' : 'dawn',
+          round_number: currentRound || 1,
+          skill_effects: additionalData,
+          skill_priority: roleDesign?.priority || 100
+        },
+        priority: roleDesign?.priority || 100,
+        gameStateId,
+        userId
+      });
+
+      // 清除相关缓存
+      skillCache.clearUserCache(userId);
+      skillCache.clearGameCache(gameStateId);
 
       toast({
         title: '技能使用成功',
         description: `成功使用技能: ${skillName}`,
       });
 
-      return result;
+      return { success: true };
     } catch (error: any) {
       logger.error('技能使用失败', error);
       
