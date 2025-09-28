@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/displays/GameStateDisplay';
 import StudentSystemPanel from '@/components/game/panels/StudentSystemPanel';
@@ -29,6 +29,7 @@ const GamePage = () => {
   
   // 目标选择状态 - 必须在所有条件检查之前
   const [selectedTargetId, setSelectedTargetId] = useState<string>('');
+  const [skillUsageValid, setSkillUsageValid] = useState<boolean>(false);
   
   // 权限和认证检查 - 移动到最前面
   const { currentUser, requireAuth } = useAuth();
@@ -58,6 +59,40 @@ const GamePage = () => {
     getUserSkillData,
     canUseSkill
   } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
+  
+  // 异步检查技能可用性
+  React.useEffect(() => {
+    const checkSkillUsage = async () => {
+      if (!currentRoleDesign?.skill_name || !currentRoleState || !gameState) {
+        setSkillUsageValid(false);
+        return;
+      }
+      
+      try {
+        const canUse = await canUseSkill(
+          currentRoleDesign.skill_name,
+          currentRoleState,
+          currentRoleDesign,
+          gameState.currentPhase,
+          selectedTargetId,
+          gameState.currentRound
+        );
+        setSkillUsageValid(canUse);
+      } catch (error) {
+        console.error('检查技能可用性失败:', error);
+        setSkillUsageValid(false);
+      }
+    };
+    
+    checkSkillUsage();
+  }, [
+    canUseSkill, 
+    currentRoleDesign?.skill_name, 
+    currentRoleState, 
+    gameState?.currentPhase, 
+    gameState?.currentRound, 
+    selectedTargetId
+  ]);
   
   // 要求用户登录
   if (!requireAuth()) {
@@ -164,7 +199,7 @@ const GamePage = () => {
                        roleName={currentRoleDesign.role_name}
                        skillEffects={currentRoleDesign.skill_effects}
                        roleAttributes={currentRoleDesign.role_attributes}
-                        canUseSkill={true}
+                        canUseSkill={skillUsageValid}
                         onUseSkill={async (skillData: any) => {
                          await useSkillEnhanced(
                            currentRoleDesign.skill_name || '',
