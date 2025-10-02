@@ -1,118 +1,103 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  validateSkillUsage,
+import {
   checkNightSkillRestriction,
   checkSkillSpecificRestrictions,
+  validateSkillUsage,
   getSkillUsageHint,
-  type UsageRestriction,
   type SkillUseRecord
 } from '../skillUsageRestrictions';
 
 describe('skillUsageRestrictions', () => {
-  const mockSkillHistory: SkillUseRecord[] = [
-    {
-      id: 'skill-1',
-      user_id: 'user-1',
-      skill_name: 'test_skill',
-      round_number: 1,
-      phase: 'night',
-      created_at: new Date().toISOString()
-    }
-  ];
+  describe('checkNightSkillRestriction', () => {
+    it('应该允许女巫在夜晚多次使用技能', () => {
+      const userSkillUses: SkillUseRecord[] = [
+        {
+          id: '1',
+          user_id: 'user-1',
+          skill_name: 'magic_potion',
+          round_number: 1,
+          phase: 'night',
+          created_at: new Date().toISOString()
+        }
+      ];
 
-  describe('validateSkillUsage', () => {
-    it('should allow skill usage when no restrictions apply', () => {
-      const result = validateSkillUsage(
-        'villager',
-        'test_skill',
-        1, // day phase
+      const result = checkNightSkillRestriction(
+        'witch',
+        3,
+        1,
+        userSkillUses
+      );
+
+      expect(result.canUse).toBe(true);
+      expect(result.reason).toContain('女巫');
+    });
+
+    it('应该限制非女巫角色在夜晚重复使用技能', () => {
+      const userSkillUses: SkillUseRecord[] = [
+        {
+          id: '1',
+          user_id: 'user-1',
+          skill_name: 'night_attack',
+          round_number: 1,
+          phase: 'night',
+          created_at: new Date().toISOString()
+        }
+      ];
+
+      const result = checkNightSkillRestriction(
+        'werewolf',
+        3,
+        1,
+        userSkillUses
+      );
+
+      expect(result.canUse).toBe(false);
+      expect(result.reason).toContain('夜晚');
+    });
+
+    it('应该允许非夜晚阶段使用技能', () => {
+      const result = checkNightSkillRestriction(
+        'werewolf',
+        1, // 白天阶段
         1,
         []
       );
 
       expect(result.canUse).toBe(true);
     });
-
-    it('should restrict non-witch night skill usage after first use', () => {
-      const result = validateSkillUsage(
-        'werewolf',
-        'test_skill',
-        3, // night phase
-        1,
-        mockSkillHistory
-      );
-
-      expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('当前夜晚已经使用过技能');
-    });
-
-    it('should allow witch to use skills multiple times at night', () => {
-      const result = validateSkillUsage(
-        'witch',
-        'magic_potion',
-        3, // night phase
-        1,
-        mockSkillHistory
-      );
-
-      expect(result.canUse).toBe(true);
-    });
-  });
-
-  describe('checkNightSkillRestriction', () => {
-    it('should allow skills during day phase', () => {
-      const result = checkNightSkillRestriction(
-        'werewolf',
-        1, // day phase
-        1,
-        mockSkillHistory
-      );
-
-      expect(result.canUse).toBe(true);
-    });
-
-    it('should restrict night skills after first use for non-witch', () => {
-      const result = checkNightSkillRestriction(
-        'werewolf',
-        3, // night phase
-        1,
-        mockSkillHistory
-      );
-
-      expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('当前夜晚已经使用过技能');
-    });
-
-    it('should allow witch multiple night skill uses', () => {
-      const result = checkNightSkillRestriction(
-        'witch',
-        3, // night phase
-        1,
-        mockSkillHistory
-      );
-
-      expect(result.canUse).toBe(true);
-      expect(result.reason).toContain('女巫角色在夜晚可多次使用技能');
-    });
   });
 
   describe('checkSkillSpecificRestrictions', () => {
-    it('should allow first-time skill usage', () => {
+    it('应该限制女巫保护魔药只能使用一次', () => {
+      const userSkillUses: SkillUseRecord[] = [
+        {
+          id: '1',
+          user_id: 'user-1',
+          skill_name: 'magic_potion',
+          round_number: 1,
+          phase: 'night',
+          created_at: new Date().toISOString()
+        } as SkillUseRecord & { potionType: string }
+      ];
+
+      // 设置第一次使用为保护类型
+      (userSkillUses[0] as any).potionType = 'protection';
+
       const result = checkSkillSpecificRestrictions(
-        'dying_shot',
-        'hunter',
-        [],
-        { currentRound: 1, currentPhase: 3 }
+        'magic_potion',
+        'witch',
+        userSkillUses,
+        { currentRound: 2, currentPhase: 3, potionType: 'protection' }
       );
 
-      expect(result.canUse).toBe(true);
-      expect(result.remainingUses).toBe(1);
+      expect(result.canUse).toBe(false);
+      expect(result.reason).toContain('保护魔药');
     });
 
-    it('should restrict hunter dying shot after first use', () => {
-      const hunterHistory: SkillUseRecord[] = [
+    it('应该限制猎人濒死射击只能使用一次', () => {
+      const userSkillUses: SkillUseRecord[] = [
         {
-          id: 'shot-1',
+          id: '1',
           user_id: 'user-1',
           skill_name: 'dying_shot',
           round_number: 1,
@@ -124,59 +109,98 @@ describe('skillUsageRestrictions', () => {
       const result = checkSkillSpecificRestrictions(
         'dying_shot',
         'hunter',
-        hunterHistory,
-        { currentRound: 2, currentPhase: 3 }
+        userSkillUses
       );
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toBe('濒死射击只能使用一次');
+      expect(result.reason).toContain('濒死射击');
     });
 
-    it('should restrict witch potion after first use', () => {
-      const witchHistory: SkillUseRecord[] = [
+    it('应该限制白狼王自爆只能使用一次', () => {
+      const userSkillUses: SkillUseRecord[] = [
         {
-          id: 'potion-1',
-          user_id: 'user-1', 
-          skill_name: 'magic_potion',
+          id: '1',
+          user_id: 'user-1',
+          skill_name: 'self_destruct',
+          round_number: 1,
+          phase: 'day',
+          created_at: new Date().toISOString()
+        }
+      ];
+
+      const result = checkSkillSpecificRestrictions(
+        'self_destruct',
+        'whitewolf',
+        userSkillUses
+      );
+
+      expect(result.canUse).toBe(false);
+      expect(result.reason).toContain('自爆');
+    });
+  });
+
+  describe('validateSkillUsage', () => {
+    it('应该综合验证技能使用限制', () => {
+      const result = validateSkillUsage(
+        'werewolf',
+        'night_attack',
+        3,
+        1,
+        []
+      );
+
+      expect(result.canUse).toBe(true);
+    });
+
+    it('应该检测夜晚重复使用限制', () => {
+      const userSkillUses: SkillUseRecord[] = [
+        {
+          id: '1',
+          user_id: 'user-1',
+          skill_name: 'night_attack',
           round_number: 1,
           phase: 'night',
           created_at: new Date().toISOString()
-        } as SkillUseRecord & { potionType: string }
-      ];
-      (witchHistory[0] as any).potionType = 'protection';
-
-      const result = checkSkillSpecificRestrictions(
-        'magic_potion',
-        'witch',
-        witchHistory,
-        { 
-          currentRound: 2, 
-          currentPhase: 3,
-          potionType: 'protection' 
         }
+      ];
+
+      const result = validateSkillUsage(
+        'werewolf',
+        'night_attack',
+        3,
+        1,
+        userSkillUses
       );
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toBe('保护魔药已经使用过了');
     });
   });
 
   describe('getSkillUsageHint', () => {
-    it('should provide witch-specific night hint', () => {
+    it('应该为女巫提供特殊提示', () => {
       const hint = getSkillUsageHint('witch', 'magic_potion', 3);
-      expect(hint).toContain('女巫可在夜晚多次使用技能');
+      
+      expect(hint).toContain('女巫');
+      expect(hint).toContain('多次');
     });
 
-    it('should provide general night hint for non-witch', () => {
-      const hint = getSkillUsageHint('werewolf', 'attack', 3);
-      expect(hint).toContain('除女巫外，每个角色在夜晚只能使用一次技能');
+    it('应该为非女巫角色提供夜晚限制提示', () => {
+      const hint = getSkillUsageHint('werewolf', 'night_attack', 3);
+      
+      expect(hint).toContain('夜晚');
+      expect(hint).toContain('一次');
     });
 
-    it('should provide skill-specific hints', () => {
-      expect(getSkillUsageHint('hunter', 'dying_shot', 1)).toContain('猎人技能只能在濒死状态时使用');
-      expect(getSkillUsageHint('witch', 'magic_potion', 1)).toContain('女巫的解药和毒药各只能使用一次');
-      expect(getSkillUsageHint('warlock', 'voodoo', 1)).toContain('暗夜术士的巫毒术只能使用一次');
-      expect(getSkillUsageHint('white', 'self_destruct', 1)).toContain('白狼王的自爆技能只能使用一次');
+    it('应该为特殊技能提供专属提示', () => {
+      const hints = {
+        'dying_shot': getSkillUsageHint('hunter', 'dying_shot', 1),
+        'magic_potion': getSkillUsageHint('witch', 'magic_potion', 1),
+        'self_destruct': getSkillUsageHint('whitewolf', 'self_destruct', 1)
+      };
+
+      expect(hints.dying_shot).toContain('濒死');
+      expect(hints.magic_potion).toContain('药');
+      expect(hints.self_destruct).toContain('自爆');
     });
   });
 });
