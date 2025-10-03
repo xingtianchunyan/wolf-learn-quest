@@ -326,52 +326,6 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   return (
     <div className="space-y-4">
       {renderRoleSkill()}
-      
-      {/* 角色属性显示 */}
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-werewolf-purple">
-            <Crown className="w-5 h-5" />
-            角色信息
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">阵营</span>
-            <Badge variant={roleAttributes?.victory_condition?.includes('狼人') ? 'destructive' : 'default'}>
-              {roleAttributes?.victory_condition?.includes('狼人') ? '狼人阵营' : '好人阵营'}
-            </Badge>
-          </div>
-          
-          <Separator className="bg-werewolf-purple/30" />
-          
-          <div className="space-y-2">
-            <span className="text-sm text-gray-300">特殊能力</span>
-            <div className="flex flex-wrap gap-1">
-              {roleAttributes?.special_abilities?.map((ability: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {ability}
-                </Badge>
-              )) || (
-                <span className="text-xs text-gray-500">无特殊能力</span>
-              )}
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <span className="text-sm text-gray-300">技能使用阶段</span>
-            <div className="flex flex-wrap gap-1">
-              {skillEffects?.active_phases?.map((phase: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {phase === 'night' ? '夜晚' : phase === 'day' ? '白天' : phase}
-                </Badge>
-              )) || (
-                <span className="text-xs text-gray-500">无限制</span>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
