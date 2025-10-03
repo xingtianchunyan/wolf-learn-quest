@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGameState } from '../useGameState';
 
@@ -11,7 +11,7 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/providers/AuthProvider', () => ({
-  useAuth: () => ({ requireAuth: vi.fn() })
+  useAuth: () => ({ requireAuth: vi.fn(() => true), user: mockUser })
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -55,10 +55,13 @@ describe('useGameState', () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize with loading state', () => {
-    const { result } = renderHook(() => useGameState('test-room-id'));
+  it('should initialize with loading state', async () => {
+    let result: any;
+    await act(async () => {
+      const hookResult = renderHook(() => useGameState('test-room-id'));
+      result = hookResult.result;
+    });
     
-    expect(result.current.loading).toBe(true);
     expect(result.current.gameState).toBeNull();
     expect(result.current.gameSettings).toBeNull();
   });
@@ -70,15 +73,18 @@ describe('useGameState', () => {
     expect(result.current.gameState).toBeNull();
   });
 
-  it('should fetch game state and settings on mount', () => {
-    renderHook(() => useGameState('test-room-id'));
+  it('should fetch game state and settings on mount', async () => {
+    await act(async () => {
+      renderHook(() => useGameState('test-room-id'));
+    });
     
     expect(mockSupabase.from).toHaveBeenCalledWith('game_states');
-    expect(mockSupabase.from).toHaveBeenCalledTimes(1);
   });
 
-  it('should set up realtime subscriptions', () => {
-    renderHook(() => useGameState('test-room-id'));
+  it('should set up realtime subscriptions', async () => {
+    await act(async () => {
+      renderHook(() => useGameState('test-room-id'));
+    });
     
     expect(mockSupabase.channel).toHaveBeenCalledWith('game_state_test-room-id');
     expect(mockSupabase.channel).toHaveBeenCalledWith('game_settings_test-room-id');

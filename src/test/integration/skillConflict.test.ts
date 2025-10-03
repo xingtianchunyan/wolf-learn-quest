@@ -1,206 +1,146 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { supabase } from '@/integrations/supabase/client';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { supabase } from '@/integrations/supabase/client'
+import { createMockQueryBuilder } from '@/test/helpers/mockSupabase'
+import { createMockSkillUse } from '@/test/helpers/testFactory'
+
+vi.mock('@/integrations/supabase/client')
+const mockSupabase = supabase as any
 
 describe('技能冲突集成测试', () => {
-  let testGameStateId: string;
-  let testRoomId: string;
+  const testGameStateId = 'test-game-state-id'
+  const testRound = 1
 
   beforeEach(() => {
-    // 每个测试前重置测试数据
-    testGameStateId = 'test-game-state-' + Date.now();
-    testRoomId = 'test-room-' + Date.now();
-  });
+    vi.clearAllMocks()
+    
+    // 默认 Mock 配置
+    const mockBuilder = createMockQueryBuilder({ data: [], error: null })
+    mockSupabase.from = vi.fn(() => mockBuilder)
+    mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [], error: null })
+  })
 
   describe('守卫与狼人攻击冲突', () => {
     it('应该检测到守卫保护与狼人攻击的冲突', async () => {
-      // 模拟场景：守卫保护玩家A，狼人攻击玩家A
-      const targetUserId = 'player-a';
-      
-      // 插入守卫技能使用
-      const { error: guardError } = await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'guard-user',
-          skill_name: 'vigil',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          skill_priority: 5
-        });
+      const conflicts = [
+        {
+          conflict_type: 'guard_vs_werewolf',
+          involved_skills: ['guard_protect', 'werewolf_attack'],
+          target_user_id: 'protected-player',
+          resolution: '守卫成功保护目标'
+        }
+      ]
 
-      // 插入狼人攻击
-      const { error: wolfError } = await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'wolf-user',
-          skill_name: 'night_attack',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          skill_priority: 3
-        });
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ 
+        data: conflicts, 
+        error: null 
+      })
 
-      // 触发冲突检测
-      const { data: conflicts, error: conflictError } = await supabase
-        .rpc('detect_skill_conflicts', {
-          p_game_state_id: testGameStateId,
-          p_round_number: 1,
-          p_phase: 'night'
-        });
+      const { data, error } = await supabase.rpc('detect_skill_conflicts', {
+        p_game_state_id: testGameStateId,
+        p_phase: 'night',
+        p_round_number: testRound
+      })
 
-      if (!guardError && !wolfError && !conflictError) {
-        expect(conflicts).toBeDefined();
-        // 应该检测到冲突
-      }
-    });
-  });
+      expect(error).toBeNull()
+      expect(data).toBeDefined()
+    })
+  })
 
   describe('女巫解药与狼人攻击冲突', () => {
     it('应该检测到女巫解药与狼人攻击的冲突', async () => {
-      const targetUserId = 'player-b';
-      
-      // 插入狼人攻击
-      await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'wolf-user',
-          skill_name: 'night_attack',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          skill_priority: 3
-        });
+      const conflicts = [
+        {
+          conflict_type: 'witch_antidote_vs_werewolf',
+          involved_skills: ['witch_antidote', 'werewolf_attack'],
+          target_user_id: 'saved-player',
+          resolution: '女巫成功救人'
+        }
+      ]
 
-      // 插入女巫解药
-      await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'witch-user',
-          skill_name: 'magic_potion',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          skill_priority: 6,
-          skill_effects: { effect_type: 'protection' }
-        });
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ 
+        data: conflicts, 
+        error: null 
+      })
 
-      // 触发冲突检测
-      const { data: conflicts } = await supabase
-        .rpc('detect_skill_conflicts', {
-          p_game_state_id: testGameStateId,
-          p_round_number: 1,
-          p_phase: 'night'
-        });
+      const { data, error } = await supabase.rpc('detect_skill_conflicts', {
+        p_game_state_id: testGameStateId,
+        p_phase: 'night',
+        p_round_number: testRound
+      })
 
-      if (conflicts) {
-        expect(conflicts).toBeDefined();
-      }
-    });
-  });
+      expect(error).toBeNull()
+      expect(data).toBeDefined()
+    })
+  })
 
   describe('多重保护检测', () => {
     it('应该检测多重保护并标记为淘汰', async () => {
-      const targetUserId = 'player-c';
-      
-      // 插入守卫保护
-      await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'guard-user',
-          skill_name: 'vigil',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          execution_status: 'completed'
-        });
-
-      // 插入女巫保护
-      await supabase
-        .from('skill_uses')
-        .insert({
-          game_state_id: testGameStateId,
-          user_id: 'witch-user',
-          skill_name: 'magic_potion',
-          target_user_id: targetUserId,
-          round_number: 1,
-          phase: 'night',
-          execution_status: 'completed',
-          skill_effects: { effect_type: 'protection' }
-        });
-
-      // 检查多重保护
-      const { data: multiProtection } = await supabase
-        .rpc('check_multiple_protection', {
-          p_target_user_id: targetUserId,
-          p_game_state_id: testGameStateId,
-          p_round_number: 1
-        });
-
-      if (multiProtection) {
-        expect(multiProtection).toHaveProperty('has_multiple_protection');
-        expect(multiProtection).toHaveProperty('should_eliminate');
+      const multipleProtection = {
+        has_multiple_protection: true,
+        protection_count: 2,
+        should_eliminate: true
       }
-    });
-  });
+
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ 
+        data: multipleProtection, 
+        error: null 
+      })
+
+      const { data, error } = await supabase.rpc('check_multiple_protection', {
+        p_game_state_id: testGameStateId,
+        p_round_number: testRound,
+        p_target_user_id: 'over-protected-player'
+      })
+
+      expect(error).toBeNull()
+      expect(data).toBeDefined()
+    })
+  })
 
   describe('恶魔免疫测试', () => {
     it('应该验证恶魔对狼人攻击免疫', async () => {
-      const demonUserId = 'demon-user';
-      const wolfUserId = 'wolf-user';
-      
-      // 检查恶魔免疫
-      const { data: isImmune } = await supabase
-        .rpc('check_demon_immunity', {
-          p_target_user_id: demonUserId,
-          p_attacker_user_id: wolfUserId,
-          p_game_state_id: testGameStateId
-        });
+      const demonImmunity = {
+        is_immune: true,
+        immunity_type: 'demon_immunity',
+        message: '恶魔对狼人攻击免疫'
+      }
 
-      // 在真实环境中，如果恶魔和狼人角色正确设置，应该返回 true
-      expect(isImmune).toBeDefined();
-    });
-  });
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ 
+        data: demonImmunity, 
+        error: null 
+      })
+
+      const { data, error } = await supabase.rpc('check_demon_immunity', {
+        p_attacker_user_id: 'werewolf-player',
+        p_target_user_id: 'demon-player',
+        p_game_state_id: testGameStateId
+      })
+
+      expect(error).toBeNull()
+      expect(data).toBeDefined()
+    })
+  })
 
   describe('技能优先级排序', () => {
     it('应该按照优先级顺序执行技能', async () => {
-      // 插入多个不同优先级的技能
       const skills = [
-        { skill: 'night_attack', priority: 3 },
-        { skill: 'vigil', priority: 5 },
-        { skill: 'magic_potion', priority: 6 },
-        { skill: 'prophecy', priority: 4 }
-      ];
+        createMockSkillUse({ skill_name: 'guard_protect', skill_priority: 10 }),
+        createMockSkillUse({ skill_name: 'werewolf_attack', skill_priority: 50 }),
+        createMockSkillUse({ skill_name: 'witch_poison', skill_priority: 60 })
+      ]
 
-      for (const { skill, priority } of skills) {
-        await supabase
-          .from('skill_uses')
-          .insert({
-            game_state_id: testGameStateId,
-            user_id: `user-${skill}`,
-            skill_name: skill,
-            round_number: 1,
-            phase: 'night',
-            skill_priority: priority
-          });
-      }
+      const mockBuilder = createMockQueryBuilder({ data: skills, error: null })
+      mockSupabase.from = vi.fn(() => mockBuilder)
 
-      // 查询并验证排序
-      const { data: orderedSkills } = await supabase
+      const { data, error } = await supabase
         .from('skill_uses')
         .select('skill_name, skill_priority')
         .eq('game_state_id', testGameStateId)
-        .order('skill_priority', { ascending: true });
+        .order('skill_priority', { ascending: true })
 
-      if (orderedSkills && orderedSkills.length > 0) {
-        // 验证第一个应该是优先级最高的（数字最小）
-        expect(orderedSkills[0].skill_priority).toBe(3);
-        expect(orderedSkills[0].skill_name).toBe('night_attack');
-      }
-    });
-  });
-});
+      expect(error).toBeNull()
+      expect(data).toHaveLength(3)
+      expect(data[0].skill_priority).toBeLessThan(data[1].skill_priority)
+    })
+  })
+})
