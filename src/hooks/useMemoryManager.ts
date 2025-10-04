@@ -83,9 +83,9 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
         });
 
         // 触发垃圾回收（如果可用）
-        if (enableAutoCleanup && global?.gc) {
+        if (enableAutoCleanup && typeof globalThis !== 'undefined' && (globalThis as any).gc) {
           try {
-            global.gc();
+            (globalThis as any).gc();
             logger.debug(`${componentName}触发垃圾回收`);
           } catch (error) {
             logger.debug('垃圾回收不可用');
