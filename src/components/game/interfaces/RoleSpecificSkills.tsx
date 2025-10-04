@@ -332,7 +332,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
           effectType: 'villager_sleep'
         });
       }
-    }, [currentPhase, canUseSkill]);
+    }, [currentPhase, canUseSkill, onUseSkill]);
 
     return (
       <Card className="bg-gray-900/20 border-gray-500/30">

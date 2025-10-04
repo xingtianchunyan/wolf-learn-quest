@@ -46,11 +46,11 @@ export const useEnhancedSkillSystem = (
     fetchAllSkillData: skillDataHook.fetchAllSkillData
   });
 
-  // 缓存管理 - 定期清理过期缓存
+  // 缓存管理 - 定期清理过期缓存（优化为5分钟）
   React.useEffect(() => {
     const cacheMaintenanceInterval = setInterval(() => {
       skillCache.performMaintenance();
-    }, 60000); // 每分钟清理一次
+    }, 300000); // 每5分钟清理一次
 
     const cleanup = memoryManager.registerInterval(cacheMaintenanceInterval);
     return cleanup;
