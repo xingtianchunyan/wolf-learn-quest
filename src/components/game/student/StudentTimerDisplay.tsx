@@ -8,7 +8,7 @@ interface StudentTimerDisplayProps {
   timeRemaining: number;
   formatTime: (seconds: number) => string;
   isAnsweringPhase: boolean;
-  gameState: any;
+  gameState: any; // 保持原有类型
 }
 
 const StudentTimerDisplay: React.FC<StudentTimerDisplayProps> = ({

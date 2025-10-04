@@ -195,8 +195,8 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
       {/* 角色特定技能界面 */}
       <RoleSpecificSkills
         roleName={roleDesign.role_name || ''}
-        skillEffects={roleDesign.skill_effects || {}}
-        roleAttributes={roleDesign.role_attributes || {}}
+        skillEffects={(roleDesign.skill_effects as Record<string, unknown>) || {}}
+        roleAttributes={(roleDesign.role_attributes as Record<string, unknown>) || {}}
         canUseSkill={canUseSkill && usageValidation.valid}
         onUseSkill={handleSkillUse}
         availableTargets={availableTargets}

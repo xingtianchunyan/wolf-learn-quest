@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { UnifiedWitchSkillInterface } from './UnifiedWitchSkillInterface';
+import type { RoleSpecificSkillsProps } from '@/types/skill.types';
 import { 
   Skull, 
   Shield, 
@@ -16,33 +17,6 @@ import {
   AlertTriangle,
   Crown
 } from 'lucide-react';
-
-interface RoleSpecificSkillsProps {
-  roleName: string;
-  skillEffects: any;
-  roleAttributes: any;
-  canUseSkill: boolean;
-  onUseSkill: (skillData: any) => void;
-  availableTargets: Array<{ userId: string; name: string; roleStatus: number }>;
-  currentPhase: number;
-  userSkillUses?: Array<{ round_number: number; phase: string; skill_name: string }>;
-  usageRestriction?: { canUse: boolean; reason?: string; remainingUses?: number };
-  gameStateId?: string;
-  userId?: string;
-  currentRound?: number;
-  // 新增：完整的技能使用记录，包含查验结果
-  fullSkillUses?: Array<{ 
-    id: string; 
-    user_id: string; 
-    skill_name: string; 
-    target_user_id?: string; 
-    round_number: number; 
-    phase: string; 
-    result?: any; 
-    execution_status: string;
-    created_at: string;
-  }>;
-}
 
 export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   roleName,

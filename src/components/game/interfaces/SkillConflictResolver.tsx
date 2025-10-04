@@ -8,19 +8,12 @@ import { AlertTriangle, Zap, Shield, Target, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toPhaseName } from '@/utils/phaseUtils';
 import { createLogger } from '@/lib/logger';
+import type { SkillConflictData, ConflictingSkill } from '@/types/skill.types';
 
 const logger = createLogger('skill-conflict-resolver');
 
-interface SkillConflict {
-  id: string;
-  game_state_id: string;
-  round_number: number;
-  phase: string;
-  conflicting_skills: any[];
-  resolution_rule: string;
-  resolved_skill_id: string;
-  created_at: string;
-}
+// 类型别名用于组件内部
+type SkillConflict = SkillConflictData;
 
 interface SkillConflictResolverProps {
   gameStateId: string;
@@ -53,7 +46,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
       if (error) {
         logger.error('Error fetching skill conflicts:', error);
       } else if (data) {
-        setConflicts(data as SkillConflict[]);
+        setConflicts(data as unknown as SkillConflict[]);
       }
     };
 
@@ -220,7 +213,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                     <h5 className="text-xs font-medium text-gray-300">冲突技能:</h5>
                     <ScrollArea className="h-32">
                       <div className="space-y-2">
-                        {conflict.conflicting_skills?.map((skill: any, index: number) => (
+                        {(Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills : []).map((skill: ConflictingSkill, index: number) => (
                           <div 
                             key={index}
                             className={`p-2 rounded border transition-all ${
@@ -300,7 +293,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                       </span>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {conflict.conflicting_skills?.length || 0} 个冲突
+                          {(Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills.length : 0)} 个冲突
                         </Badge>
                         <Badge 
                           variant={conflict.resolved_skill_id ? 'default' : 'secondary'}
