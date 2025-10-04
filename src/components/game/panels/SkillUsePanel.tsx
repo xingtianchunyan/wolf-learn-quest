@@ -206,6 +206,7 @@ const SkillUsePanel: React.FC<SkillUsePanelProps> = ({
         gameStateId={gameStateId}
         userId={userId}
         currentRound={1}
+        fullSkillUses={skillUses}
       />
     </div>
   );

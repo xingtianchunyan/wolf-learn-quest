@@ -225,6 +225,7 @@ const GamePage = () => {
                        gameStateId={gameState.id}
                        userId={currentUserId}
                        currentRound={gameState.currentRound}
+                       fullSkillUses={skillUses}
                      />
                    )}
                   

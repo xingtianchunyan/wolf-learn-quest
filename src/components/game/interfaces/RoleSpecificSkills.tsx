@@ -30,6 +30,18 @@ interface RoleSpecificSkillsProps {
   gameStateId?: string;
   userId?: string;
   currentRound?: number;
+  // 新增：完整的技能使用记录，包含查验结果
+  fullSkillUses?: Array<{ 
+    id: string; 
+    user_id: string; 
+    skill_name: string; 
+    target_user_id?: string; 
+    round_number: number; 
+    phase: string; 
+    result?: any; 
+    execution_status: string;
+    created_at: string;
+  }>;
 }
 
 export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
@@ -44,7 +56,8 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   usageRestriction,
   gameStateId = '',
   userId = '',
-  currentRound = 1
+  currentRound = 1,
+  fullSkillUses = []
 }) => {
   
   // 检查是否已在当晚使用过技能（女巫除外）
@@ -168,53 +181,105 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   );
 
   // 预言家技能
-  const SeerSkill = () => (
-    <Card className="bg-purple-900/20 border-purple-500/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-purple-400">
-          <Eye className="w-5 h-5" />
-          预言家技能 - 查验
-          {hasUsedSkillTonight() && currentPhase === 3 && (
-            <Badge variant="secondary" className="ml-2 text-xs">
-              今夜已使用
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-sm text-gray-300">
-          <p>在夜晚阶段，你可以查验一名玩家的身份。</p>
-          <p className="text-purple-400 mt-2">• 可以得知目标是否为狼人</p>
-          <p className="text-purple-400">• 每晚只能查验一次</p>
-          {hasUsedSkillTonight() && currentPhase === 3 && (
-            <p className="text-yellow-400">• 你今夜已经使用过技能</p>
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-purple-400">选择查验目标</h4>
-          <div className="grid grid-cols-1 gap-2">
-            {availableTargets.map(target => (
-              <Button
-                key={target.userId}
-                variant="outline"
-                className="justify-start border-purple-500/30 hover:bg-purple-500/20"
-                onClick={() => onUseSkill({ 
-                  skillType: 'investigation',
-                  targetId: target.userId,
-                  effectType: 'seer_investigation'
-                })}
-                disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                查验 {target.name}
-              </Button>
-            ))}
+  const SeerSkill = () => {
+    // 获取预言家的查验记录
+    const seerInvestigations = fullSkillUses.filter(use => 
+      use.user_id === userId && 
+      (use.skill_name === 'prophecy' || use.skill_name === 'seer_investigation') &&
+      use.execution_status === 'completed'
+    );
+
+    // 获取目标玩家姓名的辅助函数
+    const getTargetName = (targetUserId: string) => {
+      const target = availableTargets.find(t => t.userId === targetUserId);
+      return target?.name || '未知玩家';
+    };
+
+    // 解析查验结果的辅助函数
+    const parseInvestigationResult = (result: any) => {
+      if (!result) return '未知';
+      
+      // 处理不同格式的查验结果
+      if (typeof result === 'string') {
+        return result.includes('狼人') || result.includes('werewolf') ? '狼人' : '好人';
+      }
+      
+      if (typeof result === 'object') {
+        if (result.faction === 'werewolf' || result.isWerewolf === true) return '狼人';
+        if (result.faction === 'villager' || result.isWerewolf === false) return '好人';
+        if (result.result) return parseInvestigationResult(result.result);
+      }
+      
+      return '未知';
+    };
+
+    return (
+      <Card className="bg-purple-900/20 border-purple-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-purple-400">
+            <Eye className="w-5 h-5" />
+            预言家技能 - 查验
+            {hasUsedSkillTonight() && currentPhase === 3 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                今夜已使用
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-gray-300">
+            <p>在夜晚阶段，你可以查验一名玩家的身份。</p>
+            <p className="text-purple-400 mt-2">• 可以得知目标是否为狼人</p>
+            <p className="text-purple-400">• 每晚只能查验一次</p>
+            <p className="text-blue-400">• 点击玩家信息卡片选择查验目标</p>
+            {hasUsedSkillTonight() && currentPhase === 3 && (
+              <p className="text-yellow-400">• 你今夜已经使用过技能</p>
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+          
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-purple-400">查验结果</h4>
+            <div className="space-y-2">
+              {seerInvestigations.length === 0 ? (
+                <div className="text-sm text-gray-400 p-3 bg-gray-800/30 rounded-lg border border-gray-600/30">
+                  暂无查验记录
+                </div>
+              ) : (
+                seerInvestigations.map((investigation, index) => {
+                  const targetName = investigation.target_user_id ? getTargetName(investigation.target_user_id) : '未知目标';
+                  const result = parseInvestigationResult(investigation.result);
+                  const isWerewolf = result === '狼人';
+                  
+                  return (
+                    <div 
+                      key={investigation.id || index}
+                      className={`p-3 rounded-lg border ${
+                        isWerewolf 
+                          ? 'bg-red-900/30 border-red-500/30' 
+                          : 'bg-green-900/30 border-green-500/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-300">
+                          第{investigation.round_number}轮查验：{targetName}
+                        </span>
+                        <Badge 
+                          variant={isWerewolf ? "destructive" : "default"}
+                          className={isWerewolf ? "bg-red-600" : "bg-green-600"}
+                        >
+                          {result}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   // 女巫技能 - 使用统一的女巫技能接口组件
   const WitchSkill = () => {
