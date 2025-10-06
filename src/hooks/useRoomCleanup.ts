@@ -1,6 +1,8 @@
-
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('useRoomCleanup');
 
 export const useRoomCleanup = () => {
   useEffect(() => {
@@ -9,10 +11,10 @@ export const useRoomCleanup = () => {
       try {
         const { error } = await supabase.rpc('close_inactive_rooms');
         if (error) {
-          console.error('Error cleaning up inactive rooms:', error);
+          logger.error('Error cleaning up inactive rooms:', error);
         }
       } catch (error) {
-        console.error('Error calling room cleanup function:', error);
+        logger.error('Error calling room cleanup function:', error);
       }
     };
 

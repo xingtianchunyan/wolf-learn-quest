@@ -17,6 +17,9 @@ import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
 import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 import { validateSkillUsage } from '@/utils/skillUsageRestrictions';
 import type { Tables } from '@/integrations/supabase/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('EnhancedSkillPanel');
 
 interface EnhancedSkillPanelProps {
   roomId: string;
@@ -83,7 +86,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
         );
         setSuggestion(result);
       } catch (error) {
-        console.error('获取技能建议失败:', error);
+        logger.error('获取技能建议失败:', error);
         setSuggestion(null);
       }
     };

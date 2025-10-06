@@ -6,6 +6,9 @@ import { monitoringService } from '@/services/monitoringService';
 import { analyticsService } from '@/services/analyticsService';
 import { AlertCircle, Activity, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 import type { SystemHealth } from '@/services/monitoringService';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('MonitoringDashboard');
 
 export const MonitoringDashboard: React.FC = () => {
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
@@ -17,7 +20,7 @@ export const MonitoringDashboard: React.FC = () => {
         const health = await monitoringService.getSystemHealth();
         setSystemHealth(health);
       } catch (error) {
-        console.error('加载系统健康状态失败:', error);
+        logger.error('加载系统健康状态失败:', error);
       } finally {
         setLoading(false);
       }

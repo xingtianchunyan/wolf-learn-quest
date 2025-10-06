@@ -6,6 +6,9 @@ import { Upload } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('AvatarUpload');
 
 interface AvatarUploadProps {
   avatarUrl: string | null;
@@ -81,7 +84,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         });
         
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        logger.error('Upload error:', uploadError);
         toast({
           title: t('upload_failed'),
           description: uploadError.message,
@@ -104,7 +107,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         .eq('user_id', session.user.id);
         
       if (updateError) {
-        console.error("Error updating avatar URL:", updateError);
+        logger.error("Error updating avatar URL:", updateError);
         toast({
           title: t('profile_update_failed'),
           description: t('profile_update_failed_desc'),
@@ -118,7 +121,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         description: t('avatar_uploaded_desc'),
       });
     } catch (error) {
-      console.error("Avatar upload error:", error);
+      logger.error("Avatar upload error:", error);
       toast({
         title: t('upload_failed'),
         description: t('upload_failed_desc'),

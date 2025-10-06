@@ -7,6 +7,9 @@ import QuestionBankPanel from './QuestionBankPanel';
 import PlayerStatusPanel from './PlayerStatusPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('PreparationPhaseDialog');
 
 interface PreparationPhaseDialogProps {
   isOpen: boolean;
@@ -95,7 +98,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
         });
       }
     } catch (error) {
-      console.error('Error starting game:', error);
+      logger.error('Error starting game:', error);
       toast({
         title: '开始游戏时发生错误',
         description: '请稍后重试',

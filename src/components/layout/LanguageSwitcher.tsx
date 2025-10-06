@@ -2,6 +2,9 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, Languages } from 'lucide-react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('LanguageSwitcher');
 
 // Define the language options
 type LanguageOption = {
