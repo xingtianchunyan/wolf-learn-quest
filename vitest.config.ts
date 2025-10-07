@@ -21,6 +21,9 @@ export default defineConfig({
         '**/*.config.*',
         '**/types/**'
       ]
+    },
+    env: {
+      DEV: 'true'
     }
   },
   resolve: {
@@ -28,4 +31,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  define: {
+    'import.meta.env.DEV': true
+  }
 })

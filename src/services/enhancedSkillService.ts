@@ -101,7 +101,14 @@ export class EnhancedSkillService {
         );
       }
 
-      // 首先尝试从 SKILL_MAPPING_CONFIG 获取
+      // 首先尝试从 SKILL_MAPPING_CONFIG 通过 ID 获取
+      const skillConfigById = SKILL_MAPPING_CONFIG[roleDesign.skill_name];
+      if (skillConfigById) {
+        performanceMonitoringService.recordMetric('skill_config_retrieval', performance.now() - startTime);
+        return skillConfigById;
+      }
+
+      // 然后尝试通过英文名获取
       const skillConfig = getSkillConfigByEnglish(roleDesign.skill_name);
       if (skillConfig) {
         performanceMonitoringService.recordMetric('skill_config_retrieval', performance.now() - startTime);
@@ -134,7 +141,18 @@ export class EnhancedSkillService {
     const { userId, gameStateId, currentPhase, targetUserId } = context;
     
     // 获取技能配置
-    const skillConfig = this.getRoleSkillConfig(context.roleDesign);
+    let skillConfig;
+    try {
+      skillConfig = this.getRoleSkillConfig(context.roleDesign);
+    } catch (error) {
+      logger.warn('技能配置获取失败', { roleDesign: context.roleDesign, error });
+      return {
+        isValid: false,
+        reason: '未找到技能配置',
+        suggestedAction: '请检查角色设计配置'
+      };
+    }
+    
     if (!skillConfig) {
       logger.warn('技能配置获取失败', { roleDesign: context.roleDesign });
       return {

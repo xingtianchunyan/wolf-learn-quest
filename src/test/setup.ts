@@ -62,11 +62,20 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }))
 
-// Mock toast notifications
+// Mock toast notifications - 修复返回对象结构
 vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
+  useToast: vi.fn(() => ({
     toast: vi.fn()
-  })
+  }))
+}))
+
+// Mock useAuth hook
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: vi.fn(() => ({
+    user: null,
+    loading: false,
+    requireAuth: vi.fn(() => Promise.resolve(true))
+  }))
 }))
 
 // Mock logger

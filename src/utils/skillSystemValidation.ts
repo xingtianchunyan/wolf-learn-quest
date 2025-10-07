@@ -110,6 +110,15 @@ export const validateSkillUseLimits = (
 
   // 有限次数技能验证
   if (typeof skillConfig.usageLimit === 'number') {
+    // 如果技能使用限制为0，直接返回不能使用
+    if (skillConfig.usageLimit === 0) {
+      return {
+        canUse: false,
+        remainingUses: 0,
+        reason: '技能使用次数已达上限 (0)'
+      };
+    }
+    
     const skillUsageState = roleState?.skill_uses_remaining;
     
     if (!skillUsageState) {
