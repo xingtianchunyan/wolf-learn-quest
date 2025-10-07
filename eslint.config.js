@@ -51,8 +51,11 @@ export default tseslint.config(
       "@typescript-eslint/await-thenable": "error",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
       
-      // Console 语句控制
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Console 语句控制 - 生产环境禁止，开发环境警告
+      "no-console": process.env.NODE_ENV === "production" 
+        ? ["error", { allow: ["warn", "error"] }] 
+        : ["warn", { allow: ["warn", "error", "info"] }],
+      "no-debugger": process.env.NODE_ENV === "production" ? "error" : "warn",
       
       // 代码质量规则
       "prefer-const": "error",

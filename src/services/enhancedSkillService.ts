@@ -1,5 +1,7 @@
 // 增强的技能服务 - 使用统一验证和错误处理
 import { supabase } from '@/integrations/supabase/client';
+import { skillSystemValidation } from './skillSystemValidation';
+import { performanceMonitoringService } from './performanceMonitoringService';
 import { createLogger } from '@/lib/logger';
 import { 
   SKILL_MAPPING_CONFIG, 
@@ -14,6 +16,43 @@ import {
   SkillErrorType, 
   handleSkillErrors 
 } from '@/utils/skillErrorHandler';
+import {
+  SkillUsageContext,
+  SkillValidationResult,
+  RoleState,
+  RoleDesign,
+  SkillConfig as SkillConfigType,
+  SkillErrorType as SkillErrorTypeEnum,
+  SkillError,
+  RoleSkillUsageState,
+  LegacySkillUsageState,
+  isRoleSkillUsageState,
+  isLegacySkillUsageState,
+  DEFAULT_SKILL_CONFIGS
+} from '../types/skillSystem.types';
+
+/**
+ * 技能服务错误类
+ * 提供统一的技能相关错误处理
+ */
+export class SkillServiceError extends Error {
+  /**
+   * 创建技能服务错误实例
+   * @param message - 错误消息
+   * @param code - 错误代码
+   * @param skillName - 技能名称（可选）
+   * @param userId - 用户ID（可选）
+   */
+  constructor(
+    message: string,
+    public code: string,
+    public skillName?: string,
+    public userId?: string
+  ) {
+    super(message);
+    this.name = 'SkillServiceError';
+  }
+}
 
 export class EnhancedSkillServiceError extends Error {
   code?: string;
@@ -25,25 +64,6 @@ export class EnhancedSkillServiceError extends Error {
     this.code = code;
     this.skillId = skillId;
   }
-}
-
-export interface SkillUsageContext {
-  userId: string;
-  gameStateId: string;
-  roomId: string;
-  currentPhase: number;
-  currentRound: number;
-  roleState: any;
-  roleDesign: any;
-  targetUserId?: string;
-  additionalData?: Record<string, any>;
-}
-
-export interface SkillValidationResult {
-  isValid: boolean;
-  reason?: string;
-  conflictingSkills?: string[];
-  suggestedAction?: string;
 }
 
 const logger = createLogger('enhanced-skill-service');
@@ -63,83 +83,48 @@ export class EnhancedSkillService {
   }
 
   /**
-   * 获取角色的技能配置
+   * 获取角色技能配置
+   * @param roleDesign - 角色设计对象
+   * @returns 技能配置对象
+   * @throws {SkillServiceError} 当角色设计无效或技能配置不存在时
    */
-  private static getRoleSkillConfig(roleDesign: any): SkillConfig | null {
-    if (!roleDesign?.skill_name) {
-      return null;
+  static getRoleSkillConfig(roleDesign: RoleDesign): SkillConfigType {
+    const startTime = performance.now();
+    
+    try {
+      if (!roleDesign?.skill_name) {
+        throw new SkillServiceError(
+          '角色设计缺少技能名称',
+          'MISSING_SKILL_NAME',
+          undefined,
+          undefined
+        );
+      }
+
+      // 首先尝试从 SKILL_MAPPING_CONFIG 获取
+      const skillConfig = getSkillConfigByEnglish(roleDesign.skill_name);
+      if (skillConfig) {
+        performanceMonitoringService.recordMetric('skill_config_retrieval', performance.now() - startTime);
+        return skillConfig;
+      }
+
+      // 如果配置中没有，尝试从默认配置获取
+      const defaultConfig = DEFAULT_SKILL_CONFIGS[roleDesign.skill_name];
+      if (defaultConfig) {
+        performanceMonitoringService.recordMetric('skill_config_retrieval', performance.now() - startTime);
+        return defaultConfig;
+      }
+
+      throw new SkillServiceError(
+        `未找到技能配置: ${roleDesign.skill_name}`,
+        'SKILL_CONFIG_NOT_FOUND',
+        roleDesign.skill_name,
+        undefined
+      );
+    } catch (error) {
+      performanceMonitoringService.recordMetric('skill_config_retrieval_error', performance.now() - startTime);
+      throw error;
     }
-    
-    // 尝试通过英文名匹配
-    let skillConfig = getSkillConfigByEnglish(roleDesign.skill_name);
-    
-    // 如果没找到，尝试通过中文名匹配
-    if (!skillConfig && roleDesign.skill_description) {
-      skillConfig = getSkillConfigByChinese(roleDesign.skill_description);
-    }
-    
-    // 如果都没找到，尝试用映射配置直接查找
-    if (!skillConfig) {
-      // 检查是否是已知的技能名称，提供默认配置
-      const defaultConfigs: Record<string, SkillConfig> = {
-        'Sleep': {
-          id: 'villager_sleep',
-          chineseName: '睡觉',
-          englishName: 'Sleep',
-          priority: 1,
-          phase: 'night',
-          usageLimit: 'unlimited',
-          requiredStatus: ['normal'],
-          targetType: 'none',
-          effectType: ['passive'],
-          isPassive: true,
-          conflictsWith: []
-        },
-        'night_attack': {
-          id: 'werewolf_attack',
-          chineseName: '夜袭',
-          englishName: 'night_attack',
-          priority: 3,
-          phase: 'night',
-          usageLimit: 'unlimited',
-          requiredStatus: ['normal'],
-          targetType: 'single',
-          effectType: ['elimination'],
-          isPassive: false,
-          conflictsWith: []
-        },
-        'prophecy': {
-          id: 'seer_prophecy',
-          chineseName: '占卜',
-          englishName: 'prophecy',
-          priority: 4,
-          phase: 'night',
-          usageLimit: 'unlimited',
-          requiredStatus: ['normal'],
-          targetType: 'single',
-          effectType: ['investigation'],
-          isPassive: false,
-          conflictsWith: []
-        },
-        'magic_potion': {
-          id: 'witch_potion',
-          chineseName: '魔药',
-          englishName: 'magic_potion',
-          priority: 6,
-          phase: 'night',
-          usageLimit: 'unlimited', // 女巫可以多次使用技能，但每种魔药限制1次
-          requiredStatus: ['normal'],
-          targetType: 'single', // 魔药技能需要目标选择
-          effectType: ['protection', 'elimination'],
-          isPassive: false,
-          conflictsWith: []
-        }
-      };
-      
-      skillConfig = defaultConfigs[roleDesign.skill_name];
-    }
-    
-    return skillConfig;
   }
 
   /**
@@ -192,32 +177,81 @@ export class EnhancedSkillService {
 
   /**
    * 获取技能已使用次数
+   * @param roleState - 角色状态对象
+   * @param skillName - 技能名称
+   * @returns 已使用次数
    */
-  private static getSkillUsedCount(roleState: any, skillId: string): number {
-    // 检查角色状态中的技能使用记录
-    const skillUses = roleState?.skill_uses_remaining || {};
+  static getSkillUsedCount(roleState: RoleState, skillName: string): number {
+    const startTime = performance.now();
     
-    if (typeof skillUses === 'object' && skillUses[skillId]) {
-      return skillUses[skillId].used || 0;
+    try {
+      if (!roleState?.skill_uses_remaining) {
+        performanceMonitoringService.recordMetric('skill_usage_count_retrieval', performance.now() - startTime);
+        return 0;
+      }
+
+      const skillUsageState = roleState.skill_uses_remaining;
+      
+      // 检查是否为新版格式
+      if (isRoleSkillUsageState(skillUsageState)) {
+        const skillUsage = skillUsageState[skillName];
+        if (skillUsage) {
+          performanceMonitoringService.recordMetric('skill_usage_count_retrieval', performance.now() - startTime);
+          return skillUsage.used || 0;
+        }
+      }
+      
+      // 检查是否为旧版格式
+      if (isLegacySkillUsageState(skillUsageState)) {
+        const used = skillUsageState.total - skillUsageState.remaining;
+        performanceMonitoringService.recordMetric('skill_usage_count_retrieval', performance.now() - startTime);
+        return Math.max(0, used);
+      }
+
+      performanceMonitoringService.recordMetric('skill_usage_count_retrieval', performance.now() - startTime);
+      return 0;
+    } catch (error) {
+      performanceMonitoringService.recordMetric('skill_usage_count_retrieval_error', performance.now() - startTime);
+      logger.error('获取技能使用次数失败', { error, skillName, userId: roleState.user_id });
+      return 0;
     }
-    
-    // 如果 skill_uses_remaining 是旧格式，检查 remaining 字段
-    if (skillUses.total && skillUses.remaining !== undefined) {
-      return (skillUses.total - skillUses.remaining) || 0;
-    }
-    
-    return 0;
   }
 
   /**
-   * 检查技能是否在当前回合已使用
+   * 检查技能在当前回合是否已使用
+   * @param roleState - 角色状态对象
+   * @param skillName - 技能名称
+   * @param currentRound - 当前回合数
+   * @returns 是否已在当前回合使用过该技能
    */
-  private static hasSkillUsedInCurrentRound(roleState: any, skillId: string, currentRound: number): boolean {
-    // 检查当前回合的使用记录
-    const roundUses = roleState?.round_skill_uses || {};
-    const currentRoundUses = roundUses[currentRound] || [];
+  static hasSkillUsedInCurrentRound(roleState: RoleState, skillName: string, currentRound: number): boolean {
+    const startTime = performance.now();
     
-    return currentRoundUses.includes(skillId);
+    try {
+      if (!roleState?.round_skill_uses) {
+        performanceMonitoringService.recordMetric('skill_round_usage_check', performance.now() - startTime);
+        return false;
+      }
+
+      const roundSkillUses = roleState.round_skill_uses[currentRound];
+      if (!Array.isArray(roundSkillUses)) {
+        performanceMonitoringService.recordMetric('skill_round_usage_check', performance.now() - startTime);
+        return false;
+      }
+
+      const hasUsed = roundSkillUses.includes(skillName);
+      performanceMonitoringService.recordMetric('skill_round_usage_check', performance.now() - startTime);
+      return hasUsed;
+    } catch (error) {
+      performanceMonitoringService.recordMetric('skill_round_usage_check_error', performance.now() - startTime);
+      logger.error('检查技能回合使用状态失败', { 
+        error, 
+        skillName, 
+        currentRound, 
+        userId: roleState.user_id 
+      });
+      return false;
+    }
   }
 
   /**
@@ -299,9 +333,12 @@ export class EnhancedSkillService {
       });
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '技能使用失败';
+      const errorCode = error instanceof SkillServiceError ? error.code : 'SKILL_USE_ERROR';
+      
       // 网络错误处理
-      if (error.name === 'NetworkError' || error.message?.includes('fetch')) {
+      if (error instanceof Error && (error.name === 'NetworkError' || error.message?.includes('fetch'))) {
         const networkError = SkillErrorHandler.createError(
           SkillErrorType.NETWORK_ERROR,
           'NETWORK_ERROR',
@@ -315,6 +352,14 @@ export class EnhancedSkillService {
         throw networkError;
       }
       
+      logger.error('技能使用失败', { 
+        error: error, 
+        context: {
+          userId: context.userId,
+          skillName: skillConfig.chineseName,
+          gameStateId: context.gameStateId
+        }
+      });
       throw error;
     }
   }

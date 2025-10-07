@@ -1,5 +1,10 @@
-// 增强的技能面板组件 - 基于新的技能系统设计
-import React, { useState, useMemo, useEffect } from 'react';
+/**
+ * 文件级注释：增强的技能面板组件
+ * - 基于新的技能系统设计
+ * - 优化渲染性能，减少不必要的重渲染
+ * - 使用 React.memo 和 useCallback 进行性能优化
+ */
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +26,9 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EnhancedSkillPanel');
 
+/**
+ * 接口注释：增强技能面板组件属性
+ */
 interface EnhancedSkillPanelProps {
   roomId: string;
   gameStateId: string;
@@ -33,7 +41,13 @@ interface EnhancedSkillPanelProps {
   isJudge?: boolean;
 }
 
-const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
+/**
+ * 类级注释：增强技能面板组件
+ * - 使用 React.memo 优化渲染性能
+ * - 集成技能系统和女巫魔药管理
+ * - 支持法官管理功能
+ */
+const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = React.memo(({
   roomId,
   gameStateId,
   userId,
@@ -73,28 +87,36 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
     return getSkillConfigByEnglish(roleDesign.skill_name);
   }, [roleDesign]);
 
-  // 获取技能使用建议
-  useEffect(() => {
-    const fetchSuggestion = async () => {
-      try {
-        const result = await getSkillSuggestion(
-          roleState,
-          roleDesign,
-          currentPhase,
-          currentRound,
-          selectedTarget
-        );
-        setSuggestion(result);
-      } catch (error) {
-        logger.error('获取技能建议失败:', error);
-        setSuggestion(null);
-      }
-    };
+  /**
+   * 函数级注释：获取技能使用建议
+   * - 使用 useCallback 优化性能
+   * - 避免不必要的重新渲染
+   */
+  const fetchSuggestion = useCallback(async () => {
+    if (!roleState || !roleDesign) {
+      setSuggestion(null);
+      return;
+    }
 
-    if (roleState && roleDesign) {
-      fetchSuggestion();
+    try {
+      const result = await getSkillSuggestion(
+        roleState,
+        roleDesign,
+        currentPhase,
+        currentRound,
+        selectedTarget
+      );
+      setSuggestion(result);
+    } catch (error) {
+      logger.error('获取技能建议失败:', error);
+      setSuggestion(null);
     }
   }, [getSkillSuggestion, roleState, roleDesign, currentPhase, currentRound, selectedTarget]);
+
+  // 获取技能使用建议
+  useEffect(() => {
+    fetchSuggestion();
+  }, [fetchSuggestion]);
 
   // 获取用户技能数据
   const userSkillData = getUserSkillData();
@@ -107,9 +129,13 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
     );
   }, [players, userId]);
 
-  // 技能使用处理
-  const handleUseSkill = async () => {
-    if (!skillConfig) return;
+  /**
+   * 函数级注释：技能使用处理
+   * - 使用 useCallback 优化性能
+   * - 包含技能验证和使用逻辑
+   */
+  const handleUseSkill = useCallback(async () => {
+    if (!skillConfig || !roleDesign) return;
 
     // 特殊处理女巫魔药
     if (skillConfig.englishName === 'magic_potion') {
@@ -139,7 +165,6 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       return;
     }
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const result = await useSkillEnhanced(
       skillConfig.englishName,
       selectedTarget || undefined,
@@ -153,16 +178,34 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
     if (result) {
       setSelectedTarget('');
     }
-  };
+  }, [
+    skillConfig,
+    roleDesign,
+    getUserSkillData,
+    validateSkillUsage,
+    currentPhase,
+    currentRound,
+    useSkillEnhanced,
+    selectedTarget,
+    roleState
+  ]);
 
-  // 冲突解决处理（法官专用）
-  const handleResolveConflicts = async () => {
+  /**
+   * 函数级注释：冲突解决处理（法官专用）
+   * - 使用 useCallback 优化性能
+   * - 仅法官可用的功能
+   */
+  const handleResolveConflicts = useCallback(async () => {
     if (!isJudge) return;
     await resolveSkillConflicts(currentRound);
-  };
+  }, [isJudge, resolveSkillConflicts, currentRound]);
 
-  // 获取效果图标
-  const getEffectIcon = (effectType: string) => {
+  /**
+   * 函数级注释：获取效果图标
+   * - 使用 useCallback 优化性能
+   * - 根据效果类型返回对应图标
+   */
+  const getEffectIcon = useCallback((effectType: string) => {
     switch (effectType) {
       case 'elimination': return <Skull className="w-4 h-4" />;
       case 'protection': return <Shield className="w-4 h-4" />;
@@ -171,20 +214,28 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       case 'passive': return <Clock className="w-4 h-4" />;
       default: return <Target className="w-4 h-4" />;
     }
-  };
+  }, []);
 
-  // 获取优先级颜色
-  const getPriorityColor = (priority: 'high' | 'medium' | 'low') => {
+  /**
+   * 函数级注释：获取优先级颜色
+   * - 使用 useCallback 优化性能
+   * - 根据优先级返回对应颜色类名
+   */
+  const getPriorityColor = useCallback((priority: 'high' | 'medium' | 'low') => {
     switch (priority) {
       case 'high': return 'bg-red-500';
       case 'medium': return 'bg-yellow-500';
       case 'low': return 'bg-green-500';
       default: return 'bg-gray-500';
     }
-  };
+  }, []);
 
-  // 获取状态图标
-  const _getStatusIcon = (status: string) => {
+  /**
+   * 函数级注释：获取状态图标
+   * - 使用 useCallback 优化性能
+   * - 根据状态返回对应图标
+   */
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
@@ -192,7 +243,7 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       case 'failed': return <AlertTriangle className="w-4 h-4 text-red-500" />;
       default: return <Info className="w-4 h-4 text-gray-500" />;
     }
-  };
+  }, []);
 
   if (!skillConfig) {
     return (
@@ -460,6 +511,9 @@ const EnhancedSkillPanel: React.FC<EnhancedSkillPanelProps> = ({
       </Tabs>
     </div>
   );
-};
+});
+
+// 设置 displayName 以便调试
+EnhancedSkillPanel.displayName = 'EnhancedSkillPanel';
 
 export default EnhancedSkillPanel;

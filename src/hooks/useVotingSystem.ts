@@ -4,6 +4,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { VotingService } from '@/services/votingService';
 import { useAuth } from '@/providers/AuthProvider';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('voting-system');
 
 export interface VotingSession {
   id: string;
@@ -90,7 +93,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       setCurrentSession(session);
       return session;
     } catch (error) {
-      console.error('Error fetching voting session:', error);
+      logger.error('获取投票会话失败', { error, gameStateId, roundNumber, phase });
       return null;
     }
   }, [gameStateId]);
@@ -108,7 +111,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       if (error) throw error;
       setVotes(data || []);
     } catch (error) {
-      console.error('Error fetching votes:', error);
+      logger.error('获取投票记录失败', { error, sessionId });
     }
   }, []);
 
@@ -124,7 +127,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       if (error) throw error;
       setResults(data || []);
     } catch (error) {
-      console.error('Error fetching voting results:', error);
+      logger.error('获取投票结果失败', { error, sessionId });
     }
   }, []);
 
@@ -304,13 +307,13 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
     if (!gameStateId || !roomId || phase !== 1) return;
 
     try {
-      console.log('Checking for existing voting session:', { gameStateId, roundNumber, phase });
+      logger.debug('检查现有投票会话', { gameStateId, roundNumber, phase });
       
       // 检查是否已存在该轮次阶段的投票会话
       const existingSession = await fetchCurrentSession(roundNumber, phase);
       
       if (!existingSession) {
-        console.log(`Creating missing voting session for round ${roundNumber}, phase ${phase}`, {
+        logger.info('创建缺失的投票会话', {
           gameStateId,
           roomId,
           roundNumber,
@@ -319,7 +322,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         
         const sessionId = await createVotingSession(roundNumber, phase, 'day_vote');
         if (sessionId) {
-          console.log('Voting session created successfully:', sessionId);
+          logger.info('投票会话创建成功', { sessionId });
           // 重新获取创建的会话
           await fetchCurrentSession(roundNumber, phase);
           toast({
@@ -327,13 +330,13 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
             description: `第${roundNumber}轮白天投票已开始`,
           });
         } else {
-          console.error('Failed to create voting session - no session ID returned');
+          logger.error('创建投票会话失败 - 未返回会话ID');
         }
       } else {
-        console.log('Existing voting session found:', existingSession);
+        logger.debug('找到现有投票会话', { sessionId: existingSession.id });
       }
     } catch (error) {
-      console.error('Error ensuring day voting session:', error);
+      logger.error('确保白天投票会话失败', { error, gameStateId, roundNumber, phase });
     }
   }, [gameStateId, roomId, fetchCurrentSession, createVotingSession, toast]);
 
@@ -359,7 +362,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
       return true;
     } catch (error) {
-      console.error('Error casting vote:', error);
+      logger.error('投票失败', { error, voterId, targetId, sessionId: currentSession?.id });
       toast({
         title: '投票失败',
         description: '请重试',
@@ -388,7 +391,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
       return true;
     } catch (error) {
-      console.error('Error calculating results:', error);
+      logger.error('计算投票结果失败', { error, sessionId: targetSessionId });
       toast({
         title: '计算投票结果失败',
         description: '请重试',
@@ -414,7 +417,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
       return true;
     } catch (error) {
-      console.error('Error processing result:', error);
+      logger.error('处理投票结果失败', { error, resultId });
       toast({
         title: '处理投票结果失败',
         description: '请重试',
@@ -500,7 +503,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         .eq('processing_status', 'pending');
 
       if (resultsError) {
-        console.error('获取投票结果失败:', resultsError);
+        logger.error('获取投票结果失败', { error: resultsError, sessionId });
         toast({
           title: '处理失败',
           description: '无法获取投票结果',
@@ -526,11 +529,11 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
           });
 
           if (processError) {
-            console.error(`处理投票结果 ${result.id} 失败:`, processError);
+            logger.error('处理投票结果失败', { error: processError, resultId: result.id });
             allSuccess = false;
           }
         } catch (error) {
-          console.error(`处理投票结果 ${result.id} 异常:`, error);
+          logger.error('处理投票结果异常', { error, resultId: result.id });
           allSuccess = false;
         }
       }
@@ -550,7 +553,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
       return allSuccess;
     } catch (error) {
-      console.error('处理增强投票结果时发生错误:', error);
+      logger.error('处理增强投票结果时发生错误', { error, sessionId, roomId, gameStateId });
       toast({
         title: '投票结果处理错误',
         description: '系统错误，请联系管理员',
@@ -578,7 +581,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       // 2. 然后处理投票结果
       return await processEnhancedVotingResult(sessionId, roomId, gameStateId);
     } catch (error) {
-      console.error('计算并处理投票结果时发生错误:', error);
+      logger.error('计算并处理投票结果时发生错误', { error, sessionId, roomId, gameStateId });
       toast({
         title: '投票处理错误',
         description: '计算或处理投票结果时发生错误',

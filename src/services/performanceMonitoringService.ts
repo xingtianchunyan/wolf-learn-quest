@@ -312,6 +312,35 @@ class PerformanceMonitoringService {
     this.lastAlertTime.clear();
     logger.info('All alerts cleared');
   }
+
+  /**
+   * 清除所有指标数据
+   */
+  clearMetrics(): void {
+    this.metrics = [];
+    this.alerts = [];
+    this.lastAlertTime.clear();
+    logger.info('All metrics and alerts cleared');
+  }
+
+  /**
+   * 获取监控状态
+   */
+  getMonitoringStatus(): {
+    enabled: boolean;
+    metricsCount: number;
+    alertsCount: number;
+    samplingRate: number;
+  } {
+    return {
+      enabled: this.isEnabled,
+      metricsCount: this.metrics.length,
+      alertsCount: this.alerts.length,
+      samplingRate: import.meta.env.DEV 
+        ? MONITORING_CONFIG.samplingRate.development 
+        : MONITORING_CONFIG.samplingRate.production,
+    };
+  }
 }
 
 // 导出单例

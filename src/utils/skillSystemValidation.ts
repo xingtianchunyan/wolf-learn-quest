@@ -1,35 +1,78 @@
-// 统一技能系统验证 - 整合增强版本和原版本
+/**
+ * 统一技能系统验证文件
+ * 整合增强版本和原版本，提供严格的类型安全
+ */
 import { createLogger } from '@/lib/logger';
 import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig } from '@/utils/skillMappingConfig';
+import {
+  RoleState,
+  RoleDesign,
+  SkillValidationResult,
+  SkillValidationDetails,
+  GamePhase,
+  RoleStatus,
+  SkillUsageRecord,
+  RoleSkillUsageState,
+  LegacySkillUsageState,
+  isRoleSkillUsageState,
+  isLegacySkillUsageState,
+  isValidRoleStatus,
+  isValidGamePhase
+} from '../types/skillSystem.types';
 
 const logger = createLogger('skill-validation-unified');
 
+/**
+ * 技能验证错误接口
+ */
 export interface SkillValidationError {
+  /** 错误代码 */
   code: string;
+  /** 错误消息 */
   message: string;
-  details?: Record<string, any>;
+  /** 错误详情 */
+  details?: Record<string, unknown>;
+  /** 建议操作 */
   suggestedAction?: string;
 }
 
+/**
+ * 验证结果接口（兼容旧接口）
+ */
 export interface ValidationResult {
+  /** 是否有效 */
   valid: boolean;
-  canUse: boolean; // 兼容旧接口
+  /** 是否可以使用（兼容旧接口） */
+  canUse: boolean;
+  /** 失败原因 */
   reason?: string;
+  /** 建议操作 */
   suggestedAction?: string;
 }
 
+/**
+ * 技能使用限制验证结果接口
+ */
 export interface SkillUseLimitValidation {
+  /** 是否可以使用 */
   canUse: boolean;
+  /** 剩余使用次数 */
   remainingUses?: number;
+  /** 失败原因 */
   reason?: string;
 }
 
 /**
  * 技能使用次数限制验证
+ * @param skillConfig - 技能配置对象
+ * @param roleState - 角色状态对象
+ * @param currentRound - 当前回合数
+ * @param currentPhase - 当前阶段（可选）
+ * @returns 技能使用限制验证结果
  */
 export const validateSkillUseLimits = (
   skillConfig: SkillConfig,
-  roleState: any,
+  roleState: RoleState,
   currentRound: number,
   currentPhase?: number
 ): SkillUseLimitValidation => {
@@ -67,21 +110,47 @@ export const validateSkillUseLimits = (
 
   // 有限次数技能验证
   if (typeof skillConfig.usageLimit === 'number') {
-    const skillUses = roleState?.skill_uses_remaining || {};
-    const skillData = skillUses[skillConfig.id] || { used: 0, remaining: skillConfig.usageLimit };
+    const skillUsageState = roleState?.skill_uses_remaining;
     
-    if (skillData.used >= skillConfig.usageLimit) {
+    if (!skillUsageState) {
+      return { canUse: true, remainingUses: skillConfig.usageLimit };
+    }
+
+    // 检查是否为新版格式
+    if (isRoleSkillUsageState(skillUsageState)) {
+      const skillData = skillUsageState[skillConfig.id];
+      if (skillData && skillData.used >= skillConfig.usageLimit) {
+        return {
+          canUse: false,
+          remainingUses: 0,
+          reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`
+        };
+      }
+      
       return {
-        canUse: false,
-        remainingUses: 0,
-        reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`
+        canUse: true,
+        remainingUses: skillData ? skillData.remaining : skillConfig.usageLimit
+      };
+    }
+
+    // 检查是否为旧版格式
+    if (isLegacySkillUsageState(skillUsageState)) {
+      const used = skillUsageState.total - skillUsageState.remaining;
+      if (used >= skillConfig.usageLimit) {
+        return {
+          canUse: false,
+          remainingUses: 0,
+          reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`
+        };
+      }
+      
+      return {
+        canUse: true,
+        remainingUses: skillUsageState.remaining
       };
     }
     
-    return {
-      canUse: true,
-      remainingUses: skillConfig.usageLimit - skillData.used
-    };
+    return { canUse: true, remainingUses: skillConfig.usageLimit };
   }
 
   logger.warn('未知的技能使用限制类型', { usageLimit: skillConfig.usageLimit });
@@ -90,19 +159,29 @@ export const validateSkillUseLimits = (
 
 /**
  * 角色状态验证
+ * @param requiredStatus - 技能要求的角色状态列表
+ * @param currentStatus - 当前角色状态
+ * @returns 验证结果
  */
 export const validateRoleStatus = (
   requiredStatus: string[],
-  currentStatus: number
+  currentStatus: RoleStatus
 ): { valid: boolean; reason?: string } => {
-  const statusNames = {
-    1: 'normal',
-    2: 'dying', 
-    3: 'weak',
-    4: 'eliminated'
+  if (!isValidRoleStatus(currentStatus)) {
+    return {
+      valid: false,
+      reason: '无效的角色状态'
+    };
+  }
+
+  const statusNames: Record<RoleStatus, string> = {
+    [RoleStatus.NORMAL]: 'normal',
+    [RoleStatus.DYING]: 'dying',
+    [RoleStatus.WEAK]: 'weak',
+    [RoleStatus.ELIMINATED]: 'eliminated'
   };
   
-  const currentStatusName = statusNames[currentStatus as keyof typeof statusNames] || 'normal';
+  const currentStatusName = statusNames[currentStatus];
   
   if (!requiredStatus.includes(currentStatusName)) {
     return {
@@ -116,13 +195,30 @@ export const validateRoleStatus = (
 
 /**
  * 技能阶段验证
+ * @param requiredPhase - 技能要求的游戏阶段
+ * @param currentPhase - 当前游戏阶段（1-4对应day, evening, night, dawn）
+ * @returns 验证结果
  */
 export const validateSkillPhase = (
-  requiredPhase: string,
+  requiredPhase: GamePhase,
   currentPhase: number
 ): { valid: boolean; reason?: string } => {
-  const phaseNames = ['day', 'evening', 'night', 'dawn'];
-  const currentPhaseName = phaseNames[currentPhase - 1] || 'day';
+  const phaseNames: GamePhase[] = ['day', 'evening', 'night', 'dawn'];
+  const currentPhaseName = phaseNames[currentPhase - 1];
+  
+  if (!currentPhaseName || !isValidGamePhase(currentPhaseName)) {
+    return {
+      valid: false,
+      reason: '无效的游戏阶段'
+    };
+  }
+
+  if (!isValidGamePhase(requiredPhase)) {
+    return {
+      valid: false,
+      reason: '无效的技能要求阶段'
+    };
+  }
   
   if (requiredPhase !== currentPhaseName) {
     return {
@@ -195,10 +291,18 @@ export const validateWerewolfAttackTarget = async (
 /**
  * 统一的技能验证错误处理
  */
+/**
+ * 创建技能验证错误对象
+ * @param code - 错误代码
+ * @param message - 错误消息
+ * @param details - 错误详情（可选）
+ * @param suggestedAction - 建议操作（可选）
+ * @returns 技能验证错误对象
+ */
 export const createSkillValidationError = (
   code: string,
   message: string,
-  details?: Record<string, any>,
+  details?: Record<string, unknown>,
   suggestedAction?: string
 ): SkillValidationError => {
   logger.error('技能验证失败', { code, message, details });
@@ -212,25 +316,62 @@ export const createSkillValidationError = (
 };
 
 /**
+ * 女巫魔药使用验证接口
+ */
+export interface WitchGameContext {
+  /** 游戏状态ID */
+  gameStateId: string;
+  /** 当前回合数 */
+  currentRound: number;
+  /** 夜晚死亡信息 */
+  nightDeaths?: Array<{
+    userId: string;
+    cause: string;
+    round: number;
+  }>;
+}
+
+/**
  * 女巫技能特殊验证 - 增强版本
+ * @param potionType - 魔药类型（保护或攻击）
+ * @param roleState - 角色状态对象
+ * @param gameContext - 游戏上下文（可选）
+ * @returns 技能使用限制验证结果
  */
 export const validateWitchPotionUsage = (
   potionType: 'protection' | 'attack',
-  roleState: any,
-  gameContext?: {
-    gameStateId: string;
-    currentRound: number;
-    nightDeaths?: any[];
-  }
+  roleState: RoleState,
+  gameContext?: WitchGameContext
 ): SkillUseLimitValidation => {
-  logger.debug('验证女巫药剂使用', { potionType, roleState: roleState?.id });
+  logger.debug('验证女巫药剂使用', { potionType, roleState: roleState?.user_id });
   
-  const witchUses = roleState?.skill_uses_remaining?.witch_potion || { 
-    protection_used: false, 
-    attack_used: false 
-  };
+  const skillUsageState = roleState?.skill_uses_remaining;
   
-  const usedKey = `${potionType}_used`;
+  if (!skillUsageState) {
+    return { canUse: true };
+  }
+
+  // 检查女巫魔药使用状态
+  let witchUses: { protection_used?: boolean; attack_used?: boolean } = {};
+  
+  if (isRoleSkillUsageState(skillUsageState)) {
+    const witchPotionUsage = skillUsageState['witch_potion'];
+    if (witchPotionUsage) {
+      // 从新版格式中提取女巫魔药使用状态
+      witchUses = {
+        protection_used: witchPotionUsage.used > 0,
+        attack_used: witchPotionUsage.used > 1
+      };
+    }
+  } else {
+    // 旧版格式可能直接包含女巫魔药状态
+    witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch_potion as typeof witchUses || {
+      protection_used: false,
+      attack_used: false
+    };
+  }
+  
+  const usedKey = `${potionType}_used` as keyof typeof witchUses;
   
   if (witchUses[usedKey]) {
     return {
@@ -298,10 +439,15 @@ export const validatePassiveSkillTrigger = (
 
 /**
  * 简化的技能使用验证 - 减少误判，提高用户体验
+ * @param roleDesign - 角色设计对象
+ * @param roleState - 角色状态对象
+ * @param currentPhase - 当前游戏阶段
+ * @param targetUserId - 目标用户ID（可选）
+ * @returns 验证结果
  */
 export const validateSkillUsageSimplified = (
-  roleDesign: any,
-  roleState: any,
+  roleDesign: RoleDesign,
+  roleState: RoleState,
   currentPhase: number,
   targetUserId?: string
 ): ValidationResult => {
@@ -360,13 +506,32 @@ export const validateSkillUsageSimplified = (
 };
 
 /**
+ * 可用玩家信息接口
+ */
+export interface AvailablePlayer {
+  /** 用户ID */
+  userId: string;
+  /** 用户名 */
+  username?: string;
+  /** 角色名 */
+  roleName?: string;
+  /** 是否存活 */
+  isAlive: boolean;
+}
+
+/**
  * 获取技能使用建议
+ * @param roleDesign - 角色设计对象
+ * @param roleState - 角色状态对象
+ * @param currentPhase - 当前游戏阶段
+ * @param availablePlayers - 可用玩家列表
+ * @returns 技能使用建议文本
  */
 export const getSkillUsageSuggestion = (
-  roleDesign: any,
-  roleState: any,
+  roleDesign: RoleDesign,
+  roleState: RoleState,
   currentPhase: number,
-  availablePlayers: any[] = []
+  availablePlayers: AvailablePlayer[] = []
 ): string => {
   if (!roleDesign?.skill_name) {
     return '当前角色没有可用技能';
@@ -437,26 +602,49 @@ export const checkSkillCooldown = (
 
 /**
  * 检查技能使用次数限制
+ * @param skillName - 技能名称
+ * @param usedCount - 已使用次数
+ * @param roleState - 角色状态对象
+ * @returns 验证结果
  */
 export const checkSkillUsageLimit = (
   skillName: string,
   usedCount: number,
-  roleState: any
+  roleState: RoleState
 ): ValidationResult => {
   // 女巫的魔药特殊处理
   if (skillName === 'magic_potion') {
-    const witchUses = roleState?.skill_uses_remaining?.witch_potion || {};
-    const protectionUsed = witchUses.protection_used || false;
-    const attackUsed = witchUses.attack_used || false;
+    const skillUsageState = roleState?.skill_uses_remaining;
     
-    // 如果两种药都用过了，就不能再使用
-    if (protectionUsed && attackUsed) {
-      return {
-        valid: false,
-        canUse: false,
-        reason: '解药和毒药都已经使用过',
-        suggestedAction: '女巫的魔药已用完'
-      };
+    if (skillUsageState) {
+      let protectionUsed = false;
+      let attackUsed = false;
+      
+      if (isRoleSkillUsageState(skillUsageState)) {
+        const witchPotionUsage = skillUsageState['witch_potion'];
+        if (witchPotionUsage) {
+          protectionUsed = witchPotionUsage.used > 0;
+          attackUsed = witchPotionUsage.used > 1;
+        }
+      } else {
+        // 旧版格式处理
+        const witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch_potion as {
+          protection_used?: boolean;
+          attack_used?: boolean;
+        } || {};
+        protectionUsed = witchUses.protection_used || false;
+        attackUsed = witchUses.attack_used || false;
+      }
+      
+      // 如果两种药都用过了，就不能再使用
+      if (protectionUsed && attackUsed) {
+        return {
+          valid: false,
+          canUse: false,
+          reason: '解药和毒药都已经使用过',
+          suggestedAction: '女巫的魔药已用完'
+        };
+      }
     }
   }
 
@@ -474,21 +662,103 @@ export const checkSkillUsageLimit = (
 };
 
 /**
+ * 游戏状态接口
+ */
+export interface GameState {
+  /** 当前游戏阶段 */
+  currentPhase: GamePhase;
+  /** 当前轮次 */
+  currentRound: number;
+  /** 游戏状态 */
+  gameStatus: string;
+  /** 存活玩家列表 */
+  alivePlayers?: string[];
+  /** 其他游戏状态数据 */
+  [key: string]: unknown;
+}
+
+/**
+ * 验证技能使用条件
+ * @param skillName - 技能名称
+ * @param gameState - 游戏状态对象
+ * @param roleState - 角色状态对象
+ * @param targetUserId - 目标用户ID（可选）
+ * @returns 验证结果
+ */
+export const validateSkillConditions = (
+  skillName: string,
+  gameState: GameState,
+  roleState: RoleState,
+  targetUserId?: string
+): ValidationResult => {
+  // 基础验证逻辑
+  if (!skillName) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '技能名称不能为空'
+    };
+  }
+
+  if (!gameState || !roleState) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '游戏状态或角色状态无效'
+    };
+  }
+
+  // 检查角色是否存活
+  if (roleState.role_status === RoleStatus.ELIMINATED) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '已淘汰的角色无法使用技能'
+    };
+  }
+
+  return { valid: true, canUse: true };
+};
+
+/**
+ * 技能执行队列项接口
+ */
+export interface SkillQueueItem {
+  /** 技能名称 */
+  skillName: string;
+  /** 执行优先级 */
+  priority: number;
+  /** 使用者用户ID */
+  userId: string;
+  /** 目标用户ID（可选） */
+  targetUserId?: string;
+}
+
+/**
+ * 技能执行顺序验证结果接口
+ */
+export interface SkillExecutionOrderResult {
+  /** 执行顺序是否有效 */
+  validOrder: boolean;
+  /** 冲突列表 */
+  conflicts: string[];
+  /** 建议的执行顺序 */
+  suggestedOrder: SkillQueueItem[];
+}
+
+/**
  * 技能执行优先级验证
+ * @param skillQueue - 技能执行队列
+ * @returns 验证结果
  */
 export const validateSkillExecutionOrder = (
-  skillQueue: Array<{
-    skillName: string;
-    priority: number;
-    userId: string;
-    targetUserId?: string;
-  }>
-): { validOrder: boolean; conflicts: string[]; suggestedOrder: any[] } => {
+  skillQueue: SkillQueueItem[]
+): SkillExecutionOrderResult => {
   const conflicts: string[] = [];
   const sortedQueue = [...skillQueue].sort((a, b) => a.priority - b.priority);
   
   // 检查是否有相同目标的冲突技能
-  const targetMap = new Map<string, any[]>();
+  const targetMap = new Map<string, SkillQueueItem[]>();
   
   sortedQueue.forEach(skill => {
     if (skill.targetUserId) {
