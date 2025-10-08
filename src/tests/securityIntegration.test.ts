@@ -19,7 +19,7 @@
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 

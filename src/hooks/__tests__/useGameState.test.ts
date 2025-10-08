@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client');
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({
     toast: vi.fn()
   })

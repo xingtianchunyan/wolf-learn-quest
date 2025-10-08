@@ -19,8 +19,7 @@ import {
   unifiedErrorSystem,
   ErrorType,
   ErrorSeverity,
-  ErrorHandlingStrategy,
-  withErrorHandling
+  ErrorHandlingStrategy
 } from '@/utils/unifiedErrorSystem';
 import { AppError, ErrorCode } from '@/utils/errorHandler';
 import { SkillErrorType } from '@/utils/skillErrorHandler';

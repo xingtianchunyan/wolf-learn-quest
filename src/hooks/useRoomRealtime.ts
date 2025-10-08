@@ -1,76 +1,66 @@
+import { supabase  } from '@/integrations/supabase/client';
+import { useEffect, useState  } from 'react';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-interface RoomRealtimeData {
-  maxPlayers: number;
+interface RoomRealtimeData { maxPlayers: number;
   status: string;
   judge_user_id?: string | null;
-  lastUpdate: Date;
+  lastUpdate: Date;,
 }
 
-export const useRoomRealtime = (roomId: string) => {
-  const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
+export const useRoomRealtime = (roomId: string) => { const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
 
     // Subscribe to room changes
-    const channel = supabase
-      .channel(`room_${roomId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'rooms',
-          filter: `id=eq.${roomId}`
+    const channel = supabase;
+    .channel(`room_${roomId }`)
+    .on(
+      'postgres_changes',
+      { event: '*',
+        schema: 'public',
+        table: 'rooms',
+        filter: `id=eq.${roomId }`;,
+},
+      payload => { console.log('Room update received:', payload);
+        if (payload.new && typeof payload.new === 'object') {
+          const newData = payload.new as any;
+          if (newData.max_players !== undefined && newData.status !== undefined) {
+            setRoomData({
+              maxPlayers: newData.max_players,
+              status: newData.status,
+              judge_user_id: newData.judge_user_id,
+              lastUpdate: new Date(),
+});,
+}
         },
-        (payload) => {
-          console.log('Room update received:', payload);
-          if (payload.new && typeof payload.new === 'object') {
-            const newData = payload.new as any;
-            if (newData.max_players !== undefined && newData.status !== undefined) {
-              setRoomData({
-                maxPlayers: newData.max_players,
-                status: newData.status,
-                judge_user_id: newData.judge_user_id,
-                lastUpdate: new Date()
-              });
-            }
-          }
-        }
-      )
-      .subscribe();
+}
+    )
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [roomId]);
+    return () => { supabase.removeChannel(channel);,
+};,
+}, [roomId]);
 
-  const updateMaxPlayers = async (newMaxPlayers: number) => {
-    if (!roomId) return false;
+  const updateMaxPlayers = async (newMaxPlayers: number) => { if (!roomId) return false;
 
     try {
-      const { error } = await supabase
-        .from('rooms')
-        .update({ max_players: newMaxPlayers })
-        .eq('id', roomId);
+      const { error  } = await supabase;
+      .from('rooms')
+      .update({ max_players: newMaxPlayers  })
+      .eq('id', roomId);
 
-      if (error) {
-        console.error('Error updating max players:', error);
-        return false;
-      }
+      if (error) { console.error('Error updating max players:', error);
+        return false;,
+}
 
-      return true;
-    } catch (error) {
-      console.error('Error updating max players:', error);
-      return false;
-    }
+      return true;,
+} catch (error) { console.error('Error updating max players:', error);
+      return false;,
+}
   };
 
-  return {
-    roomData,
-    updateMaxPlayers
-  };
+  return { roomData,
+    updateMaxPlayers,
+};,
 };

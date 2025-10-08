@@ -14,7 +14,6 @@ import { securityAuditService } from '@/services/securityAuditService';
 import { optimizedQueryCache } from '@/utils/optimizedQueryCache';
 import { memoryManager } from '@/utils/memoryManagementSystem';
 import { renderOptimizer } from '@/utils/componentRenderOptimizer';
-import { optimizedRenderingSystem } from '@/utils/optimizedRenderingSystem';
 
 describe('质量优化系统集成测试', () => {
   let errorSystem: UnifiedErrorSystem;

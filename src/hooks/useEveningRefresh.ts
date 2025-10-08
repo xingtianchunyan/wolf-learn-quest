@@ -1,17 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef  } from 'react';
 
 // Minimal shape to avoid importing full GameState type
-interface MinimalGameState {
-  id: string;
+interface MinimalGameState { id: string;
   currentPhase: number;
-  currentRound: number;
+  currentRound: number;,
 }
 
-export const useEveningRefresh = (
+export const useEveningRefresh = (;
   gameState?: MinimalGameState | null,
-  delayMs: number = 800
-) => {
-  const prevPhaseRef = useRef<number | null>(null);
+  delayMs: number = 800;
+) => { const prevPhaseRef = useRef<number | null>(null);
   const lastRefreshedRoundRef = useRef<number | null>(null);
   const refreshTriggeredRef = useRef(false);
 
@@ -27,11 +25,11 @@ export const useEveningRefresh = (
         // Delay a bit to allow DB updates to propagate via realtime
         setTimeout(() => {
           // Full reload to guarantee UI consistency across pages as requested
-          window.location.reload();
-        }, delayMs);
-      }
+          window.location.reload();,
+}, delayMs);,
+}
     }
 
-    prevPhaseRef.current = currentPhase;
-  }, [gameState?.currentPhase, gameState?.currentRound, delayMs]);
+    prevPhaseRef.current = currentPhase;,
+}, [gameState?.currentPhase, gameState?.currentRound, delayMs]);,
 };

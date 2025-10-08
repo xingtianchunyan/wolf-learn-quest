@@ -172,7 +172,7 @@ class BasicPerformanceMonitor {
    */
   getAverageTime(name: string): number {
     const relevantMetrics = this.metrics.filter(m => m.name === name);
-    if (relevantMetrics.length === 0) return 0;
+    if (relevantMetrics.length === 0) {return 0;}
 
     const totalTime = relevantMetrics.reduce((sum, m) => sum + m.duration, 0);
     return totalTime / relevantMetrics.length;
@@ -413,7 +413,7 @@ describe('基础功能测试', () => {
      */
     it('性能监控不应该影响函数执行结果', async () => {
       const complexFunction = (n: number) => {
-        if (n <= 1) return n;
+        if (n <= 1) {return n;}
         return complexFunction(n - 1) + complexFunction(n - 2);
       };
 

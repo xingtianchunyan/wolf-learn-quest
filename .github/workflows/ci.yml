@@ -1,0 +1,365 @@
+# CI/CD 工作流配置
+# 自动化构建、测试和部署流程
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  # 代码质量检查
+  quality-check:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: 获取 pnpm 存储目录
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: 设置 pnpm 缓存
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: 安装依赖
+      run: pnpm install --frozen-lockfile
+
+    - name: 代码格式检查
+      run: pnpm run format:check
+
+    - name: ESLint 检查
+      run: pnpm run lint
+
+    - name: TypeScript 类型检查
+      run: pnpm run type-check
+
+    - name: 代码质量分析
+      run: pnpm run quality:analyze
+
+    - name: 上传质量报告
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: quality-reports
+        path: reports/
+        retention-days: 30
+
+  # 单元测试
+  unit-tests:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    needs: quality-check
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: 获取 pnpm 存储目录
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: 设置 pnpm 缓存
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: 安装依赖
+      run: pnpm install --frozen-lockfile
+
+    - name: 运行单元测试
+      run: pnpm run test:unit
+
+    - name: 生成测试覆盖率报告
+      run: pnpm run test:coverage
+
+    - name: 上传覆盖率报告到 Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: 上传测试报告
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-reports
+        path: |
+          coverage/
+          test-results/
+        retention-days: 30
+
+  # 端到端测试
+  e2e-tests:
+    name: 端到端测试
+    runs-on: ubuntu-latest
+    needs: quality-check
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: 安装依赖
+      run: pnpm install --frozen-lockfile
+
+    - name: 构建应用
+      run: pnpm run build
+
+    - name: 安装 Playwright
+      run: pnpm exec playwright install --with-deps
+
+    - name: 运行端到端测试
+      run: pnpm run test:e2e
+
+    - name: 上传 E2E 测试报告
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-reports
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+  # 构建
+  build:
+    name: 构建应用
+    runs-on: ubuntu-latest
+    needs: [quality-check, unit-tests]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: 安装依赖
+      run: pnpm install --frozen-lockfile
+
+    - name: 构建应用
+      run: pnpm run build
+
+    - name: 分析构建包大小
+      run: pnpm run analyze
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+          build-analysis/
+        retention-days: 7
+
+  # 安全扫描
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    needs: quality-check
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 运行 Trivy 漏洞扫描
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: 上传 Trivy 扫描结果到 GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: 依赖安全审计
+      run: |
+        npm audit --audit-level=moderate
+        pnpm audit --audit-level=moderate
+
+  # 性能测试
+  performance-test:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 设置 pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: 安装依赖
+      run: pnpm install --frozen-lockfile
+
+    - name: 下载构建产物
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+
+    - name: 运行 Lighthouse CI
+      run: |
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun
+
+    - name: 上传性能报告
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: lighthouse-reports
+        path: .lighthouseci/
+        retention-days: 30
+
+  # 部署到预览环境
+  deploy-preview:
+    name: 部署预览环境
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 下载构建产物
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+
+    - name: 部署到 Vercel 预览
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./
+
+  # 部署到生产环境
+  deploy-production:
+    name: 部署生产环境
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests, e2e-tests, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 下载构建产物
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+
+    - name: 部署到 Vercel 生产环境
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        working-directory: ./
+
+    - name: 通知部署成功
+      uses: 8398a7/action-slack@v3
+      if: success()
+      with:
+        status: success
+        text: '🚀 生产环境部署成功！'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: 通知部署失败
+      uses: 8398a7/action-slack@v3
+      if: failure()
+      with:
+        status: failure
+        text: '❌ 生产环境部署失败！'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # 清理
+  cleanup:
+    name: 清理资源
+    runs-on: ubuntu-latest
+    needs: [deploy-preview, deploy-production]
+    if: always()
+    
+    steps:
+    - name: 清理旧的构建产物
+      uses: geekyeggo/delete-artifact@v2
+      with:
+        name: |
+          build-artifacts
+        failOnError: false

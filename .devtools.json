@@ -1,0 +1,67 @@
+{
+  "quality": {
+    "enabled": true,
+    "thresholds": {
+      "maintainabilityIndex": 50,
+      "cyclomaticComplexity": 10,
+      "cognitiveComplexity": 15,
+      "halsteadComplexity": 20
+    },
+    "excludePatterns": [
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/node_modules/**"
+    ]
+  },
+  "refactor": {
+    "enabled": true,
+    "rules": [
+      "removeUnusedImports",
+      "extractConstants",
+      "simplifyConditionals",
+      "removeDeadCode",
+      "optimizeLoops",
+      "extractFunctions",
+      "addTypeAnnotations"
+    ],
+    "autoApply": false
+  },
+  "format": {
+    "enabled": true,
+    "rules": {
+      "indentSize": 2,
+      "indentType": "spaces",
+      "maxLineLength": 100,
+      "trailingComma": true,
+      "semicolons": true,
+      "singleQuotes": true,
+      "bracketSpacing": true,
+      "arrowParens": "avoid"
+    },
+    "fileTypes": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".css",
+      ".scss",
+      ".json"
+    ]
+  },
+  "dependency": {
+    "enabled": true,
+    "checkCircular": true,
+    "checkUnused": true,
+    "checkMissing": true,
+    "generateGraph": true
+  },
+  "reports": {
+    "outputDir": "reports",
+    "formats": [
+      "json",
+      "markdown",
+      "html"
+    ],
+    "includeTimestamp": true
+  }
+}

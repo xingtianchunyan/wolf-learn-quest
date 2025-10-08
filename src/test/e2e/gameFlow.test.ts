@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { supabase } from '@/integrations/supabase/client'
 import { createMockQueryBuilder } from '@/test/helpers/mockSupabase'
-import { createGameScenario, createMockRoom, createMockGameState, createMockSkillUse } from '@/test/helpers/testFactory'
+import { createMockRoom, createMockGameState, createMockSkillUse } from '@/test/helpers/testFactory'
 
 vi.mock('@/integrations/supabase/client')
 const mockSupabase = supabase as any

@@ -1,54 +1,77 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useJudgePage } from '@/contexts/JudgePageContext';
-import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { useGameState } from '@/hooks/useGameState';
-import { useRoomAnswers } from '@/hooks/useRoomAnswers';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { ClipboardList, ChevronLeft, ChevronRight  } from 'lucide-react';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { useGameState  } from '@/hooks/useGameState';
+import { useJudgePage  } from '@/contexts/JudgePageContext';
+import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { useRoomAnswers  } from '@/hooks/useRoomAnswers';
+import React, { useState, useMemo  } from 'react';
 
-interface AnswerRecordPanelProps {
-  roomId: string;
+/**
+* 文件级注释：AnswerRecordPanel 组件
+*
+* 该文件实现了一个提供裁判功能和游戏管理，主要功能包括：
+* - 组件渲染和状态管理
+* - 用户交互处理
+* - 数据展示和更新
+* - 响应式设计支持
+*
+* @author SOLO Coding
+* @version 1.0.0
+* @since 2024-12-19
+* @category judge
+* @filepath judge\management\AnswerRecordPanel.tsx
+ */
+
+interface AnswerRecordPanelProps { roomId: string;,
 }
 
-interface PlayerAnswer {
-  playerId: string;
+interface PlayerAnswer { playerId: string;
   playerName: string;
   selectedOption: number | null;
   responseTime: number | null;
-  isCorrect: boolean | null;
+  isCorrect: boolean | null;,
 }
 
-interface AnswerRecord {
-  round: number;
+interface AnswerRecord { round: number;
   phase: string;
   questionText: string;
   correctOption: number;
-  answers: PlayerAnswer[];
+  answers: PlayerAnswer[];,
 }
 
-const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const { linkedQuestions } = useJudgePage();
-  const { players } = usePlayersRealtime(roomId);
-  const { gameState } = useGameState(roomId);
-  const { roomAnswers } = useRoomAnswers(roomId);
+/**
+* AnswerRecordPanel 组件
+*
+* 提供裁判功能和游戏管理
+*
+* @component
+* @param { AnswerRecordPanelProps } props - 组件属性
+* @returns { JSX.Element } 渲染的组件
+* @hooks useState, useMemo, useJudgePage, usePlayersRealtime, useGameState, useRoomAnswers
+*
+* @example
+* // 使用示例
+* <AnswerRecordPanel { ...props } />
+ */
+const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId  }) => { const [currentPage, setCurrentPage] = useState(0);
+  const { linkedQuestions  } = useJudgePage();
+  const { players  } = usePlayersRealtime(roomId);
+  const { gameState  } = useGameState(roomId);
+  const { roomAnswers  } = useRoomAnswers(roomId);
 
-  const answerRecords: AnswerRecord[] = useMemo(() => {
-    if (!linkedQuestions || linkedQuestions.length === 0) {
-      return [];
-    }
+  const answerRecords: AnswerRecord[] = useMemo(() => { if (!linkedQuestions || linkedQuestions.length === 0) {
+      return [];,
+}
 
-    return linkedQuestions.map((linkedQuestion, index) => {
-      const { question_order, question } = linkedQuestion;
+    return linkedQuestions.map((linkedQuestion, index) => { const { question_order, question  } = linkedQuestion;
       const round = Math.floor((question_order - 1) / 2) + 1;
       // 基于question_order计算阶段：奇数=傍晚，偶数=黎明
       const phase = question_order % 2 === 1 ? '傍晚' : '黎明';
 
-      const answersForQuestion: PlayerAnswer[] = players.map(player => {
-        const playerAnswerData = roomAnswers.find(
-          ra => ra.user_id === player.userId && ra.question_order === question_order
+      const answersForQuestion: PlayerAnswer[] = players.map(player => { const playerAnswerData = roomAnswers.find(;
+          ra => ra.user_id === player.userId && ra.question_order === question_order;
         );
 
         if (playerAnswerData) {
@@ -58,188 +81,180 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             selectedOption: playerAnswerData.selected_option,
             responseTime: playerAnswerData.response_time,
             isCorrect: playerAnswerData.is_correct,
-          };
-        } else {
-          return {
+           };,
+} else { return {
             playerId: player.id,
             playerName: player.name,
             selectedOption: null,
             responseTime: null,
             isCorrect: null,
-          };
-        }
+           };,
+}
       });
 
-      return {
-        round,
+      return { round,
         phase,
         questionText: question.question,
         correctOption: question.correct_option,
         answers: answersForQuestion,
-      };
-    });
-  }, [linkedQuestions, players, roomAnswers]);
+       };,
+});,
+}, [linkedQuestions, players, roomAnswers]);
 
   const totalPages = Math.max(1, answerRecords.length);
   const currentRecord = answerRecords[currentPage];
 
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(0, prev - 1));
-  };
+  const handlePrevPage = () => { setCurrentPage(prev => Math.max(0, prev - 1));,
+};
 
-  const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
-  };
+  const handleNextPage = () => { setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));,
+};
 
-  const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];
-  };
+  const getOptionLabel = (index: number) => { return ['A', 'B', 'C', 'D'][index - 1];,
+};
 
-  const formatTime = (seconds: number) => {
-    if (typeof seconds !== 'number' || seconds < 0) {
-      return '00:00';
-    }
+  const formatTime = (seconds: number) => { if (typeof seconds !== 'number' || seconds < 0) {
+      return '00:00';,
+}
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+    return `${ mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`;,
+};
 
-  const getStatusMessage = () => {
-    if (!gameState) return '游戏尚未开始';
+  const getStatusMessage = () => { if (!gameState) return '游戏尚未开始';
     if (gameState.status === 'waiting') return '游戏尚未开始';
     if (!linkedQuestions || linkedQuestions.length === 0) return '请先在准备阶段链接题目';
     if (answerRecords.length === 0) return '暂无答题记录';
-    return null;
-  };
+    return null;,
+};
 
   const statusMessage = getStatusMessage();
 
-  return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 pb-3">
-        <CardTitle className="text-werewolf-purple flex items-center justify-between text-lg">
-          <div className="flex items-center">
-            <ClipboardList className="mr-2 h-5 w-5" />
-            答题记录
-            {gameState?.status === 'active' && (
-              <span className="ml-2 text-sm text-green-400">(实时更新)</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevPage}
-              disabled={currentPage === 0 || answerRecords.length === 0}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-gray-400">
-              {answerRecords.length > 0 ? currentPage + 1 : 0} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages - 1 || answerRecords.length === 0}
-              className="border-werewolf-purple/50 hover:bg-werewolf-purple/20"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="flex-1 p-4 pt-0 overflow-hidden">
-        {statusMessage ? (
-          <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
-            {statusMessage}
-          </div>
-        ) : currentRecord ? (
-          <div className="space-y-4 h-full flex flex-col">
-            {/* 题目信息 */}
-            <div className="p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold text-werewolf-purple">
-                  第{currentRecord.round}轮 - {currentRecord.phase}阶段
-                </h3>
-                <span className="text-sm text-gray-400">
-                  正确答案: {getOptionLabel(currentRecord.correctOption)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-300">{currentRecord.questionText}</p>
-            </div>
+  return (;
+    <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>;
+    <CardHeader className='flex-shrink-0 pb-3'>;
+    <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>;
+    <div className='flex items-center'>;
+    <ClipboardList className='mr-2 h-5 w-5' />;
+    答题记录
+    { gameState?.status === 'active' && (;
+      <span className='ml-2 text-sm text-green-400'>(实时更新)</span>;
+    ) }
+    </div>
+    <div className='flex items-center gap-2'>;
+    <Button
+    variant='outline';
+    size='sm';
+    onClick={ handlePrevPage }
+    disabled={ currentPage === 0 || answerRecords.length === 0 }
+    className='border-werewolf-purple/50 hover:bg-werewolf-purple/20';
+    >
+    <ChevronLeft className='h-4 w-4' />;
+    </Button>
+    <span className='text-sm text-gray-400'>;
+    { answerRecords.length > 0 ? currentPage + 1 : 0 } / { totalPages }
+    </span>
+    <Button
+    variant='outline';
+    size='sm';
+    onClick={ handleNextPage }
+    disabled={ currentPage >= totalPages - 1 || answerRecords.length === 0 }
+    className='border-werewolf-purple/50 hover:bg-werewolf-purple/20';
+    >
+    <ChevronRight className='h-4 w-4' />;
+    </Button>
+    </div>
+    </CardTitle>
+    </CardHeader>
 
-            {/* 答题记录列表 */}
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-2 pr-4">
-                  {currentRecord.answers.map((answer) => (
-                    <div 
-                      key={answer.playerId}
-                      className="p-3 bg-werewolf-dark/40 rounded-md border border-gray-600"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-gray-300">
-                            {answer.playerName}
-                          </span>
-                          {answer.selectedOption !== null && (
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                              answer.isCorrect 
-                                ? 'bg-green-500/20 text-green-400' 
-                                : 'bg-red-500/20 text-red-400'
-                            }`}>
-                              {getOptionLabel(answer.selectedOption)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {answer.isCorrect !== null ? (
-                              <>
-                                <span className="text-sm text-gray-400">
-                                  用时: {formatTime(answer.responseTime!)}
-                                </span>
-                                {answer.isCorrect ? (
-                                  <span className="text-green-400">✓</span>
-                                ) : (
-                                  <span className="text-red-400">✗</span>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-sm">
-                                {(() => {
-                                  const questionRound = currentRecord.round;
-                                  const questionPhaseNum = currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
-                                  const cr = gameState?.currentRound ?? 1;
-                                  const cp = gameState?.currentPhase ?? 1;
-                                  const isActive = gameState?.status === 'active';
-                                  const isExpired = !isActive || (questionRound < cr) || (questionRound === cr && questionPhaseNum < cp);
-                                  return isExpired ? (
-                                    <span className="text-red-500">超时未答</span>
-                                  ) : (
-                                    <span className="text-gray-500">等待答题...</span>
-                                  );
-                                })()}
-                              </span>
-                            )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
-            正在加载数据...
-          </div>
+    <CardContent className='flex-1 p-4 pt-0 overflow-hidden'>;
+    { statusMessage ? (
+      <div className='text-center text-gray-400 py-8 h-full flex items-center justify-center'>;
+      {statusMessage }
+      </div>
+    ) : currentRecord ? (
+      <div className='space-y-4 h-full flex flex-col'>;
+      { /*  题目信息  */ }
+      <div className='p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0'>;
+      <div className='flex justify-between items-center mb-2'>;
+      <h3 className='font-semibold text-werewolf-purple'>;
+      第{ currentRecord.round }轮 - { currentRecord.phase }阶段
+      </h3>
+      <span className='text-sm text-gray-400'>;
+      正确答案: { getOptionLabel(currentRecord.correctOption) }
+      </span>
+      </div>
+      <p className='text-sm text-gray-300'>{ currentRecord.questionText }</p>;
+      </div>
+
+      { /*  答题记录列表  */ }
+      <div className='flex-1 overflow-hidden'>;
+      <ScrollArea className='h-full'>;
+      <div className='space-y-2 pr-4'>;
+      { currentRecord.answers.map(answer => (;
+        <div
+        key={answer.playerId }
+        className='p-3 bg-werewolf-dark/40 rounded-md border border-gray-600';
+        >
+        <div className='flex justify-between items-center'>;
+        <div className='flex items-center gap-3'>;
+        <span className='font-medium text-gray-300'>;
+        { answer.playerName }
+        </span>
+        { answer.selectedOption !== null && (;
+          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+            answer.isCorrect
+            ? 'bg-green-500/20 text-green-400'
+            : 'bg-red-500/20 text-red-400',
+}`}>
+          { getOptionLabel(answer.selectedOption) }
+          </span>
         )}
-      </CardContent>
+        </div>
+        <div className='flex items-center gap-2'>;
+        { answer.isCorrect !== null ? (;
+          <>
+          <span className='text-sm text-gray-400'>;
+          用时: {formatTime(answer.responseTime!) }
+          </span>
+          { answer.isCorrect ? (
+            <span className='text-green-400'>✓</span>;
+          ) : (
+            <span className='text-red-400'>✗</span>;
+          ) }
+          </>
+        ) : (<span className='text-sm'>;
+          { (() => {
+            const questionRound = currentRecord.round;
+            const questionPhaseNum = currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
+            const cr = gameState?.currentRound ?? 1;
+            const cp = gameState?.currentPhase ?? 1;
+            const isActive = gameState?.status === 'active';
+            const isExpired = !isActive || (questionRound < cr) || (questionRound === cr && questionPhaseNum < cp);
+            return isExpired ? (;
+              <span className='text-red-500'>超时未答</span>;
+            ) : (
+              <span className='text-gray-500'>等待答题...</span>;
+            );,
+})()}
+          </span>
+        )}
+        </div>
+        </div>
+        </div>
+      ))}
+      </div>
+      </ScrollArea>
+      </div>
+      </div>
+    ) : (
+      <div className='text-center text-gray-400 py-8 h-full flex items-center justify-center'>;
+      正在加载数据...
+      </div>
+    )}
+    </CardContent>
     </Card>
-  );
+  );,
 };
 
 export default AnswerRecordPanel;

@@ -1,35 +1,32 @@
-// 性能监控 Hook
-import { useEffect, useRef, useCallback } from 'react';
-import { monitoringService } from '@/services/monitoringService';
-import { analyticsService } from '@/services/analyticsService';
+import { analyticsService  } from '@/services/analyticsService';
+import { monitoringService  } from '@/services/monitoringService';
+import { useEffect, useRef, useCallback  } from 'react';
 
-export interface UsePerformanceMonitoringOptions {
-  componentName: string;
+// 性能监控 Hook
+
+export interface UsePerformanceMonitoringOptions { componentName: string;
   trackUserActions?: boolean;
   trackPerformance?: boolean;
-  sampleRate?: number; // 0-1, 采样率
+  sampleRate?: number; // 0-1, 采样率,
 }
 
-export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOptions) => {
-  const {
+export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOptions) => { const {
     componentName,
     trackUserActions = true,
     trackPerformance = true,
-    sampleRate = 1.0
-  } = options;
+    sampleRate = 1.0;,
+} = options;
 
   const renderCountRef = useRef(0);
   const mountTimeRef = useRef(Date.now());
   const lastRenderTimeRef = useRef(Date.now());
 
   // 决定是否采样
-  const shouldSample = useCallback(() => {
-    return Math.random() < sampleRate;
-  }, [sampleRate]);
+  const shouldSample = useCallback(() => { return Math.random() < sampleRate;,
+}, [sampleRate]);
 
   // 记录组件渲染
-  useEffect(() => {
-    if (!trackPerformance || !shouldSample()) return;
+  useEffect(() => { if (!trackPerformance || !shouldSample()) return;
 
     renderCountRef.current++;
     const now = Date.now();
@@ -44,32 +41,30 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
         timestamp: now,
         context: {
           componentName,
-          renderCount: renderCountRef.current
-        }
-      });
-    }
+          renderCount: renderCountRef.current,
+}
+      });,
+}
   });
 
   // 记录组件挂载时间
-  useEffect(() => {
-    if (!trackPerformance || !shouldSample()) return;
+  useEffect(() => { if (!trackPerformance || !shouldSample()) return;
 
     const mountDuration = Date.now() - mountTimeRef.current;
-    
+
     monitoringService.recordMetric({
       name: 'component_mount',
       value: mountDuration,
       unit: 'ms',
       timestamp: Date.now(),
       context: {
-        componentName
-      }
+        componentName,
+}
     });
 
     // 组件卸载时的清理
-    return () => {
-      const lifeDuration = Date.now() - mountTimeRef.current;
-      
+    return () => { const lifeDuration = Date.now() - mountTimeRef.current;
+
       monitoringService.recordMetric({
         name: 'component_unmount',
         value: lifeDuration,
@@ -77,20 +72,19 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
         timestamp: Date.now(),
         context: {
           componentName,
-          totalRenders: renderCountRef.current
-        }
-      });
-    };
-  }, [componentName, trackPerformance, shouldSample]);
+          totalRenders: renderCountRef.current,
+}
+      });,
+};,
+}, [componentName, trackPerformance, shouldSample]);
 
   /**
-   * 记录用户操作
+  * 记录用户操作
    */
-  const trackAction = useCallback((
+  const trackAction = useCallback((;
     action: string,
     metadata?: Record<string, any>
-  ) => {
-    if (!trackUserActions || !shouldSample()) return;
+  ) => { if (!trackUserActions || !shouldSample()) return;
 
     analyticsService.trackAction({
       userId: metadata?.userId || 'anonymous',
@@ -98,26 +92,24 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
       timestamp: Date.now(),
       metadata: {
         ...metadata,
-        componentName
-      }
-    });
-  }, [componentName, trackUserActions, shouldSample]);
+        componentName,
+}
+    });,
+}, [componentName, trackUserActions, shouldSample]);
 
   /**
-   * 测量操作性能
+  * 测量操作性能
    */
-  const measureOperation = useCallback(async <T>(
+  const measureOperation = useCallback(async <T>(;
     operationName: string,
-    operation: () => Promise<T>
-  ): Promise<T> => {
-    if (!trackPerformance || !shouldSample()) {
-      return await operation();
-    }
+    operation: () => Promise<T>;
+  ): Promise<T> => { if (!trackPerformance || !shouldSample()) {
+      return await operation();,
+}
 
     const startTime = Date.now();
-    
-    try {
-      const result = await operation();
+
+    try { const result = await operation();
       const duration = Date.now() - startTime;
 
       monitoringService.recordMetric({
@@ -128,13 +120,12 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
         context: {
           componentName,
           operationName,
-          success: true
-        }
+          success: true,
+}
       });
 
-      return result;
-    } catch (error) {
-      const duration = Date.now() - startTime;
+      return result;,
+} catch (error) { const duration = Date.now() - startTime;
 
       monitoringService.recordMetric({
         name: 'operation_duration',
@@ -145,22 +136,21 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
           componentName,
           operationName,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: error instanceof Error ? error.message : 'Unknown error',
+}
       });
 
-      throw error;
-    }
+      throw error;,
+}
   }, [componentName, trackPerformance, shouldSample]);
 
   /**
-   * 记录错误
+  * 记录错误
    */
-  const trackError = useCallback((
+  const trackError = useCallback((;
     error: Error,
     context?: Record<string, any>
-  ) => {
-    if (!shouldSample()) return;
+  ) => { if (!shouldSample()) return;
 
     monitoringService.recordMetric({
       name: 'error',
@@ -171,21 +161,20 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
         componentName,
         errorMessage: error.message,
         errorStack: error.stack,
-        ...context
-      }
-    });
-  }, [componentName, shouldSample]);
+        ...context,
+}
+    });,
+}, [componentName, shouldSample]);
 
   /**
-   * 记录网络请求
+  * 记录网络请求
    */
-  const trackRequest = useCallback((
+  const trackRequest = useCallback((;
     url: string,
     duration: number,
     success: boolean,
     statusCode?: number
-  ) => {
-    if (!trackPerformance || !shouldSample()) return;
+  ) => { if (!trackPerformance || !shouldSample()) return;
 
     monitoringService.recordMetric({
       name: 'network_request',
@@ -196,16 +185,15 @@ export const usePerformanceMonitoring = (options: UsePerformanceMonitoringOption
         componentName,
         url,
         success,
-        statusCode
-      }
-    });
-  }, [componentName, trackPerformance, shouldSample]);
+        statusCode,
+}
+    });,
+}, [componentName, trackPerformance, shouldSample]);
 
-  return {
-    trackAction,
+  return { trackAction,
     measureOperation,
     trackError,
     trackRequest,
-    renderCount: renderCountRef.current
-  };
+    renderCount: renderCountRef.current,
+};,
 };

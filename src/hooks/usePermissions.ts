@@ -1,76 +1,67 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase  } from '@/integrations/supabase/client';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useState, useEffect  } from 'react';
 
-interface PermissionsState {
-  isJudge: boolean;
+interface PermissionsState { isJudge: boolean;
   isRoomParticipant: boolean;
-  loading: boolean;
+  loading: boolean;,
 }
 
-export const usePermissions = (roomId?: string) => {
-  const { currentUser, isLoggedIn, initializing, requireAuth } = useAuth();
-  const [permissions, setPermissions] = useState<PermissionsState>({
-    isJudge: false,
+export const usePermissions = (roomId?: string) => { const { currentUser, isLoggedIn, initializing, requireAuth  } = useAuth();
+  const [permissions, setPermissions] = useState<PermissionsState>({ isJudge: false,
     isRoomParticipant: false,
-    loading: true
-  });
+    loading: true,
+});
 
-  useEffect(() => {
-    const checkPermissions = async () => {
+  useEffect(() => { const checkPermissions = async () => {
       if (!roomId || !currentUser?.id || !isLoggedIn) {
         setPermissions({
           isJudge: false,
           isRoomParticipant: false,
-          loading: false
-        });
-        return;
-      }
+          loading: false,
+});
+        return;,
+}
 
-      setPermissions(prev => ({ ...prev, loading: true }));
+      setPermissions(prev => ({ ...prev, loading: true  }));
 
-      try {
-        // 检查是否是法官
-        const { data: room } = await supabase
-          .from('rooms')
-          .select('judge_user_id')
-          .eq('id', roomId)
-          .single();
+      try { // 检查是否是法官
+        const { data: room  } = await supabase;
+        .from('rooms')
+        .select('judge_user_id')
+        .eq('id', roomId)
+        .single();
 
         const isJudge = room?.judge_user_id === currentUser.id;
 
         // 检查是否是房间参与者
-        const { data: roomPlayer } = await supabase
-          .from('room_players')
-          .select('id')
-          .eq('room_id', roomId)
-          .eq('user_id', currentUser.id)
-          .single();
+        const { data: roomPlayer  } = await supabase;
+        .from('room_players')
+        .select('id')
+        .eq('room_id', roomId)
+        .eq('user_id', currentUser.id)
+        .single();
 
         const _isRoomParticipant = !!roomPlayer || isJudge;
 
-        setPermissions({
-          isJudge,
+        setPermissions({ isJudge,
           isRoomParticipant: _isRoomParticipant,
-          loading: false
-        });
-      } catch (error) {
-        console.error('Error checking permissions:', error);
+          loading: false,
+});,
+} catch (error) { console.error('Error checking permissions:', error);
         setPermissions({
           isJudge: false,
           isRoomParticipant: false,
-          loading: false
-        });
-      }
+          loading: false,
+});,
+}
     };
 
-    if (!initializing) {
-      checkPermissions();
-    }
+    if (!initializing) { checkPermissions();,
+}
   }, [roomId, currentUser?.id, isLoggedIn, initializing]);
 
-  return {
-    ...permissions,
-    requireAuth
-  };
+  return { ...permissions,
+    requireAuth,
+};,
 };

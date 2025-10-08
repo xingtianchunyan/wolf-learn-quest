@@ -4,8 +4,8 @@
  * 测试 EnhancedSkillSystem 组件渲染优化、内存管理和缓存策略
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 
 // Mock 所有依赖的 hooks 和工具

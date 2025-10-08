@@ -39,8 +39,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import { 
   SKILL_VALIDATION_RULES, 
-  validateSkillUnified,
-  SkillValidationRule 
+  validateSkillUnified 
 } from '../skillValidationRules';
 import { supabase } from '@/integrations/supabase/client';
 
