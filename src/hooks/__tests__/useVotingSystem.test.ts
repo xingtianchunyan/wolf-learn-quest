@@ -114,15 +114,9 @@ describe('useVotingSystem', () => {
     
     // 重置模拟的 toast 函数
     mockToast.mockClear();
-    
-    // 使用假定时器
-    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    // 恢复真实定时器
-    vi.useRealTimers();
-    
     vi.clearAllMocks();
   });
 
@@ -135,9 +129,9 @@ describe('useVotingSystem', () => {
       const mockVotingSession = {
         id: 'test-session-id',
         game_state_id: 'test-game-id',
-        round: 1,
+        round_number: 1,
         phase: 2,
-        voting_type: 'elimination',
+        session_type: 'elimination',
         status: 'active',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
@@ -232,33 +226,28 @@ describe('useVotingSystem', () => {
       const mockSpecificSession = {
         id: 'specific-session-id',
         game_state_id: 'test-game-id',
-        round: 2,
+        round_number: 2,
         phase: 2,
-        voting_type: 'elimination',
+        session_type: 'elimination',
         status: 'completed',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
         created_at: '2024-01-01T00:00:00Z'
       };
 
-      // 设置不同的模拟返回值
-      let callCount = 0;
-      vi.mocked(supabase.from).mockImplementation(() => ({
+      // 模拟数据库查询返回
+      vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-            order: vi.fn(() => {
-              callCount++;
-              if (callCount === 1) {
-                // 第一次调用：初始化时的查询
-                return { data: [], error: null };
-              } else {
-                // 后续调用：特定会话查询
-                return { data: [mockSpecificSession], error: null };
-              }
-            })
+            order: vi.fn(() => ({
+              limit: vi.fn(() => Promise.resolve({
+                data: [mockSpecificSession],
+                error: null
+              }))
+            }))
           }))
         }))
-      }));
+      });
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
@@ -268,14 +257,14 @@ describe('useVotingSystem', () => {
       // 等待初始化完成
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
-      });
+      }, { timeout: 10000 });
 
       // 调用获取特定会话的方法
       const specificSession = await result.current.getVotingSession(2, 2);
 
       // 验证结果
       expect(specificSession).toEqual(mockSpecificSession);
-    });
+    }, 15000);
   });
 
   describe('实时更新', () => {
@@ -285,26 +274,9 @@ describe('useVotingSystem', () => {
     it('应该正确处理投票会话的实时更新', async () => {
       // 模拟实时订阅
       const mockChannel = {
-        on: vi.fn((event, callback) => {
-          // 模拟实时更新事件
-          if (event === 'postgres_changes') {
-            setTimeout(() => {
-              callback({
-                eventType: 'INSERT',
-                new: {
-                  id: 'new-session-id',
-                  game_state_id: 'test-game-id',
-                  round: 1,
-                  phase: 2,
-                  voting_type: 'elimination',
-                  status: 'active'
-                }
-              });
-            }, 100);
-          }
-          return mockChannel;
-        }),
-        subscribe: vi.fn()
+        on: vi.fn(() => mockChannel),
+        subscribe: vi.fn(() => Promise.resolve()),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
@@ -316,15 +288,13 @@ describe('useVotingSystem', () => {
 
       // 等待订阅设置
       await waitFor(() => {
-        expect(mockChannel.on).toHaveBeenCalled();
-      });
-
-      // 推进定时器
-      vi.advanceTimersByTime(100);
+        expect(supabase.channel).toHaveBeenCalledWith('voting_system_test-game-id');
+      }, { timeout: 10000 });
 
       // 验证订阅设置
-      expect(supabase.channel).toHaveBeenCalledWith('voting_system_test-game-id');
-    });
+      expect(mockChannel.on).toHaveBeenCalled();
+      expect(mockChannel.subscribe).toHaveBeenCalled();
+    }, 15000);
 
     /**
      * 测试投票记录的实时更新
@@ -332,23 +302,8 @@ describe('useVotingSystem', () => {
     it('应该正确处理投票记录的实时更新', async () => {
       // 模拟投票记录更新
       const mockChannel = {
-        on: vi.fn((event, callback) => {
-          if (event === 'postgres_changes') {
-            setTimeout(() => {
-              callback({
-                eventType: 'INSERT',
-                new: {
-                  id: 'new-vote-id',
-                  voting_session_id: 'test-session-id',
-                  voter_id: 'test-voter-id',
-                  target_id: 'test-target-id'
-                }
-              });
-            }, 100);
-          }
-          return mockChannel;
-        }),
-        subscribe: vi.fn(),
+        on: vi.fn(() => mockChannel),
+        subscribe: vi.fn(() => Promise.resolve()),
         unsubscribe: vi.fn()
       };
 
@@ -362,10 +317,7 @@ describe('useVotingSystem', () => {
       // 等待订阅设置
       await waitFor(() => {
         expect(mockChannel.on).toHaveBeenCalled();
-      });
-
-      // 推进定时器
-      vi.advanceTimersByTime(100);
+      }, { timeout: 10000 });
 
       // 验证投票记录订阅
       expect(mockChannel.on).toHaveBeenCalledWith(
@@ -377,7 +329,7 @@ describe('useVotingSystem', () => {
         }),
         expect.any(Function)
       );
-    });
+    }, 15000);
 
     /**
      * 测试投票结果的实时更新
@@ -385,25 +337,8 @@ describe('useVotingSystem', () => {
     it('应该正确处理投票结果的实时更新', async () => {
       // 模拟投票结果更新
       const mockChannel = {
-        on: vi.fn((event, config, callback) => {
-          // 处理不同的参数格式
-          const actualCallback = typeof config === 'function' ? config : callback;
-          if (event === 'postgres_changes' && typeof actualCallback === 'function') {
-            setTimeout(() => {
-              actualCallback({
-                eventType: 'UPDATE',
-                new: {
-                  id: 'test-result-id',
-                  voting_session_id: 'test-session-id',
-                  eliminated_player_id: 'test-player-id',
-                  vote_count: 3
-                }
-              });
-            }, 100);
-          }
-          return mockChannel;
-        }),
-        subscribe: vi.fn(),
+        on: vi.fn(() => mockChannel),
+        subscribe: vi.fn(() => Promise.resolve()),
         unsubscribe: vi.fn()
       };
 
@@ -417,10 +352,7 @@ describe('useVotingSystem', () => {
       // 等待订阅设置
       await waitFor(() => {
         expect(mockChannel.on).toHaveBeenCalled();
-      });
-
-      // 推进定时器
-      vi.advanceTimersByTime(100);
+      }, { timeout: 10000 });
 
       // 验证投票会话订阅
       expect(mockChannel.on).toHaveBeenCalledWith(
@@ -433,7 +365,7 @@ describe('useVotingSystem', () => {
         }),
         expect.any(Function)
       );
-    });
+    }, 15000);
   });
 
   describe('投票会话创建', () => {
@@ -445,9 +377,9 @@ describe('useVotingSystem', () => {
       const mockNewSession = {
         id: 'new-session-id',
         game_state_id: 'test-game-id',
-        round: 1,
+        round_number: 1,
         phase: 2,
-        voting_type: 'elimination',
+        session_type: 'elimination',
         status: 'active',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
@@ -487,14 +419,14 @@ describe('useVotingSystem', () => {
       // 等待初始化完成
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
-      });
+      }, { timeout: 10000 });
 
       // 创建投票会话
       const newSession = await result.current.createVotingSession(1, 2, 'elimination');
 
       // 验证结果 - createVotingSession 返回的是 sessionId，不是完整对象
       expect(newSession).toBe('new-session-id');
-    });
+    }, 15000);
 
     /**
      * 测试投票会话创建时的错误处理

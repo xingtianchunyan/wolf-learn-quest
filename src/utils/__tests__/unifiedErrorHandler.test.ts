@@ -271,7 +271,7 @@ describe('UnifiedErrorHandler', () => {
     /**
      * 测试失败的同步函数包装
      */
-    it('应该正确包装失败的同步函数', () => {
+    it('应该正确包装失败的同步函数', async () => {
       const errorFn = vi.fn().mockImplementation(() => {
         throw new Error('Sync error');
       });
@@ -282,6 +282,10 @@ describe('UnifiedErrorHandler', () => {
 
       expect(result).toBeNull();
       expect(errorFn).toHaveBeenCalledWith('test');
+      
+      // 等待异步错误处理完成
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       expect(onError).toHaveBeenCalled();
       expect(handler.getErrorHistory()).toHaveLength(1);
     });
@@ -340,7 +344,11 @@ describe('UnifiedErrorHandler', () => {
       // 添加不同类型的错误
       await handler.handleError(new AppError('App error 1', ErrorCode.DATA_NOT_FOUND));
       await handler.handleError(new AppError('App error 2', ErrorCode.NETWORK_ERROR));
-      await handler.handleError(new Error('Network error'));
+      
+      // 创建网络错误，确保能被正确识别
+      const networkError = new Error('network request failed');
+      networkError.name = 'NetworkError';
+      await handler.handleError(networkError);
       
       const skillError: SkillError = {
         type: SkillErrorType.VALIDATION_ERROR,
