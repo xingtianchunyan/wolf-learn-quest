@@ -14,12 +14,17 @@ import { useToast } from '@/hooks/use-toast';
 import { performanceMonitoringService } from '@/services/performanceMonitoringService';
 import { createLogger } from '@/lib/logger';
 import { 
+  Activity, 
   AlertTriangle, 
   CheckCircle, 
+  Clock, 
   RefreshCw, 
   Settings,
+  TrendingUp,
+  Zap,
   BarChart3,
-  Cpu
+  Cpu,
+  Memory
 } from 'lucide-react';
 
 const logger = createLogger('performance-dashboard');
@@ -144,15 +149,13 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
    * 分析内存健康状况
    */
   const analyzeMemoryHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' => {
-    // 检查浏览器是否支持 performance.memory API
-    if ('memory' in performance) {
-      const memoryUsage = (performance as any).memory.usedJSHeapSize || 0;
-      const memoryLimit = (performance as any).memory.jsHeapSizeLimit || Infinity;
-      const memoryPercentage = memoryUsage / memoryLimit;
+    // 这里可以添加实际的内存分析逻辑
+    const memoryUsage = performance.memory?.usedJSHeapSize || 0;
+    const memoryLimit = performance.memory?.jsHeapSizeLimit || Infinity;
+    const memoryPercentage = memoryUsage / memoryLimit;
 
-      if (memoryPercentage > 0.8) return 'critical';
-      if (memoryPercentage > 0.6) return 'warning';
-    }
+    if (memoryPercentage > 0.8) return 'critical';
+    if (memoryPercentage > 0.6) return 'warning';
     return 'healthy';
   }, []);
 
@@ -308,7 +311,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">内存使用</CardTitle>
-                  <Cpu className="h-4 w-4 text-muted-foreground" />
+                  <Memory className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <Badge variant={getHealthDisplay(summary.memoryHealth).badge}>
@@ -363,17 +366,13 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-sm">JS 堆大小</span>
                     <span className="text-sm font-medium">
-                      {'memory' in performance ? 
-                        Math.round(((performance as any).memory.usedJSHeapSize || 0) / 1024 / 1024) : 
-                        'N/A'}MB
+                      {Math.round((performance.memory?.usedJSHeapSize || 0) / 1024 / 1024)}MB
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">堆限制</span>
                     <span className="text-sm font-medium">
-                      {'memory' in performance ? 
-                        Math.round(((performance as any).memory.jsHeapSizeLimit || 0) / 1024 / 1024) : 
-                        'N/A'}MB
+                      {Math.round((performance.memory?.jsHeapSizeLimit || 0) / 1024 / 1024)}MB
                     </span>
                   </div>
                 </div>
