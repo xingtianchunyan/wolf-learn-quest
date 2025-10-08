@@ -113,6 +113,7 @@ export const validateSkillUseLimits = (
     // 如果技能使用限制为0，直接返回不能使用
     if (skillConfig.usageLimit === 0) {
       return {
+        valid: false,
         canUse: false,
         remainingUses: 0,
         reason: '技能使用次数已达上限 (0)'
@@ -122,7 +123,7 @@ export const validateSkillUseLimits = (
     const skillUsageState = roleState?.skill_uses_remaining;
     
     if (!skillUsageState) {
-      return { canUse: true, remainingUses: skillConfig.usageLimit };
+      return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit };
     }
 
     // 检查是否为新版格式
@@ -130,6 +131,7 @@ export const validateSkillUseLimits = (
       const skillData = skillUsageState[skillConfig.id];
       if (skillData && skillData.used >= skillConfig.usageLimit) {
         return {
+          valid: false,
           canUse: false,
           remainingUses: 0,
           reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`
@@ -137,6 +139,7 @@ export const validateSkillUseLimits = (
       }
       
       return {
+        valid: true,
         canUse: true,
         remainingUses: skillData ? skillData.remaining : skillConfig.usageLimit
       };
@@ -147,6 +150,7 @@ export const validateSkillUseLimits = (
       const used = skillUsageState.total - skillUsageState.remaining;
       if (used >= skillConfig.usageLimit) {
         return {
+          valid: false,
           canUse: false,
           remainingUses: 0,
           reason: `技能使用次数已达上限 (${skillConfig.usageLimit})`
@@ -154,16 +158,17 @@ export const validateSkillUseLimits = (
       }
       
       return {
+        valid: true,
         canUse: true,
         remainingUses: skillUsageState.remaining
       };
     }
     
-    return { canUse: true, remainingUses: skillConfig.usageLimit };
+    return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit };
   }
 
   logger.warn('未知的技能使用限制类型', { usageLimit: skillConfig.usageLimit });
-  return { canUse: true };
+  return { valid: true, canUse: true };
 };
 
 /**
@@ -356,12 +361,10 @@ export const validateWitchPotionUsage = (
   
   const skillUsageState = roleState?.skill_uses_remaining;
   
-  if (!skillUsageState) {
-    return { canUse: true };
-  }
-
   // 检查女巫魔药使用状态
   let witchUses: { protection_used?: boolean; attack_used?: boolean } = {};
+  
+  if (skillUsageState) {
   
   if (isRoleSkillUsageState(skillUsageState)) {
     const witchPotionUsage = skillUsageState['witch_potion'];
@@ -378,6 +381,7 @@ export const validateWitchPotionUsage = (
       protection_used: false,
       attack_used: false
     };
+  }
   }
   
   const usedKey = `${potionType}_used` as keyof typeof witchUses;
@@ -547,7 +551,7 @@ export const getSkillUsageSuggestion = (
   }
 
   const skillName = roleDesign.skill_name;
-  const phaseName = ['', 'day', 'evening', 'night', 'dawn'][currentPhase] || 'unknown';
+  const phaseName = ['', 'day', 'day', 'night', 'dawn'][currentPhase] || 'unknown';
 
   // 基于角色和阶段的建议
   switch (skillName) {
@@ -577,6 +581,59 @@ export const getSkillUsageSuggestion = (
       if (currentPhase !== 3) return '等待夜晚阶段使用恶魔之眼';
       if (availablePlayers.length === 0) return '没有可查看的目标';
       return `选择一个玩家查看身份 (${availablePlayers.length}个可选目标)`;
+    
+    case 'dying_shot':
+      return roleState?.role_status === 2 ? '濒死状态可以发动猎人技能' : '等待濒死状态触发';
+    
+    default:
+      return `当前阶段 (${phaseName}) 可以使用技能`;
+  }
+};
+
+/**
+ * 获取技能使用提示（兼容测试）
+ * @param roleDesign - 角色设计对象
+ * @param roleState - 角色状态对象
+ * @param currentPhase - 当前游戏阶段
+ * @param availablePlayers - 可用玩家列表
+ * @returns 技能使用提示文本
+ */
+export const getSkillUsageHint = (
+  roleDesign: RoleDesign,
+  roleState: RoleState,
+  currentPhase: number,
+  availablePlayers: AvailablePlayer[] = []
+): string => {
+  if (!roleDesign?.skill_name) {
+    return '当前角色没有可用技能';
+  }
+
+  const skillName = roleDesign.skill_name;
+  const phaseName = ['', 'day', 'day', 'night', 'dawn'][currentPhase] || 'unknown';
+
+  // 基于角色和阶段的建议
+  switch (skillName) {
+    case 'Sleep':
+      return currentPhase === 3 ? '村民夜晚休息，保持警惕' : '等待夜晚阶段';
+    
+    case 'night_attack':
+      if (currentPhase !== 3) return '等待夜晚阶段进行攻击';
+      if (availablePlayers.length === 0) return '没有可攻击的目标';
+      return `选择一个目标进行攻击 (${availablePlayers.length}个可选目标)`;
+    
+    case 'prophecy':
+      if (currentPhase !== 3) return '等待夜晚阶段进行占卜';
+      if (availablePlayers.length === 0) return '没有可占卜的目标';
+      return `选择一个玩家进行占卜 (${availablePlayers.length}个可选目标)`;
+    
+    case 'vigil':
+      if (currentPhase !== 3) return '等待夜晚阶段进行保护';
+      if (availablePlayers.length === 0) return '没有可保护的目标';
+      return `选择一个玩家进行保护 (${availablePlayers.length}个可选目标)`;
+    
+    case 'magic_potion':
+      if (currentPhase !== 3) return '等待夜晚阶段使用魔药';
+      return '可以使用解药救人或毒药杀人，也可以选择跳过';
     
     case 'dying_shot':
       return roleState?.role_status === 2 ? '濒死状态可以发动猎人技能' : '等待濒死状态触发';
@@ -658,13 +715,22 @@ export const checkSkillUsageLimit = (
   }
 
   // 猎人的濒死技能只能使用一次
-  if (skillName === 'dying_shot' && usedCount > 0) {
-    return {
-      valid: false,
-      canUse: false,
-      reason: '猎人技能已经使用过',
-      suggestedAction: '猎人技能只能使用一次'
-    };
+  if (skillName === 'dying_shot') {
+    if (usedCount > 0) {
+      return {
+        valid: false,
+        canUse: false,
+        remainingUses: 0,
+        reason: '猎人技能已经使用过',
+        suggestedAction: '猎人技能只能使用一次'
+      };
+    } else {
+      return {
+        valid: true,
+        canUse: true,
+        remainingUses: 1
+      };
+    }
   }
 
   return { valid: true, canUse: true };
@@ -798,5 +864,73 @@ export const validateSkillExecutionOrder = (
     validOrder: conflicts.length === 0,
     conflicts,
     suggestedOrder: sortedQueue
+  };
+}
+
+/**
+ * 验证技能使用条件 - 兼容测试的函数签名
+ * @param roleDesign - 角色设计对象
+ * @param roleState - 角色状态对象
+ * @param gameContext - 游戏上下文对象
+ * @param currentPhase - 当前游戏阶段
+ * @param targetUserId - 目标用户ID（可选）
+ * @returns 验证结果
+ */
+export const validateSkillUsage = (
+  roleDesign: RoleDesign,
+  roleState: RoleState,
+  gameContext: { gameStateId: string; currentRound: number },
+  currentPhase: number,
+  targetUserId?: string
+): ValidationResult => {
+  // 基础检查
+  if (!roleDesign?.skill_name) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '角色没有可用技能',
+      suggestedAction: '请检查角色配置'
+    };
+  }
+
+  // 角色状态检查
+  if (roleState?.role_status === 'eliminated' || roleState?.role_status === 4) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '已淘汰的角色无法使用技能',
+      suggestedAction: '等待游戏结束'
+    };
+  }
+
+  // 夜晚技能检查
+  const nightSkills = ['night_attack', 'prophecy', 'vigil', 'magic_potion', 'demon_eye', 'voodoo', 'self_destruct'];
+  const isNightSkill = nightSkills.includes(roleDesign.skill_name);
+  
+  if (isNightSkill && currentPhase !== 3) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '该技能只能在夜晚阶段使用',
+      suggestedAction: '等待夜晚阶段'
+    };
+  }
+
+  // 目标检查
+  const targetRequiredSkills = ['night_attack', 'prophecy', 'vigil', 'magic_potion'];
+  const requiresTarget = targetRequiredSkills.includes(roleDesign.skill_name);
+  
+  if (requiresTarget && !targetUserId) {
+    return {
+      valid: false,
+      canUse: false,
+      reason: '该技能需要选择目标',
+      suggestedAction: '请选择一个目标玩家'
+    };
+  }
+
+  return {
+    valid: true,
+    canUse: true
   };
 };
