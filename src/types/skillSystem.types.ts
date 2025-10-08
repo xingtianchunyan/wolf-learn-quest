@@ -315,6 +315,27 @@ export interface SkillConflictDetail {
 }
 
 /**
+ * 技能队列项接口
+ */
+export interface SkillQueueItem {
+  skillName: string;
+  userId: string;
+  targetUserId?: string;
+  priority: number;
+  phase: number;
+}
+
+/**
+ * 技能效果配置接口
+ */
+export interface SkillEffectConfig {
+  id: string;
+  type: string;
+  priority: number;
+  data: Record<string, unknown>;
+}
+
+/**
  * 技能使用建议接口
  */
 export interface SkillUsageSuggestion {

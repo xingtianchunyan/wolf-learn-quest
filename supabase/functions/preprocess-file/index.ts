@@ -45,7 +45,8 @@ async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
     return text;
   } catch (error) {
     console.error('DOCX解析错误:', error);
-    throw new Error(`DOCX文件解析失败: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`DOCX文件解析失败: ${errorMessage}`);
   }
 }
 
@@ -55,7 +56,8 @@ async function readTextFile(fileBuffer: ArrayBuffer): Promise<string> {
     return decoder.decode(fileBuffer);
   } catch (error) {
     console.error('文本文件读取错误:', error);
-    throw new Error(`文本文件读取失败: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`文本文件读取失败: ${errorMessage}`);
   }
 }
 
