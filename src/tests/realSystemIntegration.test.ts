@@ -93,9 +93,9 @@ class MockMasterErrorHandler {
     // 模拟错误分类
     let category = 'unknown';
     if (error instanceof AppError) {
-      if (error.code === ErrorCode.DATA_INVALID) {category = 'validation';}
-      else if (error.code === ErrorCode.PERMISSION_DENIED) {category = 'permission';}
-      else if (error.code === ErrorCode.NETWORK_ERROR) {category = 'network';}
+      if (error.code === ErrorCode.DATA_INVALID) category = 'validation';
+      else if (error.code === ErrorCode.PERMISSION_DENIED) category = 'permission';
+      else if (error.code === ErrorCode.NETWORK_ERROR) category = 'network';
     } else if (error instanceof MockSkillError) {
       category = 'skill';
     }

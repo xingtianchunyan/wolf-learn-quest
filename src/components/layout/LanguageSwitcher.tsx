@@ -1,48 +1,35 @@
-import { Button  } from '@/components/ui/button';
-import { Check, Languages  } from 'lucide-react';
-import { createLogger  } from '@/lib/logger';
-import { Popover, PopoverContent, PopoverTrigger  } from '@/components/ui/popover';
-import React, { useState, createContext, useContext, useEffect  } from 'react';
-
-/**
-* 文件级注释：LanguageSwitcher 组件
-*
-* 该文件实现了一个提供通用功能组件，主要功能包括：
-* - 组件渲染和状态管理
-* - 用户交互处理
-* - 数据展示和更新
-* - 响应式设计支持
-*
-* @author SOLO Coding
-* @version 1.0.0
-* @since 2024-12-19
-* @category common
-* @filepath layout\LanguageSwitcher.tsx
- */
+import React, { useState, createContext, useContext, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, Languages } from 'lucide-react';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('LanguageSwitcher');
 
 // Define the language options
-type LanguageOption = { code: string;
-  name: string;,
+type LanguageOption = {
+  code: string;
+  name: string;
 };
 
 // Only English and Chinese options as requested
-const languages: LanguageOption[] = [;
-  { code: 'en', name: 'English'  },
-  { code: 'zh', name: '简体中文'  },
+const languages: LanguageOption[] = [
+  { code: 'en', name: 'English' },
+  { code: 'zh', name: '简体中文' },
 ];
 
 // Create a context for language translation
-interface LanguageContextType { language: string;
+interface LanguageContextType {
+  language: string;
   setLanguage: (code: string) => void;
-  t: (key: string) => string;,
+  t: (key: string) => string;
 }
 
 const defaultLanguage = 'en';
 
 // Create translations object with English and Chinese translations
-const translations: Record<string, Record<string, string>> = { en: {
+const translations: Record<string, Record<string, string>> = {
+  en: {
     // Navigation
     'home': 'Home',
     'lobby': 'Game Lobby',
@@ -54,7 +41,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'signup': 'Sign Up',
     'navbar_title': 'Old With New Werewolf',
     'navbar_subtitle': 'A social game that makes learning no longer boring.',
-
+    
     // Home Page
     'welcome': 'Welcome to the Werewolf Social Learning',
     'subtitle': 'Join our community where learning becomes a thrilling adventure through the classic game of Werewolf combined with interactive quizzes.',
@@ -65,7 +52,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'ai_knowledge_desc': 'Leverage our AI knowledge base to generate questions and provide contextual within the game environment.',
     'ai_participants': 'AI Participants',
     'ai_participants_desc': 'Never wait for players again! Our AI Players and AI Judge allow you to start a game immediately, even with fewer human participants.',
-
+    
     // Game Lobby
     'player_profile': 'Player Profile',
     'level': 'Level',
@@ -159,7 +146,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     // Footer
     'footer_tagline': 'Gamified Learning for Communities',
     'footer_copyright': '2025 Old With New Werewolf',
-
+    
     // Misc
     'host': 'Host',
     'join': 'Join',
@@ -314,7 +301,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'player_config_10': '1 Werewolf, 1 White Wolf, 2 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
     'player_config_11': '1 Werewolf, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
     'player_config_12': '2 Werewolves, 1 White Wolf, 3 Villagers, 1 Hunter, 1 Seer, 1 Witch, 1 Warlock, 1 Demon, 1 Guard',
-
+    
     // Info Disclosure Table
     'info_phases_villager': 'Daytime + Evening + Dawn',
     'info_phases_all': 'All',
@@ -399,8 +386,9 @@ const translations: Record<string, Record<string, string>> = { en: {
     'village': 'Village',
     'werewolves': 'Werewolves',
     'neutral': 'Neutral',
-   },
-  zh: { // Navigation
+  },
+  zh: {
+    // Navigation
     'home': '首页',
     'lobby': '游戏大厅',
     'seedao': 'SeeDAO',
@@ -411,7 +399,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'signup': '注册',
     'navbar_title': '新旧狼人杀',
     'navbar_subtitle': '让学习不再枯燥的社交游戏。',
-
+    
     // Home Page
     'welcome': '欢迎来到新旧狼人杀',
     'subtitle': '加入我们的社区，通过经典的狼人杀游戏和互动问答，让学习变成一场惊险刺激的冒险。',
@@ -422,7 +410,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'ai_knowledge_desc': '利用我们的AI知识库在游戏环境中生成问题并提供背景知识。',
     'ai_participants': 'AI参与者',
     'ai_participants_desc': '再也不用等待玩家！我们的AI玩家和AI评委让您即使在人类参与者较少的情况下也能立即开始游戏。',
-
+    
     // Game Lobby
     'player_profile': '玩家档案',
     'level': '等级',
@@ -516,7 +504,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     // Footer
     'footer_tagline': '为社区提供游戏化学习',
     'footer_copyright': '2025 新旧狼人杀',
-
+    
     // Misc
     'host': '主持人',
     'join': '加入',
@@ -671,7 +659,7 @@ const translations: Record<string, Record<string, string>> = { en: {
     'player_config_10': '1狼人、1白狼王、2村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
     'player_config_11': '1狼人、1白狼王、3村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
     'player_config_12': '2狼人、1白狼王、3村民、1猎人、1预言家、1女巫、1暗夜术士、1恶魔、1守卫',
-
+    
     // Info Disclosure Table
     'info_phases_villager': '白天+晚上+黎明',
     'info_phases_all': '全部',
@@ -756,12 +744,13 @@ const translations: Record<string, Record<string, string>> = { en: {
     'village': '好人阵营',
     'werewolves': '狼人阵营',
     'neutral': '中立阵营',
-   },
+  }
 };
 
 // Create the Language Context
-const LanguageContext = createContext<LanguageContextType>({ language: defaultLanguage,
-  setLanguage: () => { },
+const LanguageContext = createContext<LanguageContextType>({
+  language: defaultLanguage,
+  setLanguage: () => {},
   t: (key: string) => key,
 });
 
@@ -769,84 +758,75 @@ const LanguageContext = createContext<LanguageContextType>({ language: defaultLa
 export const useLanguage = () => useContext(LanguageContext);
 
 // Create the Language Provider component
-export const LanguageProvider: React.FC<{ children: React.ReactNode  }> = ({ children  }) => { const [language, setLanguageState] = useState<string>(localStorage.getItem('language') || defaultLanguage);
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguageState] = useState<string>(localStorage.getItem('language') || defaultLanguage);
 
   // Set language and store in localStorage
   const setLanguage = (code: string) => {
     setLanguageState(code);
-    localStorage.setItem('language', code);,
-};
+    localStorage.setItem('language', code);
+  };
 
   // Initialize language from localStorage on component mount
-  useEffect(() => { const savedLanguage = localStorage.getItem('language');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
     if (savedLanguage) {
-      setLanguageState(savedLanguage);,
-}
+      setLanguageState(savedLanguage);
+    }
   }, []);
 
   // Translate function
-  const t = (key: string): string => { if (!translations[language]) return key;
-    return translations[language][key] || key;,
-};
+  const t = (key: string): string => {
+    if (!translations[language]) return key;
+    return translations[language][key] || key;
+  };
 
-  return (;
-    <LanguageContext.Provider value={ { language, setLanguage, t  }}>;
-    { children }
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
     </LanguageContext.Provider>
-  );,
+  );
 };
 
 // The LanguageSwitcher component
-/**
-* LanguageSwitcher 组件
-*
-* 提供通用功能组件
-*
-* @component
-* @param { Object } props - 组件属性（可选）
-* @returns { JSX.Element } 渲染的组件
-* @hooks useState, useContext, useEffect, useLanguage
-*
-* @example
-* // 使用示例
-* <LanguageSwitcher />
- */
-const LanguageSwitcher: React.FC = () => { const { language, setLanguage, t  } = useLanguage();
+const LanguageSwitcher: React.FC = () => {
+  const { language, setLanguage, t } = useLanguage();
 
-  const handleLanguageChange = (languageCode: string) => { setLanguage(languageCode);
-    console.log(`Language changed to ${languageCode }`);,
-};
+  const handleLanguageChange = (languageCode: string) => {
+    setLanguage(languageCode);
+    console.log(`Language changed to ${languageCode}`);
+  };
 
   // Get current language object
   const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
 
-  return (;
+  return (
     <Popover>
-    <PopoverTrigger asChild>
-    <Button variant='ghost' className='nav-link flex items-center'>;
-    <Languages size={ 20 } className='mr-1' />;
-    <span>{ currentLanguage.name }</span>
-    </Button>
-    </PopoverTrigger>
-    <PopoverContent className='w-48 p-2 bg-werewolf-card border-werewolf-purple/30'>;
-    <div className='space-y-1'>;
-    { languages.map(lang => (;
-      <Button
-      key={lang.code }
-      variant='ghost';
-      className='w-full justify-start';
-      onClick={ () => handleLanguageChange(lang.code) }
-      >
-      { lang.code === language && (;
-        <Check size={16 } className='mr-2 text-werewolf-purple' />;
-      )}
-      { lang.name }
-      </Button>
-    ))}
-    </div>
-    </PopoverContent>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="nav-link flex items-center">
+          <Languages size={20} className="mr-1" />
+          <span>{currentLanguage.name}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2 bg-werewolf-card border-werewolf-purple/30">
+        <div className="space-y-1">
+          {languages.map((lang) => (
+            <Button
+              key={lang.code}
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => handleLanguageChange(lang.code)}
+            >
+              {lang.code === language && (
+                <Check size={16} className="mr-2 text-werewolf-purple" />
+              )}
+              {lang.name}
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
     </Popover>
-  );,
+  );
 };
 
 export default LanguageSwitcher;

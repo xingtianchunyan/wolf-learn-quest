@@ -11,7 +11,9 @@ import {
   ErrorHandlingStrategy,
   withUnifiedErrorHandling,
   createErrorWrapper,
-  type ErrorContext
+  type UnifiedError,
+  type ErrorContext,
+  type ErrorHandlingOptions
 } from '../unifiedErrorHandler';
 import { AppError, ErrorCode } from '../errorHandler';
 import { SkillErrorType, SkillError } from '../skillErrorHandler';

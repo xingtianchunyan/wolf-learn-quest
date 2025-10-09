@@ -22,11 +22,13 @@ vi.mock('@/utils/skillValidationRules', () => ({
 // Now import the service and other dependencies
 import { EnhancedSkillService, SkillServiceError } from '../enhancedSkillService';
 import { supabase } from '@/integrations/supabase/client';
+import { createLogger } from '@/lib/logger';
 import { validateSkillUnified } from '@/utils/skillValidationRules';
 import { 
   SkillUsageContext, 
   RoleDesign, 
-  RoleState 
+  RoleState,
+  SkillConfig as SkillConfigType 
 } from '@/types/skillSystem.types';
 
 describe('EnhancedSkillService', () => {

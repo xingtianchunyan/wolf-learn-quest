@@ -1,6 +1,6 @@
 // Hooks 统一导出
-export * from './useMobile';
-export * from './useToast';
+export * from './use-mobile';
+export * from './use-toast';
 export * from './useGameState';
 export * from './useMultiChannelChat';
 export * from './usePlayerPresence';

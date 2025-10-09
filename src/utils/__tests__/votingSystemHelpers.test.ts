@@ -22,7 +22,8 @@ import {
   hasVotingPermission,
   canBeVoted,
   calculateVoteWeight,
-  formatVoteTime
+  formatVoteTime,
+  type VotingSummary
 } from '../votingSystemHelpers';
 
 /**

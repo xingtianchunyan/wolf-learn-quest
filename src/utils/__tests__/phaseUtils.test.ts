@@ -10,7 +10,9 @@ import {
   isVotingPhase,
   isNightActionPhase,
   PHASE_MAPPING,
-  REVERSE_PHASE_MAPPING
+  REVERSE_PHASE_MAPPING,
+  type PhaseNumber,
+  type PhaseName
 } from '../phaseUtils';
 
 describe('phaseUtils', () => {

@@ -19,7 +19,7 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { realtimeSubscriptionManager } from '@/utils/realtimeSubscriptionManager';
 import { queryCacheOptimizer } from '@/utils/queryCacheOptimizer';
 import { unifiedErrorHandler } from '@/utils/unifiedErrorHandler';
@@ -448,7 +448,7 @@ describe('性能基准测试套件', () => {
 
   afterAll(() => {
     if (benchmark) {
-      console.log(`\n${  benchmark.generateReport()}`);
+      console.log('\n' + benchmark.generateReport());
     }
   });
 

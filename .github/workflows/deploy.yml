@@ -1,493 +1,272 @@
-# 部署工作流 - 自动化部署到不同环境
-name: Deploy
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main
-      - staging
-      - develop
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - staging
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: '部署环境'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
-      skip_tests:
-        description: '跳过测试'
-        required: false
-        default: false
-        type: boolean
+    branches: [main]
 
 env:
-  NODE_VERSION: '22'
-  PNPM_VERSION: '9'
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
 
 jobs:
-  # 检测变更
-  detect-changes:
-    name: 检测变更
-    runs-on: ubuntu-latest
-    outputs:
-      frontend: ${{ steps.changes.outputs.frontend }}
-      backend: ${{ steps.changes.outputs.backend }}
-      docs: ${{ steps.changes.outputs.docs }}
-      config: ${{ steps.changes.outputs.config }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 检测文件变更
-        uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          filters: |
-            frontend:
-              - 'src/**'
-              - 'public/**'
-              - 'index.html'
-              - 'vite.config.ts'
-              - 'tailwind.config.js'
-              - 'postcss.config.js'
-            backend:
-              - 'api/**'
-              - 'server/**'
-              - 'supabase/**'
-            docs:
-              - 'docs/**'
-              - '*.md'
-              - '.trae/documents/**'
-            config:
-              - 'package.json'
-              - 'package-lock.json'
-              - 'pnpm-lock.yaml'
-              - '.github/**'
-              - 'scripts/**'
-
   # 代码质量检查
-  quality-check:
-    name: 代码质量检查
+  quality:
+    name: Code Quality
     runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.config == 'true'
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 设置 Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
-      - name: 安装依赖
-        run: npm ci
-
-      - name: 代码格式检查
-        run: npm run format:check
-
-      - name: ESLint 检查
-        run: npm run lint
-
-      - name: TypeScript 类型检查
-        run: npm run type-check
-
-      - name: 代码质量分析
-        run: npm run quality:analyze
-
-      - name: 上传质量报告
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          name: quality-reports
-          path: reports/
-          retention-days: 30
+          version: ${{ env.PNPM_VERSION }}
 
-  # 单元测试
-  unit-tests:
-    name: 单元测试
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run type-check
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Format check
+        run: pnpm run format:check
+
+  # 测试
+  test:
+    name: Test Suite
     runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true'
+    needs: quality
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 设置 Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
-      - name: 安装依赖
-        run: npm ci
-
-      - name: 运行单元测试
-        run: npm run test:coverage
-
-      - name: 上传覆盖率报告到 Codecov
-        uses: codecov/codecov-action@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm run test
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          file: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
 
-      - name: 上传测试报告
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-reports
-          path: |
-            coverage/
-            test-results/
-          retention-days: 30
-
-  # 端到端测试
-  e2e-tests:
-    name: 端到端测试
-    runs-on: ubuntu-latest
-    needs: [detect-changes, quality-check]
-    if: needs.detect-changes.outputs.frontend == 'true' && github.event.inputs.skip_tests != 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: 设置 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 安装依赖
-        run: npm ci
-
-      - name: 构建应用
-        run: npm run build
-
-      - name: 安装 Playwright
-        run: npx playwright install --with-deps
-
-      - name: 运行端到端测试
-        run: npm run test:e2e
-        env:
-          CI: true
-
-      - name: 上传测试报告
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: e2e-reports
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 30
-
-  # 构建应用
+  # 构建
   build:
-    name: 构建应用
+    name: Build Application
     runs-on: ubuntu-latest
-    needs: [quality-check, unit-tests]
-    if: always() && (needs.quality-check.result == 'success' && needs.unit-tests.result == 'success')
-    strategy:
-      matrix:
-        environment: [staging, production]
+    needs: [quality, test]
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 设置 Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
-      - name: 安装依赖
-        run: npm ci
-
-      - name: 构建应用 (${{ matrix.environment }})
-        run: |
-          if [ "${{ matrix.environment }}" = "production" ]; then
-            npm run build
-          else
-            npm run build:dev
-          fi
-        env:
-          NODE_ENV: ${{ matrix.environment }}
-
-      - name: 分析包大小
-        run: |
-          npm install -g bundlesize
-          bundlesize || true
-
-      - name: 上传构建产物
-        uses: actions/upload-artifact@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          name: build-${{ matrix.environment }}
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_APP_VERSION: ${{ github.sha }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
           path: dist/
           retention-days: 7
 
-  # 安全扫描
-  security-scan:
-    name: 安全扫描
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.config == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: 运行 Trivy 漏洞扫描
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: 上传 Trivy 扫描结果到 GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: 依赖安全审计
-        run: npm audit --audit-level=moderate
-
-      - name: 检查已知漏洞
-        run: |
-          npx audit-ci --moderate
-        continue-on-error: true
-
-  # 性能测试
-  performance-test:
-    name: 性能测试
+  # 部署到Vercel
+  deploy-vercel:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/main'
+    environment: production
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 下载构建产物
-        uses: actions/download-artifact@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
         with:
-          name: build-staging
+          name: dist
           path: dist/
 
-      - name: 设置 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 启动服务器
-        run: |
-          npm install -g serve
-          serve -s dist -l 3000 &
-          sleep 10
-
-      - name: 运行 Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: './.lighthouserc.json'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-
-  # 部署到 Staging
-  deploy-staging:
-    name: 部署到 Staging
-    runs-on: ubuntu-latest
-    needs: [build, security-scan]
-    if: |
-      always() && 
-      (needs.build.result == 'success' && needs.security-scan.result == 'success') &&
-      (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop' || 
-       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'))
-    environment:
-      name: staging
-      url: https://staging.wolf-learn-quest.vercel.app
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: 下载构建产物
-        uses: actions/download-artifact@v4
-        with:
-          name: build-staging
-          path: dist/
-
-      - name: 部署到 Vercel (Staging)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-
-      - name: 健康检查
-        run: |
-          sleep 30
-          curl -f https://staging.wolf-learn-quest.vercel.app/health || exit 1
-
-      - name: 运行冒烟测试
-        run: |
-          npm ci
-          npm run test:smoke
-        env:
-          TEST_URL: https://staging.wolf-learn-quest.vercel.app
-
-  # 部署到 Production
-  deploy-production:
-    name: 部署到 Production
-    runs-on: ubuntu-latest
-    needs: [build, security-scan, e2e-tests, performance-test]
-    if: |
-      always() && 
-      (needs.build.result == 'success' && needs.security-scan.result == 'success' && 
-       (needs.e2e-tests.result == 'success' || needs.e2e-tests.result == 'skipped') &&
-       (needs.performance-test.result == 'success' || needs.performance-test.result == 'skipped')) &&
-      (github.ref == 'refs/heads/main' || 
-       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'))
-    environment:
-      name: production
-      url: https://wolf-learn-quest.vercel.app
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: 下载构建产物
-        uses: actions/download-artifact@v4
-        with:
-          name: build-production
-          path: dist/
-
-      - name: 部署到 Vercel (Production)
+      - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
-          working-directory: ./
-          scope: ${{ secrets.VERCEL_ORG_ID }}
 
-      - name: 健康检查
-        run: |
-          sleep 30
-          curl -f https://wolf-learn-quest.vercel.app/health || exit 1
-
-      - name: 运行冒烟测试
-        run: |
-          npm ci
-          npm run test:smoke
-        env:
-          TEST_URL: https://wolf-learn-quest.vercel.app
-
-      - name: 创建 GitHub Release
-        if: github.ref == 'refs/heads/main'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
-          body: |
-            自动发布 v${{ github.run_number }}
-            
-            ## 变更内容
-            ${{ github.event.head_commit.message }}
-            
-            ## 部署信息
-            - 环境: Production
-            - 提交: ${{ github.sha }}
-            - 分支: ${{ github.ref }}
-            - 部署时间: ${{ github.event.head_commit.timestamp }}
-          draft: false
-          prerelease: false
-
-  # 通知
-  notify:
-    name: 通知
+  # 部署到Netlify
+  deploy-netlify:
+    name: Deploy to Netlify
     runs-on: ubuntu-latest
-    needs: [deploy-staging, deploy-production]
-    if: always()
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
     steps:
-      - name: 发送 Slack 通知
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-          custom_payload: |
-            {
-              "attachments": [{
-                "color": "${{ job.status }}" === "success" ? "good" : "${{ job.status }}" === "failure" ? "danger" : "warning",
-                "title": "部署状态: ${{ job.status }}",
-                "fields": [
-                  {
-                    "title": "仓库",
-                    "value": "${{ github.repository }}",
-                    "short": true
-                  },
-                  {
-                    "title": "分支",
-                    "value": "${{ github.ref }}",
-                    "short": true
-                  },
-                  {
-                    "title": "提交",
-                    "value": "${{ github.sha }}",
-                    "short": true
-                  },
-                  {
-                    "title": "作者",
-                    "value": "${{ github.actor }}",
-                    "short": true
-                  }
-                ]
-              }]
-            }
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  # 清理
-  cleanup:
-    name: 清理资源
-    runs-on: ubuntu-latest
-    needs: [deploy-staging, deploy-production, notify]
-    if: always()
-    steps:
-      - name: 清理旧的构建产物
-        uses: actions/github-script@v7
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
         with:
-          script: |
-            const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
-            
-            const oldArtifacts = artifacts.artifacts.filter(artifact => {
-              const ageInDays = (Date.now() - new Date(artifact.created_at)) / (1000 * 60 * 60 * 24);
-              return ageInDays > 7;
-            });
-            
-            for (const artifact of oldArtifacts) {
-              await github.rest.actions.deleteArtifact({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: artifact.id,
-              });
-              console.log(`已删除旧的构建产物: ${artifact.name}`);
-            }
+          name: dist
+          path: dist/
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.1
+        with:
+          publish-dir: './dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # Docker构建和推送
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/wolf-learn-quest
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 健康检查
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel, deploy-netlify]
+    if: always() && (needs.deploy-vercel.result == 'success' || needs.deploy-netlify.result == 'success')
+    steps:
+      - name: Check Vercel deployment
+        if: needs.deploy-vercel.result == 'success'
+        run: |
+          curl -f ${{ secrets.VERCEL_URL }}/health || exit 1
+
+      - name: Check Netlify deployment
+        if: needs.deploy-netlify.result == 'success'
+        run: |
+          curl -f ${{ secrets.NETLIFY_URL }}/health || exit 1
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Deployment successful and health checks passed!"

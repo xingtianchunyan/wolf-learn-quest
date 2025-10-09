@@ -18,7 +18,8 @@ import {
   getSkillUsageSuggestion,
   getSkillUsageHint,
   validateSkillUsage,
-  type SkillQueueItem
+  type SkillQueueItem,
+  type SkillValidationError
 } from '../skillSystemValidation';
 import {
   RoleDesign,

@@ -11,7 +11,7 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 
 /**
  * 接口注释：简单基准测试结果

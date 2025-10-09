@@ -20,7 +20,7 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
 
 /**
  * 接口注释：游戏状态接口

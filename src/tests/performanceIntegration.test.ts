@@ -19,9 +19,9 @@
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
-import { act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 
 // 导入性能监控工具
@@ -385,7 +385,7 @@ describe('性能优化集成测试', () => {
       }));
 
       const { rerender } = render(
-        React.createElement(MockHeavyComponent, { items: initialData, onUpdate })
+        React.createElement(MockHeavyComponent, { items: initialData, onUpdate: onUpdate })
       );
 
       const updateStartTime = performance.now();
@@ -398,7 +398,7 @@ describe('性能优化集成测试', () => {
         }));
 
         await act(async () => {
-          rerender(React.createElement(MockHeavyComponent, { items: updatedData, onUpdate }));
+          rerender(React.createElement(MockHeavyComponent, { items: updatedData, onUpdate: onUpdate }));
           await PerformanceTestUtils.waitForIdle(10);
         });
       }
@@ -1023,7 +1023,7 @@ describe('性能优化集成测试', () => {
           this.pendingQueries = [];
           this.batchTimeout = null;
 
-          if (queries.length === 0) {return;}
+          if (queries.length === 0) return;
 
           try {
             // 模拟批量查询

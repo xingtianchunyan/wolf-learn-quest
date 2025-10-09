@@ -1,70 +1,45 @@
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { getRoleConfiguration, expandRolesWithDesigns  } from '@/utils/roleConfiguration';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { useLanguage  } from '@/components/layout/LanguageSwitcher';
-import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useToast  } from '@/components/ui/useToast';
-import React, { useState  } from 'react';
 
-/**
-* 文件级注释：RoleSelection 组件
-*
-* 该文件实现了一个处理游戏逻辑和状态管理，主要功能包括：
-* - 组件渲染和状态管理
-* - 用户交互处理
-* - 数据展示和更新
-* - 响应式设计支持
-*
-* @author SOLO Coding
-* @version 1.0.0
-* @since 2024-12-19
-* @category game
-* @filepath room\RoleSelection.tsx
- */
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { getRoleConfiguration, expandRolesWithDesigns } from '@/utils/roleConfiguration';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { useRoleSelection } from '@/hooks/useRoleSelection';
+import { useToast } from '@/components/ui/use-toast';
+import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 
-interface RoleSelectionProps { maxPlayers: number;
+interface RoleSelectionProps {
+  maxPlayers: number;
   currentPlayerCount: number;
   selectedCharacter: string | null;
   onCharacterSelect: (characterId: string | null) => void;
   roomId: string;
   currentPlayerId: string | null;
-  isReady: boolean;,
+  isReady: boolean;
 }
 
-/**
-* RoleSelection 组件
-*
-* 处理游戏逻辑和状态管理
-*
-* @component
-* @param { RoleSelectionProps } props - 组件属性
-* @returns { JSX.Element } 渲染的组件
-* @hooks useState, useLanguage, useRoleSelection, useToast, useRoleDesigns
-*
-* @example
-* // 使用示例
-* <RoleSelection { ...props } />
- */
-const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
+const RoleSelection: React.FC<RoleSelectionProps> = ({
+  maxPlayers,
   currentPlayerCount,
   selectedCharacter,
   onCharacterSelect,
   roomId,
   currentPlayerId,
-  isReady,
-}) => { const { t  } = useLanguage();
-  const { toast  } = useToast();
-  const { roleDesigns, loading: roleDesignsLoading, getLocalImageByDesignId  } = useRoleDesigns();
+  isReady
+}) => {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const { roleDesigns, loading: roleDesignsLoading, getLocalImageByDesignId } = useRoleDesigns();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
-  const { selectRole,
+  const {
+    selectRole,
     unselectRole,
     isRoleSelected,
     getCurrentPlayerSelection,
     canSelectRoles,
-    loading: roleSelectionLoading,
-} = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
+    loading: roleSelectionLoading
+  } = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
 
   // 获取角色配置并与设计数据结合
   const roleConfigs = getRoleConfiguration(maxPlayers);
@@ -74,318 +49,330 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
   const currentSelection = getCurrentPlayerSelection();
   const currentSelectedRoleId = currentSelection?.roleId || null;
 
-  const handleCardFlip = (roleInstanceId: string) => { setFlippedCards(prev => {
+  const handleCardFlip = (roleInstanceId: string) => {
+    setFlippedCards(prev => {
       const newSet = new Set(prev);
       if (newSet.has(roleInstanceId)) {
-        newSet.delete(roleInstanceId);,
-} else { newSet.add(roleInstanceId);,
-}
-      return newSet;,
-});,
-};
+        newSet.delete(roleInstanceId);
+      } else {
+        newSet.add(roleInstanceId);
+      }
+      return newSet;
+    });
+  };
 
-  const handleRoleSelect = async (role: any) => { // 检查是否可以选择角色（玩家数是否等于最大玩家数）
+  const handleRoleSelect = async (role: any) => {
+    // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
         title: '角色选择暂未开放',
-        description: `需要等待房间人数达到${maxPlayers }人才能选择角色`,
-        variant: 'destructive',
+        description: `需要等待房间人数达到${maxPlayers}人才能选择角色`,
+        variant: "destructive",
       });
-      return;,
-}
+      return;
+    }
 
     // 如果已经准备，不能选择角色
-    if (isReady) { toast({
+    if (isReady) {
+      toast({
         title: t('cannot_select_role'),
         description: '请先取消准备状态才能选择角色',
-        variant: 'destructive',
-       });
-      return;,
-}
+        variant: "destructive",
+      });
+      return;
+    }
 
     // 如果没有 roleDesignId，无法选择
-    if (!role.roleDesignId) { toast({
+    if (!role.roleDesignId) {
+      toast({
         title: t('error'),
         description: '角色设计数据缺失，无法选择此角色',
-        variant: 'destructive',
-       });
-      return;,
-}
+        variant: "destructive",
+      });
+      return;
+    }
 
     // 如果角色已被其他玩家选择，不能选择
-    if (isRoleSelected(role.roleDesignId) && currentSelectedRoleId !== role.roleDesignId) { toast({
+    if (isRoleSelected(role.roleDesignId) && currentSelectedRoleId !== role.roleDesignId) {
+      toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
-        variant: 'destructive',
-       });
-      return;,
-}
+        variant: "destructive",
+      });
+      return;
+    }
 
     // 如果当前玩家已选择这个角色，则取消选择
-    if (currentSelectedRoleId === role.roleDesignId) { const success = await unselectRole();
+    if (currentSelectedRoleId === role.roleDesignId) {
+      const success = await unselectRole();
       if (success) {
         onCharacterSelect(null);
         toast({
           title: t('role_unselected'),
           description: '已取消角色选择',
-         });,
-} else { toast({
+        });
+      } else {
+        toast({
           title: t('error'),
           description: '取消选择失败，请重试',
-          variant: 'destructive',
-         });,
-}
-      return;,
-}
+          variant: "destructive",
+        });
+      }
+      return;
+    }
 
     // 选择新角色
     const success = await selectRole(role.roleDesignId);
-    if (success) { onCharacterSelect(role.roleDesignId);
+    if (success) {
+      onCharacterSelect(role.roleDesignId);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${role.displayName }`,
-      });,
-} else { toast({
+        description: `已选择角色：${role.displayName}`,
+      });
+    } else {
+      toast({
         title: t('error'),
         description: '选择角色失败，请重试',
-        variant: 'destructive',
-       });,
-}
+        variant: "destructive",
+      });
+    }
   };
 
   const isFlipped = (roleInstanceId: string) => flippedCards.has(roleInstanceId);
 
   // 根据 roleDesignId 获取角色设计信息
-  const getRoleDesignById = (roleDesignId: string | undefined) => { if (!roleDesignId) return null;
-    return roleDesigns.find(design => design.id === roleDesignId);,
-};
+  const getRoleDesignById = (roleDesignId: string | undefined) => {
+    if (!roleDesignId) return null;
+    return roleDesigns.find(design => design.id === roleDesignId);
+  };
 
-  if (roleDesignsLoading) { return (;
-      <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>;
-      <CardHeader className='flex-shrink-0'>;
-      <CardTitle className='text-werewolf-purple'>{t('select_role') }</CardTitle>;
-      </CardHeader>
-      <CardContent className='flex-1 flex items-center justify-center'>;
-      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple'></div>;
-      </CardContent>
+  if (roleDesignsLoading) {
+    return (
+      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
+           <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+         </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple"></div>
+        </CardContent>
       </Card>
-    );,
-}
+    );
+  }
 
-  return (;
-    <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>;
-    <CardHeader className='flex-shrink-0'>;
-    <CardTitle className='text-werewolf-purple'>{ t('select_role') }</CardTitle>;
-    <div className='space-y-2'>;
-    <p className='text-sm text-gray-400'>;
-    { t('current_config') }: { maxPlayers }{ t('players_game') } ({ expandedRoles.length }{ t('roles') })
-    </p>
-    <p className='text-sm text-gray-400'>;
-    当前玩家数: { currentPlayerCount } / { maxPlayers }
-    </p>
-    { !canSelectRoles() && (
-      <p className='text-sm text-yellow-400'>;
-      等待房间人数达到{maxPlayers }人后开放角色选择
-      </p>
-    )}
-    { canSelectRoles() && currentSelection && (
-      <p className='text-sm text-werewolf-purple'>;
-      当前选择：{currentSelection.roleName }
-      </p>
-    )}
-    </div>
-    </CardHeader>
-    <CardContent className='flex-1 flex flex-col'>;
-    <ScrollArea className='flex-1 pr-4'>;
-    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]'>;
-    { expandedRoles.map(role => {
-      const flipped = isFlipped(role.instanceId);
-      const roleDesign = getRoleDesignById(role.roleDesignId);
-      const isSelected = role.roleDesignId ? isRoleSelected(role.roleDesignId) : false;
-      const isCurrentSelection = currentSelectedRoleId === role.roleDesignId;
-      const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
+  return (
+    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
+         <CardTitle className="text-werewolf-purple">{t('select_role')}</CardTitle>
+        <div className="space-y-2">
+          <p className="text-sm text-gray-400">
+            {t('current_config')}: {maxPlayers}{t('players_game')} ({expandedRoles.length}{t('roles')})
+          </p>
+          <p className="text-sm text-gray-400">
+            当前玩家数: {currentPlayerCount} / {maxPlayers}
+          </p>
+          {!canSelectRoles() && (
+            <p className="text-sm text-yellow-400">
+              等待房间人数达到{maxPlayers}人后开放角色选择
+            </p>
+          )}
+          {canSelectRoles() && currentSelection && (
+            <p className="text-sm text-werewolf-purple">
+              当前选择：{currentSelection.roleName}
+            </p>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]">
+            {expandedRoles.map((role) => {
+              const flipped = isFlipped(role.instanceId);
+              const roleDesign = getRoleDesignById(role.roleDesignId);
+              const isSelected = role.roleDesignId ? isRoleSelected(role.roleDesignId) : false;
+              const isCurrentSelection = currentSelectedRoleId === role.roleDesignId;
+              const canSelect = canSelectRoles() && !isReady && (!isSelected || isCurrentSelection) && role.roleDesignId;
+              
+              // 使用本地图片URL
+              const imageUrl = role.roleDesignId ? getLocalImageByDesignId(role.roleDesignId) : null;
+              
+              return (
+                <div 
+                  key={role.instanceId}
+                  className={`relative transition-all duration-300 transform hover:scale-105 ${
+                    isCurrentSelection
+                      ? 'ring-2 ring-werewolf-purple' 
+                      : isSelected
+                      ? 'ring-2 ring-red-500'
+                      : ''
+                  }`}
+                  style={{ perspective: '1000px' }}
+                >
+                  {isSelected && !isCurrentSelection && (
+                    <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs">
+                      已选择
+                    </div>
+                  )}
+                  {isCurrentSelection && (
+                    <div className="absolute top-2 right-2 z-10 bg-werewolf-purple text-white px-2 py-1 rounded text-xs">
+                      我的选择
+                    </div>
+                  )}
+                  <div 
+                    className={`relative w-full h-80 transition-transform duration-700 transform-style-preserve-3d ${
+                      flipped ? 'rotate-y-180' : ''
+                    }`}
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    {/* 正面 - 角色形象和名称 */}
+                    <div 
+                      className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden ${
+                        isCurrentSelection
+                          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
+                          : isSelected
+                          ? 'bg-red-900/30 border-2 border-red-500'
+                          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
+                      }`}
+                      style={{ backfaceVisibility: 'hidden' }}
+                    >
+                      <div className="h-full flex flex-col">
+                        {/* 图片区域 - 点击选择角色 */}
+                        <div 
+                          className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
+                            canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                          }`}
+                          onClick={() => canSelect && handleRoleSelect(role)}
+                        >
+                          {imageUrl ? (
+                            <img 
+                              src={imageUrl} 
+                              alt={role.displayName}
+                              className="w-full h-full object-cover rounded-md"
+                              onError={(e) => {
+                                console.error('Image failed to load:', imageUrl);
+                                // 如果图片加载失败，显示默认图标
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div className={`fallback-icon ${imageUrl ? 'hidden' : 'flex'} absolute inset-0 text-6xl items-center justify-center w-full h-full`}>
+                            🎭
+                          </div>
+                        </div>
+                        {/* 名称区域 - 点击翻面 */}
+                        <div 
+                          className="text-center cursor-pointer"
+                          onClick={() => handleCardFlip(role.instanceId)}
+                        >
+                          <h3 className="font-bold text-lg text-white mb-2">
+                            {role.displayName}
+                          </h3>
+                          <div className="text-xs text-gray-400">
+                            单击图片选中，单击名称翻面
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-      // 使用本地图片URL
-      const imageUrl = role.roleDesignId ? getLocalImageByDesignId(role.roleDesignId) : null;
+                    {/* 背面 - 阵营和技能详情 */}
+                    <div 
+                      className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden rotate-y-180 ${
+                        isCurrentSelection
+                          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple' 
+                          : isSelected
+                          ? 'bg-red-900/30 border-2 border-red-500'
+                          : 'bg-werewolf-dark/40'
+                      }`}
+                      style={{ 
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)'
+                      }}
+                    >
+                      <div className="h-full flex flex-col">
+                        {/* 阵营信息 */}
+                        <div className="text-center mb-4">
+                          <h3 className="font-bold text-lg text-white mb-2">
+                            {role.displayName}
+                          </h3>
+                          <span 
+                            className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                              roleDesign?.faction === false ? 'bg-green-900/60 text-green-200' : 
+                              roleDesign?.faction === true ? 'bg-red-900/60 text-red-200' :
+                              'bg-purple-900/60 text-purple-200'
+                            }`}
+                          >
+                            {roleDesign?.faction === false ? '村民' : roleDesign?.faction === true ? '狼人' : '未知'}阵营
+                          </span>
+                        </div>
 
-      return (;
-        <div
-        key={role.instanceId }
-        className={ `relative transition-all duration-300 transform hover:scale-105 ${
-          isCurrentSelection
-          ? 'ring-2 ring-werewolf-purple'
-          : isSelected
-          ? 'ring-2 ring-red-500'
-          : '',
-}`}
-        style={ { perspective: '1000px'  }}
-        >
-        { isSelected && !isCurrentSelection && (
-          <div className='absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs'>;
-          已选择
+                        {/* 技能详情 */}
+                        <div className="flex-1 bg-werewolf-dark/60 rounded-md p-2">
+                          <div className="space-y-2">
+                            <div>
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
+                                技能名称
+                              </h4>
+                              <p className="text-xs text-gray-300">
+                                {roleDesign?.skill_name || '无技能'}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
+                                技能效果
+                              </h4>
+                              <p className="text-xs text-gray-300 leading-tight">
+                                {roleDesign?.skill_description || '暂无详细说明'}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
+                                使用次数
+                              </h4>
+                              <p className="text-sm text-gray-300">
+                                {roleDesign?.skill_usage === -1 ? '无限制' : roleDesign?.skill_usage || 0}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="text-xs text-werewolf-purple font-semibold mb-0.5">
+                                技能类型
+                              </h4>
+                              <p className="text-sm text-gray-300">
+                                {roleDesign?.skill_type ? 
+                                  (Array.isArray(roleDesign.skill_type) ? roleDesign.skill_type.join(', ') : JSON.stringify(roleDesign.skill_type))
+                                  : '无'
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 返回提示 - 点击翻面 */}
+                        <div 
+                          className="text-center mt-3 cursor-pointer"
+                          onClick={() => handleCardFlip(role.instanceId)}
+                        >
+                          <div className="text-xs text-gray-400">
+                            单击返回正面
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ) }
-        { isCurrentSelection && (
-          <div className='absolute top-2 right-2 z-10 bg-werewolf-purple text-white px-2 py-1 rounded text-xs'>;
-          我的选择
-          </div>
-        ) }
-        <div
-        className={ `relative w-full h-80 transition-transform duration-700 transform-style-preserve-3d ${
-          flipped ? 'rotate-y-180' : '',
-}`}
-        style={ { transformStyle: 'preserve-3d'  }}
-        >
-        { /*  正面 - 角色形象和名称  */ }
-        <div
-        className={ `absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden ${
-          isCurrentSelection
-          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
-          : isSelected
-          ? 'bg-red-900/30 border-2 border-red-500'
-          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60',
-}`}
-        style={ { backfaceVisibility: 'hidden'  }}
-        >
-        <div className='h-full flex flex-col'>;
-        { /*  图片区域 - 点击选择角色  */ }
-        <div
-        className={ `flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
-          canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60',
-}`}
-        onClick={ () => canSelect && handleRoleSelect(role) }
-        >
-        { imageUrl ? (
-          <img
-          src={imageUrl }
-          alt={ role.displayName }
-          className='w-full h-full object-cover rounded-md';
-          onError={ e => {
-            console.error('Image failed to load:', imageUrl);
-            // 如果图片加载失败，显示默认图标
-            const target = e.currentTarget as HTMLImageElement;
-            target.style.display = 'none';
-            const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-            if (fallback) {
-              fallback.style.display = 'flex';,
-}
-          }}
-          />
-        ) : null}
-        <div className={ `fallback-icon ${imageUrl ? 'hidden' : 'flex' } absolute inset-0 text-6xl items-center justify-center w-full h-full`}>;
-        🎭
-        </div>
-        </div>
-        { /*  名称区域 - 点击翻面  */ }
-        <div
-        className='text-center cursor-pointer';
-        onClick={ () => handleCardFlip(role.instanceId) }
-        >
-        <h3 className='font-bold text-lg text-white mb-2'>;
-        { role.displayName }
-        </h3>
-        <div className='text-xs text-gray-400'>;
-        单击图片选中，单击名称翻面
-        </div>
-        </div>
-        </div>
-        </div>
-
-        { /*  背面 - 阵营和技能详情  */ }
-        <div
-        className={ `absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden rotate-y-180 ${
-          isCurrentSelection
-          ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
-          : isSelected
-          ? 'bg-red-900/30 border-2 border-red-500'
-          : 'bg-werewolf-dark/40',
-}`}
-        style={ {
-          backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
-}}
-        >
-        <div className='h-full flex flex-col'>;
-        { /*  阵营信息  */ }
-        <div className='text-center mb-4'>;
-        <h3 className='font-bold text-lg text-white mb-2'>;
-        { role.displayName }
-        </h3>
-        <span
-        className={ `inline-block px-3 py-1 rounded-full text-sm font-medium ${
-          roleDesign?.faction === false ? 'bg-green-900/60 text-green-200' :;
-          roleDesign?.faction === true ? 'bg-red-900/60 text-red-200' :;
-          'bg-purple-900/60 text-purple-200',
-}`}
-        >
-        { roleDesign?.faction === false ? '村民' : roleDesign?.faction === true ? '狼人' : '未知' }阵营;
-        </span>
-        </div>
-
-        { /*  技能详情  */ }
-        <div className='flex-1 bg-werewolf-dark/60 rounded-md p-2'>;
-        <div className='space-y-2'>;
-        <div>
-        <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>;
-        技能名称
-        </h4>
-        <p className='text-xs text-gray-300'>;
-        { roleDesign?.skill_name || '无技能' }
-        </p>
-        </div>
-
-        <div>
-        <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>;
-        技能效果
-        </h4>
-        <p className='text-xs text-gray-300 leading-tight'>;
-        { roleDesign?.skill_description || '暂无详细说明' }
-        </p>
-        </div>
-
-        <div>
-        <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>;
-        使用次数
-        </h4>
-        <p className='text-sm text-gray-300'>;
-        { roleDesign?.skill_usage === -1 ? '无限制' : roleDesign?.skill_usage || 0 }
-        </p>
-        </div>
-
-        <div>
-        <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>;
-        技能类型
-        </h4>
-        <p className='text-sm text-gray-300'>;
-        { roleDesign?.skill_type ?
-        (Array.isArray(roleDesign.skill_type) ? roleDesign.skill_type.join(', ') : JSON.stringify(roleDesign.skill_type))
-        : '无',
-}
-      </p>
-      </div>
-      </div>
-      </div>
-
-      { /*  返回提示 - 点击翻面  */ }
-      <div
-      className='text-center mt-3 cursor-pointer';
-      onClick={ () => handleCardFlip(role.instanceId) }
-      >
-      <div className='text-xs text-gray-400'>;
-      单击返回正面
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-    );,
-})}
-  </div>
-  </ScrollArea>
-  </CardContent>
-  </Card>
-);,
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
 };
 
 export default RoleSelection;

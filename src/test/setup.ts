@@ -63,7 +63,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }))
 
 // Mock toast notifications - 修复返回对象结构
-vi.mock('@/hooks/useToast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: vi.fn(() => ({
     toast: vi.fn()
   }))

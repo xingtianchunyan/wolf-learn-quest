@@ -17,12 +17,12 @@ import { checkSkillConflicts, resolveSkillConflicts } from '@/utils/skillMapping
 import { validateSkillExecutionOrder } from '@/utils/skillSystemValidation';
 import { checkEffectConflicts, resolveSkillEffects } from '@/utils/skillEffectsManager';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { toast } from '@/hooks/useToast';
+import { toast } from '@/hooks/use-toast';
 import type { SkillConfig, SkillQueueItem, SkillEffectConfig } from '@/types/skillSystem.types';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client');
-vi.mock('@/hooks/useToast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   toast: vi.fn(),
   useToast: () => ({
     toast: vi.fn()

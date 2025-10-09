@@ -55,7 +55,7 @@ const MockAuthContext = React.createContext({
   requireAuth: vi.fn(() => true)
 });
 
-vi.mock('@/hooks/useToast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: mockToast
   })
