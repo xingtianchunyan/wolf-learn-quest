@@ -1,9 +1,9 @@
-import { createLogger  } from '@/lib/logger';
-import { getSkillConfigByEnglish  } from '@/utils/skillMappingConfig';
-import { standardizeSkillTargets  } from '@/utils/skillEffectStandardization';
-import { supabase  } from '@/integrations/supabase/client';
-import { useState, useCallback, useEffect  } from 'react';
-import { useToast  } from '@/hooks/useToast';
+import { createLogger   } from '@/lib/logger';
+import { getSkillConfigByEnglish   } from '@/utils/skillMappingConfig';
+import { standardizeSkillTargets   } from '@/utils/skillEffectStandardization';
+import { supabase   } from '@/integrations/supabase/client';
+import { useState, useCallback, useEffect   } from 'react';
+import { useToast   } from '@/hooks/useToast';
 
 // 技能数据获取和管理
 
@@ -24,12 +24,19 @@ export interface EnhancedSkillUse { id: string;
   created_at: string;
   updated_at?: string;
   chinese_name?: string;
-  skill_config?: any;,
+  skill_config?: any
 }
 
 const logger = createLogger('skill-data');
 
-export const useSkillData = (gameStateId?: string) => { const [skillUses, setSkillUses] = useState<EnhancedSkillUse[]>([]);
+/**
+ * useSkillData函数
+ * 自定义Hook
+ *
+ * @param gameStateId? - gameStateId?参数
+ * @returns void
+ */
+export const useSkillData = (gameStateId?: string) =>  { const [skillUses, setSkillUses] = useState<EnhancedSkillUse[]>([]);
   const [skillEffectsQueue, setSkillEffectsQueue] = useState<any[]>([]);
   const [skillTargets, setSkillTargets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,14 +55,17 @@ export const useSkillData = (gameStateId?: string) => { const [skillUses, setSki
         .from('skill_uses')
         .select('*')
         .eq('game_state_id', gameStateId)
-        .order('created_at', { ascending: false  }),
+        .order('created_at', { ascending: false  
+}),
 
         supabase
         .from('skill_effects_queue')
         .select('*')
         .eq('game_state_id', gameStateId)
-        .order('priority', { ascending: true  })
-        .order('execution_order', { ascending: true  }),
+        .order('priority', { ascending: true  
+})
+        .order('execution_order', { ascending: true  
+}),
 
         supabase
         .from('standardized_skill_targets')
@@ -64,8 +74,8 @@ export const useSkillData = (gameStateId?: string) => { const [skillUses, setSki
         skill_uses!inner(game_state_id)
         `)
         .eq('skill_uses.game_state_id', gameStateId)
-        .order('created_at', { ascending: false  }),
-]);
+        .order('created_at', { ascending: false  
+}) ]);
 
       // 处理技能使用数据，添加中文名称和配置信息
       if (skillUsesResult.data) { const enhancedSkillUses = skillUsesResult.data.map(use => {
@@ -73,32 +83,34 @@ export const useSkillData = (gameStateId?: string) => { const [skillUses, setSki
           return {
             ...use,
             chinese_name: config?.chineseName || use.skill_name,
-            skill_config: config,
-} as EnhancedSkillUse;,
+            skill_config: config 
+} as EnhancedSkillUse
 });
-        setSkillUses(enhancedSkillUses);,
+        setSkillUses(enhancedSkillUses)
 }
 
-      if (queueResult.data) { setSkillEffectsQueue(queueResult.data);,
+      if (queueResult.data) { setSkillEffectsQueue(queueResult.data)
 }
 
       if (targetsResult.data) { const standardizedTargets = standardizeSkillTargets(targetsResult.data);
-        setSkillTargets(standardizedTargets);,
+        setSkillTargets(standardizedTargets)
 }
 
-      setLastSyncTime(new Date());,
+      setLastSyncTime(new Date())
 } catch (error) { logger.error('获取技能数据失败', error);
       toast({
         title: '数据加载失败',
         description: '无法获取技能系统数据，请刷新页面重试',
-        variant: 'destructive',
-       });,
-} finally { setLoading(false);,
+        variant: 'destructive' 
+})
+} finally { setLoading(false)
 }
   }, [gameStateId, toast]);
 
   // 初始数据加载
-  useEffect(() => { fetchAllSkillData();,
+  useEffect(() => {
+  fetchAllSkillData()
+
 }, [fetchAllSkillData]);
 
   return { skillUses,
@@ -109,6 +121,5 @@ export const useSkillData = (gameStateId?: string) => { const [skillUses, setSki
     setSkillTargets,
     loading,
     lastSyncTime,
-    fetchAllSkillData,
-};,
+    fetchAllSkillData }
 };

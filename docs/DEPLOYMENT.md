@@ -7,11 +7,13 @@
 ## 环境要求
 
 ### 开发环境
+
 - Node.js 18.0.0 或更高版本
 - npm 或 yarn 或 pnpm
 - Git
 
 ### 生产环境
+
 - 支持静态文件托管的服务器
 - PostgreSQL数据库（通过Supabase提供）
 - HTTPS支持（推荐）
@@ -23,6 +25,7 @@
 项目在Lovable平台上开发，可以直接使用平台的一键部署功能。
 
 #### 步骤：
+
 1. 在Lovable编辑器中点击右上角的"Publish"按钮
 2. 选择部署配置：
    - 域名设置（可使用默认域名或自定义域名）
@@ -32,6 +35,7 @@
 4. 访问生成的URL测试部署
 
 #### 优势：
+
 - 零配置部署
 - 自动CI/CD
 - 内置Supabase集成
@@ -41,6 +45,7 @@
 ### 2. Vercel部署
 
 #### 步骤：
+
 1. 将代码推送到GitHub仓库
 2. 在Vercel平台导入项目
 3. 配置环境变量：
@@ -58,6 +63,7 @@
    ```
 
 #### 自动部署设置：
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Vercel
@@ -79,6 +85,7 @@ jobs:
 ### 3. Netlify部署
 
 #### 步骤：
+
 1. 连接GitHub仓库到Netlify
 2. 配置构建设置：
    - Build command: `npm run build`
@@ -98,6 +105,7 @@ jobs:
 #### 使用Docker部署：
 
 创建Dockerfile：
+
 ```dockerfile
 FROM node:18-alpine as builder
 
@@ -117,6 +125,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 创建nginx.conf：
+
 ```nginx
 events {
     worker_connections 1024;
@@ -145,6 +154,7 @@ http {
 ```
 
 构建和运行：
+
 ```bash
 docker build -t werewolf-app .
 docker run -p 80:80 werewolf-app
@@ -188,6 +198,7 @@ pm2 start ecosystem.config.js
 ### 开发环境
 
 创建`.env.local`文件：
+
 ```env
 # Supabase配置
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -202,12 +213,13 @@ VITE_APP_VERSION=1.0.0
 
 在部署平台配置以下环境变量：
 
-| 变量名 | 描述 | 示例值 |
-|-------|------|--------|
-| `VITE_SUPABASE_URL` | Supabase项目URL | `https://xxx.supabase.co` |
+| 变量名                   | 描述             | 示例值                    |
+| ------------------------ | ---------------- | ------------------------- |
+| `VITE_SUPABASE_URL`      | Supabase项目URL  | `https://xxx.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Supabase匿名密钥 | `eyJhbGciOiJIUzI1NiIs...` |
 
-⚠️ **安全提醒**: 
+⚠️ **安全提醒**:
+
 - 生产环境不要使用开发环境的密钥
 - 确保RLS策略正确配置
 - 定期轮换API密钥
@@ -217,16 +229,19 @@ VITE_APP_VERSION=1.0.0
 ### 数据库迁移
 
 1. **安装Supabase CLI**：
+
    ```bash
    npm install -g supabase
    ```
 
 2. **初始化项目**：
+
    ```bash
    supabase init
    ```
 
 3. **链接远程项目**：
+
    ```bash
    supabase link --project-ref your-project-ref
    ```
@@ -254,7 +269,7 @@ supabase functions deploy generate-questions
 
 ```sql
 -- 创建存储桶
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true);
 
 -- 配置存储策略
@@ -267,6 +282,7 @@ FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.fol
 ### 构建优化
 
 1. **代码分割**：
+
    ```typescript
    // 懒加载页面组件
    const GamePage = lazy(() => import('./pages/GamePage'));
@@ -274,6 +290,7 @@ FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.fol
    ```
 
 2. **Bundle分析**：
+
    ```bash
    npm run build -- --analyze
    ```
@@ -288,11 +305,11 @@ FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.fol
            manualChunks: {
              vendor: ['react', 'react-dom'],
              ui: ['@radix-ui/react-dialog', '@radix-ui/react-toast'],
-             supabase: ['@supabase/supabase-js']
-           }
-         }
-       }
-     }
+             supabase: ['@supabase/supabase-js'],
+           },
+         },
+       },
+     },
    });
    ```
 
@@ -302,6 +319,7 @@ FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.fol
    考虑使用Next.js重构以支持SSR
 
 2. **CDN配置**：
+
    ```nginx
    location /assets/ {
        expires 1y;
@@ -330,7 +348,7 @@ npm install @sentry/react @sentry/tracing
 import * as Sentry from '@sentry/react';
 
 Sentry.init({
-  dsn: "your-sentry-dsn",
+  dsn: 'your-sentry-dsn',
   environment: import.meta.env.MODE,
   tracesSampleRate: 1.0,
 });
@@ -339,6 +357,7 @@ Sentry.init({
 ### 性能监控
 
 1. **Web Vitals**：
+
    ```typescript
    import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
 
@@ -376,7 +395,7 @@ const logger = {
     } else {
       console.error(message, error);
     }
-  }
+  },
 };
 ```
 
@@ -396,10 +415,10 @@ server {
 server {
     listen 443 ssl;
     server_name your-domain.com;
-    
+
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
-    
+
     # 其他配置...
 }
 ```
@@ -462,6 +481,7 @@ supabase storage download --recursive bucket-name ./backup/
 ### 调试工具
 
 1. **开发工具**：
+
    ```bash
    # 开发服务器
    npm run dev

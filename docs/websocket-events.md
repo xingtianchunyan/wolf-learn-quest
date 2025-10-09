@@ -1,14 +1,12 @@
 # WebSocket事件文档
 
 ## 概述
+
 本文档描述了系统中所有的WebSocket事件，包括发送和监听的事件。
 
 ## 发送事件 (Emit Events)
 
-
-
 ## 监听事件 (Listen Events)
-
 
 ### postgres_changes
 
@@ -17,8 +15,9 @@
 **文件位置**: `src\components\game\interfaces\SkillConflictResolver.tsx`
 
 **使用示例**:
+
 ```javascript
-socket.on('postgres_changes', (data) => {
+socket.on('postgres_changes', data => {
   // 处理事件数据
 });
 ```
@@ -32,8 +31,9 @@ socket.on('postgres_changes', (data) => {
 **文件位置**: `src\components\ui\carousel.tsx`
 
 **使用示例**:
+
 ```javascript
-socket.on('reInit', (data) => {
+socket.on('reInit', data => {
   // 处理事件数据
 });
 ```
@@ -47,8 +47,9 @@ socket.on('reInit', (data) => {
 **文件位置**: `src\components\ui\carousel.tsx`
 
 **使用示例**:
+
 ```javascript
-socket.on('select', (data) => {
+socket.on('select', data => {
   // 处理事件数据
 });
 ```
@@ -62,8 +63,9 @@ socket.on('select', (data) => {
 **文件位置**: `src\hooks\usePlayerPresence.ts`
 
 **使用示例**:
+
 ```javascript
-socket.on('presence', (data) => {
+socket.on('presence', data => {
   // 处理事件数据
 });
 ```
@@ -77,8 +79,9 @@ socket.on('presence', (data) => {
 **文件位置**: `src\middleware\apiSecurityMiddleware.ts`
 
 **使用示例**:
+
 ```javascript
-socket.on('finish', (data) => {
+socket.on('finish', data => {
   // 处理事件数据
 });
 ```
@@ -92,14 +95,14 @@ socket.on('finish', (data) => {
 **文件位置**: `src\utils\enhancedRealtimeManager.ts`
 
 **使用示例**:
+
 ```javascript
-socket.on('system', (data) => {
+socket.on('system', data => {
   // 处理事件数据
 });
 ```
 
 ---
-
 
 ## 事件数据格式
 

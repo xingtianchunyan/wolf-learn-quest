@@ -1,11 +1,11 @@
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Input  } from '@/components/ui/input';
-import { MessageSquareText  } from 'lucide-react';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { useMultiChannelChat  } from '@/hooks/useMultiChannelChat';
-import React, { useState, useEffect, useRef  } from 'react';
-import ChatChannelSelector, { ChatChannel  } from './ChatChannelSelector';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Input   } from '@/components/ui/input';
+import { MessageSquareText   } from 'lucide-react';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { useMultiChannelChat   } from '@/hooks/useMultiChannelChat';
+import React, { useState, useEffect, useRef   } from 'react';
+import ChatChannelSelector, { ChatChannel   } from './ChatChannelSelector';
 import ChatMessageComponent from './ChatMessage';
 
 /**
@@ -23,8 +23,7 @@ import ChatMessageComponent from './ChatMessage';
 * @category chat
 * @filepath chat\MultiChannelChat.tsx
  */
-
-interface MultiChannelChatProps { roomId: string | null;
+interface MultiChannelChatProps  { roomId: string | null;
   currentUser: any;
   gamePhase?: string;
   gameRound?: number;
@@ -32,7 +31,7 @@ interface MultiChannelChatProps { roomId: string | null;
   isGameRoom?: boolean;
   title?: string;
   className?: string;
-  height?: string;,
+  height?: string
 }
 
 /**
@@ -49,7 +48,7 @@ interface MultiChannelChatProps { roomId: string | null;
 * // 使用示例
 * <MultiChannelChat { ...props } />
  */
-const MultiChannelChat: React.FC<MultiChannelChatProps> = ({ roomId,
+const MultiChannelChat: React.FC<MultiChannelChatProps> = ( { roomId,
   currentUser,
   gamePhase,
   gameRound,
@@ -57,7 +56,7 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({ roomId,
   isGameRoom = false,
   title = '聊天',
   className = '',
-  height = '500px';,
+  height = '500px'
 }) => { const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -67,46 +66,63 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({ roomId,
     sendMessage,
     currentChannel,
     setCurrentChannel,
-    availableChannels,
-} = useMultiChannelChat({ roomId,
+    availableChannels } = useMultiChannelChat({ roomId,
     currentUser,
-    userRole,
-});
+    userRole });
 
   // 自动滚动到底部
   useEffect(() => { if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;,
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
 }
-    },
-}, [messages]);
+    } }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => { e.preventDefault();
+/**
+ * handleSendMessage函数
+ * 处理事件
+ *
+ * @param e - e参数
+ * @returns Promise<void>
+ */
+const handleSendMessage = async (e: React.FormEvent) =>  { e.preventDefault();
     if (!newMessage.trim()) return;
 
     // 确定发送的聊天类型
     let chatType = currentChannel;
     if (currentChannel === 'all') {
-      chatType = 'public'; // 默认发送到公共频道,
-}
+      chatType = 'public'; // 默认发送到公共频道 }
 
     const success = await sendMessage(newMessage, chatType);
-    if (success) { setNewMessage('');,
+    if (success) { setNewMessage('')
 }
   };
 
-  const handleChannelChange = (channel: ChatChannel) => { setCurrentChannel(channel);,
+/**
+ * handleChannelChange函数
+ * 处理事件
+ *
+ * @param channel - channel参数
+ * @returns void
+ */
+const handleChannelChange = (channel: ChatChannel) =>  {
+  setCurrentChannel(channel)
+
 };
 
-  const getChannelDisplayName = () => { const channelNames = {
+/**
+ * getChannelDisplayName函数
+ * 获取数据
+ * @returns void
+ */
+const getChannelDisplayName = () => { const channelNames =  {
       public: '公共',
       team: '小队',
       judge_private: '法官私聊',
       system: '系统',
-      all: '全部',
+      all: '全部'  
 };
-    return channelNames[currentChannel] || '公共';,
+    return channelNames[currentChannel] || '公共'
 };
 
   return (;
@@ -180,7 +196,13 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({ roomId,
     </form>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * MultiChannelChat组件
+ * 聊天相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default MultiChannelChat;

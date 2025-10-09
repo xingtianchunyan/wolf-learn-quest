@@ -1,6 +1,6 @@
-import { ButtonProps, buttonVariants  } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, MoreHorizontal  } from 'lucide-react'
-import { cn  } from '@/lib/utils'
+import { ButtonProps, buttonVariants   } from '@/components/ui/button'
+import { ChevronLeft, ChevronRight, MoreHorizontal   } from 'lucide-react'
+import { cn   } from '@/lib/utils'
 import * as React from 'react'
 
 /**
@@ -32,7 +32,7 @@ import * as React from 'react'
 * // 使用示例
 * <pagination />
  */
-const Pagination = ({ className, ...props  }: React.ComponentProps<'nav'>) => (;
+const Pagination = ( { className, ...props  }: React.ComponentProps<'nav'>) => (;
   <nav
   role='navigation';
   aria-label='pagination';
@@ -42,6 +42,12 @@ const Pagination = ({ className, ...props  }: React.ComponentProps<'nav'>) => (;
 )
 Pagination.displayName = 'Pagination';
 
+/**
+ * PaginationContent组件
+ * PaginationContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const PaginationContent = React.forwardRef<;
 HTMLUListElement,
 React.ComponentProps<'ul'>
@@ -54,6 +60,12 @@ React.ComponentProps<'ul'>
 ))
 PaginationContent.displayName = 'PaginationContent';
 
+/**
+ * PaginationItem组件
+ * PaginationItem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const PaginationItem = React.forwardRef<;
 HTMLLIElement,
 React.ComponentProps<'li'>
@@ -62,22 +74,27 @@ React.ComponentProps<'li'>
 ))
 PaginationItem.displayName = 'PaginationItem';
 
-type PaginationLinkProps = { isActive?: boolean,
+type PaginationLinkProps = { isActive?: boolean 
 } & Pick<ButtonProps, 'size'> &
 React.ComponentProps<'a'>
 
-const PaginationLink = ({ className,
+/**
+ * PaginationLink组件
+ * PaginationLink组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const PaginationLink = ( { className,
   isActive,
   size = 'icon',
-  ...props,
-}: PaginationLinkProps) => (;
+  ...props }: PaginationLinkProps) => (;
   <a
-  aria-current={ isActive ? 'page' : undefined }
+  aria-current={ isActive ? 'page' : undefined 
+}
   className={ cn(;
     buttonVariants({
       variant: isActive ? 'outline' : 'ghost',
-      size,
-     }),
+      size }),
     className
   )}
   { ...props }
@@ -85,9 +102,14 @@ const PaginationLink = ({ className,
 )
 PaginationLink.displayName = 'PaginationLink';
 
-const PaginationPrevious = ({ className,
-  ...props,
-}: React.ComponentProps<typeof PaginationLink>) => (;
+/**
+ * PaginationPrevious组件
+ * PaginationPrevious组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const PaginationPrevious = ( { className,
+  ...props }: React.ComponentProps<typeof PaginationLink>) => (;
   <PaginationLink
   aria-label='Go to previous page';
   size='default';
@@ -100,9 +122,14 @@ const PaginationPrevious = ({ className,
 )
 PaginationPrevious.displayName = 'PaginationPrevious';
 
-const PaginationNext = ({ className,
-  ...props,
-}: React.ComponentProps<typeof PaginationLink>) => (;
+/**
+ * PaginationNext组件
+ * PaginationNext组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const PaginationNext = ( { className,
+  ...props }: React.ComponentProps<typeof PaginationLink>) => (;
   <PaginationLink
   aria-label='Go to next page';
   size='default';
@@ -115,9 +142,14 @@ const PaginationNext = ({ className,
 )
 PaginationNext.displayName = 'PaginationNext';
 
-const PaginationEllipsis = ({ className,
-  ...props,
-}: React.ComponentProps<'span'>) => (;
+/**
+ * PaginationEllipsis组件
+ * PaginationEllipsis组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const PaginationEllipsis = ( { className,
+  ...props }: React.ComponentProps<'span'>) => (;
   <span
   aria-hidden
   className={ cn('flex h-9 w-9 items-center justify-center', className) }
@@ -135,5 +167,4 @@ export { Pagination,
   PaginationItem,
   PaginationLink,
   PaginationNext,
-  PaginationPrevious,
- }
+  PaginationPrevious }

@@ -1,10 +1,10 @@
-import { supabase  } from '@/integrations/supabase/client';
-import { useAuth  } from '@/providers/AuthProvider';
-import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useRoleStates  } from '@/hooks/useRoleStates';
+import { supabase   } from '@/integrations/supabase/client';
+import { useAuth   } from '@/providers/AuthProvider';
+import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
+import { useRoleSelection   } from '@/hooks/useRoleSelection';
+import { useRoleStates   } from '@/hooks/useRoleStates';
 import PlayerStatusManager from '@/components/game/panels/PlayerStatusManager';
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect   } from 'react';
 
 /**
 * 文件级注释：PlayerStatusDisplay 组件
@@ -21,18 +21,17 @@ import React, { useState, useEffect  } from 'react';
 * @category game
 * @filepath judge\monitoring\PlayerStatusDisplay.tsx
  */
-
-interface Player { id: string;
+interface Player  { id: string;
   name: string;
   role: string;
   status: 'normal' | 'waiting';
   avatar: string;
-  userId?: string;,
+  userId?: string
 }
 
 interface PlayerStatusDisplayProps { players: Player[];
   roomId: string;
-  maxPlayers: number;,
+  maxPlayers: number
 }
 
 /**
@@ -49,7 +48,7 @@ interface PlayerStatusDisplayProps { players: Player[];
 * // 使用示例
 * <PlayerStatusDisplay { ...props } />
  */
-const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, roomId, maxPlayers  }) => { const { currentUser  } = useAuth();
+const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, roomId, maxPlayers  }) => { const  { currentUser  } = useAuth();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const { getSelectedRoleByUser  } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   const { getLocalImageByDesignId  } = useRoleDesigns();
@@ -60,53 +59,77 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
 
   useEffect(() => { if (!roomId) {
       setUserStatusMap({ });
-      return;,
+      return
 }
 
-    const fetchStatuses = async () => { const { data, error  } = await supabase;
+/**
+ * fetchStatuses函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchStatuses = async () => { const  { data, error  } = await supabase;
       .from('room_players')
       .select('user_id,status')
       .eq('room_id', roomId);
-      if (!error && Array.isArray(data)) { const map: Record<string, string> = { };
-        data.forEach((r: any) => { if (r?.user_id) map[r.user_id] = r.status;,
+      if (!error && Array.isArray(data)) { const map: Record<string, string> = {  };
+        data.forEach((r: any) => {
+  if (r?.user_id) map[r.user_id] = r.status
 });
-        setUserStatusMap(map);,
+        setUserStatusMap(map)
 }
-    };
+    
+};
 
     fetchStatuses();
 
     const channel = supabase;
     .channel(`room_players_status_${ roomId }`)
     .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'room_players', filter: `room_id=eq.${roomId }` },
+      { event: '*', schema: 'public', table: 'room_players', filter: `room_id=eq.${roomId 
+}` },
       (payload: any) => { setUserStatusMap(prev => {
           const next = { ...prev  } as Record<string, string>;
           if (payload.eventType === 'DELETE' && payload.old) { const oldUserId = (payload.old as any).user_id;
-            if (oldUserId) delete next[oldUserId];,
+            if (oldUserId) delete next[oldUserId]
 } else if (payload.new) { const row = payload.new as any;
-            if (row?.user_id) next[row.user_id] = row.status;,
+            if (row?.user_id) next[row.user_id] = row.status
 }
-          return next;,
-});,
+          return next
+})
 }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(channel);,
-};,
+    return () => {
+  supabase.removeChannel(channel)
+}
+
 }, [roomId]);
 
-  const handleCardFlip = (playerId: string) => { setFlippedCards(prev => {
+/**
+ * handleCardFlip函数
+ * 处理事件
+ *
+ * @param playerId - playerId参数
+ * @returns void
+ */
+const handleCardFlip = (playerId: string) => { setFlippedCards(prev =>  {
       const newSet = new Set(prev);
       if (newSet.has(playerId)) {
-        newSet.delete(playerId);,
-} else { newSet.add(playerId);,
+        newSet.delete(playerId)
+} else { newSet.add(playerId)
 }
-      return newSet;,
-});,
+      return newSet
+})
 };
 
+/**
+ * isFlipped函数
+ * isFlipped函数的功能描述
+ *
+ * @param playerId - playerId参数
+ * @returns void
+ */
   const isFlipped = (playerId: string) => flippedCards.has(playerId);
 
   return (;
@@ -127,7 +150,14 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
       const roleImageUrl = selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null;
 
       const roleState = player.userId ? roleStates.find(r => r.user_id === player.userId) : undefined;
-      const effectiveStatus = (() => {
+/**
+ * effectiveStatus函数
+ * effectiveStatus函数的功能描述
+ *
+ * @param ( - (参数
+ * @returns void
+ */
+const effectiveStatus = (() =>  {
         if (roleState?.role_status) return roleState.role_status;
         const s = player.userId ? userStatusMap[player.userId] : undefined;
         switch (s) {
@@ -139,11 +169,17 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
           return 2;
           case 'eliminated':
           return 4;
-          default:
-          return undefined;,
+          default: return undefined
 }
       })();
-      const statusBorderClass = (() => { switch (effectiveStatus) {
+/**
+ * statusBorderClass函数
+ * statusBorderClass函数的功能描述
+ *
+ * @param ( - (参数
+ * @returns void
+ */
+const statusBorderClass = (() => { switch (effectiveStatus)  {
           case 1: // 正常
           return 'border-green-400';
           case 3: // 虚弱
@@ -152,8 +188,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
           return 'border-red-400 animate-pulse';
           case 4: // 淘汰
           return 'border-white';
-          default:
-          return 'border-werewolf-purple/30';,
+          default: return 'border-werewolf-purple/30'
 }
       })();
 
@@ -161,22 +196,25 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
         <div
         key={ player.id }
         className='relative transition-all duration-300 transform hover:scale-105';
-        style={ { perspective: '1000px'  }}
+        style={ { perspective: '1000px'  
+}}
         >
         <div
         className={ `relative w-full h-32 transition-transform duration-700 transform-style-preserve-3d ${
-          isFlipped(player.id) ? 'rotate-y-180' : '',
+          isFlipped(player.id) ? 'rotate-y-180' : '' 
 }`}
-        style={ { transformStyle: 'preserve-3d'  }}
+        style={ { transformStyle: 'preserve-3d'  
+}}
         >
         { /*  正面 - 玩家头像和角色名称  */ }
         <div
         className={ `absolute inset-0 w-full h-full rounded-lg p-3 backface-hidden cursor-pointer ${
           player.status === 'waiting';
           ? 'bg-gray-600/40 border-2 border-gray-500'
-          : `bg-werewolf-dark/40 hover:bg-werewolf-dark/60 border-2 ${statusBorderClass }`,
-}`}
-        style={ { backfaceVisibility: 'hidden'  }}
+          : `bg-werewolf-dark/40 hover:bg-werewolf-dark/60 border-2 ${statusBorderClass 
+}` }`}
+        style={ { backfaceVisibility: 'hidden'  
+}}
         onClick={ () => player.status !== 'waiting' && handleCardFlip(player.id) }
         >
         <div className='h-full flex flex-col items-center justify-between'>;
@@ -190,9 +228,10 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
           />
         ) : (
           <div className={ `w-12 h-12 rounded-full flex items-center justify-center text-lg ${
-            player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60';,
+            player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60'
 }`}>
-          { player.status === 'waiting' ? '?' : player.name.charAt(0).toUpperCase() }
+          { player.status === 'waiting' ? '?' : player.name.charAt(0).toUpperCase() 
+}
           </div>
         )}
         </div>
@@ -214,11 +253,11 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
         className={ `absolute inset-0 w-full h-full rounded-lg backface-hidden rotate-y-180 cursor-pointer overflow-hidden ${
           player.status === 'waiting';
           ? 'bg-gray-600/40 border-2 border-gray-500'
-          : `bg-werewolf-purple/30 border-2 ${statusBorderClass }`,
-}`}
+          : `bg-werewolf-purple/30 border-2 ${statusBorderClass 
+}` }`}
         style={ {
           backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
+          transform: 'rotateY(180deg)' 
 }}
         onClick={ () => handleCardFlip(player.id) }
         >
@@ -231,23 +270,31 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({ players, room
             e.currentTarget.style.display = 'none';
             const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon') as HTMLElement;
             if (fallback) {
-              fallback.style.display = 'flex';,
+              fallback.style.display = 'flex'
 }
           }}
           />
-        ) : null}
-        <div className={ `fallback-icon ${roleImageUrl ? 'hidden' : 'flex' } w-full h-full rounded-lg items-center justify-center text-6xl ${ player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60';,
+        ) : null
+}
+        <div className={ `fallback-icon ${roleImageUrl ? 'hidden' : 'flex' 
+} w-full h-full rounded-lg items-center justify-center text-6xl ${ player.status === 'waiting' ? 'bg-gray-500' : 'bg-werewolf-purple/60'
 }`}>
         🎭
         </div>
         </div>
         </div>
         </div>
-      );,
+      )
 })}
     </div>
     </div>
-  );,
+  )
 };
 
+/**
+ * PlayerStatusDisplay组件
+ * 玩家相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PlayerStatusDisplay;

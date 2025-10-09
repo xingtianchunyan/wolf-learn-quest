@@ -1,11 +1,11 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger  } from '@/components/ui/collapsible';
-import { Lightbulb, Clock, Users, Target, Shield, AlertTriangle, Info  } from 'lucide-react';
-import { motion, AnimatePresence  } from 'framer-motion';
-import { Separator  } from '@/components/ui/separator';
-import React, { useState, useEffect, useMemo  } from 'react';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger   } from '@/components/ui/collapsible';
+import { Lightbulb, Clock, Users, Target, Shield, AlertTriangle, Info   } from 'lucide-react';
+import { motion, AnimatePresence   } from 'framer-motion';
+import { Separator   } from '@/components/ui/separator';
+import React, { useState, useEffect, useMemo   } from 'react';
 
 /**
 * 文件级注释：SmartHintSystem 组件
@@ -22,8 +22,7 @@ import React, { useState, useEffect, useMemo  } from 'react';
 * @category common
 * @filepath game\smart-hints\SmartHintSystem.tsx
  */
-
-interface GameState { phase: 'day' | 'evening' | 'night' | 'dawn';
+interface GameState  { phase: 'day' | 'evening' | 'night' | 'dawn';
   round: number;
   timeRemaining: number;
   players: Array<{
@@ -31,18 +30,18 @@ interface GameState { phase: 'day' | 'evening' | 'night' | 'dawn';
     name: string;
     role: string;
     status: 'alive' | 'dying' | 'dead';
-    isReady: boolean;,
+    isReady: boolean
 }>;
   userRole: string;
   availableSkills: Array<{ name: string;
     usesRemaining: number;
     isUnlimited: boolean;
-    cooldown?: number;,
+    cooldown?: number
 }>;
   recentEvents: Array<{ type: string;
     description: string;
-    timestamp: number;,
-}>;,
+    timestamp: number
+}>
 }
 
 interface SmartHint { id: string;
@@ -54,14 +53,14 @@ interface SmartHint { id: string;
   actionLabel?: string;
   dismissible: boolean;
   autoExpire?: number;
-  conditions?: string[];,
+  conditions?: string[]
 }
 
 interface SmartHintSystemProps { gameState: GameState;
   onHintAction?: (hintId: string, action: string) => void;
   onDismissHint?: (hintId: string) => void;
   userExperience: 'beginner' | 'intermediate' | 'expert';
-  showTutorialHints: boolean;,
+  showTutorialHints: boolean
 }
 
 /**
@@ -78,12 +77,11 @@ interface SmartHintSystemProps { gameState: GameState;
 * // 使用示例
 * <SmartHintSystem { ...props } />
  */
-const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
+const SmartHintSystem: React.FC<SmartHintSystemProps> = ( { gameState,
   onHintAction,
   onDismissHint,
   userExperience,
-  showTutorialHints,
-}) => { const [dismissedHints, setDismissedHints] = useState<Set<string>>(new Set());
+  showTutorialHints }) => { const [dismissedHints, setDismissedHints] = useState<Set<string>>(new Set());
   const [expandedHints, setExpandedHints] = useState<Set<string>>(new Set());
 
   // 智能提示生成逻辑
@@ -102,8 +100,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           description: '现在是夜晚阶段，你可以选择一个目标进行攻击。建议优先选择威胁性较大的角色。',
           action: 'use_night_attack',
           actionLabel: '使用夜杀',
-          dismissible: true,
-});,
+          dismissible: true 
+})
 }
     }
 
@@ -116,8 +114,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           priority: 'high',
           title: '守卫保护建议',
           description: '选择保护对象时，优先考虑重要的神职角色，避免连续保护同一人。',
-          dismissible: true,
-});,
+          dismissible: true 
+})
 }
     }
 
@@ -130,8 +128,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           priority: 'medium',
           title: '女巫药剂使用策略',
           description: '解药应谨慎使用，毒药可以在关键时刻淘汰怀疑对象。记住每种药剂只能使用一次。',
-          dismissible: true,
-});,
+          dismissible: true 
+})
 }
     }
 
@@ -141,10 +139,11 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
         type: 'warning',
         priority: 'high',
         title: '时间紧迫',
-        description: `距离${gameState.phase }阶段结束还有${ gameState.timeRemaining }秒，请尽快完成操作。`,
+        description: `距离${gameState.phase 
+}阶段结束还有${ gameState.timeRemaining }秒，请尽快完成操作。`,
         dismissible: false,
-        autoExpire: gameState.timeRemaining * 1000,
-});,
+        autoExpire: gameState.timeRemaining * 1000 
+})
 }
 
     // 投票提示
@@ -155,9 +154,10 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           type: 'timing',
           priority: 'medium',
           title: '投票提醒',
-          description: `还有${unreadyPlayers }名玩家未投票，请等待所有玩家完成投票。`,
-          dismissible: true,
-});,
+          description: `还有${unreadyPlayers 
+}名玩家未投票，请等待所有玩家完成投票。`,
+          dismissible: true 
+})
 }
     }
 
@@ -169,8 +169,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           priority: 'medium',
           title: '白天阶段说明',
           description: '白天阶段是讨论和投票的时间。观察其他玩家的发言，寻找可疑的行为。',
-          dismissible: true,
-});,
+          dismissible: true 
+})
 }
 
       if (gameState.phase === 'night' && gameState.round === 1) { hints.push({
@@ -179,8 +179,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
           priority: 'medium',
           title: '夜晚阶段说明',
           description: '夜晚阶段各角色发动技能。根据你的角色执行相应的夜间行动。',
-          dismissible: true,
-});,
+          dismissible: true 
+})
 }
     }
 
@@ -197,90 +197,141 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({ gameState,
         priority: 'high',
         title: '游戏平衡警告',
         description: '狼人数量仍然较多，好人阵营需要加快找出狼人的步伐。',
-        dismissible: true,
-});,
+        dismissible: true 
+})
 }
   }
 
   // 技能冷却提示
   gameState.availableSkills.forEach(skill => { if (skill.cooldown && skill.cooldown > 0) {
       hints.push({
-        id: `skill_cooldown_${skill.name }`,
+        id: `skill_cooldown_${skill.name 
+}`,
         type: 'timing',
         priority: 'low',
         title: '技能冷却中',
-        description: `${ skill.name } 技能还需等待 ${ skill.cooldown } 回合才能再次使用。`,
-        dismissible: true,
-});,
+        description: `${ skill.name 
+} 技能还需等待 ${ skill.cooldown } 回合才能再次使用。`,
+        dismissible: true 
+})
 }
   });
 
   // 根据优先级排序
   return hints;
   .filter(hint => !dismissedHints.has(hint.id));
-  .sort((a, b) => { const priorityOrder = { high: 3, medium: 2, low: 1  };
-    return priorityOrder[b.priority] - priorityOrder[a.priority];,
-});,
+  .sort((a, b) => { const priorityOrder = { high: 3, medium: 2, low: 1   
+};
+    return priorityOrder[b.priority] - priorityOrder[a.priority]
+})
 }, [gameState, dismissedHints, userExperience, showTutorialHints]);
 
 // 自动过期处理
 useEffect(() => { smartHints.forEach(hint => {
     if (hint.autoExpire) {
       const timer = setTimeout(() => {
-        handleDismissHint(hint.id);,
+  handleDismissHint(hint.id)
 }, hint.autoExpire);
 
-      return () => clearTimeout(timer);,
+      return () => clearTimeout(timer)
 }
-  });,
+  })
+
 }, [smartHints]);
 
-const handleDismissHint = (hintId: string) => { setDismissedHints(prev => new Set(prev).add(hintId));
-  onDismissHint?.(hintId);,
+/**
+ * handleDismissHint函数
+ * 处理事件
+ *
+ * @param hintId - hintId参数
+ * @returns void
+ */
+const handleDismissHint = (hintId: string) =>  {
+  setDismissedHints(prev => new Set(prev).add(hintId));
+  onDismissHint?.(hintId)
+
 };
 
-const handleHintAction = (hintId: string, action: string) => { onHintAction?.(hintId, action);
-  handleDismissHint(hintId);,
+/**
+ * handleHintAction函数
+ * 处理事件
+ *
+ * @param hintId - hintId参数
+ * @param action - action参数
+ * @returns void
+ */
+const handleHintAction = (hintId: string, action: string) =>  {
+  onHintAction?.(hintId, action);
+  handleDismissHint(hintId)
+
 };
 
-const toggleHintExpansion = (hintId: string) => { setExpandedHints(prev => {
+/**
+ * toggleHintExpansion函数
+ * toggleHintExpansion函数的功能描述
+ *
+ * @param hintId - hintId参数
+ * @returns void
+ */
+const toggleHintExpansion = (hintId: string) => { setExpandedHints(prev =>  {
     const newSet = new Set(prev);
     if (newSet.has(hintId)) {
-      newSet.delete(hintId);,
-} else { newSet.add(hintId);,
+      newSet.delete(hintId)
+} else { newSet.add(hintId)
 }
-    return newSet;,
-});,
+    return newSet
+})
 };
 
-const getTypeIcon = (type: SmartHint['type']) => { switch (type) {
+/**
+ * getTypeIcon函数
+ * 获取数据
+ *
+ * @param type - type参数
+ * @returns void
+ */
+const getTypeIcon = (type: SmartHint['type']) => { switch (type)  {
     case 'strategy': return <Lightbulb className='w-4 h-4' />;
     case 'timing': return <Clock className='w-4 h-4' />;
     case 'warning': return <AlertTriangle className='w-4 h-4' />;
     case 'opportunity': return <Target className='w-4 h-4' />;
     case 'tutorial': return <Info className='w-4 h-4' />;
-    default: return <Info className='w-4 h-4' />;,
+    default: return <Info className='w-4 h-4' />
 }
 };
 
-const getTypeColor = (type: SmartHint['type']) => { switch (type) {
+/**
+ * getTypeColor函数
+ * 获取数据
+ *
+ * @param type - type参数
+ * @returns void
+ */
+const getTypeColor = (type: SmartHint['type']) => { switch (type)  {
     case 'strategy': return 'text-blue-600 bg-blue-50 border-blue-200';
     case 'timing': return 'text-orange-600 bg-orange-50 border-orange-200';
     case 'warning': return 'text-red-600 bg-red-50 border-red-200';
     case 'opportunity': return 'text-green-600 bg-green-50 border-green-200';
     case 'tutorial': return 'text-purple-600 bg-purple-50 border-purple-200';
-    default: return 'text-gray-600 bg-gray-50 border-gray-200';,
+    default: return 'text-gray-600 bg-gray-50 border-gray-200'
 }
 };
 
-const getPriorityBadge = (priority: SmartHint['priority']) => { switch (priority) {
+/**
+ * getPriorityBadge函数
+ * 获取数据
+ *
+ * @param priority - priority参数
+ * @returns void
+ */
+const getPriorityBadge = (priority: SmartHint['priority']) => { switch (priority)  {
     case 'high': return <Badge variant='destructive'>高</Badge>;
     case 'medium': return <Badge variant='default'>中</Badge>;
-    case 'low': return <Badge variant='secondary'>低</Badge>;,
+    case 'low': return <Badge variant='secondary'>低</Badge>
 }
 };
 
-if (smartHints.length === 0) { return null;,
+if (smartHints.length === 0) { return null
 }
 
 return (;
@@ -296,9 +347,12 @@ return (;
   { smartHints.map(hint => (;
     <motion.div
     key={hint.id }
-    initial={ { opacity: 0, y: -10  }}
-    animate={ { opacity: 1, y: 0  }}
-    exit={ { opacity: 0, y: -10  }}
+    initial={ { opacity: 0, y: -10  
+}}
+    animate={ { opacity: 1, y: 0  
+}}
+    exit={ { opacity: 0, y: -10  
+}}
     layout
     >
     <Card className={ `border ${getTypeColor(hint.type) }`}>;
@@ -317,7 +371,8 @@ return (;
     size='sm';
     onClick={ () => toggleHintExpansion(hint.id) }
     >
-    { expandedHints.has(hint.id) ? '−' : '+' }
+    { expandedHints.has(hint.id) ? '−' : '+' 
+}
     </Button>
     </CollapsibleTrigger>
     { hint.dismissible && (<Button
@@ -368,7 +423,13 @@ return (;
   </AnimatePresence>
   </div>
   </div>
-);,
+)
 };
 
+/**
+ * SmartHintSystem组件
+ * SmartHintSystem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default SmartHintSystem;

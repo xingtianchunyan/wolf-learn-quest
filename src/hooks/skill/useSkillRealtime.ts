@@ -1,20 +1,24 @@
-import { getSkillConfigByEnglish  } from '@/utils/skillMappingConfig';
-import { RealtimePostgresChangesPayload  } from '@supabase/supabase-js';
-import { supabase  } from '@/integrations/supabase/client';
-import { useEffect  } from 'react';
-import { EnhancedSkillUse  } from './useSkillData';
+import { getSkillConfigByEnglish   } from '@/utils/skillMappingConfig';
+import { RealtimePostgresChangesPayload   } from '@supabase/supabase-js';
+import { supabase   } from '@/integrations/supabase/client';
+import { useEffect   } from 'react';
+import { EnhancedSkillUse   } from './useSkillData';
 
 // 技能系统实时订阅
 
 interface UseSkillRealtimeParams { gameStateId?: string;
   setSkillUses: React.Dispatch<React.SetStateAction<EnhancedSkillUse[]>>;
-  fetchAllSkillData: () => Promise<void>;,
+  fetchAllSkillData: () => Promise<void>
 }
 
-export const useSkillRealtime = ({ gameStateId,
+/**
+ * useSkillRealtime函数
+ * 自定义Hook
+ * @returns void
+ */
+export const useSkillRealtime = ( { gameStateId,
   setSkillUses,
-  fetchAllSkillData,
-}: UseSkillRealtimeParams) => { // 优化的实时订阅 - 只订阅必要的表
+  fetchAllSkillData }: UseSkillRealtimeParams) => { // 优化的实时订阅 - 只订阅必要的表
   useEffect(() => {
     if (!gameStateId) return;
 
@@ -24,27 +28,26 @@ export const useSkillRealtime = ({ gameStateId,
       { event: '*',
         schema: 'public',
         table: 'skill_uses',
-        filter: `game_state_id=eq.${gameStateId }`,
-      },
+        filter: `game_state_id=eq.${gameStateId 
+}` },
       (payload: RealtimePostgresChangesPayload<EnhancedSkillUse>) => { if (payload.new && typeof payload.new === 'object') {
           const newSkillUse = payload.new as EnhancedSkillUse;
           const config = getSkillConfigByEnglish(newSkillUse.skill_name);
           const enhancedUse = {
             ...newSkillUse,
             chinese_name: config?.chineseName || newSkillUse.skill_name,
-            skill_config: config,
-};
+            skill_config: config   
+}
 
-          if (payload.eventType === 'INSERT') { setSkillUses(current => [enhancedUse, ...current]);,
+          if (payload.eventType === 'INSERT') { setSkillUses(current => [enhancedUse, ...current])
 } else if (payload.eventType === 'UPDATE') { setSkillUses(current =>;
             current.map(su => su.id === enhancedUse.id ? enhancedUse : su);
-          );,
+          )
 } else if (payload.eventType === 'DELETE' && payload.old) { setSkillUses(current =>;
           current.filter(su => su.id !== (payload.old as EnhancedSkillUse).id);
-        );,
+        )
 }
-    },
-}
+    } }
 )
 .subscribe();
 
@@ -55,16 +58,20 @@ const queueChannel = supabase;
   { event: '*',
     schema: 'public',
     table: 'skill_effects_queue',
-    filter: `game_state_id=eq.${gameStateId }`,
-  },
-  () => { // 技能效果队列变化时重新获取数据
-    fetchAllSkillData();,
+    filter: `game_state_id=eq.${gameStateId 
+}` },
+  () => {
+  // 技能效果队列变化时重新获取数据
+    fetchAllSkillData()
+
 }
 )
 .subscribe();
 
-return () => { supabase.removeChannel(skillUsesChannel);
-  supabase.removeChannel(queueChannel);,
-};,
-}, [gameStateId, setSkillUses, fetchAllSkillData]);,
+return () => {
+  supabase.removeChannel(skillUsesChannel);
+  supabase.removeChannel(queueChannel)
+}
+}, [gameStateId, setSkillUses, fetchAllSkillData])
+
 };

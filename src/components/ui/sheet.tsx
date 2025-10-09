@@ -1,6 +1,6 @@
-import { cn  } from '@/lib/utils'
-import { cva, type VariantProps  } from 'class-variance-authority'
-import { X  } from 'lucide-react'
+import { cn   } from '@/lib/utils'
+import { cva, type VariantProps   } from 'class-variance-authority'
+import { X   } from 'lucide-react'
 import * as React from 'react'
 import * as SheetPrimitive from '@radix-ui/react-dialog'
 
@@ -35,12 +35,36 @@ import * as SheetPrimitive from '@radix-ui/react-dialog'
  */
 const Sheet = SheetPrimitive.Root;
 
+/**
+ * SheetTrigger组件
+ * SheetTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetTrigger = SheetPrimitive.Trigger;
 
+/**
+ * SheetClose组件
+ * SheetClose组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetClose = SheetPrimitive.Close;
 
+/**
+ * SheetPortal组件
+ * SheetPortal组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetPortal = SheetPrimitive.Portal;
 
+/**
+ * SheetOverlay组件
+ * SheetOverlay组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetOverlay = React.forwardRef<;
 React.ElementRef<typeof SheetPrimitive.Overlay>,
 React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
@@ -64,19 +88,22 @@ const sheetVariants = cva(;
         bottom:
         'inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
         left: 'inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
-        right:
-        'inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
-       },
-    },
-    defaultVariants: { side: 'right',
-     },
-  }
+        right: 'inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm' 
+} },
+    defaultVariants: { side: 'right' 
+} }
 )
 
 interface SheetContentProps
 extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
 VariantProps<typeof sheetVariants> {   }
 
+/**
+ * SheetContent组件
+ * SheetContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetContent = React.forwardRef<;
 React.ElementRef<typeof SheetPrimitive.Content>,
 SheetContentProps
@@ -98,9 +125,14 @@ SheetContentProps
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
-const SheetHeader = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * SheetHeader组件
+ * 页头组件，显示导航和标题
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const SheetHeader = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col space-y-2 text-center sm:text-left',
@@ -111,9 +143,14 @@ const SheetHeader = ({ className,
 )
 SheetHeader.displayName = 'SheetHeader';
 
-const SheetFooter = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * SheetFooter组件
+ * 页脚组件，显示版权和链接
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const SheetFooter = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
@@ -124,6 +161,12 @@ const SheetFooter = ({ className,
 )
 SheetFooter.displayName = 'SheetFooter';
 
+/**
+ * SheetTitle组件
+ * SheetTitle组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetTitle = React.forwardRef<;
 React.ElementRef<typeof SheetPrimitive.Title>,
 React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
@@ -136,6 +179,12 @@ React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
 ))
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
+/**
+ * SheetDescription组件
+ * SheetDescription组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SheetDescription = React.forwardRef<;
 React.ElementRef<typeof SheetPrimitive.Description>,
 React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
@@ -149,6 +198,5 @@ React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 
 export { Sheet, SheetClose,
-  SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger,
-}
+  SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger }
 

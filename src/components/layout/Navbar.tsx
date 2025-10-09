@@ -1,9 +1,9 @@
-import { Button  } from '@/components/ui/button';
-import { Gamepad, Home, Menu, X, ExternalLink, Users, Book  } from 'lucide-react';
-import { Link, useLocation, useNavigate  } from 'react-router-dom';
-import React, { useState  } from 'react';
+import { Button   } from '@/components/ui/button';
+import { Gamepad, Home, Menu, X, ExternalLink, Users, Book   } from 'lucide-react';
+import { Link, useLocation, useNavigate   } from 'react-router-dom';
+import React, { useState   } from 'react';
 import GameRulesDialog from '../dialogs/GameRulesDialog';
-import LanguageSwitcher, { useLanguage  } from './LanguageSwitcher';
+import LanguageSwitcher, { useLanguage   } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
 
 /**
@@ -36,7 +36,7 @@ import LoginDialog from '../dialogs/LoginDialog';
 * // 使用示例
 * <Navbar />
  */
-const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar: React.FC = () =>  { const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t  } = useLanguage();
@@ -98,8 +98,7 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
     trigger={ <Button variant='ghost' className='nav-link flex items-center'>;
       <Book size={20 } className='mr-1' />;
       <span>{ t('game_rules') }</span>
-      </Button>,
-}
+      </Button> }
     />
     <LanguageSwitcher />
     <LoginDialog />
@@ -112,19 +111,23 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
     onClick={ () => setIsMenuOpen(!isMenuOpen) }
     className='text-white';
     >
-    { isMenuOpen ? <X size={24 } /> : <Menu size={ 24 } />}
+    { isMenuOpen ? <X size={24 } /> : <Menu size={ 24 
+} />}
     </Button>
     </div>
     </div>
 
-    { /*  Mobile navigation  */ }
-    { isMenuOpen && (<div className='md:hidden p-4 bg-werewolf-card mt-2 rounded-md shadow-lg absolute z-10 w-full left-0'>;
+    { /*  Mobile navigation  */
+} { isMenuOpen && (<div className='md:hidden p-4 bg-werewolf-card mt-2 rounded-md shadow-lg absolute z-10 w-full left-0'>;
       <div className='flex flex-col items-center space-y-4'>;
       {isHomePage ? (
         <Button
         variant='ghost';
         className='nav-link';
-        onClick={() => { navigate('/lobby'); setIsMenuOpen(false);  }}
+        onClick={() => {
+  navigate('/lobby'); setIsMenuOpen(false)
+}
+}
         >
         <Users size={ 20 } className='inline mr-1' />;
         <span>{ t('lobby') }</span>
@@ -132,7 +135,10 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
       ) : isGameRelatedPage ? (<Button
         variant='ghost';
         className='nav-link flex items-center';
-        onClick={ () => { navigate('/lobby'); setIsMenuOpen(false);  }}
+        onClick={ () => {
+  navigate('/lobby'); setIsMenuOpen(false)
+}
+}
         >
         <Users size={ 20 } className='inline mr-1' />;
         <span>{ t('lobby') }</span>
@@ -140,7 +146,10 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
       ) : (<Button
         variant='ghost';
         className='nav-link flex items-center';
-        onClick={ () => { navigate('/'); setIsMenuOpen(false);  }}
+        onClick={ () => {
+  navigate('/'); setIsMenuOpen(false)
+}
+}
         >
         <Home size={ 20 } className='inline mr-1' />;
         <span>{ t('home') }</span>
@@ -150,9 +159,10 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
       variant='ghost';
       className='nav-link justify-start flex items-center';
       onClick={ () => {
-        window.open('https:// seedao.xyz/', 'blank');
-        setIsMenuOpen(false);,
-}}
+  window.open('https:// seedao.xyz/', 'blank');
+        setIsMenuOpen(false)
+}
+}
       >
       <ExternalLink size={ 20 } className='mr-1' />;
       <span>{ t('seedao') }</span>
@@ -161,8 +171,7 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
       trigger={ <Button variant='ghost' className='nav-link flex items-center'>;
         <Book size={20 } className='mr-1' />;
         <span>{ t('game_rules') }</span>
-        </Button>,
-}
+        </Button> }
       />
       <LanguageSwitcher />
       <LoginDialog />
@@ -170,7 +179,13 @@ const Navbar: React.FC = () => { const [isMenuOpen, setIsMenuOpen] = useState(fa
       </div>
     )}
     </nav>
-  );,
+  )
 };
 
+/**
+ * Navbar组件
+ * Navbar组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default Navbar;

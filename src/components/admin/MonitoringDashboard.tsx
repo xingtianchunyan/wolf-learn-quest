@@ -1,12 +1,12 @@
-import { Alert, AlertDescription  } from '@/components/ui/alert';
-import { AlertCircle, Activity, Users, TrendingUp, AlertTriangle  } from 'lucide-react';
-import { analyticsService  } from '@/services/analyticsService';
-import { Badge  } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { createLogger  } from '@/lib/logger';
-import { monitoringService  } from '@/services/monitoringService';
-import React, { useState, useEffect  } from 'react';
-import type { SystemHealth  } from '@/services/monitoringService';
+import { Alert, AlertDescription   } from '@/components/ui/alert';
+import { AlertCircle, Activity, Users, TrendingUp, AlertTriangle   } from 'lucide-react';
+import { analyticsService   } from '@/services/analyticsService';
+import { Badge   } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { createLogger   } from '@/lib/logger';
+import { monitoringService   } from '@/services/monitoringService';
+import React, { useState, useEffect   } from 'react';
+import type { SystemHealth   } from '@/services/monitoringService';
 
 /**
 * 文件级注释：MonitoringDashboard 组件
@@ -40,52 +40,69 @@ const logger = createLogger('MonitoringDashboard');
 * // 使用示例
 * <MonitoringDashboard />
  */
-export const MonitoringDashboard: React.FC = () => { const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
+export const MonitoringDashboard: React.FC = () =>  { const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadSystemHealth = async () => {
+/**
+ * loadSystemHealth函数
+ * 加载数据
+ * @returns Promise<void>
+ */
+const loadSystemHealth = async () =>  {
       try {
         const health = await monitoringService.getSystemHealth();
-        setSystemHealth(health);,
-} catch (error) { logger.error('加载系统健康状态失败:', error);,
-} finally { setLoading(false);,
+        setSystemHealth(health)
+} catch (error) { logger.error('加载系统健康状态失败:', error)
+} finally { setLoading(false)
 }
     };
 
     loadSystemHealth();
     const interval = setInterval(loadSystemHealth, 5000); // 每5秒更新
 
-    return () => clearInterval(interval);,
+    return () => clearInterval(interval)
 }, []);
 
-  if (loading) { return <div className='p-4'>加载中...</div>;,
+  if (loading) { return <div className='p-4'>加载中...</div>
 }
 
-  if (!systemHealth) { return <div className='p-4'>无法加载系统健康状态</div>;,
+  if (!systemHealth) { return <div className='p-4'>无法加载系统健康状态</div>
 }
 
-  const getStatusColor = (status: SystemHealth['status']) => { switch (status) {
+/**
+ * getStatusColor函数
+ * 获取数据
+ *
+ * @param status - status参数
+ * @returns void
+ */
+const getStatusColor = (status: SystemHealth['status']) => { switch (status)  {
       case 'healthy':
       return 'bg-green-500';
       case 'warning':
       return 'bg-yellow-500';
       case 'critical':
       return 'bg-red-500';
-      default:
-      return 'bg-gray-500';,
+      default: return 'bg-gray-500'
 }
   };
 
-  const getStatusText = (status: SystemHealth['status']) => { switch (status) {
+/**
+ * getStatusText函数
+ * 获取数据
+ *
+ * @param status - status参数
+ * @returns void
+ */
+const getStatusText = (status: SystemHealth['status']) => { switch (status)  {
       case 'healthy':
       return '健康';
       case 'warning':
       return '警告';
       case 'critical':
       return '严重';
-      default:
-      return '未知';,
+      default: return '未知'
 }
   };
 
@@ -161,8 +178,8 @@ export const MonitoringDashboard: React.FC = () => { const [systemHealth, setSys
     </Card>
     </div>
 
-    { /*  告警列表  */ }
-    { systemHealth.alerts.length > 0 && (
+    { /*  告警列表  */
+} { systemHealth.alerts.length > 0 && (
       <Card>
       <CardHeader>
       <CardTitle className='flex items-center gap-2'>;
@@ -175,7 +192,8 @@ export const MonitoringDashboard: React.FC = () => { const [systemHealth, setSys
       { systemHealth.alerts.map(alert => (;
         <Alert
         key={alert.id }
-        variant={ alert.severity === 'critical' || alert.severity === 'error' ? 'destructive' : 'default' }
+        variant={ alert.severity === 'critical' || alert.severity === 'error' ? 'destructive' : 'default' 
+}
         >
         <AlertDescription className='flex items-center justify-between'>;
         <span>{ alert.message }</span>
@@ -200,24 +218,36 @@ export const MonitoringDashboard: React.FC = () => { const [systemHealth, setSys
     </CardContent>
     </Card>
     </div>
-  );,
+  )
 };
 
-const PerformanceReport: React.FC = () => { const [report, setReport] = useState<any>(null);
+/**
+ * PerformanceReport组件
+ * 性能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const PerformanceReport: React.FC = () =>  { const [report, setReport] = useState<any>(null);
 
   useEffect(() => {
-    const loadReport = () => {
-      const performanceReport = monitoringService.getPerformanceReport(3600000);
-      setReport(performanceReport);,
+/**
+ * loadReport函数
+ * 加载数据
+ * @returns void
+ */
+const loadReport = () =>  {
+  const performanceReport = monitoringService.getPerformanceReport(3600000);
+      setReport(performanceReport)
 };
 
     loadReport();
     const interval = setInterval(loadReport, 30000); // 每30秒更新
 
-    return () => clearInterval(interval);,
+    return () => clearInterval(interval)
+
 }, []);
 
-  if (!report) { return <div>加载中...</div>;,
+  if (!report) { return <div>加载中...</div>
 }
 
   return (;
@@ -241,5 +271,5 @@ const PerformanceReport: React.FC = () => { const [report, setReport] = useState
     </div>
     </div>
     </div>
-  );,
+  )
 };

@@ -1,5 +1,5 @@
-import { Badge  } from '@/components/ui/badge';
-import { cn  } from '@/lib/utils';
+import { Badge   } from '@/components/ui/badge';
+import { cn   } from '@/lib/utils';
 import React from 'react';
 
 /**
@@ -17,10 +17,9 @@ import React from 'react';
 * @category ui
 * @filepath core\StatusBadge.tsx
  */
-
-interface StatusBadgeProps { status: string;
+interface StatusBadgeProps  { status: string;
   variant?: 'default' | 'secondary' | 'destructive' | 'outline';
-  className?: string;,
+  className?: string
 }
 
 /**
@@ -36,10 +35,9 @@ interface StatusBadgeProps { status: string;
 * // 使用示例
 * <StatusBadge { ...props } />
  */
-const StatusBadge: React.FC<StatusBadgeProps> = ({ status,
+const StatusBadge: React.FC<StatusBadgeProps> = ( { status,
   variant = 'default',
-  className,
-}) => { const getStatusColor = (status: string): string => {
+  className }) => { const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'active':
       case '可用':
@@ -55,8 +53,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status,
       case 'pending':
       case '等待':
       return 'text-blue-400 border-blue-400';
-      default:
-      return 'text-werewolf-purple border-werewolf-purple/50';,
+      default: return 'text-werewolf-purple border-werewolf-purple/50'
 }
   };
 
@@ -67,7 +64,13 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status,
     >
     { status }
     </Badge>
-  );,
+  )
 };
 
+/**
+ * StatusBadge组件
+ * StatusBadge组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default StatusBadge;

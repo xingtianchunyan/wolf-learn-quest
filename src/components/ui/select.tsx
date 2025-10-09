@@ -1,5 +1,5 @@
-import { Check, ChevronDown, ChevronUp  } from 'lucide-react'
-import { cn  } from '@/lib/utils'
+import { Check, ChevronDown, ChevronUp   } from 'lucide-react'
+import { cn   } from '@/lib/utils'
 import * as React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 
@@ -34,10 +34,28 @@ import * as SelectPrimitive from '@radix-ui/react-select'
  */
 const Select = SelectPrimitive.Root;
 
+/**
+ * SelectGroup组件
+ * SelectGroup组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectGroup = SelectPrimitive.Group;
 
+/**
+ * SelectValue组件
+ * SelectValue组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectValue = SelectPrimitive.Value;
 
+/**
+ * SelectTrigger组件
+ * SelectTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectTrigger = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.Trigger>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
@@ -58,6 +76,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 ))
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
+/**
+ * SelectScrollUpButton组件
+ * 通用按钮组件，支持多种样式和状态
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectScrollUpButton = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
@@ -75,6 +99,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
 
+/**
+ * SelectScrollDownButton组件
+ * 通用按钮组件，支持多种样式和状态
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectScrollDownButton = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
@@ -93,6 +123,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
 SelectScrollDownButton.displayName =;
 SelectPrimitive.ScrollDownButton.displayName
 
+/**
+ * SelectContent组件
+ * SelectContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectContent = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
@@ -125,6 +161,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 ))
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
+/**
+ * SelectLabel组件
+ * SelectLabel组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectLabel = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.Label>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
@@ -137,6 +179,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
+/**
+ * SelectItem组件
+ * SelectItem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectItem = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.Item>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
@@ -160,6 +208,12 @@ React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
+/**
+ * SelectSeparator组件
+ * SelectSeparator组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SelectSeparator = React.forwardRef<;
 React.ElementRef<typeof SelectPrimitive.Separator>,
 React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
@@ -181,5 +235,4 @@ export { Select,
   SelectItem,
   SelectSeparator,
   SelectScrollUpButton,
-  SelectScrollDownButton,
- }
+  SelectScrollDownButton }

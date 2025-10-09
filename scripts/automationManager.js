@@ -26,7 +26,7 @@ class AutomationTask {
       timeout: 300000, // 5分钟默认超时
       retries: 0,
       parallel: false,
-      ...options
+      ...options,
     };
   }
 }
@@ -47,155 +47,175 @@ class AutomationManager {
    */
   setupTasks() {
     // 代码质量任务
-    this.addTask(new AutomationTask(
-      'quality-check',
-      '代码质量检查',
-      'npm run quality:analyze',
-      [],
-      { timeout: 180000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'quality-check',
+        '代码质量检查',
+        'npm run quality:analyze',
+        [],
+        { timeout: 180000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'lint-fix',
-      '自动修复代码风格问题',
-      'npm run lint:fix',
-      [],
-      { timeout: 120000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'lint-fix',
+        '自动修复代码风格问题',
+        'npm run lint:fix',
+        [],
+        { timeout: 120000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'format-code',
-      '格式化代码',
-      'npm run format:code',
-      [],
-      { timeout: 120000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'format-code',
+        '格式化代码',
+        'npm run format:code',
+        [],
+        { timeout: 120000 }
+      )
+    );
 
     // 测试任务
-    this.addTask(new AutomationTask(
-      'test-unit',
-      '运行单元测试',
-      'npm run test:unit',
-      [],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask('test-unit', '运行单元测试', 'npm run test:unit', [], {
+        timeout: 300000,
+      })
+    );
 
-    this.addTask(new AutomationTask(
-      'test-e2e',
-      '运行端到端测试',
-      'npm run test:e2e',
-      ['build'],
-      { timeout: 600000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'test-e2e',
+        '运行端到端测试',
+        'npm run test:e2e',
+        ['build'],
+        { timeout: 600000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'test-coverage',
-      '生成测试覆盖率报告',
-      'npm run test:coverage',
-      ['test-unit'],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'test-coverage',
+        '生成测试覆盖率报告',
+        'npm run test:coverage',
+        ['test-unit'],
+        { timeout: 300000 }
+      )
+    );
 
     // 构建任务
-    this.addTask(new AutomationTask(
-      'build',
-      '构建应用',
-      'npm run build',
-      ['quality-check'],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'build',
+        '构建应用',
+        'npm run build',
+        ['quality-check'],
+        { timeout: 300000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'build-analyze',
-      '分析构建包大小',
-      'npm run analyze',
-      ['build'],
-      { timeout: 120000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'build-analyze',
+        '分析构建包大小',
+        'npm run analyze',
+        ['build'],
+        { timeout: 120000 }
+      )
+    );
 
     // 部署任务
-    this.addTask(new AutomationTask(
-      'deploy-preview',
-      '部署到预览环境',
-      'npm run deploy:preview',
-      ['build', 'test-unit'],
-      { timeout: 600000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'deploy-preview',
+        '部署到预览环境',
+        'npm run deploy:preview',
+        ['build', 'test-unit'],
+        { timeout: 600000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'deploy-production',
-      '部署到生产环境',
-      'npm run deploy:production',
-      ['build', 'test-unit', 'test-e2e'],
-      { timeout: 600000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'deploy-production',
+        '部署到生产环境',
+        'npm run deploy:production',
+        ['build', 'test-unit', 'test-e2e'],
+        { timeout: 600000 }
+      )
+    );
 
     // 维护任务
-    this.addTask(new AutomationTask(
-      'dependency-update',
-      '更新依赖包',
-      'npm run deps:update',
-      [],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'dependency-update',
+        '更新依赖包',
+        'npm run deps:update',
+        [],
+        { timeout: 300000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'security-audit',
-      '安全审计',
-      'npm audit --audit-level=moderate',
-      [],
-      { timeout: 120000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'security-audit',
+        '安全审计',
+        'npm audit --audit-level=moderate',
+        [],
+        { timeout: 120000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'cleanup',
-      '清理临时文件',
-      'npm run clean',
-      [],
-      { timeout: 60000 }
-    ));
+    this.addTask(
+      new AutomationTask('cleanup', '清理临时文件', 'npm run clean', [], {
+        timeout: 60000,
+      })
+    );
 
     // 文档任务
-    this.addTask(new AutomationTask(
-      'docs-generate',
-      '生成文档',
-      'npm run docs:generate',
-      [],
-      { timeout: 180000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'docs-generate',
+        '生成文档',
+        'npm run docs:generate',
+        [],
+        { timeout: 180000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'docs-deploy',
-      '部署文档',
-      'npm run docs:deploy',
-      ['docs-generate'],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'docs-deploy',
+        '部署文档',
+        'npm run docs:deploy',
+        ['docs-generate'],
+        { timeout: 300000 }
+      )
+    );
 
     // 数据库任务
-    this.addTask(new AutomationTask(
-      'db-migrate',
-      '数据库迁移',
-      'npm run db:migrate',
-      [],
-      { timeout: 180000 }
-    ));
+    this.addTask(
+      new AutomationTask('db-migrate', '数据库迁移', 'npm run db:migrate', [], {
+        timeout: 180000,
+      })
+    );
 
-    this.addTask(new AutomationTask(
-      'db-seed',
-      '数据库种子数据',
-      'npm run db:seed',
-      ['db-migrate'],
-      { timeout: 120000 }
-    ));
+    this.addTask(
+      new AutomationTask(
+        'db-seed',
+        '数据库种子数据',
+        'npm run db:seed',
+        ['db-migrate'],
+        { timeout: 120000 }
+      )
+    );
 
-    this.addTask(new AutomationTask(
-      'db-backup',
-      '数据库备份',
-      'npm run db:backup',
-      [],
-      { timeout: 300000 }
-    ));
+    this.addTask(
+      new AutomationTask('db-backup', '数据库备份', 'npm run db:backup', [], {
+        timeout: 300000,
+      })
+    );
   }
 
   /**
@@ -224,7 +244,9 @@ class AutomationManager {
    */
   resolveDependencies(taskName, resolved = new Set(), visiting = new Set()) {
     if (visiting.has(taskName)) {
-      throw new Error(`检测到循环依赖: ${Array.from(visiting).join(' -> ')} -> ${taskName}`);
+      throw new Error(
+        `检测到循环依赖: ${Array.from(visiting).join(' -> ')} -> ${taskName}`
+      );
     }
 
     if (resolved.has(taskName)) {
@@ -255,37 +277,37 @@ class AutomationManager {
    */
   async executeCommand(command, options = {}) {
     const startTime = Date.now();
-    
+
     try {
       console.log(`🚀 执行命令: ${command}`);
-      
+
       const result = execSync(command, {
         cwd: projectRoot,
         stdio: 'inherit',
         timeout: options.timeout || 300000,
-        ...options
+        ...options,
       });
 
       const duration = Date.now() - startTime;
       console.log(`✅ 命令执行成功 (${duration}ms): ${command}`);
-      
+
       return {
         success: true,
         duration,
         command,
-        output: result?.toString() || ''
+        output: result?.toString() || '',
       };
     } catch (error) {
       const duration = Date.now() - startTime;
       console.error(`❌ 命令执行失败 (${duration}ms): ${command}`);
       console.error(`错误信息: ${error.message}`);
-      
+
       return {
         success: false,
         duration,
         command,
         error: error.message,
-        exitCode: error.status
+        exitCode: error.status,
       };
     }
   }
@@ -300,19 +322,21 @@ class AutomationManager {
     }
 
     console.log(`📋 开始执行任务: ${task.name} - ${task.description}`);
-    
+
     const startTime = Date.now();
     let result;
     let retries = 0;
 
     while (retries <= task.options.retries) {
       if (retries > 0) {
-        console.log(`🔄 重试任务 (${retries}/${task.options.retries}): ${task.name}`);
+        console.log(
+          `🔄 重试任务 (${retries}/${task.options.retries}): ${task.name}`
+        );
       }
 
       result = await this.executeCommand(task.command, {
         ...task.options,
-        ...options
+        ...options,
       });
 
       if (result.success) {
@@ -326,7 +350,7 @@ class AutomationManager {
     }
 
     const totalDuration = Date.now() - startTime;
-    
+
     const executionRecord = {
       taskName: task.name,
       description: task.description,
@@ -337,7 +361,7 @@ class AutomationManager {
       success: result.success,
       retries,
       error: result.error,
-      exitCode: result.exitCode
+      exitCode: result.exitCode,
     };
 
     this.executionHistory.push(executionRecord);
@@ -416,9 +440,8 @@ class AutomationManager {
         results,
         totalDuration,
         successCount,
-        failureCount
+        failureCount,
       };
-
     } finally {
       this.isRunning = false;
     }
@@ -431,13 +454,31 @@ class AutomationManager {
     const workflows = {
       'pre-commit': ['lint-fix', 'format-code', 'test-unit'],
       'pre-push': ['quality-check', 'test-unit', 'build'],
-      'deploy-preview': ['quality-check', 'test-unit', 'build', 'deploy-preview'],
-      'deploy-production': ['quality-check', 'test-unit', 'test-e2e', 'build', 'deploy-production'],
-      'maintenance': ['dependency-update', 'security-audit', 'cleanup'],
+      'deploy-preview': [
+        'quality-check',
+        'test-unit',
+        'build',
+        'deploy-preview',
+      ],
+      'deploy-production': [
+        'quality-check',
+        'test-unit',
+        'test-e2e',
+        'build',
+        'deploy-production',
+      ],
+      maintenance: ['dependency-update', 'security-audit', 'cleanup'],
       'full-test': ['quality-check', 'test-unit', 'test-coverage', 'test-e2e'],
       'docs-update': ['docs-generate', 'docs-deploy'],
       'db-setup': ['db-migrate', 'db-seed'],
-      'release': ['quality-check', 'test-unit', 'test-e2e', 'build', 'build-analyze', 'deploy-production']
+      release: [
+        'quality-check',
+        'test-unit',
+        'test-e2e',
+        'build',
+        'build-analyze',
+        'deploy-production',
+      ],
     };
 
     const tasks = workflows[workflowName];
@@ -474,15 +515,15 @@ class AutomationManager {
         description: task.description,
         command: task.command,
         dependencies: task.dependencies,
-        options: task.options
+        options: task.options,
       })),
       executionHistory: this.getExecutionHistory(),
-      statistics: this.calculateStatistics()
+      statistics: this.calculateStatistics(),
     };
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, JSON.stringify(report, null, 2));
-    
+
     console.log(`📄 自动化报告已生成: ${outputPath}`);
     return report;
   }
@@ -492,19 +533,19 @@ class AutomationManager {
    */
   calculateStatistics() {
     const history = this.getExecutionHistory();
-    
+
     if (history.length === 0) {
       return {
         totalExecutions: 0,
         successRate: 0,
         averageDuration: 0,
-        taskStats: {}
+        taskStats: {},
       };
     }
 
     const successCount = history.filter(h => h.success).length;
     const totalDuration = history.reduce((sum, h) => sum + h.duration, 0);
-    
+
     const taskStats = {};
     for (const record of history) {
       if (!taskStats[record.taskName]) {
@@ -513,15 +554,15 @@ class AutomationManager {
           successes: 0,
           failures: 0,
           totalDuration: 0,
-          averageDuration: 0
+          averageDuration: 0,
         };
       }
-      
+
       const stats = taskStats[record.taskName];
       stats.executions++;
       stats.totalDuration += record.duration;
       stats.averageDuration = stats.totalDuration / stats.executions;
-      
+
       if (record.success) {
         stats.successes++;
       } else {
@@ -533,7 +574,7 @@ class AutomationManager {
       totalExecutions: history.length,
       successRate: (successCount / history.length) * 100,
       averageDuration: totalDuration / history.length,
-      taskStats
+      taskStats,
     };
   }
 
@@ -585,7 +626,7 @@ class AutomationManager {
 async function main() {
   const manager = new AutomationManager();
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     manager.showHelp();
     return;
@@ -593,7 +634,7 @@ async function main() {
 
   const command = args[0];
   const options = {};
-  
+
   // 解析选项
   for (let i = 1; i < args.length; i++) {
     if (args[i] === '--continue-on-error') {
@@ -646,7 +687,9 @@ async function main() {
         history.forEach(record => {
           const status = record.success ? '✅' : '❌';
           const duration = `${record.duration}ms`;
-          console.log(`  ${status} ${record.taskName.padEnd(20)} ${duration.padStart(8)} - ${record.description}`);
+          console.log(
+            `  ${status} ${record.taskName.padEnd(20)} ${duration.padStart(8)} - ${record.description}`
+          );
         });
         break;
 
@@ -669,7 +712,8 @@ async function main() {
 }
 
 // 如果直接运行此脚本
-const isMainModule = process.argv[1] && process.argv[1].endsWith('automationManager.js');
+const isMainModule =
+  process.argv[1] && process.argv[1].endsWith('automationManager.js');
 if (isMainModule) {
   main().catch(error => {
     console.error('💥 程序异常:', error);

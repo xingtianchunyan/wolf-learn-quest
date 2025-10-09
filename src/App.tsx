@@ -1,11 +1,11 @@
-import { AuthProvider  } from '@/providers/AuthProvider';
-import { BrowserRouter, Routes, Route  } from 'react-router-dom';
-import { QueryClient, QueryClientProvider  } from '@tanstack/react-query';
-import { Toaster  } from '@/components/ui/toaster';
-import { Toaster as Sonner  } from '@/components/ui/sonner';
-import { TooltipProvider  } from '@/components/ui/tooltip';
-import { LanguageProvider  } from './components/layout/LanguageSwitcher';
-import { PermissionProvider  } from './contexts/PermissionContext';
+import { AuthProvider   } from '@/providers/AuthProvider';
+import { BrowserRouter, Routes, Route   } from 'react-router-dom';
+import { QueryClient, QueryClientProvider   } from '@tanstack/react-query';
+import { Toaster   } from '@/components/ui/toaster';
+import { Toaster as Sonner   } from '@/components/ui/sonner';
+import { TooltipProvider   } from '@/components/ui/tooltip';
+import { LanguageProvider   } from './components/layout/LanguageSwitcher';
+import { PermissionProvider   } from './contexts/PermissionContext';
 import GameLobby from './pages/GameLobby';
 import GamePage from './pages/GamePage';
 import GameRoom from './pages/GameRoom';
@@ -19,12 +19,9 @@ const queryClient = new QueryClient({ defaultOptions: {
     queries: {
       retry: 1,          // 减少重试次数，避免抖动
       staleTime: 60_000, // 1 分钟内数据视为新鲜
-      refetchOnWindowFocus: false,
-     },
-    mutations: { retry: 0,          // 变更默认不重试，交由 UI 处理,
+      refetchOnWindowFocus: false 
 },
-  },
-});
+    mutations: { retry: 0,          // 变更默认不重试，交由 UI 处理 } } });
 
 const App = () => (;
   <QueryClientProvider client={ queryClient }>;
@@ -39,16 +36,13 @@ const App = () => (;
   <Route path='/lobby' element={ <GameLobby /> } />;
   <Route path='/room/:id' element={ <PermissionProvider>
     <GameRoom />
-    </PermissionProvider>,
-} />
+    </PermissionProvider> } />
   <Route path='/room/:id/game' element={ <PermissionProvider>
     <GamePage />
-    </PermissionProvider>,
-} />
+    </PermissionProvider> } />
   <Route path='/room/:id/judge' element={ <PermissionProvider>
     <JudgePage />
-    </PermissionProvider>,
-} />
+    </PermissionProvider> } />
   <Route path='*' element={ <NotFound /> } />;
   </Routes>
   </BrowserRouter>

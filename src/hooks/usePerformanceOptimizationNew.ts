@@ -1,6 +1,6 @@
-import { createLogger  } from '@/lib/logger';
-import { useDebounce  } from '@/hooks/useDebounce';
-import { useEffect, useRef, useCallback, useMemo  } from 'react';
+import { createLogger   } from '@/lib/logger';
+import { useDebounce   } from '@/hooks/useDebounce';
+import { useEffect, useRef, useCallback, useMemo   } from 'react';
 
 /**
 * 性能优化Hook
@@ -13,29 +13,35 @@ interface PerformanceMetrics { renderCount: number;
   lastRenderTime: number;
   averageRenderTime: number;
   memoryUsage?: number;
-  componentName: string;,
+  componentName: string
 }
 
 interface UsePerformanceOptimizationOptions { componentName: string;
   enableMemoryTracking?: boolean;
   enableRenderTracking?: boolean;
   debounceTime?: number;
-  maxRenderThreshold?: number;,
+  maxRenderThreshold?: number
 }
 
-export const usePerformanceOptimization = (options: UsePerformanceOptimizationOptions) => { const {
+/**
+ * usePerformanceOptimization函数
+ * 自定义Hook
+ *
+ * @param options - options参数
+ * @returns void
+ */
+export const usePerformanceOptimization = (options: UsePerformanceOptimizationOptions) => { const  {
     componentName,
     enableMemoryTracking = true,
     enableRenderTracking = true,
     debounceTime = 100,
-    maxRenderThreshold = 5;,
+    maxRenderThreshold = 5
 } = options;
 
   const metricsRef = useRef<PerformanceMetrics>({ renderCount: 0,
     lastRenderTime: 0,
     averageRenderTime: 0,
-    componentName,
-});
+    componentName });
 
   const renderTimesRef = useRef<number[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -43,7 +49,7 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
 
   // 渲染开始时间记录
   useEffect(() => { if (enableRenderTracking) {
-      startTimeRef.current = performance.now();,
+      startTimeRef.current = performance.now()
 }
   });
 
@@ -58,7 +64,7 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
       // 记录最近10次渲染时间用于计算平均值
       renderTimesRef.current.push(renderTime);
       if (renderTimesRef.current.length > 10) {
-        renderTimesRef.current.shift();,
+        renderTimesRef.current.shift()
 }
 
       // 计算平均渲染时间
@@ -68,8 +74,8 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
       // 性能警告
       if (renderTime > 16) { // 大于一帧时间（60fps）
       logger.warn(`组件${componentName }渲染时间过长`, { renderTime,
-        renderCount: metricsRef.current.renderCount,
-});,
+        renderCount: metricsRef.current.renderCount 
+})
 }
 
     // 过度渲染警告
@@ -77,36 +83,48 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
       const recentRenders = renderTimesRef.current.length;
       if (recentRenders >= maxRenderThreshold) {
         logger.warn(`组件${componentName }在短时间内渲染次数过多`, { renderCount: recentRenders,
-          timeWindow,
-});,
+          timeWindow })
 }
-    },
-}
+    } }
 });
 
 // 内存使用监控
 useEffect(() => { if (enableMemoryTracking && 'memory' in performance) {
-    const trackMemory = () => {
+/**
+ * trackMemory函数
+ * trackMemory函数的功能描述
+ * @returns void
+ */
+const trackMemory = () =>  {
+/**
+ * memory函数
+ * memory函数的功能描述
+ *
+ * @param performance - performance参数
+ * @returns void
+ */
       const memory = (performance as any).memory;
       metricsRef.current.memoryUsage = memory.usedJSHeapSize;
 
       // 内存泄漏检测
       if (memory.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB
       logger.warn(`组件${componentName }可能存在内存泄漏`, { memoryUsage: memory.usedJSHeapSize,
-        totalMemory: memory.totalJSHeapSize,
-});,
+        totalMemory: memory.totalJSHeapSize 
+})
 }
   };
 
   const intervalId = setInterval(trackMemory, 5000); // 每5秒检查一次
   cleanupFunctionsRef.current.push(() => clearInterval(intervalId));
 
-  return () => clearInterval(intervalId);,
+  return () => clearInterval(intervalId)
 }
 }, [enableMemoryTracking, componentName]);
 
 // 防抖的更新函数
-const debouncedUpdate = useDebounce((callback: () => void) => { callback();,
+const debouncedUpdate = useDebounce((callback: () => void) => {
+  callback()
+
 }, debounceTime);
 
 // 优化的回调函数创建器
@@ -117,23 +135,29 @@ const createOptimizedCallback = useCallback(<T extends (...args: any[]) => any>(
 
   return useCallback((...args: Parameters<T>) => {
     debouncedUpdate(() => {
-      memoizedCallback(...args);,
-});,
-}, [memoizedCallback, debouncedUpdate]) as T;,
+  memoizedCallback(...args)
+})
+}, [memoizedCallback, debouncedUpdate]) as T
+
 }, [debouncedUpdate]);
 
 // 优化的状态更新器
 const createOptimizedSetter = useCallback(<T>(;
   setter: React.Dispatch<React.SetStateAction<T>>
-) => { return createOptimizedCallback(setter, [setter]);,
+) => {
+  return createOptimizedCallback(setter, [setter])
+
 }, [createOptimizedCallback]);
 
 // 内存清理函数
-const registerCleanup = useCallback((cleanupFn: () => void) => { cleanupFunctionsRef.current.push(cleanupFn);,
+const registerCleanup = useCallback((cleanupFn: () => void) => {
+  cleanupFunctionsRef.current.push(cleanupFn)
+
 }, []);
 
 // 获取性能指标
-const getMetrics = useCallback((): PerformanceMetrics => { return { ...metricsRef.current  };,
+const getMetrics = useCallback((): PerformanceMetrics => { return { ...metricsRef.current  
+}
 }, []);
 
 // 重置指标
@@ -141,21 +165,21 @@ const resetMetrics = useCallback(() => { metricsRef.current = {
     renderCount: 0,
     lastRenderTime: 0,
     averageRenderTime: 0,
-    componentName,
-};
-  renderTimesRef.current = [];,
+    componentName  };
+  renderTimesRef.current = []
 }, [componentName]);
 
 // 组件卸载时的清理
 useEffect(() => { return () => {
     cleanupFunctionsRef.current.forEach(cleanup => {
       try {
-        cleanup();,
-} catch (error) { logger.error(`清理函数执行失败: ${componentName }`, error);,
+        cleanup()
+} catch (error) { logger.error(`清理函数执行失败: ${componentName 
+}`, error)
 }
     });
-    cleanupFunctionsRef.current = [];,
-};,
+    cleanupFunctionsRef.current = []
+}
 }, [componentName]);
 
 // 优化的 useMemo 包装器
@@ -168,12 +192,12 @@ const optimizedMemo = useCallback(<T>(;
     const endTime = performance.now();
 
     if (endTime - startTime > 5) {
-      logger.warn(`${componentName } memo计算时间过长`, { duration: endTime - startTime,
-});,
+      logger.warn(`${componentName } memo计算时间过长`, { duration: endTime - startTime 
+})
 }
 
-    return result;,
-}, deps);,
+    return result
+}, deps)
 }, [componentName]);
 
 return { createOptimizedCallback,
@@ -182,6 +206,5 @@ return { createOptimizedCallback,
   getMetrics,
   resetMetrics,
   optimizedMemo,
-  debouncedUpdate,
-};,
+  debouncedUpdate }
 };

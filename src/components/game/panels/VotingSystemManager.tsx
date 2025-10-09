@@ -1,10 +1,10 @@
-import { Badge as _Badge  } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader as _CardHeader, CardTitle as _CardTitle  } from '@/components/ui/card';
-import { Separator as _Separator  } from '@/components/ui/separator';
-import { useGameState  } from '@/hooks/useGameState';
-import { useVotingSystem  } from '@/hooks/useVotingSystem';
-import { Vote, Clock as _Clock, Users as _Users, Gavel as _Gavel  } from 'lucide-react';
-import React, { useEffect  } from 'react';
+import { Badge as _Badge   } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader as _CardHeader, CardTitle as _CardTitle   } from '@/components/ui/card';
+import { Separator as _Separator   } from '@/components/ui/separator';
+import { useGameState   } from '@/hooks/useGameState';
+import { useVotingSystem   } from '@/hooks/useVotingSystem';
+import { Vote, Clock as _Clock, Users as _Users, Gavel as _Gavel   } from 'lucide-react';
+import React, { useEffect   } from 'react';
 import VotingPanel from '@/components/voting/VotingPanel';
 
 /**
@@ -22,9 +22,8 @@ import VotingPanel from '@/components/voting/VotingPanel';
 * @category common
 * @filepath game\panels\VotingSystemManager.tsx
  */
-
-interface VotingSystemManagerProps { roomId: string;
-  isJudge: boolean; // 移除默认值，强制上层传入,
+interface VotingSystemManagerProps  { roomId: string;
+  isJudge: boolean; // 移除默认值，强制上层传入 
 }
 
 /**
@@ -41,9 +40,8 @@ interface VotingSystemManagerProps { roomId: string;
 * // 使用示例
 * <VotingSystemManager { ...props } />
  */
-const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({ roomId,
-  isJudge,
-}) => { const { gameState  } = useGameState(roomId);
+const VotingSystemManager: React.FC<VotingSystemManagerProps> = ( { roomId,
+  isJudge }) => { const { gameState  } = useGameState(roomId);
   const { currentSession: _currentSession, ensureDayVotingSession, fetchCurrentSession  } = useVotingSystem(gameState?.id, roomId);
 
   // 检查是否是投票阶段 - 白天和傍晚阶段都显示投票系统
@@ -53,23 +51,28 @@ const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({ roomId,
   // 确保投票会话存在
   useEffect(() => { if (!gameStateId || !gameState) return;
 
-    const handleVotingSession = async () => {
+/**
+ * handleVotingSession函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleVotingSession = async () =>  {
       if (gameState.currentPhase === 1) {
         // 白天阶段：确保有投票会话存在
-        await ensureDayVotingSession(gameState.currentRound, gameState.currentPhase);,
+        await ensureDayVotingSession(gameState.currentRound, gameState.currentPhase)
 } else if (gameState.currentPhase === 2) { // 傍晚阶段：获取白天阶段的投票会话
-        await fetchCurrentSession(gameState.currentRound, 1);,
+        await fetchCurrentSession(gameState.currentRound, 1)
 }
     };
 
-    handleVotingSession();,
+    handleVotingSession()
 }, [gameState, gameState?.currentPhase, gameState?.currentRound, gameStateId, ensureDayVotingSession, fetchCurrentSession]);
 
   return (;
     <div className='space-y-4'>;
 
-    { /*  投票面板 - 白天和傍晚阶段都显示  */ }
-    { gameStateId && isVotingPhase && (
+    { /*  投票面板 - 白天和傍晚阶段都显示  */
+} { gameStateId && isVotingPhase && (
       <VotingPanel
       roomId={roomId }
       gameStateId={ gameStateId }
@@ -79,8 +82,8 @@ const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({ roomId,
       />
     )}
 
-    { /*  非投票阶段提示  */ }
-    { !isVotingPhase && (
+    { /*  非投票阶段提示  */
+} { !isVotingPhase && (
       <Card>
       <CardContent className='py-6'>;
       <div className='text-center text-muted-foreground'>;
@@ -90,7 +93,7 @@ const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({ roomId,
       ? '夜晚阶段 - 投票已结束'
       : gameState?.currentPhase === 4;
       ? '黎明阶段 - 准备新的一天'
-      : '当前阶段不可投票',
+      : '当前阶段不可投票' 
 }
     </p>
     </div>
@@ -98,7 +101,13 @@ const VotingSystemManager: React.FC<VotingSystemManagerProps> = ({ roomId,
     </Card>
   )}
   </div>
-);,
+)
 };
 
+/**
+ * VotingSystemManager组件
+ * VotingSystemManager组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default VotingSystemManager;

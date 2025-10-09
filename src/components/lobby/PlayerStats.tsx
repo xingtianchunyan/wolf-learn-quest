@@ -1,4 +1,4 @@
-import { useLanguage  } from '@/components/layout/LanguageSwitcher';
+import { useLanguage   } from '@/components/layout/LanguageSwitcher';
 import React from 'react';
 import ExperienceTooltip from './ExperienceTooltip';
 
@@ -17,11 +17,10 @@ import ExperienceTooltip from './ExperienceTooltip';
 * @category game
 * @filepath lobby\PlayerStats.tsx
  */
-
-interface PlayerStatsProps { level: number;
+interface PlayerStatsProps  { level: number;
   experience: number;
   wins: number;
-  losses: number;,
+  losses: number
 }
 
 /**
@@ -38,17 +37,30 @@ interface PlayerStatsProps { level: number;
 * // 使用示例
 * <PlayerStats { ...props } />
  */
-const PlayerStats: React.FC<PlayerStatsProps> = ({ level,
+const PlayerStats: React.FC<PlayerStatsProps> = ( { level,
   experience,
   wins,
-  losses,
-}) => { const { t  } = useLanguage();
+  losses }) => { const { t  } = useLanguage();
 
   // Get level from experience
-  const getLevelInfo = (exp: number) => { if (exp >= 200) return { level: 4, nextLevelExp: null  };
-    if (exp >= 100) return { level: 3, nextLevelExp: 200  };
-    if (exp >= 50) return { level: 2, nextLevelExp: 100  };
-    return { level: 1, nextLevelExp: 50  };,
+/**
+ * getLevelInfo函数
+ * 获取数据
+ *
+ * @param exp - exp参数
+ * @returns void
+ */
+const getLevelInfo = (exp: number) => { if (exp >= 200) return {
+    level: 4, nextLevelExp: null   
+};
+    if (exp >= 100) return {
+    level: 3, nextLevelExp: 200   
+};
+    if (exp >= 50) return {
+    level: 2, nextLevelExp: 100   
+};
+    return { level: 1, nextLevelExp: 50  
+}
 };
 
   const levelInfo = getLevelInfo(experience);
@@ -88,7 +100,13 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ level,
     </div>
     </div>
     </>
-  );,
+  )
 };
 
+/**
+ * PlayerStats组件
+ * 玩家相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PlayerStats;

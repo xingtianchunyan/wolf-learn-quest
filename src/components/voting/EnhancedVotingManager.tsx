@@ -1,14 +1,14 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Gavel, Calculator, RefreshCw, AlertTriangle, CheckCircle  } from 'lucide-react';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { Table,
-import { useGameState  } from '@/hooks/useGameState';
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
-import { useToast  } from '@/hooks/useToast';
-import { useVotingSystem  } from '@/hooks/useVotingSystem';
-import React, { useState  } from 'react';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Gavel, Calculator, RefreshCw, AlertTriangle, CheckCircle   } from 'lucide-react';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import {
+  Table, useGameState   } from '@/hooks/useGameState';
+import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
+import { useToast   } from '@/hooks/useToast';
+import { useVotingSystem   } from '@/hooks/useVotingSystem';
+import React, { useState   } from 'react';
 
 /**
 * 增强的投票管理组件
@@ -18,14 +18,13 @@ import React, { useState  } from 'react';
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  TableRow  } from '@/components/ui/table';
 
 /**
-* 增强投票管理组件的Props接口
+ * 增强投票管理组件的Props接口
  */
-interface EnhancedVotingManagerProps { roomId: string;
-  gameStateId?: string;,
+interface EnhancedVotingManagerProps  { roomId: string;
+  gameStateId?: string
 }
 
 /**
@@ -33,9 +32,8 @@ interface EnhancedVotingManagerProps { roomId: string;
 * @param props 组件属性
 * @returns JSX元素
  */
-const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
-  gameStateId,
-}) => { const [isProcessing, setIsProcessing] = useState(false);
+const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ( { roomId,
+  gameStateId }) => { const [isProcessing, setIsProcessing] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
   const { gameState  } = useGameState(roomId);
@@ -48,7 +46,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
     calculateResults,
     processEnhancedVotingResult,
     calculateAndProcessResults,
-    loading: votesLoading,
+    loading: votesLoading 
 } = useVotingSystem(gameStateId, roomId);
 
   const { toast  } = useToast();
@@ -60,7 +58,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
   * 格式化投票记录用于显示
   * @returns 格式化的投票记录数组
    */
-  const formatVoteRecordsForDisplay = () => { if (!votingSummary.hasVotes) return [];
+const formatVoteRecordsForDisplay = () =>  { if (!votingSummary.hasVotes) return [];
 
     const records = [];
 
@@ -69,42 +67,45 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
       const targetPlayer = players.find(p => p.userId === targetId);
       const voters = getVotersForTarget(targetId);
       const voterNames = voters.map(voter => {
-        const voterPlayer = players.find(p => p.userId === voter.voterId);
-        return voterPlayer?.name || '未知玩家';,
+  const voterPlayer = players.find(p => p.userId === voter.voterId);
+        return voterPlayer?.name || '未知玩家'
+
 });
 
       records.push({ votedPlayerId: targetId,
         votedPlayerName: targetPlayer?.name || '未知玩家',
         voteCount,
         voters: voterNames,
-        isHighest: false // 稍后计算,
-});,
+        isHighest: false // 稍后计算 
+})
 }
 
     // 显示弃权票（如果有的话）
     if (votingSummary.abstentions > 0) { const abstentionVoters = votingSummary.voteDetails?.['abstention'] || [];
       const abstentionVoterNames = abstentionVoters.map(vote => {
-        const voterPlayer = players.find(p => p.userId === vote.voterId);
-        return voterPlayer?.name || '未知玩家';,
+  const voterPlayer = players.find(p => p.userId === vote.voterId);
+        return voterPlayer?.name || '未知玩家'
+
 });
 
       records.push({ votedPlayerId: 'abstention',
         votedPlayerName: '弃权',
         voteCount: votingSummary.abstentions,
         voters: abstentionVoterNames,
-        isHighest: false,
-});,
+        isHighest: false 
+})
 }
 
     // 按票数降序排序并标记最高票
     records.sort((a, b) => b.voteCount - a.voteCount);
     if (records.length > 0) { const maxVotes = records[0].voteCount;
       records.forEach(record => {
-        record.isHighest = record.voteCount === maxVotes;,
-});,
+  record.isHighest = record.voteCount === maxVotes
+})
 }
 
-    return records;,
+    return records
+
 };
 
   const voteRecords = formatVoteRecordsForDisplay();
@@ -113,40 +114,44 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
   * 分析投票结果类型
   * @returns 投票结果分析
    */
-  const analyzeVotingResult = () => { if (voteRecords.length === 0) {
-      return { type: 'no_votes', message: '暂无投票记录'  };,
+const analyzeVotingResult = () => { if (voteRecords.length === 0)  {
+      return { type: 'no_votes', message: '暂无投票记录'  
+}
 }
 
     const maxVotes = Math.max(...voteRecords.map(r => r.voteCount));
     const topVotedPlayers = voteRecords.filter(r => r.voteCount === maxVotes && r.votedPlayerId !== 'abstention');
 
-    if (topVotedPlayers.length === 0) { return { type: 'only_abstention', message: '仅有弃权票'  };,
+    if (topVotedPlayers.length === 0) { return { type: 'only_abstention', message: '仅有弃权票'  
+}
 } else if (topVotedPlayers.length === 1) { return {
         type: 'unique_winner',
-        message: `${topVotedPlayers[0].votedPlayerName } 获得最高票数 (${ maxVotes } 票)`,
-        winner: topVotedPlayers[0],
-};,
+        message: `${topVotedPlayers[0].votedPlayerName 
+} 获得最高票数 (${ maxVotes } 票)`,
+        winner: topVotedPlayers[0] 
+}
 } else { const tiedPlayerNames = topVotedPlayers.map(p => p.votedPlayerName).join('、');
       return {
         type: 'tie',
-        message: `平票：${tiedPlayerNames } 各获得 ${ maxVotes } 票`,
-        tiedPlayers: topVotedPlayers,
-};,
+        message: `平票：${tiedPlayerNames 
+} 各获得 ${ maxVotes } 票`,
+        tiedPlayers: topVotedPlayers 
+}
 }
   };
 
   const resultAnalysis = analyzeVotingResult();
 
   /**
-  * 处理计算投票结果
-   */
-  const handleCalculateResults = async () => { if (!currentSession || !gameStateId) {
+ * 处理计算投票结果
+ */
+const handleCalculateResults = async () => { if (!currentSession || !gameStateId)  {
       toast({
         title: '计算失败',
         description: '没有活跃的投票会话',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setIsCalculating(true);
@@ -154,29 +159,29 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
         await calculateResults(currentSession.id);
         toast({
           title: '计算完成',
-          description: '投票结果已计算完成',
-         });,
+          description: '投票结果已计算完成' 
+})
 }
     } catch (error) { console.error('计算投票结果失败:', error);
       toast({
         title: '计算失败',
         description: '计算投票结果时发生错误',
-        variant: 'destructive',
-       });,
-} finally { setIsCalculating(false);,
+        variant: 'destructive' 
+})
+} finally { setIsCalculating(false)
 }
   };
 
   /**
-  * 处理投票结果
-   */
-  const handleProcessResults = async () => { if (!currentSession || !gameStateId) {
+ * 处理投票结果
+ */
+const handleProcessResults = async () => { if (!currentSession || !gameStateId)  {
       toast({
         title: '处理失败',
         description: '没有活跃的投票会话',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setIsProcessing(true);
@@ -189,15 +194,15 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
 
       if (success) {
         // 成功处理后的额外逻辑可以在这里添加
-        console.log('投票结果处理成功');,
+        console.log('投票结果处理成功')
 }
     } catch (error) { console.error('处理投票结果失败:', error);
       toast({
         title: '处理失败',
         description: '处理投票结果时发生错误',
-        variant: 'destructive',
-       });,
-} finally { setIsProcessing(false);,
+        variant: 'destructive' 
+})
+} finally { setIsProcessing(false)
 }
   };
 
@@ -218,16 +223,15 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
     </div>
     </CardTitle>
 
-    { /*  投票结果分析  */ }
-    { resultAnalysis && (
+    { /*  投票结果分析  */
+} { resultAnalysis && (
       <div className={`mt-2 p-2 rounded-md text-sm ${
-        resultAnalysis.type === 'unique_winner' ? 'bg-green-500/20 text-green-400' :;
-        resultAnalysis.type === 'tie' ? 'bg-yellow-500/20 text-yellow-400' :;
-        'bg-gray-500/20 text-gray-400',
-}`}>
+        resultAnalysis.type === 'unique_winner' ? 'bg-green-500/20 text-green-400' : unknown;
+        resultAnalysis.type === 'tie' ? 'bg-yellow-500/20 text-yellow-400' : unknown;
+        'bg-gray-500/20 text-gray-400' }`}>
       <div className='flex items-center gap-2'>;
-      { resultAnalysis.type === 'unique_winner' ? <CheckCircle className='h-4 w-4' /> :;
-      resultAnalysis.type === 'tie' ? <AlertTriangle className='h-4 w-4' /> :;
+      { resultAnalysis.type === 'unique_winner' ? <CheckCircle className='h-4 w-4' /> : unknown;
+      resultAnalysis.type === 'tie' ? <AlertTriangle className='h-4 w-4' /> : unknown;
       <RefreshCw className='h-4 w-4' /> }
       { resultAnalysis.message }
       </div>
@@ -296,8 +300,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
       <TableRow>
       <TableCell colSpan={ 4 } className='text-center text-gray-400'>;
       { gameState?.status === 'active' && currentSession ?;
-      '当前无投票记录' :
-      '游戏尚未开始或无活跃投票会话' }
+      '当前无投票记录' : '游戏尚未开始或无活跃投票会话' 
+}
       </TableCell>
       </TableRow>
     )}
@@ -306,8 +310,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
     </ScrollArea>
     </div>
 
-    { /*  操作按钮  */ }
-    { currentSession && gameState?.status === 'active' && (;
+    { /*  操作按钮  */
+} { currentSession && gameState?.status === 'active' && (;
       <div className='grid grid-cols-2 gap-3 flex-shrink-0'>;
       <Button
       variant='outline';
@@ -316,7 +320,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
       disabled={ isCalculating || votesLoading }
       >
       <Calculator className='h-4 w-4 mr-2' />;
-      { isCalculating ? '计算中...' : '计算结果' }
+      { isCalculating ? '计算中...' : '计算结果' 
+}
       </Button>
 
       <Button
@@ -325,14 +330,21 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({ roomId,
       disabled={ isProcessing || votesLoading || voteRecords.length === 0 }
       >
       <Gavel className='h-4 w-4 mr-2' />;
-      { isProcessing ? '处理中...' : '处理结果' }
+      { isProcessing ? '处理中...' : '处理结果' 
+}
       </Button>
       </div>
     )}
 
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * EnhancedVotingManager组件
+ * EnhancedVotingManager组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default EnhancedVotingManager;

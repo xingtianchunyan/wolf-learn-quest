@@ -5,17 +5,23 @@ export interface SkillEffectConfig { type: string;
   priority: number;
   duration?: number;
   conditions?: any;
-  data: any;,
+  data: any
 }
 
 // 预定义的技能效果配置
-export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
+/**
+ * SKILL组件
+ * SKILL组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+export const SKILL_EFFECT_CONFIGS =  { // 狼人击杀
   werewolf_kill: {
     type: 'elimination',
     priority: 90,
     data: {
       effect_type: 'kill',
-      can_be_protected: true,
+      can_be_protected: true 
 }
   },
 
@@ -24,7 +30,7 @@ export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
     priority: 85,
     data: {
       effect_type: 'poison',
-      can_be_protected: false,
+      can_be_protected: false 
 }
   },
 
@@ -34,7 +40,7 @@ export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
     duration: 86400, // 24小时
     data: {
       effect_type: 'heal',
-      protection_type: 'antidote',
+      protection_type: 'antidote' 
 }
   },
 
@@ -44,7 +50,7 @@ export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
     duration: 43200, // 12小时
     data: {
       effect_type: 'guard',
-      protection_type: 'guard',
+      protection_type: 'guard' 
 }
   },
 
@@ -53,7 +59,7 @@ export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
     priority: 70,
     data: {
       effect_type: 'identity_check',
-      reveal_faction: true,
+      reveal_faction: true 
 }
   },
 
@@ -62,36 +68,47 @@ export const SKILL_EFFECT_CONFIGS = { // 狼人击杀
     priority: 100, // 最高优先级
     data: {
       effect_type: 'revenge_kill',
-      can_be_protected: false,
+      can_be_protected: false 
 }
-  },
-};
+  } };
 
 // 创建技能效果
-export const createSkillEffect = (;
+/**
+ * createSkillEffect函数
+ * 创建新项
+ * @returns void
+ */
+export const createSkillEffect = (
   skillName: string,
   targetUserId?: string,
-  customData: any = {}
+  customData: any = {
+}
 ): SkillEffectConfig | null => { const config = SKILL_EFFECT_CONFIGS[skillName as keyof typeof SKILL_EFFECT_CONFIGS];
 
   if (!config) {
     console.warn(`未找到技能 ${skillName } 的效果配置`);
-    return null;,
+    return null
 }
 
   return { ...config,
     data: {
       ...config.data,
       ...customData,
-      target_user_id: targetUserId,
+      target_user_id: targetUserId 
 }
-  };,
+  }
 };
 
 // 检查技能效果冲突
-export const checkEffectConflicts = (;
+/**
+ * checkEffectConflicts函数
+ * checkEffectConflicts函数的功能描述
+ * @returns void
+ */
+export const checkEffectConflicts = (
   effects: SkillEffectConfig[]
-): { conflicts: boolean; resolution: any  } => { // 按优先级排序
+): { conflicts: boolean; resolution: any   
+} => { // 按优先级排序
   const sortedEffects = [...effects].sort((a, b) => b.priority - a.priority);
 
   // 检查保护效果 vs 伤害效果
@@ -113,22 +130,27 @@ export const checkEffectConflicts = (;
       type: 'protection_vs_elimination',
       protection,
       elimination,
-      resolution: 'protection_wins',
-});,
+      resolution: 'protection_wins' 
+})
 }
 });
 
 return { conflicts: conflicts.length > 0,
-  resolution: conflicts,
-};,
+  resolution: conflicts 
+}
 };
 
 // 应用技能效果解决方案
-export const resolveSkillEffects = (;
+/**
+ * resolveSkillEffects函数
+ * resolveSkillEffects函数的功能描述
+ * @returns void
+ */
+export const resolveSkillEffects = (
   effects: SkillEffectConfig[]
 ): SkillEffectConfig[] => { const { conflicts, resolution  } = checkEffectConflicts(effects);
 
-  if (!conflicts) { return effects;,
+  if (!conflicts) { return effects
 }
 
   let resolvedEffects = [...effects];
@@ -140,35 +162,48 @@ export const resolveSkillEffects = (;
     );
 
     // 保留保护效果
-    console.log(`保护效果阻止了伤害: ${conflict.elimination.data.effect_type }`);,
+    console.log(`保护效果阻止了伤害: ${conflict.elimination.data.effect_type 
+}`)
 }
 });
 
-return resolvedEffects;,
+return resolvedEffects
 };
 
 // 格式化技能效果描述
-export const formatSkillEffectDescription = (effect: SkillEffectConfig): string => { const { type, data  } = effect;
+/**
+ * formatSkillEffectDescription函数
+ * 格式化数据
+ *
+ * @param effect - effect参数
+ * @returns void
+ */
+export const formatSkillEffectDescription = (effect: SkillEffectConfig): string => { const  { type, data  } = effect;
 
-  switch (type) { case 'elimination':
-    return `淘汰效果 (${data.effect_type })`;
-    case 'protection':
-    return `保护效果 (${ data.protection_type })`;
-    case 'investigation':
-    return `调查效果 (${ data.effect_type })`;
+  switch (type) { case 'elimination': return `淘汰效果 (${data.effect_type 
+})`;
+    case 'protection': return `保护效果 (${ data.protection_type 
+})`;
+    case 'investigation': return `调查效果 (${ data.effect_type 
+})`;
     case 'status_change':
     return `状态变更效果`;
-    default:
-    return `未知效果 (${ type })`;,
+    default: return `未知效果 (${ type 
+})`
 }
 };
 
 // 计算技能效果持续时间
-export const calculateEffectDuration = (;
+/**
+ * calculateEffectDuration函数
+ * calculateEffectDuration函数的功能描述
+ * @returns void
+ */
+export const calculateEffectDuration = (
   effect: SkillEffectConfig,
   gamePhase: string
 ): number => { if (effect.duration) {
-    return effect.duration;,
+    return effect.duration
 }
 
   // 根据游戏阶段计算默认持续时间
@@ -178,62 +213,78 @@ export const calculateEffectDuration = (;
     return 0; // 即时效果
     case 'elimination':
     return 0; // 即时效果
-    default:
-    return 3600; // 默认1小时,
+    default: return 3600; // 默认1小时 
 }
 };
 
 // 验证技能使用条件
-export const validateSkillConditions = (;
+/**
+ * validateSkillConditions函数
+ * 验证数据
+ * @returns void
+ */
+export const validateSkillConditions = (
   skillName: string,
   userId: string,
   targetUserId: string | undefined,
   gameState: any,
   roleState: any
-): { valid: boolean; reason?: string  } => { // 基础验证
+): { valid: boolean; reason?: string   
+} => { // 基础验证
   if (!userId || !gameState || !roleState) {
-    return { valid: false, reason: '缺少必要的游戏信息'  };,
+    return { valid: false, reason: '缺少必要的游戏信息'  
+}
 }
 
   // 角色状态验证
   if (roleState.role_status !== 1) { // 必须是正常状态
-  return { valid: false, reason: '角色状态不允许使用技能'  };,
+  return { valid: false, reason: '角色状态不允许使用技能'  
+}
 }
 
 // 技能特定验证
 switch (skillName) { case 'werewolf_kill':
   if (!targetUserId) {
-    return { valid: false, reason: '必须选择攻击目标'  };,
+    return { valid: false, reason: '必须选择攻击目标'  
+}
 }
   if (gameState.current_phase !== 3) { // 必须是夜晚
-  return { valid: false, reason: '狼人只能在夜晚行动'  };,
+  return { valid: false, reason: '狼人只能在夜晚行动'  
+}
 }
 break;
 
 case 'seer_investigation':
-if (!targetUserId) { return { valid: false, reason: '必须选择调查目标'  };,
+if (!targetUserId) { return { valid: false, reason: '必须选择调查目标'  
+}
 }
 if (gameState.current_phase !== 3) { // 必须是夜晚
-return { valid: false, reason: '预言家只能在夜晚查验'  };,
+return { valid: false, reason: '预言家只能在夜晚查验'  
+}
 }
 break;
 
 case 'guard_protect':
-if (!targetUserId) { return { valid: false, reason: '必须选择保护目标'  };,
+if (!targetUserId) { return { valid: false, reason: '必须选择保护目标'  
+}
 }
 if (gameState.current_phase !== 3) { // 必须是夜晚
-return { valid: false, reason: '守卫只能在夜晚保护'  };,
+return { valid: false, reason: '守卫只能在夜晚保护'  
+}
 }
 break;
 
 case 'hunter_revenge':
-if (!targetUserId) { return { valid: false, reason: '必须选择反击目标'  };,
+if (!targetUserId) { return { valid: false, reason: '必须选择反击目标'  
+}
 }
 if (roleState.role_status !== 2) { // 必须是濒死状态
-return { valid: false, reason: '猎人只能在濒死时反击'  };,
+return { valid: false, reason: '猎人只能在濒死时反击'  
 }
-break;,
+}
+break
 }
 
-return { valid: true  };,
+return { valid: true  
+}
 };

@@ -1,21 +1,20 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { getRoleStatusName  } from '@/utils/roleStateHelpers';
-import { Separator  } from '@/components/ui/separator';
-import { Shield, CheckCircle, XCircle, Heart, Clock  } from 'lucide-react';
-import { useDyingStatusManager  } from '@/hooks/useDyingStatusManager';
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { getRoleStatusName   } from '@/utils/roleStateHelpers';
+import { Separator   } from '@/components/ui/separator';
+import { Shield, CheckCircle, XCircle, Heart, Clock   } from 'lucide-react';
+import { useDyingStatusManager   } from '@/hooks/useDyingStatusManager';
+import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
 import React from 'react';
 
 /**
 * 濒死状态解除面板组件
 * 为法官提供快速解除濒死状态的操作界面
  */
-
-interface DyingStatusResolutionPanelProps { roomId: string;
+interface DyingStatusResolutionPanelProps  { roomId: string;
   gameStateId: string;
-  className?: string;,
+  className?: string
 }
 
 /**
@@ -32,36 +31,59 @@ interface DyingStatusResolutionPanelProps { roomId: string;
 * // 使用示例
 * <DyingStatusResolutionPanel { ...props } />
  */
-const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({ roomId,
+const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ( { roomId,
   gameStateId,
-  className = '';,
+  className = ''
 }) => { const { players  } = usePlayersRealtime(roomId);
   const { dyingPlayers,
     isResolving,
     resolveByProtection,
     resolveByAnswer,
-    canManageDyingStatus,
-} = useDyingStatusManager(roomId, gameStateId);
+    canManageDyingStatus } = useDyingStatusManager(roomId, gameStateId);
 
   // 如果没有权限或没有濒死玩家，不显示面板
-  if (!canManageDyingStatus() || dyingPlayers.length === 0) { return null;,
+  if (!canManageDyingStatus() || dyingPlayers.length === 0) { return null
 }
 
-  const getPlayerName = (userId: string): string => { const player = players.find(p => p.userId === userId);
-    return player?.name || '未知玩家';,
+/**
+ * getPlayerName函数
+ * 获取数据
+ *
+ * @param userId - userId参数
+ * @returns void
+ */
+const getPlayerName = (userId: string): string =>  {
+  const player = players.find(p => p.userId === userId);
+    return player?.name || '未知玩家'
+
 };
 
-  const getPlayerAvatar = (userId: string): string | undefined => { const player = players.find(p => p.userId === userId);
-    return player?.avatar;,
+/**
+ * getPlayerAvatar函数
+ * 获取数据
+ *
+ * @param userId - userId参数
+ * @returns void
+ */
+const getPlayerAvatar = (userId: string): string | undefined =>  {
+  const player = players.find(p => p.userId === userId);
+    return player?.avatar
+
 };
 
-  const getDyingReasonText = (reason?: string): string => { switch (reason) {
+/**
+ * getDyingReasonText函数
+ * 获取数据
+ *
+ * @param reason? - reason?参数
+ * @returns void
+ */
+const getDyingReasonText = (reason?: string): string => { switch (reason)  {
       case 'vote_elimination':
       return '投票濒死';
       case 'night_attack':
       return '夜晚攻击';
-      default:
-      return '未知原因';,
+      default: return '未知原因'
 }
   };
 
@@ -181,12 +203,18 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
         ) }
         </div>
         </div>
-      );,
+      )
 })}
     </div>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * DyingStatusResolutionPanel组件
+ * DyingStatusResolutionPanel组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default DyingStatusResolutionPanel;

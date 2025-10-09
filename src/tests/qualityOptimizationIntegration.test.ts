@@ -3,7 +3,6 @@
  * 测试错误处理、安全性、性能优化等系统的集成效果
  * 验证第二阶段质量提升工作的完整性和有效性
  */
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // 导入核心优化系统
@@ -44,9 +43,11 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该正确处理各种类型的错误', async () => {
       const testError = new Error('测试错误');
-      
-      await expect(unifiedErrorSystem.handleError(testError)).resolves.not.toThrow();
-      
+
+      await expect(
+        unifiedErrorSystem.handleError(testError)
+      ).resolves.not.toThrow();
+
       const errorHistory = unifiedErrorSystem.getErrorHistory();
       expect(errorHistory.length).toBeGreaterThan(0);
       expect(errorHistory[0].message).toBe('测试错误');
@@ -72,17 +73,17 @@ describe('质量优化系统集成测试', () => {
 
     it('应该正确处理和监控错误', async () => {
       const testError = new Error('测试错误');
-      
+
       await unifiedErrorSystem.handleError(testError, {
         context: 'test-context',
         severity: 'high',
-        userFriendly: true
+        userFriendly: true,
       });
 
       // 验证错误已被记录
       const errorHistory = unifiedErrorSystem.getErrorHistory();
       expect(errorHistory.length).toBeGreaterThan(0);
-      
+
       // 验证错误统计
       const errorStats = unifiedErrorSystem.getErrorStats();
       expect(errorStats.total).toBeGreaterThan(0);
@@ -96,20 +97,20 @@ describe('质量优化系统集成测试', () => {
       const networkError = new Error('Network timeout');
       await unifiedErrorSystem.handleError(networkError, {
         category: 'network',
-        retryable: true
+        retryable: true,
       });
 
       // 测试验证错误
       const validationError = new Error('Invalid input');
       await unifiedErrorSystem.handleError(validationError, {
         category: 'validation',
-        userFriendly: true
+        userFriendly: true,
       });
 
       // 验证错误已被记录
       const errorHistory = unifiedErrorSystem.getErrorHistory();
       expect(errorHistory.length).toBeGreaterThan(0);
-      
+
       // 验证错误统计
       const errorStats = unifiedErrorSystem.getErrorStats();
       expect(errorStats.total).toBeGreaterThan(0);
@@ -123,14 +124,17 @@ describe('质量优化系统集成测试', () => {
     it('应该正确验证用户输入', () => {
       const validInput = { message: 'Hello World' };
       const result = enhancedInputValidator.validate(validInput, {
-        message: [{ 
-          name: 'required', 
-          validator: (value) => value !== null && value !== undefined && value !== '',
-          message: '此字段为必填项',
-          severity: 'medium'
-        }]
+        message: [
+          {
+            name: 'required',
+            validator: value =>
+              value !== null && value !== undefined && value !== '',
+            message: '此字段为必填项',
+            severity: 'medium',
+          },
+        ],
       });
-      
+
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
@@ -139,18 +143,18 @@ describe('质量优化系统集成测试', () => {
      * 测试权限系统
      */
     it('应该正确检查用户权限', async () => {
-      const mockContext = { 
-        userId: '1', 
-        roomId: 'room1', 
+      const mockContext = {
+        userId: '1',
+        roomId: 'room1',
         gameId: 'game1',
-        user: { id: '1', role: 'player' }
+        user: { id: '1', role: 'player' },
       };
-      
+
       const result = await enhancedPermissionSystem.checkPermission(
         'VIEW_GAME' as any,
         mockContext
       );
-      
+
       expect(result).toBeDefined();
       expect(typeof result.granted).toBe('boolean');
     });
@@ -162,9 +166,9 @@ describe('质量优化系统集成测试', () => {
       await securityAuditService.recordSecurityEvent('PERMISSION_CHECK', {
         userId: 'test-user',
         description: '权限检查测试',
-        metadata: { action: 'vote', result: 'allowed' }
+        metadata: { action: 'vote', result: 'allowed' },
       });
-      
+
       const stats = securityAuditService.getSecurityStats();
       expect(stats.totalEvents).toBeGreaterThan(0);
     });
@@ -195,22 +199,26 @@ describe('质量优化系统集成测试', () => {
      * 测试内存管理和订阅优化
      */
     it('应该正确管理内存和订阅', () => {
-        const subscriptionId = 'test-subscription';
-        
-        // 注册订阅
-        memoryManager.registerSubscription(subscriptionId, 'websocket', 'TestComponent');
-        
-        // 验证订阅已注册
-        const stats = memoryManager.getSubscriptionStats();
-        expect(stats.total).toBeGreaterThan(0);
-        
-        // 取消注册订阅
-        const unregistered = memoryManager.unregisterSubscription(subscriptionId);
-        expect(unregistered).toBe(true);
-        
-        // 验证订阅已被移除
-        const statsAfter = memoryManager.getSubscriptionStats();
-        expect(statsAfter.total).toBe(stats.total - 1);
+      const subscriptionId = 'test-subscription';
+
+      // 注册订阅
+      memoryManager.registerSubscription(
+        subscriptionId,
+        'websocket',
+        'TestComponent'
+      );
+
+      // 验证订阅已注册
+      const stats = memoryManager.getSubscriptionStats();
+      expect(stats.total).toBeGreaterThan(0);
+
+      // 取消注册订阅
+      const unregistered = memoryManager.unregisterSubscription(subscriptionId);
+      expect(unregistered).toBe(true);
+
+      // 验证订阅已被移除
+      const statsAfter = memoryManager.getSubscriptionStats();
+      expect(statsAfter.total).toBe(stats.total - 1);
     });
 
     /**
@@ -218,10 +226,10 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该正确监控渲染性能', async () => {
       const componentName = 'TestComponent';
-      
+
       // 模拟渲染过程
       const startTime = renderOptimizer.startRender(componentName);
-      
+
       // 模拟渲染延迟
       await new Promise(resolve => {
         setTimeout(() => {
@@ -247,7 +255,7 @@ describe('质量优化系统集成测试', () => {
       // 测试配置更新
       renderOptimizer.updateConfig({
         enableProfiling: false,
-        maxRenderTime: 20
+        maxRenderTime: 20,
       });
 
       const updatedConfig = renderOptimizer.getConfig();
@@ -262,12 +270,12 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该在错误处理时记录安全事件', async () => {
       const securityError = new Error('权限拒绝');
-      
+
       // 处理安全相关错误
       await errorSystem.handleError(securityError, {
         context: 'security-check',
         severity: 'high',
-        category: 'security'
+        category: 'security',
       });
 
       // 验证安全事件记录
@@ -282,22 +290,22 @@ describe('质量优化系统集成测试', () => {
      * 测试性能监控与内存管理的协作
      */
     it('应该在性能问题时触发内存清理', () => {
-        // 模拟高内存使用
-        const memoryUsage = memoryManager.getCurrentMemoryUsage();
-        expect(memoryUsage).toBeDefined();
+      // 模拟高内存使用
+      const memoryUsage = memoryManager.getCurrentMemoryUsage();
+      expect(memoryUsage).toBeDefined();
 
-        // 模拟内存泄漏检测
-        const leakDetection = memoryManager.detectMemoryLeaks();
-        expect(leakDetection).toBeDefined();
+      // 模拟内存泄漏检测
+      const leakDetection = memoryManager.detectMemoryLeaks();
+      expect(leakDetection).toBeDefined();
 
-        if (leakDetection.isLeaking) {
-          memoryManager.performCleanup();
-        }
+      if (leakDetection.isLeaking) {
+        memoryManager.performCleanup();
+      }
 
-        // 验证清理效果
-        const newStats = memoryManager.getSubscriptionStats();
-        expect(newStats).toBeDefined();
-      });
+      // 验证清理效果
+      const newStats = memoryManager.getSubscriptionStats();
+      expect(newStats).toBeDefined();
+    });
 
     /**
      * 测试缓存与权限系统的协作
@@ -312,11 +320,14 @@ describe('质量优化系统集成测试', () => {
         userId,
         roomId: 'room456',
         gameState: 'playing' as const,
-        userRole: 'player' as const
+        userRole: 'player' as const,
       };
 
-      const hasPermission = await enhancedPermissionSystem.checkPermission('VIEW_GAME_STATE' as any, context);
-      
+      const hasPermission = await enhancedPermissionSystem.checkPermission(
+        'VIEW_GAME_STATE' as any,
+        context
+      );
+
       if (hasPermission.granted) {
         await optimizedQueryCache.set(cacheKey, sensitiveData);
         const cachedData = await optimizedQueryCache.get(cacheKey);
@@ -334,30 +345,42 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该监控系统性能指标', async () => {
       const startTime = Date.now();
-      
+
       // 执行一系列操作
       const operations = [
-        () => enhancedInputValidator.validate({ test: 'data' }, { 
-          test: [{ 
-            name: 'required', 
-            validator: (value) => value !== null && value !== undefined && value !== '',
-            message: '此字段为必填项',
-            severity: 'medium'
-          }]
-        }),
-        () => enhancedPermissionSystem.checkPermission('VIEW_GAME' as any, { userId: 'test', roomId: 'test', gameId: 'test' }),
+        () =>
+          enhancedInputValidator.validate(
+            { test: 'data' },
+            {
+              test: [
+                {
+                  name: 'required',
+                  validator: value =>
+                    value !== null && value !== undefined && value !== '',
+                  message: '此字段为必填项',
+                  severity: 'medium',
+                },
+              ],
+            }
+          ),
+        () =>
+          enhancedPermissionSystem.checkPermission('VIEW_GAME' as any, {
+            userId: 'test',
+            roomId: 'test',
+            gameId: 'test',
+          }),
         () => optimizedQueryCache.set('perf-test', { data: 'test' }),
         () => optimizedQueryCache.get('perf-test'),
-        () => memoryManager.getCurrentMemoryUsage()
+        () => memoryManager.getCurrentMemoryUsage(),
       ];
-      
+
       for (const op of operations) {
         await op();
       }
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // 验证性能指标
       expect(duration).toBeLessThan(1000); // 操作应在1秒内完成
     });
@@ -367,46 +390,58 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该在合理时间内完成复杂操作', async () => {
       const startTime = Date.now();
-      
+
       // 模拟复杂的业务场景
       const context = {
         userId: 'user123',
         roomId: 'room456',
         gameId: 'game789',
         userRole: 'player' as const,
-        gameState: 'playing' as const
+        gameState: 'playing' as const,
       };
 
-      const hasPermission = await enhancedPermissionSystem.checkPermission('VIEW_GAME_STATE' as any, context);
-      
+      const hasPermission = await enhancedPermissionSystem.checkPermission(
+        'VIEW_GAME_STATE' as any,
+        context
+      );
+
       if (hasPermission.granted) {
         // 执行数据验证
         const validationResult = enhancedInputValidator.validate(
           { action: 'vote', target: 'player2' },
           {
-            action: [{ 
-              name: 'required', 
-              validator: (value) => value !== null && value !== undefined && value !== '',
-              message: '操作类型为必填项',
-              severity: 'medium'
-            }],
-            target: [{ 
-              name: 'required', 
-              validator: (value) => value !== null && value !== undefined && value !== '',
-              message: '目标为必填项',
-              severity: 'medium'
-            }]
+            action: [
+              {
+                name: 'required',
+                validator: value =>
+                  value !== null && value !== undefined && value !== '',
+                message: '操作类型为必填项',
+                severity: 'medium',
+              },
+            ],
+            target: [
+              {
+                name: 'required',
+                validator: value =>
+                  value !== null && value !== undefined && value !== '',
+                message: '目标为必填项',
+                severity: 'medium',
+              },
+            ],
           }
         );
-        
+
         if (validationResult.isValid) {
           // 缓存操作
-          optimizedQueryCache.set('user-action', { userId: context.userId, action: 'vote' });
-          
+          optimizedQueryCache.set('user-action', {
+            userId: context.userId,
+            action: 'vote',
+          });
+
           // 记录性能指标
           const endTime = Date.now();
           const duration = endTime - startTime;
-          
+
           expect(duration).toBeLessThan(100); // 复杂操作应在100ms内完成
         }
       }
@@ -417,23 +452,25 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该保持合理的内存使用', async () => {
       const initialMemory = memoryManager.getCurrentMemoryUsage();
-      
+
       // 执行一些内存密集操作
-      const operations = Array.from({ length: 100 }, (_, i) => 
+      const operations = Array.from({ length: 100 }, (_, i) =>
         optimizedQueryCache.set(`test-key-${i}`, { data: `test-data-${i}` })
       );
-      
+
       await Promise.all(operations);
-      
+
       const afterOperationsMemory = memoryManager.getCurrentMemoryUsage();
-      
+
       // 执行清理
       memoryManager.performCleanup();
-      
+
       const afterCleanupMemory = memoryManager.getCurrentMemoryUsage();
-      
+
       // 验证内存使用合理（由于是模拟数据，我们主要验证方法能正常调用）
-      expect(afterOperationsMemory.used).toBeGreaterThanOrEqual(initialMemory.used);
+      expect(afterOperationsMemory.used).toBeGreaterThanOrEqual(
+        initialMemory.used
+      );
       expect(afterCleanupMemory.used).toBeGreaterThanOrEqual(0);
       expect(typeof afterOperationsMemory.total).toBe('number');
       expect(typeof afterCleanupMemory.total).toBe('number');
@@ -446,22 +483,28 @@ describe('质量优化系统集成测试', () => {
      */
     it('应该优雅处理系统异常', async () => {
       // 测试无效输入
-      const invalidResult = enhancedInputValidator.validate(null, { 
-        test: [{ 
-          name: 'required', 
-          validator: (value) => value !== null && value !== undefined && value !== '',
-          message: '此字段为必填项',
-          severity: 'medium'
-        }]
+      const invalidResult = enhancedInputValidator.validate(null, {
+        test: [
+          {
+            name: 'required',
+            validator: value =>
+              value !== null && value !== undefined && value !== '',
+            message: '此字段为必填项',
+            severity: 'medium',
+          },
+        ],
       });
       expect(invalidResult.isValid).toBe(false);
 
       // 测试权限拒绝
-      const invalidPermission = await enhancedPermissionSystem.checkPermission('INVALID_ACTION' as any, { 
-        userId: 'test', 
-        roomId: 'test', 
-        gameId: 'test' 
-      });
+      const invalidPermission = await enhancedPermissionSystem.checkPermission(
+        'INVALID_ACTION' as any,
+        {
+          userId: 'test',
+          roomId: 'test',
+          gameId: 'test',
+        }
+      );
       expect(invalidPermission.granted).toBe(false);
 
       // 测试内存清理
@@ -470,25 +513,27 @@ describe('质量优化系统集成测试', () => {
       expect(memoryAfterCleanup).toBeDefined();
 
       // 测试缓存异常
-      await expect(optimizedQueryCache.get('non-existent-key')).resolves.toBeNull();
+      await expect(
+        optimizedQueryCache.get('non-existent-key')
+      ).resolves.toBeNull();
     });
 
     /**
      * 测试并发操作
      */
     it('应该正确处理并发操作', async () => {
-      const concurrentOperations = Array.from({ length: 10 }, (_, i) => 
+      const concurrentOperations = Array.from({ length: 10 }, (_, i) =>
         optimizedQueryCache.set(`concurrent-${i}`, { data: i })
       );
 
       await Promise.all(concurrentOperations);
 
-      const retrieveOperations = Array.from({ length: 10 }, (_, i) => 
+      const retrieveOperations = Array.from({ length: 10 }, (_, i) =>
         optimizedQueryCache.get(`concurrent-${i}`)
       );
 
       const results = await Promise.all(retrieveOperations);
-      
+
       results.forEach((result, index) => {
         expect(result).toEqual({ data: index });
       });

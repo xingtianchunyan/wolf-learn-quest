@@ -1,55 +1,87 @@
-import { DyingStatusService, DyingResolutionType  } from '@/services/dyingStatusService';
-import { supabase  } from '@/integrations/supabase/client';
-import { useEffect, useRef  } from 'react';
-import { useToast  } from '@/hooks/useToast';
+import { DyingStatusService, DyingResolutionType   } from '@/services/dyingStatusService';
+import { supabase   } from '@/integrations/supabase/client';
+import { useEffect, useRef   } from 'react';
+import { useToast   } from '@/hooks/useToast';
 
 /**
 * 自动濒死状态处理Hook
 * 监听濒死状态变化并自动处理状态转换
  */
-
-interface MinimalGameState { id: string;
+interface MinimalGameState  { id: string;
   currentPhase: number;
-  currentRound: number;,
+  currentRound: number
 }
 
 interface AutoProcessingConfig { enableProtectionResolution: boolean;
   enableAnswerBasedResolution: boolean;
   protectionDelay: number; // 延迟时间(毫秒)
-  answerCheckDelay: number; // 答题检查延迟(毫秒),
+  answerCheckDelay: number; // 答题检查延迟(毫秒) 
 }
 
-const DEFAULT_CONFIG: AutoProcessingConfig = { enableProtectionResolution: true,
+/**
+ * DEFAULT组件
+ * DEFAULT组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const DEFAULT_CONFIG: AutoProcessingConfig =  { enableProtectionResolution: true,
   enableAnswerBasedResolution: true,
   protectionDelay: 2000, // 2秒后自动判断保护
-  answerCheckDelay: 5000, // 5秒后检查答题结果,
-};
+  answerCheckDelay: 5000, // 5秒后检查答题结果  };
 
-export const useAutoDyingStatusProcessor = (;
+/**
+ * useAutoDyingStatusProcessor函数
+ * 自定义Hook
+ * @returns void
+ */
+export const useAutoDyingStatusProcessor = (
   roomId: string,
   gameState?: MinimalGameState | null,
-  config: Partial<AutoProcessingConfig> = {}
+  config: Partial<AutoProcessingConfig> = {
+}
 ) => { const { toast  } = useToast();
   const processingRef = useRef<Set<string>>(new Set());
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const effectiveConfig = { ...DEFAULT_CONFIG, ...config  };
+  const effectiveConfig = { ...DEFAULT_CONFIG, ...config   };
 
   // 清理定时器
-  const clearPlayerTimeout = (userId: string) => { const timeout = timeoutsRef.current.get(userId);
+/**
+ * clearPlayerTimeout函数
+ * clearPlayerTimeout函数的功能描述
+ *
+ * @param userId - userId参数
+ * @returns void
+ */
+const clearPlayerTimeout = (userId: string) =>  { const timeout = timeoutsRef.current.get(userId);
     if (timeout) {
       clearTimeout(timeout);
-      timeoutsRef.current.delete(userId);,
+      timeoutsRef.current.delete(userId)
 }
   };
 
   // 清理所有定时器
-  const clearAllTimeouts = () => { timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    timeoutsRef.current.clear();,
+/**
+ * clearAllTimeouts函数
+ * clearAllTimeouts函数的功能描述
+ * @returns void
+ */
+const clearAllTimeouts = () =>  {
+  timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    timeoutsRef.current.clear()
+
 };
 
   // 自动保护判断逻辑
-  const autoResolveByProtection = async (userId: string, gameStateId: string) => { if (!effectiveConfig.enableProtectionResolution || processingRef.current.has(userId)) {
-      return;,
+/**
+ * autoResolveByProtection函数
+ * autoResolveByProtection函数的功能描述
+ *
+ * @param userId - userId参数
+ * @param gameStateId - gameStateId参数
+ * @returns Promise<void>
+ */
+const autoResolveByProtection = async (userId: string, gameStateId: string) => { if (!effectiveConfig.enableProtectionResolution || processingRef.current.has(userId))  {
+      return
 }
 
     processingRef.current.add(userId);
@@ -63,23 +95,30 @@ export const useAutoDyingStatusProcessor = (;
         const success = await DyingStatusService.resolveDyingStatus({
           userId,
           gameStateId,
-          resolutionType: DyingResolutionType.PROTECTED,
+          resolutionType: DyingResolutionType.PROTECTED 
 });
 
         if (success) { toast({
             title: '自动保护生效',
-            description: '玩家获得保护，濒死状态已自动解除',
-           });,
+            description: '玩家获得保护，濒死状态已自动解除' 
+})
 }
-      },
-} catch (error) { console.error('自动保护判断失败:', error);,
-} finally { processingRef.current.delete(userId);,
+      } } catch (error) { console.error('自动保护判断失败:', error)
+} finally { processingRef.current.delete(userId)
 }
   };
 
   // 自动答题结果判断逻辑
-  const autoResolveByAnswer = async (userId: string, gameStateId: string) => { if (!effectiveConfig.enableAnswerBasedResolution || processingRef.current.has(userId)) {
-      return;,
+/**
+ * autoResolveByAnswer函数
+ * autoResolveByAnswer函数的功能描述
+ *
+ * @param userId - userId参数
+ * @param gameStateId - gameStateId参数
+ * @returns Promise<void>
+ */
+const autoResolveByAnswer = async (userId: string, gameStateId: string) => { if (!effectiveConfig.enableAnswerBasedResolution || processingRef.current.has(userId))  {
+      return
 }
 
     processingRef.current.add(userId);
@@ -95,23 +134,29 @@ export const useAutoDyingStatusProcessor = (;
         const success = await DyingStatusService.resolveDyingStatus({
           userId,
           gameStateId,
-          resolutionType,
-});
+          resolutionType });
 
         if (success) { const statusText = answerResult ? '转为虚弱状态' : '被淘汰';
           toast({
             title: '自动答题判定',
-            description: `基于答题结果，玩家${statusText }`,
-          });,
+            description: `基于答题结果，玩家${statusText 
+}` })
 }
-      },
-} catch (error) { console.error('自动答题判断失败:', error);,
-} finally { processingRef.current.delete(userId);,
+      } } catch (error) { console.error('自动答题判断失败:', error)
+} finally { processingRef.current.delete(userId)
 }
   };
 
   // 检查保护效果
-  const checkProtectionEffects = async (userId: string, gameStateId: string): Promise<boolean> => { try {
+/**
+ * checkProtectionEffects函数
+ * checkProtectionEffects函数的功能描述
+ *
+ * @param userId - userId参数
+ * @param gameStateId - gameStateId参数
+ * @returns Promise<void>
+ */
+const checkProtectionEffects = async (userId: string, gameStateId: string): Promise<boolean> => { try  {
       // 查询是否有针对该玩家的保护技能
       const { data: protectionEffects, error  } = await supabase;
       .from('standardized_skill_targets')
@@ -122,76 +167,96 @@ export const useAutoDyingStatusProcessor = (;
       .gte('effect_end_time', new Date().toISOString());
 
       if (error) { console.error('查询保护效果失败:', error);
-        return false;,
+        return false
 }
 
-      return protectionEffects && protectionEffects.length > 0;,
+      return protectionEffects && protectionEffects.length > 0
 } catch (error) { console.error('检查保护效果异常:', error);
-      return false;,
+      return false
 }
   };
 
   // 检查玩家答题结果
-  const checkPlayerAnswerResult = async (userId: string, gameStateId: string): Promise<boolean | null> => { try {
+/**
+ * checkPlayerAnswerResult函数
+ * checkPlayerAnswerResult函数的功能描述
+ *
+ * @param userId - userId参数
+ * @param gameStateId - gameStateId参数
+ * @returns Promise<void>
+ */
+const checkPlayerAnswerResult = async (userId: string, gameStateId: string): Promise<boolean | null> => { try  {
       // 获取当前轮次和阶段
-      const { data: gameData, error: gameError  } = await supabase;
+      const { data: gameData, error: gameError  
+} = await supabase;
       .from('game_states')
       .select('current_round, current_phase')
       .eq('id', gameStateId)
       .single();
 
       if (gameError || !gameData) { console.error('获取游戏状态失败:', gameError);
-        return null;,
+        return null
 }
 
       // 查询玩家在当前轮次的答题记录
-      const { data: answers, error: answersError  } = await supabase;
+      const { data: answers, error: answersError  
+} = await supabase;
       .from('room_answers')
       .select('is_correct')
       .eq('user_id', userId)
       .eq('question_order', gameData.current_round)
-      .order('created_at', { ascending: false  })
+      .order('created_at', { ascending: false  
+})
       .limit(1);
 
       if (answersError) { console.error('查询答题记录失败:', answersError);
-        return null;,
+        return null
 }
 
-      if (!answers || answers.length === 0) { return null; // 尚未答题,
-}
+      if (!answers || answers.length === 0) { return null; // 尚未答题 }
 
-      return answers[0].is_correct;,
+      return answers[0].is_correct
 } catch (error) { console.error('检查答题结果异常:', error);
-      return null;,
+      return null
 }
   };
 
   // 处理新的濒死状态
-  const handleNewDyingStatus = (userId: string, gameStateId: string) => { // 清除该玩家之前的定时器
+/**
+ * handleNewDyingStatus函数
+ * 处理事件
+ *
+ * @param userId - userId参数
+ * @param gameStateId - gameStateId参数
+ * @returns void
+ */
+const handleNewDyingStatus = (userId: string, gameStateId: string) =>  { // 清除该玩家之前的定时器
     clearPlayerTimeout(userId);
 
     // 设置保护判断定时器
     if (effectiveConfig.enableProtectionResolution) {
       const protectionTimeout = setTimeout(() => {
-        autoResolveByProtection(userId, gameStateId);,
+  autoResolveByProtection(userId, gameStateId)
+
 }, effectiveConfig.protectionDelay);
 
-      timeoutsRef.current.set(`${ userId }_protection`, protectionTimeout);,
+      timeoutsRef.current.set(`${ userId }_protection`, protectionTimeout)
 }
 
     // 设置答题结果判断定时器
     if (effectiveConfig.enableAnswerBasedResolution) { const answerTimeout = setTimeout(() => {
-        autoResolveByAnswer(userId, gameStateId);,
+  autoResolveByAnswer(userId, gameStateId)
+
 }, effectiveConfig.answerCheckDelay);
 
-      timeoutsRef.current.set(`${ userId }_answer`, answerTimeout);,
+      timeoutsRef.current.set(`${ userId }_answer`, answerTimeout)
 }
   };
 
   // 监听濒死状态变化
   useEffect(() => { if (!roomId || !gameState?.id) {
       clearAllTimeouts();
-      return;,
+      return
 }
 
     // 订阅角色状态变化
@@ -202,39 +267,41 @@ export const useAutoDyingStatusProcessor = (;
       { event: 'UPDATE',
         schema: 'public',
         table: 'role_states',
-        filter: `room_id=eq.${roomId }`,
-      },
+        filter: `room_id=eq.${roomId 
+}` },
       payload => { const newRecord = payload.new as any;
         const oldRecord = payload.old as any;
 
         // 检查是否有玩家新进入濒死状态
         if (newRecord.role_status === 2 && oldRecord.role_status !== 2) {
-          handleNewDyingStatus(newRecord.user_id, newRecord.game_state_id);,
+          handleNewDyingStatus(newRecord.user_id, newRecord.game_state_id)
 }
 
         // 检查是否有玩家脱离濒死状态
         if (oldRecord.role_status === 2 && newRecord.role_status !== 2) { clearPlayerTimeout(newRecord.user_id);
-          processingRef.current.delete(newRecord.user_id);,
+          processingRef.current.delete(newRecord.user_id)
 }
       }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(channel);
+    return () => {
+  supabase.removeChannel(channel);
       clearAllTimeouts();
-      processingRef.current.clear();,
-};,
+      processingRef.current.clear()
+}
+
 }, [roomId, gameState?.id, effectiveConfig]);
 
   // 组件卸载时清理
   useEffect(() => { return () => {
-      clearAllTimeouts();
-      processingRef.current.clear();,
-};,
+  clearAllTimeouts();
+      processingRef.current.clear()
+}
+
 }, []);
 
   return { isProcessing: (userId: string) => processingRef.current.has(userId),
     clearPlayerTimeout,
-    clearAllTimeouts,
-   };,
+    clearAllTimeouts }
 };

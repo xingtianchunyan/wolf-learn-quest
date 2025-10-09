@@ -1,5 +1,5 @@
-import { cn  } from '@/lib/utils'
-import { GripVertical  } from 'lucide-react'
+import { cn   } from '@/lib/utils'
+import { GripVertical   } from 'lucide-react'
 import * as ResizablePrimitive from 'react-resizable-panels'
 
 /**
@@ -31,9 +31,8 @@ import * as ResizablePrimitive from 'react-resizable-panels'
 * // 使用示例
 * <resizable />
  */
-const ResizablePanelGroup = ({ className,
-  ...props,
-}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (;
+const ResizablePanelGroup = ( { className,
+  ...props }: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (;
   <ResizablePrimitive.PanelGroup
   className={ cn(;
     'flex h-full w-full data-[panel-group-direction=vertical]:flex-col',
@@ -43,12 +42,23 @@ const ResizablePanelGroup = ({ className,
   />
 )
 
+/**
+ * ResizablePanel组件
+ * ResizablePanel组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ResizablePanel = ResizablePrimitive.Panel;
 
-const ResizableHandle = ({ withHandle,
+/**
+ * ResizableHandle组件
+ * ResizableHandle组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const ResizableHandle = ( { withHandle,
   className,
-  ...props,
-}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & { withHandle?: boolean,
+  ...props }: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & { withHandle?: boolean 
 }) => (;
   <ResizablePrimitive.PanelResizeHandle
   className={ cn(;

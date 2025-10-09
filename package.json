@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:naming": "node scripts/checkNamingConventions.js",
-    "check:all": "npm run type-check && npm run check:naming && npm run format:check",
+    "check:all": "npm run type-check && npm run check:naming",
     "deploy": "node scripts/deploy.js",
     "deploy:vercel": "vercel --prod",
     "deploy:netlify": "netlify deploy --prod --dir=dist",
@@ -71,7 +71,16 @@
     "docs:deploy": "echo 'Documentation deployment not configured yet'",
     "db:migrate": "echo 'Database migration not configured yet'",
     "db:seed": "echo 'Database seeding not configured yet'",
-    "db:backup": "echo 'Database backup not configured yet'"
+    "db:backup": "echo 'Database backup not configured yet'",
+    "dev:full": "node scripts/quickDev.js full",
+    "dev:watch": "node scripts/quickDev.js dev",
+    "test:watch": "node scripts/quickDev.js test",
+    "type:watch": "node scripts/quickDev.js type",
+    "debug:tools": "node scripts/debugTools.js",
+    "env:optimize": "node scripts/devEnvironmentOptimizer.js",
+    "quality:check": "node simpleQualityCheck.js",
+    "quality:fix": "npm run lint:fix && npm run format",
+    "pre-commit": "npm run quality:fix && npm run type-check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

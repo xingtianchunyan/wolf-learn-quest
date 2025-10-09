@@ -1,15 +1,15 @@
-import { Button  } from '@/components/ui/button';
-import { createLogger  } from '@/lib/logger';
-import { Dialog,
-import { Input  } from '@/components/ui/input';
-import { Label  } from '@/components/ui/label';
-import { LogIn  } from 'lucide-react';
-import { supabase  } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
-import { useAuth  } from '@/providers/AuthProvider';
-import { useToast  } from '@/components/ui/useToast';
-import React, { useState  } from 'react';
-import { useLanguage  } from '../layout/LanguageSwitcher';
+import { Button   } from '@/components/ui/button';
+import { createLogger   } from '@/lib/logger';
+import {
+  Dialog, Input   } from '@/components/ui/input';
+import { Label   } from '@/components/ui/label';
+import { LogIn   } from 'lucide-react';
+import { supabase   } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
+import { useAuth   } from '@/providers/AuthProvider';
+import { useToast   } from '@/components/ui/useToast';
+import React, { useState   } from 'react';
+import { useLanguage   } from '../layout/LanguageSwitcher';
 
 /**
 * 文件级注释：LoginDialog 组件
@@ -32,8 +32,7 @@ import { useLanguage  } from '../layout/LanguageSwitcher';
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
- } from '@/components/ui/dialog';
+  DialogTrigger  } from '@/components/ui/dialog';
 
 /**
 * LoginDialog 组件
@@ -49,7 +48,7 @@ import { useLanguage  } from '../layout/LanguageSwitcher';
 * // 使用示例
 * <LoginDialog />
  */
-const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
+const LoginDialog: React.FC = () =>  { const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [playerId, setPlayerId] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,72 +58,87 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
   const { isLoggedIn, initializing, isLoginOpen, setIsLoginOpen  } = useAuth();
   const logger = createLogger('LoginDialog');
 
-  const handleLogin = async (e: React.FormEvent) => { e.preventDefault();
+/**
+ * handleLogin函数
+ * 处理事件
+ *
+ * @param e - e参数
+ * @returns Promise<void>
+ */
+const handleLogin = async (e: React.FormEvent) =>  { e.preventDefault();
     setLoading(true);
 
     try {
       const { data: _data, error  } = await supabase.auth.signInWithPassword({ email,
-        password,
-       });
+        password });
 
       if (error) { toast({
           title: t('login_failed'),
           description: error.message,
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       toast({ title: t('login_success'),
-        description: t('login_success_desc'),
-       });
+        description: t('login_success_desc') 
+});
 
       setIsLoginOpen(false);
       // Reset form
       setEmail('');
-      setPassword('');,
+      setPassword('')
 } catch (error) { logger.error('Login error:', error);
       toast({
         title: t('login_failed'),
         description: t('unexpected_error'),
-        variant: 'destructive',
-       });,
-} finally { setLoading(false);,
+        variant: 'destructive' 
+})
+} finally { setLoading(false)
 }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => { e.preventDefault();
+/**
+ * handleSignUp函数
+ * 处理事件
+ *
+ * @param e - e参数
+ * @returns Promise<void>
+ */
+const handleSignUp = async (e: React.FormEvent) =>  { e.preventDefault();
 
     if (password !== confirmPassword) {
       toast({
         title: t('password_mismatch'),
         description: t('password_mismatch_desc'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (!playerId.trim()) { toast({
         title: t('player_id_required'),
         description: t('player_id_required_desc'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setLoading(true);
 
     try { // Check if Player ID already exists
-      const { data: existingUserRows, error: _checkError  } = await supabase;
-      .rpc('get_public_user_by_name', { p_name: playerId.trim()  });
+      const { data: existingUserRows, error: _checkError  
+} = await supabase;
+      .rpc('get_public_user_by_name', { p_name: playerId.trim()  
+});
 
       if (existingUserRows && Array.isArray(existingUserRows) && existingUserRows.length > 0) { toast({
           title: t('player_id_taken'),
           description: t('player_id_taken_desc'),
-          variant: 'destructive',
-         });
+          variant: 'destructive' 
+});
         setLoading(false);
-        return;,
+        return
 }
 
       // Sign up the user with player_name in metadata
@@ -133,61 +147,65 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
         options: {
           data: {
             player_name: playerId.trim(),
-            display_name: playerId.trim(), // Set display name for Supabase Auth,
-}
-        },
-});
+            display_name: playerId.trim(), // Set display name for Supabase Auth }
+        } });
 
       if (error) { toast({
           title: t('registration_failed'),
           description: error.message,
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       // Update the user's display name in Supabase Auth
-      if (data.user) { const { error: updateError  } = await supabase.auth.updateUser({ data: {
+      if (data.user) { const { error: updateError  
+} = await supabase.auth.updateUser({ data: {
             display_name: playerId.trim(),
-            player_name: playerId.trim(),
+            player_name: playerId.trim() 
 }
         });
 
-        if (updateError) { logger.error('Error updating display name:', updateError);,
+        if (updateError) { logger.error('Error updating display name:', updateError)
 }
       }
 
       toast({ title: t('registration_success'),
-        description: t('registration_success_desc'),
-       });
+        description: t('registration_success_desc') 
+});
 
       setIsLoginOpen(false);
       // Reset form
       setEmail('');
       setPassword('');
       setPlayerId('');
-      setConfirmPassword('');,
+      setConfirmPassword('')
 } catch (error) { logger.error('Signup error:', error);
       toast({
         title: t('registration_failed'),
         description: t('unexpected_error'),
-        variant: 'destructive',
-       });,
-} finally { setLoading(false);,
+        variant: 'destructive' 
+})
+} finally { setLoading(false)
 }
   };
 
-  const handleLogout = async () => { const { error  } = await supabase.auth.signOut();
+/**
+ * handleLogout函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleLogout = async () => { const  { error  } = await supabase.auth.signOut();
 
     if (error) { toast({
         title: t('logout_failed'),
         description: error.message,
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 } else { toast({
         title: t('logout_success'),
-        description: t('logout_success_desc'),
-       });,
+        description: t('logout_success_desc') 
+})
 }
   };
 
@@ -196,7 +214,7 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
       <LogIn size={ 20 } className='mr-1' />;
       <span>{ t('signout') }</span>
       </Button>
-    );,
+    )
 }
 
   return (;
@@ -255,7 +273,8 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
     className='bg-werewolf-purple hover:bg-werewolf-light';
     disabled={ loading }
     >
-    { loading ? t('signing_in') : t('signin') }
+    { loading ? t('signing_in') : t('signin') 
+}
     </Button>
     </DialogFooter>
     </form>
@@ -319,7 +338,8 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
     className='bg-werewolf-purple hover:bg-werewolf-light';
     disabled={ loading }
     >
-    { loading ? t('creating_account') : t('signup') }
+    { loading ? t('creating_account') : t('signup') 
+}
     </Button>
     </DialogFooter>
     </form>
@@ -327,7 +347,13 @@ const LoginDialog: React.FC = () => { const [email, setEmail] = useState('');
     </Tabs>
     </DialogContent>
     </Dialog>
-  );,
+  )
 };
 
+/**
+ * LoginDialog组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default LoginDialog;

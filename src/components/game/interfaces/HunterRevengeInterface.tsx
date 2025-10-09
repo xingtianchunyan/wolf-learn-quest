@@ -1,7 +1,7 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Target  } from 'lucide-react';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Target   } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -19,9 +19,9 @@ import React from 'react';
 * @category common
 * @filepath game\interfaces\HunterRevengeInterface.tsx
  */
-
-interface HunterRevengeInterfaceProps { onRevenge: (playerId: string) => void;
-  availablePlayers: Array<{ userId: string; name: string  }>;,
+interface HunterRevengeInterfaceProps  { onRevenge: (playerId: string) => void;
+  availablePlayers: Array<{ userId: string; name: string  
+}>
 }
 
 /**
@@ -37,9 +37,8 @@ interface HunterRevengeInterfaceProps { onRevenge: (playerId: string) => void;
 * // 使用示例
 * <HunterRevengeInterface { ...props } />
  */
-const HunterRevengeInterface: React.FC<HunterRevengeInterfaceProps> = ({ onRevenge,
-  availablePlayers,
-}) => { return (;
+const HunterRevengeInterface: React.FC<HunterRevengeInterfaceProps> = ( { onRevenge,
+  availablePlayers }) => { return (;
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>;
     <CardHeader>
     <CardTitle className='flex items-center gap-2'>;
@@ -62,7 +61,13 @@ const HunterRevengeInterface: React.FC<HunterRevengeInterfaceProps> = ({ onReven
     ))}
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * HunterRevengeInterface组件
+ * HunterRevengeInterface组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default HunterRevengeInterface;

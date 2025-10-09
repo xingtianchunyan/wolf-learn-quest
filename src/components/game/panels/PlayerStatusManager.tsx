@@ -1,21 +1,20 @@
-import { AlertTriangle, Clock, Heart  } from 'lucide-react';
-import { Badge  } from '@/components/ui/badge';
-import { canAccessWerewolfChannel, isDemonRole  } from '@/utils/roleUtils';
-import { ROLE_STATUS, getRoleStatusName, getRoleStatusColor  } from '@/utils/roleStateHelpers';
-import { useAuth  } from '@/providers/AuthProvider';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useRoleStates  } from '@/hooks/useRoleStates';
-import React, { useEffect, useState  } from 'react';
+import { AlertTriangle, Clock, Heart   } from 'lucide-react';
+import { Badge   } from '@/components/ui/badge';
+import { canAccessWerewolfChannel, isDemonRole   } from '@/utils/roleUtils';
+import { ROLE_STATUS, getRoleStatusName, getRoleStatusColor   } from '@/utils/roleStateHelpers';
+import { useAuth   } from '@/providers/AuthProvider';
+import { useRoleSelection   } from '@/hooks/useRoleSelection';
+import { useRoleStates   } from '@/hooks/useRoleStates';
+import React, { useEffect, useState   } from 'react';
 
 /**
 * 玩家状态管理组件
 * 处理状态变更、实时更新和可视化显示的统一管理
  */
-
-interface Player { id: string;
+interface Player  { id: string;
   name: string;
   userId?: string;
-  avatar?: string;,
+  avatar?: string
 }
 
 interface PlayerStatusManagerProps { players: Player[];
@@ -23,7 +22,7 @@ interface PlayerStatusManagerProps { players: Player[];
   maxPlayers: number;
   showDyingStatusOnly?: boolean; // 是否只显示濒死状态变更
   allowedRoles?: string[]; // 允许查看状态变更的角色列表
-  className?: string;,
+  className?: string
 }
 
 /**
@@ -36,8 +35,7 @@ interface PlayerStatusManagerProps { players: Player[];
  */
 const DYING_STATUS_VISIBLE_ROLES = [;
   'werewolf', 'werewolf_1', 'werewolf_2', 'whitewolf',
-  'witch', 'voodoo', 'demon',
-];
+  'witch', 'voodoo', 'demon' ];
 
 /**
 * PlayerStatusManager 组件
@@ -53,17 +51,18 @@ const DYING_STATUS_VISIBLE_ROLES = [;
 * // 使用示例
 * <PlayerStatusManager { ...props } />
  */
-const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
+const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ( { players,
   roomId,
   maxPlayers,
   showDyingStatusOnly = false,
   allowedRoles = DYING_STATUS_VISIBLE_ROLES,
-  className = '';,
+  className = ''
 }) => { const { currentUser  } = useAuth();
   const { roleStates  } = useRoleStates(roomId);
   const { getSelectedRoleByUser  } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   const [dyingPlayers, setDyingPlayers] = useState<string[]>([]);
-  const [recentChanges, setRecentChanges] = useState<Map<string, { fromStatus: number; toStatus: number; timestamp: number  }>>(new Map());
+  const [recentChanges, setRecentChanges] = useState<Map<string, { fromStatus: number; toStatus: number; timestamp: number  
+}>>(new Map());
 
   // 获取当前用户角色信息
   const currentUserRoleSelection = currentUser ? getSelectedRoleByUser(currentUser.id) : null;
@@ -75,16 +74,15 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
 
     // 法官总是可以查看
     if (currentUser?.id && roomId) {
-      // 这里可以添加法官权限检查逻辑,
-}
+      // 这里可以添加法官权限检查逻辑 }
 
     // 特定角色可以查看濒死状态变更
     if (showDyingStatusOnly) { return allowedRoles.includes(currentUserRole) ||;
       canAccessWerewolfChannel(currentUserRole, currentUserRoleDesign) ||
-      isDemonRole(currentUserRole);,
+      isDemonRole(currentUserRole)
 }
 
-    return true;,
+    return true
 }, [currentUserRole, currentUserRoleDesign, showDyingStatusOnly, allowedRoles, currentUser?.id, roomId]);
 
   // 监听角色状态变更
@@ -105,13 +103,12 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
           changes.set(roleState.user_id, {
             fromStatus: existingChange?.toStatus || ROLE_STATUS.NORMAL,
             toStatus: ROLE_STATUS.DYING,
-            timestamp: Date.now(),
-});,
+            timestamp: Date.now() 
+})
 } else { // 保留现有的变更记录
-          changes.set(roleState.user_id, existingChange);,
+          changes.set(roleState.user_id, existingChange)
 }
-      },
-});
+      } });
 
     setDyingPlayers(newDyingPlayers);
 
@@ -119,12 +116,13 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
     if (changes.size > 0) { setRecentChanges(prevChanges => {
         const newChanges = new Map(prevChanges);
         changes.forEach((change, userId) => {
-          newChanges.set(userId, change);,
+  newChanges.set(userId, change)
 });
-        return newChanges;,
-});,
+        return newChanges
+})
 }
-  }, [roleStates, players]);
+  
+}, [roleStates, players]);
 
   // 清理超过10秒的变更记录
   useEffect(() => { const interval = setInterval(() => {
@@ -133,18 +131,25 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
         const filteredChanges = new Map();
         prevChanges.forEach((change, userId) => {
           if (now - change.timestamp < 10000) {
-            filteredChanges.set(userId, change);,
+            filteredChanges.set(userId, change)
 }
         });
-        return filteredChanges.size !== prevChanges.size ? filteredChanges : prevChanges;,
-});,
+        return filteredChanges.size !== prevChanges.size ? filteredChanges : prevChanges
+})
 }, 1000); // 每秒检查一次
 
-    return () => clearInterval(interval);,
+    return () => clearInterval(interval)
 }, []);
 
   // 获取玩家状态显示信息
-  const getPlayerStatusInfo = (player: Player) => { if (!player.userId) return null;
+/**
+ * getPlayerStatusInfo函数
+ * 获取数据
+ *
+ * @param player - player参数
+ * @returns void
+ */
+const getPlayerStatusInfo = (player: Player) =>  { if (!player.userId) return null;
 
     const roleState = roleStates.find(rs => rs.user_id === player.userId);
     if (!roleState) return null;
@@ -157,12 +162,18 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
       statusName: getRoleStatusName(roleState.role_status),
       statusColor: getRoleStatusColor(roleState.role_status),
       isRecentChange,
-      recentChange,
-};,
+      recentChange }
 };
 
   // 获取状态变更动画类
-  const getStatusChangeAnimation = (statusInfo: ReturnType<typeof getPlayerStatusInfo>) => { if (!statusInfo?.isRecentChange) return '';
+/**
+ * getStatusChangeAnimation函数
+ * 获取数据
+ *
+ * @param statusInfo - statusInfo参数
+ * @returns void
+ */
+const getStatusChangeAnimation = (statusInfo: ReturnType<typeof getPlayerStatusInfo>) =>  { if (!statusInfo?.isRecentChange) return '';
 
     switch (statusInfo.status) {
       case ROLE_STATUS.DYING:
@@ -171,13 +182,12 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
       return 'animate-bounce border-yellow-500';
       case ROLE_STATUS.ELIMINATED:
       return 'animate-fade-out border-gray-500';
-      default:
-      return '';,
+      default: return ''
 }
   };
 
   // 如果当前用户无权查看，不显示组件
-  if (!canViewStatusChanges) { return null;,
+  if (!canViewStatusChanges) { return null
 }
 
   // 过滤要显示的玩家
@@ -185,7 +195,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
   ? players.filter(p => p.userId && dyingPlayers.includes(p.userId));
   : players;
 
-  if (playersToShow.length === 0) { return null;,
+  if (playersToShow.length === 0) { return null
 }
 
   return (;
@@ -210,7 +220,8 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
         className={ `;
         flex items-center justify-between p-3 rounded-lg border-2 transition-all duration-500
         bg-werewolf-dark/40 ${animationClass }
-        ${ statusInfo.isRecentChange ? 'ring-2 ring-opacity-50' : '' }
+        ${ statusInfo.isRecentChange ? 'ring-2 ring-opacity-50' : '' 
+}
         `}
         >
         <div className='flex items-center gap-3'>;
@@ -230,11 +241,10 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
 
         { /*  状态指示器  */ }
         <div className={ `absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-werewolf-dark ${
-          statusInfo.status === ROLE_STATUS.DYING ? 'bg-red-500' :;
-          statusInfo.status === ROLE_STATUS.WEAK ? 'bg-yellow-500' :;
-          statusInfo.status === ROLE_STATUS.ELIMINATED ? 'bg-gray-500' :;
-          'bg-green-500',
-}`} />
+          statusInfo.status === ROLE_STATUS.DYING ? 'bg-red-500' : unknown;
+          statusInfo.status === ROLE_STATUS.WEAK ? 'bg-yellow-500' : unknown;
+          statusInfo.status === ROLE_STATUS.ELIMINATED ? 'bg-gray-500' : unknown;
+          'bg-green-500' }`} />
         </div>
 
         { /*  玩家信息  */ }
@@ -268,11 +278,17 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({ players,
         ) }
         </div>
         </div>
-      );,
+      )
 })}
     </div>
     </div>
-  );,
+  )
 };
 
+/**
+ * PlayerStatusManager组件
+ * 玩家相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PlayerStatusManager;

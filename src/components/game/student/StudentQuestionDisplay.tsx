@@ -15,8 +15,7 @@ import React from 'react';
 * @category common
 * @filepath game\student\StudentQuestionDisplay.tsx
  */
-
-interface Question { id: string;
+interface Question  { id: string;
   question: string;
   option_a: string;
   option_b: string;
@@ -25,7 +24,7 @@ interface Question { id: string;
   correct_option: number;
   explanation: string | null;
   difficulty: number | null;
-  category: string | null;,
+  category: string | null
 }
 
 interface StudentQuestionDisplayProps { currentQuestion: Question;
@@ -33,7 +32,7 @@ interface StudentQuestionDisplayProps { currentQuestion: Question;
   hasSubmitted: boolean;
   loading: boolean;
   timeIsUp: boolean;
-  onOptionClick: (optionNumber: number) => void;,
+  onOptionClick: (optionNumber: number) => void
 }
 
 /**
@@ -49,22 +48,29 @@ interface StudentQuestionDisplayProps { currentQuestion: Question;
 * // 使用示例
 * <StudentQuestionDisplay { ...props } />
  */
-const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({ currentQuestion,
+const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ( { currentQuestion,
   selectedOption,
   hasSubmitted,
   loading,
   timeIsUp,
-  onOptionClick,
-}) => { const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];,
+  onOptionClick }) => { const getOptionLabel = (index: number) => {
+  return ['A', 'B', 'C', 'D'][index - 1]
+
 };
 
-  const getOptionText = (optionNumber: number) => { switch (optionNumber) {
+/**
+ * getOptionText函数
+ * 获取数据
+ *
+ * @param optionNumber - optionNumber参数
+ * @returns void
+ */
+const getOptionText = (optionNumber: number) => { switch (optionNumber)  {
       case 1: return currentQuestion.option_a;
       case 2: return currentQuestion.option_b;
       case 3: return currentQuestion.option_c;
       case 4: return currentQuestion.option_d;
-      default: return '';,
+      default: return ''
 }
   };
 
@@ -76,12 +82,14 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({ current
     <p className='text-gray-300 leading-relaxed'>{ currentQuestion.question }</p>;
     { currentQuestion.category && (
       <div className='mt-2 text-xs text-gray-500'>;
-      类别: {currentQuestion.category }
+      类别: {currentQuestion.category 
+}
       </div>
     )}
     { currentQuestion.difficulty && (
       <div className='mt-1 text-xs text-gray-500'>;
-      难度: {currentQuestion.difficulty }/10
+      难度: {currentQuestion.difficulty 
+}/10
       </div>
     )}
     </div>
@@ -109,7 +117,7 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({ current
           ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
           : hasSubmitted || timeIsUp
           ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
-          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50',
+          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50' 
 }`}
         >
         <span className='font-semibold mr-2'>;
@@ -117,12 +125,12 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({ current
         </span>
         { optionText }
         </button>
-      );,
+      )
 })}
     </div>
 
-    { /*  答案状态提示  */ }
-    { hasSubmitted && (
+    { /*  答案状态提示  */
+} { hasSubmitted && (
       <div className='text-center'>;
       <div className='text-green-400 font-medium mb-2'>;
       答案已提交
@@ -148,7 +156,13 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({ current
       </div>
     ) }
     </>
-  );,
+  )
 };
 
+/**
+ * StudentQuestionDisplay组件
+ * StudentQuestionDisplay组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default StudentQuestionDisplay;

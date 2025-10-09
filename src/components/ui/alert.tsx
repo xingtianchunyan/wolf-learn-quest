@@ -1,5 +1,5 @@
-import { cn  } from '@/lib/utils'
-import { cva, type VariantProps  } from 'class-variance-authority'
+import { cn   } from '@/lib/utils'
+import { cva, type VariantProps   } from 'class-variance-authority'
 import * as React from 'react'
 
 /**
@@ -36,15 +36,18 @@ const alertVariants = cva(;
   { variants: {
       variant: {
         default: 'bg-background text-foreground',
-        destructive:
-        'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
-       },
-    },
-    defaultVariants: { variant: 'default',
-     },
-  }
+        destructive: 'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive' 
+} },
+    defaultVariants: { variant: 'default' 
+} }
 )
 
+/**
+ * Alert组件
+ * Alert组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const Alert = React.forwardRef<;
 HTMLDivElement,
 React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
@@ -58,6 +61,12 @@ React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
 ))
 Alert.displayName = 'Alert';
 
+/**
+ * AlertTitle组件
+ * AlertTitle组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertTitle = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLHeadingElement>
@@ -70,6 +79,12 @@ React.HTMLAttributes<HTMLHeadingElement>
 ))
 AlertTitle.displayName = 'AlertTitle';
 
+/**
+ * AlertDescription组件
+ * AlertDescription组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDescription = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLParagraphElement>

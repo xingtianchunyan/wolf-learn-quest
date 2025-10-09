@@ -1,8 +1,8 @@
-import { Button  } from '@/components/ui/button';
-import { Check, Languages  } from 'lucide-react';
-import { createLogger  } from '@/lib/logger';
-import { Popover, PopoverContent, PopoverTrigger  } from '@/components/ui/popover';
-import React, { useState, createContext, useContext, useEffect  } from 'react';
+import { Button   } from '@/components/ui/button';
+import { Check, Languages   } from 'lucide-react';
+import { createLogger   } from '@/lib/logger';
+import { Popover, PopoverContent, PopoverTrigger   } from '@/components/ui/popover';
+import React, { useState, createContext, useContext, useEffect   } from 'react';
 
 /**
 * 文件级注释：LanguageSwitcher 组件
@@ -24,19 +24,20 @@ const logger = createLogger('LanguageSwitcher');
 
 // Define the language options
 type LanguageOption = { code: string;
-  name: string;,
+  name: string
 };
 
 // Only English and Chinese options as requested
 const languages: LanguageOption[] = [;
-  { code: 'en', name: 'English'  },
-  { code: 'zh', name: '简体中文'  },
-];
+  { code: 'en', name: 'English'  
+},
+  { code: 'zh', name: '简体中文'  
+} ];
 
 // Create a context for language translation
 interface LanguageContextType { language: string;
   setLanguage: (code: string) => void;
-  t: (key: string) => string;,
+  t: (key: string) => string
 }
 
 const defaultLanguage = 'en';
@@ -398,8 +399,8 @@ const translations: Record<string, Record<string, string>> = { en: {
     'roles': ' Roles',
     'village': 'Village',
     'werewolves': 'Werewolves',
-    'neutral': 'Neutral',
-   },
+    'neutral': 'Neutral' 
+},
   zh: { // Navigation
     'home': '首页',
     'lobby': '游戏大厅',
@@ -755,45 +756,80 @@ const translations: Record<string, Record<string, string>> = { en: {
     'roles': '个角色',
     'village': '好人阵营',
     'werewolves': '狼人阵营',
-    'neutral': '中立阵营',
-   },
-};
+    'neutral': '中立阵营' 
+} };
 
 // Create the Language Context
-const LanguageContext = createContext<LanguageContextType>({ language: defaultLanguage,
-  setLanguage: () => { },
-  t: (key: string) => key,
+/**
+ * LanguageContext组件
+ * LanguageContext组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const LanguageContext = createContext<LanguageContextType>( { language: defaultLanguage,
+  setLanguage: () => {
+},
+  t: (key: string) => key 
 });
 
 // Export the hook for using the language context
+/**
+ * useLanguage函数
+ * 自定义Hook
+ * @returns void
+ */
 export const useLanguage = () => useContext(LanguageContext);
 
 // Create the Language Provider component
-export const LanguageProvider: React.FC<{ children: React.ReactNode  }> = ({ children  }) => { const [language, setLanguageState] = useState<string>(localStorage.getItem('language') || defaultLanguage);
+/**
+ * LanguageProvider组件
+ * LanguageProvider组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+export const LanguageProvider: React.FC<{ children: React.ReactNode  
+}> = ({ children  }) =>  { const [language, setLanguageState] = useState<string>(localStorage.getItem('language') || defaultLanguage);
 
   // Set language and store in localStorage
-  const setLanguage = (code: string) => {
-    setLanguageState(code);
-    localStorage.setItem('language', code);,
+/**
+ * setLanguage函数
+ * 设置数据
+ *
+ * @param code - code参数
+ * @returns void
+ */
+const setLanguage = (code: string) =>  {
+  setLanguageState(code);
+    localStorage.setItem('language', code)
+
 };
 
   // Initialize language from localStorage on component mount
   useEffect(() => { const savedLanguage = localStorage.getItem('language');
     if (savedLanguage) {
-      setLanguageState(savedLanguage);,
+      setLanguageState(savedLanguage)
 }
   }, []);
 
   // Translate function
-  const t = (key: string): string => { if (!translations[language]) return key;
-    return translations[language][key] || key;,
+/**
+ * t函数
+ * t函数的功能描述
+ *
+ * @param key - key参数
+ * @returns void
+ */
+const t = (key: string): string =>  {
+  if (!translations[language]) return key;
+    return translations[language][key] || key
+
 };
 
   return (;
     <LanguageContext.Provider value={ { language, setLanguage, t  }}>;
     { children }
     </LanguageContext.Provider>
-  );,
+  )
 };
 
 // The LanguageSwitcher component
@@ -811,10 +847,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode  }> = ({ chi
 * // 使用示例
 * <LanguageSwitcher />
  */
-const LanguageSwitcher: React.FC = () => { const { language, setLanguage, t  } = useLanguage();
+const LanguageSwitcher: React.FC = () => { const  { language, setLanguage, t  } = useLanguage();
 
-  const handleLanguageChange = (languageCode: string) => { setLanguage(languageCode);
-    console.log(`Language changed to ${languageCode }`);,
+/**
+ * handleLanguageChange函数
+ * 处理事件
+ *
+ * @param languageCode - languageCode参数
+ * @returns void
+ */
+const handleLanguageChange = (languageCode: string) =>  { setLanguage(languageCode);
+    console.log(`Language changed to ${languageCode }`)
 };
 
   // Get current language object
@@ -846,7 +889,13 @@ const LanguageSwitcher: React.FC = () => { const { language, setLanguage, t  } =
     </div>
     </PopoverContent>
     </Popover>
-  );,
+  )
 };
 
+/**
+ * LanguageSwitcher组件
+ * LanguageSwitcher组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default LanguageSwitcher;

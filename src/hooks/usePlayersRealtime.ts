@@ -1,5 +1,5 @@
-import { supabase  } from '@/integrations/supabase/client';
-import { useEffect, useState  } from 'react';
+import { supabase   } from '@/integrations/supabase/client';
+import { useEffect, useState   } from 'react';
 
 interface Player { id: string;
   name: string;
@@ -8,39 +8,53 @@ interface Player { id: string;
   isHost: boolean;
   isAI: boolean;
   userId?: string; // 添加userId字段用于在线状态检查
-  role?: string;,
+  role?: string
 }
 
-export const usePlayersRealtime = (roomId: string) => { const [players, setPlayers] = useState<Player[]>([]);
+/**
+ * usePlayersRealtime函数
+ * 自定义Hook
+ *
+ * @param roomId - roomId参数
+ * @returns void
+ */
+export const usePlayersRealtime = (roomId: string) =>  { const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!roomId) return;
 
     // 初始获取玩家列表
-    const fetchPlayers = async () => {
+/**
+ * fetchPlayers函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchPlayers = async () =>  {
       try {
         console.log('Fetching players for room:', roomId);
 
         // 首先获取房间信息以确定房主
-        const { data: roomData, error: roomError  } = await supabase;
+        const { data: roomData, error: roomError  
+} = await supabase;
         .from('rooms')
         .select('host_id')
         .eq('id', roomId)
         .single();
 
         if (roomError) { console.error('Error fetching room data:', roomError);
-          return;,
+          return
 }
 
         // 获取房间玩家信息，分别查询用户信息
-        const { data: roomPlayers, error: playersError  } = await supabase;
+        const { data: roomPlayers, error: playersError  
+} = await supabase;
         .from('room_players')
         .select('*')
         .eq('room_id', roomId);
 
         if (playersError) { console.error('Error fetching room players:', playersError);
-          return;,
+          return
 }
 
         console.log('Room players data:', roomPlayers);
@@ -52,11 +66,13 @@ export const usePlayersRealtime = (roomId: string) => { const [players, setPlaye
 
           let usersData: any[] = [];
           if (userIds.length > 0) {
-            const { data: users, error: usersError  } = await supabase;
-            .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds  });
+            const { data: users, error: usersError  
+} = await supabase;
+            .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds  
+});
 
-            if (usersError) { console.error('Error fetching users:', usersError);,
-} else { usersData = users || [];,
+            if (usersError) { console.error('Error fetching users:', usersError)
+} else { usersData = users || []
 }
           }
 
@@ -72,8 +88,8 @@ export const usePlayersRealtime = (roomId: string) => { const [players, setPlaye
                 isHost: false,
                 isAI: true,
                 userId: undefined as string | undefined, // AI玩家没有userId
-                role: player.role,
-              };,
+                role: player.role 
+}
 } else { const userData = usersData.find(user => user.user_id === player.user_id);
               return {
                 id: player.id,
@@ -83,18 +99,18 @@ export const usePlayersRealtime = (roomId: string) => { const [players, setPlaye
                 isHost: roomData?.host_id === player.user_id,
                 isAI: false,
                 userId: player.user_id, // 添加userId字段
-                role: player.role,
-               };,
+                role: player.role 
+}
 }
           });
 
           console.log('Transformed players:', transformedPlayers);
-          setPlayers(transformedPlayers);,
+          setPlayers(transformedPlayers)
 } else { console.log('No players found in room');
-          setPlayers([]);,
+          setPlayers([])
 }
-      } catch (error) { console.error('Error fetching players:', error);,
-} finally { setLoading(false);,
+      } catch (error) { console.error('Error fetching players:', error)
+} finally { setLoading(false)
 }
     };
 
@@ -108,57 +124,75 @@ export const usePlayersRealtime = (roomId: string) => { const [players, setPlaye
       { event: '*',
         schema: 'public',
         table: 'room_players',
-        filter: `room_id=eq.${roomId }`;,
+        filter: `room_id=eq.${roomId 
+}`
 },
-      payload => { console.log('Player update received:', payload);
+      payload => {
+  console.log('Player update received:', payload);
         // 重新获取玩家列表以确保数据同步
-        fetchPlayers();,
+        fetchPlayers()
+
 }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(channel);,
-};,
+    return () => {
+  supabase.removeChannel(channel)
+}
+
 }, [roomId]);
 
-  const updatePlayerReady = async (playerId: string, isReady: boolean) => { try {
+/**
+ * updatePlayerReady函数
+ * 更新数据
+ *
+ * @param playerId - playerId参数
+ * @param isReady - isReady参数
+ * @returns Promise<void>
+ */
+const updatePlayerReady = async (playerId: string, isReady: boolean) => { try  {
       const { error  } = await supabase;
       .from('room_players')
-      .update({ is_ready: isReady  })
+      .update({ is_ready: isReady  
+})
       .eq('id', playerId);
 
       if (error) { console.error('Error updating player ready status:', error);
-        return false;,
+        return false
 }
 
-      return true;,
+      return true
 } catch (error) { console.error('Error updating player ready status:', error);
-      return false;,
+      return false
 }
   };
 
-  const addAIPlayer = async () => { try {
+/**
+ * addAIPlayer函数
+ * addAIPlayer函数的功能描述
+ * @returns Promise<void>
+ */
+const addAIPlayer = async () => { try  {
       const { error  } = await supabase;
       .from('room_players')
       .insert({ room_id: roomId,
         is_ai: true,
         is_ready: true,
-        user_id: null,
+        user_id: null 
 });
 
       if (error) { console.error('Error adding AI player:', error);
-        return false;,
+        return false
 }
 
-      return true;,
+      return true
 } catch (error) { console.error('Error adding AI player:', error);
-      return false;,
+      return false
 }
   };
 
   return { players,
     loading,
     updatePlayerReady,
-    addAIPlayer,
-};,
+    addAIPlayer }
 };

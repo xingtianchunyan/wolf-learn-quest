@@ -1,16 +1,16 @@
-import { Badge  } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { createLogger  } from '@/lib/logger';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { supabase  } from '@/integrations/supabase/client';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow  } from '@/components/ui/table';
-import { useAuth  } from '@/providers/AuthProvider';
-import { usePlayerPresence  } from '@/hooks/usePlayerPresence';
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useRoleStates  } from '@/hooks/useRoleStates';
-import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot  } from 'lucide-react';
-import React, { useState, useEffect  } from 'react';
+import { Badge   } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { createLogger   } from '@/lib/logger';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { supabase   } from '@/integrations/supabase/client';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow   } from '@/components/ui/table';
+import { useAuth   } from '@/providers/AuthProvider';
+import { usePlayerPresence   } from '@/hooks/usePlayerPresence';
+import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
+import { useRoleSelection   } from '@/hooks/useRoleSelection';
+import { useRoleStates   } from '@/hooks/useRoleStates';
+import { Users, Wifi, WifiOff, UserCheck, UserX, Crown, Bot   } from 'lucide-react';
+import React, { useState, useEffect   } from 'react';
 
 /**
 * 文件级注释：PlayerStatusPanel 组件
@@ -37,11 +37,11 @@ interface Player { id: string;
   isHost: boolean;
   isAI: boolean;
   role?: string;
-  userId?: string;,
+  userId?: string
 }
 
 interface PlayerStatusPanelProps { roomId: string;
-  className?: string;,
+  className?: string
 }
 
 /**
@@ -58,8 +58,9 @@ interface PlayerStatusPanelProps { roomId: string;
 * // 使用示例
 * <PlayerStatusPanel { ...props } />
  */
-const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className  }) => { const { currentUser  } = useAuth();
-  const { players, loading: playersLoading  } = usePlayersRealtime(roomId);
+const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className  }) => { const  { currentUser  } = useAuth();
+  const { players, loading: playersLoading  
+} = usePlayersRealtime(roomId);
   const { getOnlinePlayers  } = usePlayerPresence(roomId, currentUser);
   const onlinePlayersList = getOnlinePlayers();
 
@@ -73,14 +74,15 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
       .eq('id', roomId)
       .single();
 
-      if (error) { logger.error('Error fetching max players for PlayerStatusPanel:', error);,
-} else if (data && data.max_players) { setMaxPlayers(data.max_players);,
+      if (error) { logger.error('Error fetching max players for PlayerStatusPanel:', error)
+} else if (data && data.max_players) { setMaxPlayers(data.max_players)
 }
     };
-    fetchRoomData();,
+    fetchRoomData()
 }, [roomId]);
 
-  const { getSelectedRoleByUser, loading: roleSelectionLoading  } = useRoleSelection(;
+  const { getSelectedRoleByUser, loading: roleSelectionLoading  
+} = useRoleSelection(;
     roomId,
     currentUser?.id || null,
     players.length,
@@ -89,33 +91,65 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
 
   const { roleStates  } = useRoleStates(roomId);
 
-  const getPlayerRoleStatus = (userId?: string) => { if (!userId) return 1; // 默认正常
+/**
+ * getPlayerRoleStatus函数
+ * 获取数据
+ *
+ * @param userId? - userId?参数
+ * @returns void
+ */
+const getPlayerRoleStatus = (userId?: string) =>  {
+  if (!userId) return 1; // 默认正常
     const rs = roleStates.find(r => r.user_id === userId);
-    return rs?.role_status ?? 1;,
+    return rs?.role_status ?? 1
+
 };
 
-  const getStatusMeta = (status: number) => { switch (status) {
+/**
+ * getStatusMeta函数
+ * 获取数据
+ *
+ * @param status - status参数
+ * @returns void
+ */
+const getStatusMeta = (status: number) => { switch (status)  {
       case 1: // 正常
-      return { label: '正常', barClass: 'bg-green-400', badgeClass: 'text-green-400 border-green-400', breath: false  };
+      return {
+    label: '正常', barClass: 'bg-green-400', badgeClass: 'text-green-400 border-green-400', breath: false   
+};
       case 3: // 虚弱
-      return { label: '虚弱', barClass: 'bg-yellow-400', badgeClass: 'text-yellow-400 border-yellow-400', breath: false  };
+      return {
+    label: '虚弱', barClass: 'bg-yellow-400', badgeClass: 'text-yellow-400 border-yellow-400', breath: false   
+};
       case 2: // 濒死
-      return { label: '濒死', barClass: 'bg-red-400', badgeClass: 'text-red-400 border-red-400', breath: true  };
+      return {
+    label: '濒死', barClass: 'bg-red-400', badgeClass: 'text-red-400 border-red-400', breath: true   
+};
       case 4: // 淘汰
-      return { label: '淘汰', barClass: 'bg-white', badgeClass: 'text-white border-white', breath: false  };
+      return {
+    label: '淘汰', barClass: 'bg-white', badgeClass: 'text-white border-white', breath: false   
+};
       default:
-      return { label: '未知', barClass: 'bg-gray-400', badgeClass: 'text-gray-400 border-gray-400', breath: false  };,
+      return { label: '未知', barClass: 'bg-gray-400', badgeClass: 'text-gray-400 border-gray-400', breath: false  
+}
 }
   };
 
-  const isPlayerOnline = (player: Player) => { if (player.isAI) {
-      return true;,
+/**
+ * isPlayerOnline函数
+ * isPlayerOnline函数的功能描述
+ *
+ * @param player - player参数
+ * @returns void
+ */
+const isPlayerOnline = (player: Player) => { if (player.isAI)  {
+      return true
 }
 
-    if (!player.userId) { return false;,
+    if (!player.userId) { return false
 }
 
-    return onlinePlayersList.some(onlinePlayer => onlinePlayer.user_id === player.userId);,
+    return onlinePlayersList.some(onlinePlayer => onlinePlayer.user_id === player.userId)
 };
 
   return (;
@@ -177,8 +211,10 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
           ) : (
             <WifiOff className='h-4 w-4 text-red-400' />;
           ) }
-          <span className={ `text-sm ${playerOnline ? 'text-green-400' : 'text-red-400' }`}>;
-          { playerOnline ? '在线' : '离线' }
+          <span className={ `text-sm ${playerOnline ? 'text-green-400' : 'text-red-400' 
+}`}>;
+          { playerOnline ? '在线' : '离线' 
+}
           </span>
           </div>
           </TableCell>
@@ -189,8 +225,10 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
           ) : (
             <UserX className='h-4 w-4 text-red-400' />;
           ) }
-          <span className={ `text-sm ${player.isReady ? 'text-green-400' : 'text-red-400' }`}>;
-          { player.isReady ? '已准备' : '未准备' }
+          <span className={ `text-sm ${player.isReady ? 'text-green-400' : 'text-red-400' 
+}`}>;
+          { player.isReady ? '已准备' : '未准备' 
+}
           </span>
           </div>
           </TableCell>
@@ -202,7 +240,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
           </div>
           </TableCell>
           </TableRow>
-        );,
+        )
 })
     )}
     </TableBody>
@@ -211,7 +249,13 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({ roomId, className
     </ScrollArea>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * PlayerStatusPanel组件
+ * 玩家相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PlayerStatusPanel;

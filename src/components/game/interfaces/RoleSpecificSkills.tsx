@@ -1,11 +1,11 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Separator  } from '@/components/ui/separator';
-import { Skull,
-import React, { useState  } from 'react';
-import type { RoleSpecificSkillsProps  } from '@/types/skill.types';
-import { UnifiedWitchSkillInterface  } from './UnifiedWitchSkillInterface';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Separator   } from '@/components/ui/separator';
+import { Skull  } from
+import React, { useState   } from 'react';
+import type { RoleSpecificSkillsProps   } from '@/types/skill.types';
+import { UnifiedWitchSkillInterface   } from './UnifiedWitchSkillInterface';
 
 /**
 * 文件级注释：RoleSpecificSkills 组件
@@ -31,8 +31,7 @@ import { UnifiedWitchSkillInterface  } from './UnifiedWitchSkillInterface';
   Sun,
   Target,
   AlertTriangle,
-  Crown,
-} from 'lucide-react';
+  Crown  } from 'lucide-react';
 
 /**
 * RoleSpecificSkills 组件
@@ -48,7 +47,7 @@ import { UnifiedWitchSkillInterface  } from './UnifiedWitchSkillInterface';
 * // 使用示例
 * <RoleSpecificSkills />
  */
-export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({ roleName,
+export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ( { roleName,
   skillEffects,
   roleAttributes,
   canUseSkill,
@@ -60,10 +59,15 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({ roleName
   gameStateId = '',
   userId = '',
   currentRound = 1,
-  fullSkillUses = [];,
+  fullSkillUses = []
 }) => { // 检查是否已在当晚使用过技能（女巫除外）
-  const hasUsedSkillTonight = () => {
-    const roleNameLower = roleName?.toLowerCase() || '';
+/**
+ * hasUsedSkillTonight函数
+ * 自定义Hook
+ * @returns void
+ */
+const hasUsedSkillTonight = () =>  {
+  const roleNameLower = roleName?.toLowerCase() || '';
     const isWitch = roleNameLower.includes('witch') || roleNameLower.includes('女巫');
 
     // 女巫不受限制
@@ -73,16 +77,32 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({ roleName
     return userSkillUses.some(use =>;
     use.phase === 'night' &&;
     currentPhase === 3;
-  );,
+  )
+
 };
 
 // 技能按钮的禁用状态
-const isSkillDisabled = (baseDisabled: boolean) => { if (baseDisabled) return true;
+/**
+ * isSkillDisabled函数
+ * isSkillDisabled函数的功能描述
+ *
+ * @param baseDisabled - baseDisabled参数
+ * @returns void
+ */
+const isSkillDisabled = (baseDisabled: boolean) =>  {
+  if (baseDisabled) return true;
   if (currentPhase === 3 && hasUsedSkillTonight()) return true;
-  return false;,
+  return false
+
 };
 
 // 狼人技能
+/**
+ * WerewolfSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const WerewolfSkill = () => (;
   <Card className='bg-red-900/20 border-red-500/30'>;
   <CardHeader>
@@ -117,7 +137,7 @@ const WerewolfSkill = () => (;
     onClick={ () => onUseSkill({
       skillType: 'elimination',
       targetId: target.userId,
-      effectType: 'werewolf_kill',
+      effectType: 'werewolf_kill' 
 })}
     disabled={ isSkillDisabled(!canUseSkill || currentPhase !== 3) }
     >
@@ -132,6 +152,12 @@ const WerewolfSkill = () => (;
 );
 
 // 守卫技能
+/**
+ * GuardSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const GuardSkill = () => (;
   <Card className='bg-blue-900/20 border-blue-500/30'>;
   <CardHeader>
@@ -166,7 +192,7 @@ const GuardSkill = () => (;
     onClick={ () => onUseSkill({
       skillType: 'protection',
       targetId: target.userId,
-      effectType: 'guard_protect',
+      effectType: 'guard_protect' 
 })}
     disabled={ isSkillDisabled(!canUseSkill || currentPhase !== 3) }
     >
@@ -181,7 +207,13 @@ const GuardSkill = () => (;
 );
 
 // 预言家技能
-const SeerSkill = () => { // 获取预言家的查验记录
+/**
+ * SeerSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const SeerSkill = () =>  { // 获取预言家的查验记录
   const seerInvestigations = fullSkillUses.filter(use =>;
   use.user_id === userId &&;
   (use.skill_name === 'prophecy' || use.skill_name === 'seer_investigation') &&;
@@ -189,25 +221,40 @@ const SeerSkill = () => { // 获取预言家的查验记录
 );
 
 // 获取目标玩家姓名的辅助函数
-const getTargetName = (targetUserId: string) => {
+/**
+ * getTargetName函数
+ * 获取数据
+ *
+ * @param targetUserId - targetUserId参数
+ * @returns void
+ */
+const getTargetName = (targetUserId: string) =>  {
   const target = availableTargets.find(t => t.userId === targetUserId);
-  return target?.name || '未知玩家';,
+  return target?.name || '未知玩家'
+
 };
 
 // 解析查验结果的辅助函数
-const parseInvestigationResult = (result: any) => { if (!result) return '未知';
+/**
+ * parseInvestigationResult函数
+ * 解析数据
+ *
+ * @param result - result参数
+ * @returns void
+ */
+const parseInvestigationResult = (result: any) =>  { if (!result) return '未知';
 
   // 处理不同格式的查验结果
   if (typeof result === 'string') {
-    return result.includes('狼人') || result.includes('werewolf') ? '狼人' : '好人';,
+    return result.includes('狼人') || result.includes('werewolf') ? '狼人' : '好人'
 }
 
   if (typeof result === 'object') { if (result.faction === 'werewolf' || result.isWerewolf === true) return '狼人';
     if (result.faction === 'villager' || result.isWerewolf === false) return '好人';
-    if (result.result) return parseInvestigationResult(result.result);,
+    if (result.result) return parseInvestigationResult(result.result)
 }
 
-  return '未知';,
+  return '未知'
 };
 
 return (;
@@ -252,7 +299,7 @@ return (;
         className={ `p-3 rounded-lg border ${
           isWerewolf
           ? 'bg-red-900/30 border-red-500/30'
-          : 'bg-green-900/30 border-green-500/30',
+          : 'bg-green-900/30 border-green-500/30' 
 }`}
         >
         <div className='flex items-center justify-between'>;
@@ -260,25 +307,33 @@ return (;
         第{ investigation.round_number }轮查验：{ targetName }
         </span>
         <Badge
-        variant={ isWerewolf ? 'destructive' : 'default' }
-        className={ isWerewolf ? 'bg-red-600' : 'bg-green-600' }
+        variant={ isWerewolf ? 'destructive' : 'default' 
+}
+        className={ isWerewolf ? 'bg-red-600' : 'bg-green-600' 
+}
         >
         { result }
         </Badge>
         </div>
         </div>
-      );,
+      )
 })
   )}
   </div>
   </div>
   </CardContent>
   </Card>
-);,
+)
 };
 
 // 女巫技能 - 使用统一的女巫技能接口组件
-const WitchSkill = () => { return (;
+/**
+ * WitchSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const WitchSkill = () =>  { return (;
     <UnifiedWitchSkillInterface
     gameStateId={gameStateId }
     userId={ userId }
@@ -288,10 +343,16 @@ const WitchSkill = () => { return (;
     onUseSkill={ onUseSkill }
     availableTargets={ availableTargets }
     />
-  );,
+  )
 };
 
 // 猎人技能
+/**
+ * HunterSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const HunterSkill = () => (;
   <Card className='bg-orange-900/20 border-orange-500/30'>;
   <CardHeader>
@@ -318,13 +379,19 @@ const HunterSkill = () => (;
 );
 
 // 村民技能 - 睡觉技能自动使用
-const VillagerSkill = () => { React.useEffect(() => {
+/**
+ * VillagerSkill组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const VillagerSkill = () => { React.useEffect(() =>  {
     // 进入夜晚阶段时自动使用睡觉技能
     if (currentPhase === 3 && canUseSkill) {
       onUseSkill({
         skillType: 'passive',
-        effectType: 'villager_sleep',
-});,
+        effectType: 'villager_sleep' 
+})
 }
   }, [currentPhase, canUseSkill, onUseSkill]);
 
@@ -356,32 +423,43 @@ const VillagerSkill = () => { React.useEffect(() => {
     </div>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
 // 根据角色名称渲染对应的技能界面
-const renderRoleSkill = () => { const roleNameLower = roleName?.toLowerCase();
+/**
+ * renderRoleSkill函数
+ * renderRoleSkill函数的功能描述
+ * @returns void
+ */
+const renderRoleSkill = () =>  { const roleNameLower = roleName?.toLowerCase();
 
   if (roleNameLower?.includes('werewolf') || roleNameLower?.includes('狼人')) {
-    return <WerewolfSkill />;,
+    return <WerewolfSkill />
 }
-  if (roleNameLower?.includes('guard') || roleNameLower?.includes('守卫')) { return <GuardSkill />;,
+  if (roleNameLower?.includes('guard') || roleNameLower?.includes('守卫')) { return <GuardSkill />
 }
-  if (roleNameLower?.includes('seer') || roleNameLower?.includes('预言家')) { return <SeerSkill />;,
+  if (roleNameLower?.includes('seer') || roleNameLower?.includes('预言家')) { return <SeerSkill />
 }
-  if (roleNameLower?.includes('witch') || roleNameLower?.includes('女巫')) { return <WitchSkill />;,
+  if (roleNameLower?.includes('witch') || roleNameLower?.includes('女巫')) { return <WitchSkill />
 }
-  if (roleNameLower?.includes('hunter') || roleNameLower?.includes('猎人')) { return <HunterSkill />;,
+  if (roleNameLower?.includes('hunter') || roleNameLower?.includes('猎人')) { return <HunterSkill />
 }
 
-  return <VillagerSkill />;,
+  return <VillagerSkill />
 };
 
 return (;
   <div className='space-y-4'>;
   { renderRoleSkill() }
   </div>
-);,
+)
 };
 
+/**
+ * RoleSpecificSkills组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default RoleSpecificSkills;

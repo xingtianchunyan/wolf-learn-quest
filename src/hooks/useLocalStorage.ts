@@ -1,0 +1,130 @@
+/**
+ * 文件级注释：本地存储Hook
+ * 提供本地存储的状态管理功能
+ */
+import { useState, useEffect, useCallback } from 'react';
+
+/**
+ * 本地存储Hook
+ * 提供与localStorage同步的状态管理
+ * @param key - 存储键名
+ * @param initialValue - 初始值
+ * @returns [值, 设置函数, 移除函数]
+ */
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T
+): [T, (value: T | ((val: T) => T)) => void, () => void] {
+  // 获取初始值的函数
+  const getStoredValue = useCallback((): T => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.warn(`Error reading localStorage key "${key}":`, error);
+      return initialValue;
+    }
+  }, [key, initialValue]);
+
+  // 状态管理
+  const [storedValue, setStoredValue] = useState<T>(getStoredValue);
+
+  // 设置值的函数
+  const setValue = useCallback(
+    (value: T | ((val: T) => T)) => {
+      try {
+        // 允许传入函数来更新值
+        const valueToStore =
+          value instanceof Function ? value(storedValue) : value;
+
+        // 保存到状态
+        setStoredValue(valueToStore);
+
+        // 保存到localStorage
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+
+        // 触发自定义事件，通知其他组件
+        window.dispatchEvent(
+          new CustomEvent('localStorageChange', {
+            detail: { key, value: valueToStore },
+          })
+        );
+      } catch (error) {
+        console.warn(`Error setting localStorage key "${key}":`, error);
+      }
+    },
+    [key, storedValue]
+  );
+
+  // 移除值的函数
+  const removeValue = useCallback(() => {
+    try {
+      window.localStorage.removeItem(key);
+      setStoredValue(initialValue);
+
+      // 触发自定义事件
+      window.dispatchEvent(
+        new CustomEvent('localStorageChange', {
+          detail: { key, value: null },
+        })
+      );
+    } catch (error) {
+      console.warn(`Error removing localStorage key "${key}":`, error);
+    }
+  }, [key, initialValue]);
+
+  // 监听localStorage变化
+  useEffect(() => {
+    /**
+     * handleStorageChange函数
+     * 处理事件
+     *
+     * @param e - e参数
+     * @returns void
+     */
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === key && e.newValue !== null) {
+        try {
+          setStoredValue(JSON.parse(e.newValue));
+        } catch (error) {
+          console.warn(
+            `Error parsing localStorage value for key "${key}":`,
+            error
+          );
+        }
+      }
+    };
+
+    /**
+     * handleCustomStorageChange函数
+     * 处理事件
+     *
+     * @param e - e参数
+     * @returns void
+     */
+    const handleCustomStorageChange = (e: CustomEvent) => {
+      if (e.detail.key === key) {
+        setStoredValue(e.detail.value ?? initialValue);
+      }
+    };
+
+    // 监听原生storage事件（跨标签页）
+    window.addEventListener('storage', handleStorageChange);
+
+    // 监听自定义事件（同一页面内）
+    window.addEventListener(
+      'localStorageChange',
+      handleCustomStorageChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(
+        'localStorageChange',
+        handleCustomStorageChange as EventListener
+      );
+    };
+  }, [key, initialValue]);
+
+  return [storedValue, setValue, removeValue];
+}

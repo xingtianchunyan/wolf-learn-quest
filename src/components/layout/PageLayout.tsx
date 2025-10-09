@@ -17,8 +17,7 @@ import Navbar from './Navbar';
 * @category layout
 * @filepath layout\PageLayout.tsx
  */
-
-interface PageLayoutProps { children: React.ReactNode;,
+interface PageLayoutProps  { children: React.ReactNode
 }
 
 /**
@@ -34,7 +33,8 @@ interface PageLayoutProps { children: React.ReactNode;,
 * // 使用示例
 * <PageLayout { ...props } />
  */
-const PageLayout: React.FC<PageLayoutProps> = ({ children  }) => { return (;
+const PageLayout: React.FC<PageLayoutProps> = ({ children  
+}) =>  { return (;
     <div className='min-h-screen flex flex-col'>;
     <Navbar />
     <main className='flex-grow pt-24 pb-32'>;
@@ -42,7 +42,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children  }) => { return (;
     </main>
     <Footer />
     </div>
-  );,
+  )
 };
 
+/**
+ * PageLayout组件
+ * 布局组件，定义页面结构
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PageLayout;

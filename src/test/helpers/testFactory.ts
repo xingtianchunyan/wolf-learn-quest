@@ -2,7 +2,6 @@
  * 测试数据工厂函数
  * 用于创建一致的测试数据
  */
-
 export const createMockRoom = (overrides = {}) => ({
   id: 'test-room-id',
   name: '测试房间',
@@ -11,8 +10,8 @@ export const createMockRoom = (overrides = {}) => ({
   max_players: 12,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockGameState = (overrides = {}) => ({
   id: 'test-game-state-id',
@@ -29,8 +28,8 @@ export const createMockGameState = (overrides = {}) => ({
   auto_advance: true,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockGameSettings = (overrides = {}) => ({
   id: 'test-settings-id',
@@ -42,8 +41,8 @@ export const createMockGameSettings = (overrides = {}) => ({
   dawn_duration: 40,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockPlayer = (overrides = {}) => ({
   id: 'test-player-id',
@@ -54,8 +53,8 @@ export const createMockPlayer = (overrides = {}) => ({
   is_ai: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockRoleState = (overrides = {}) => ({
   id: 'test-role-state-id',
@@ -70,8 +69,8 @@ export const createMockRoleState = (overrides = {}) => ({
   skill_uses_remaining: {} as Record<string, number>,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockSkillUse = (overrides = {}) => ({
   id: 'test-skill-id',
@@ -88,8 +87,8 @@ export const createMockSkillUse = (overrides = {}) => ({
   result: null as any,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockVote = (overrides = {}) => ({
   id: 'test-vote-id',
@@ -99,8 +98,8 @@ export const createMockVote = (overrides = {}) => ({
   round_number: 1,
   vote_phase: 'day',
   created_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 export const createMockRoleDesign = (overrides = {}) => ({
   id: 'test-role-design-id',
@@ -114,16 +113,16 @@ export const createMockRoleDesign = (overrides = {}) => ({
   is_active: true,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides
-})
+  ...overrides,
+});
 
 /**
  * 创建完整的游戏场景
  */
 export const createGameScenario = () => {
-  const roomId = 'test-room-id'
-  const gameStateId = 'test-game-state-id'
-  
+  const roomId = 'test-room-id';
+  const gameStateId = 'test-game-state-id';
+
   return {
     room: createMockRoom({ id: roomId }),
     gameState: createMockGameState({ id: gameStateId, room_id: roomId }),
@@ -135,10 +134,26 @@ export const createGameScenario = () => {
       createMockPlayer({ id: 'player-4', user_id: 'user-4', role: 'witch' }),
     ],
     roleStates: [
-      createMockRoleState({ user_id: 'user-1', role: 'werewolf', game_state_id: gameStateId }),
-      createMockRoleState({ user_id: 'user-2', role: 'seer', game_state_id: gameStateId }),
-      createMockRoleState({ user_id: 'user-3', role: 'guard', game_state_id: gameStateId }),
-      createMockRoleState({ user_id: 'user-4', role: 'witch', game_state_id: gameStateId }),
-    ]
-  }
-}
+      createMockRoleState({
+        user_id: 'user-1',
+        role: 'werewolf',
+        game_state_id: gameStateId,
+      }),
+      createMockRoleState({
+        user_id: 'user-2',
+        role: 'seer',
+        game_state_id: gameStateId,
+      }),
+      createMockRoleState({
+        user_id: 'user-3',
+        role: 'guard',
+        game_state_id: gameStateId,
+      }),
+      createMockRoleState({
+        user_id: 'user-4',
+        role: 'witch',
+        game_state_id: gameStateId,
+      }),
+    ],
+  };
+};

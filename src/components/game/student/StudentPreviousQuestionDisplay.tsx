@@ -15,18 +15,17 @@ import React from 'react';
 * @category common
 * @filepath game\student\StudentPreviousQuestionDisplay.tsx
  */
-
-interface Question { id: string;
+interface Question  { id: string;
   question: string;
   option_a: string;
   option_b: string;
   option_c: string;
   option_d: string;
   correct_option: number;
-  explanation: string;,
+  explanation: string
 }
 
-interface StudentPreviousQuestionDisplayProps { previousQuestion: Question;,
+interface StudentPreviousQuestionDisplayProps { previousQuestion: Question
 }
 
 /**
@@ -42,9 +41,10 @@ interface StudentPreviousQuestionDisplayProps { previousQuestion: Question;,
 * // 使用示例
 * <StudentPreviousQuestionDisplay { ...props } />
  */
-const StudentPreviousQuestionDisplay: React.FC<StudentPreviousQuestionDisplayProps> = ({ previousQuestion,
-}) => { const getOptionLabel = (index: number) => {
-    return ['A', 'B', 'C', 'D'][index - 1];,
+const StudentPreviousQuestionDisplay: React.FC<StudentPreviousQuestionDisplayProps> = ({ previousQuestion 
+}) => { const getOptionLabel = (index: number) =>  {
+  return ['A', 'B', 'C', 'D'][index - 1]
+
 };
 
   return (;
@@ -70,7 +70,7 @@ const StudentPreviousQuestionDisplay: React.FC<StudentPreviousQuestionDisplayPro
         className={ `p-3 rounded-md border ${
           isCorrect
           ? 'bg-green-500/20 border-green-500 text-green-300'
-          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300',
+          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300' 
 }`}
         >
         <span className='font-semibold mr-2'>;
@@ -81,7 +81,7 @@ const StudentPreviousQuestionDisplay: React.FC<StudentPreviousQuestionDisplayPro
           <span className='ml-2 text-green-400 font-bold'>✓ 正确答案</span>;
         ) }
         </div>
-      );,
+      )
 })}
     </div>
 
@@ -90,7 +90,13 @@ const StudentPreviousQuestionDisplay: React.FC<StudentPreviousQuestionDisplayPro
     <p className='text-gray-300 leading-relaxed'>{ previousQuestion.explanation }</p>;
     </div>
     </>
-  );,
+  )
 };
 
+/**
+ * StudentPreviousQuestionDisplay组件
+ * StudentPreviousQuestionDisplay组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default StudentPreviousQuestionDisplay;

@@ -1,10 +1,10 @@
-import { supabase  } from '@/integrations/supabase/client';
-import { Tables  } from '@/integrations/supabase/types';
-import { useState, useEffect  } from 'react';
-import type { SkillEffects, RoleAttributes  } from '@/utils/skillSystemHelpers';
+import { supabase   } from '@/integrations/supabase/client';
+import { Tables   } from '@/integrations/supabase/types';
+import { useState, useEffect   } from 'react';
+import type { SkillEffects, RoleAttributes   } from '@/utils/skillSystemHelpers';
 
 export type RoleDesign = Tables<'role_design'> & { skill_effects?: SkillEffects;
-  role_attributes?: RoleAttributes;,
+  role_attributes?: RoleAttributes
 };
 
 // 本地角色图片映射
@@ -21,19 +21,36 @@ const localRoleImages: Record<string, string> = { 'villager': '/lovable-uploads/
   'guard': '/lovable-uploads/660dd11b-9896-444d-80b5-0a4371c8deef.png',
   'whitewolf': '/lovable-uploads/2f9b2a78-e79f-4025-9b11-5bc88a7df328.png',
   'warlock': '/lovable-uploads/392c9861-57a0-4522-93a0-07243faf284f.png',
-  'demon': '/lovable-uploads/9ee3b412-7b6f-44bc-beac-bc8601f647ed.png',
- };
+  'demon': '/lovable-uploads/9ee3b412-7b6f-44bc-beac-bc8601f647ed.png'  
+};
 
-export const useRoleDesigns = () => { const [roleDesigns, setRoleDesigns] = useState<RoleDesign[]>([]);
+/**
+ * useRoleDesigns函数
+ * 自定义Hook
+ * @returns void
+ */
+export const useRoleDesigns = () =>  { const [roleDesigns, setRoleDesigns] = useState<RoleDesign[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRoleDesigns = async () => {
+/**
+ * fetchRoleDesigns函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchRoleDesigns = async () =>  {
       setLoading(true);
       const { data, error  } = await supabase.from('role_design').select('*');
-      if (error) { console.error('Error fetching role designs:', error);,
+      if (error) { console.error('Error fetching role designs:', error)
 } else { // 安全地处理 JSONB 字段转换
-        const processedData = (data || []).map(role => {
+/**
+ * processedData函数
+ * processedData函数的功能描述
+ *
+ * @param data - data参数
+ * @returns void
+ */
+const processedData = (data || []).map(role =>  {
           // 直接使用 as RoleDesign 类型断言，避免复杂的类型转换
           const processedRole = {
             ...role,
@@ -41,66 +58,131 @@ export const useRoleDesigns = () => { const [roleDesigns, setRoleDesigns] = useS
             (role.skill_effects as unknown as SkillEffects) :
             undefined,
             role_attributes: role.role_attributes ?
-            (role.role_attributes as unknown as RoleAttributes) :
-            undefined,
-           } as RoleDesign;
-          return processedRole;,
+            (role.role_attributes as unknown as RoleAttributes) : undefined 
+} as RoleDesign;
+          return processedRole
 });
-        setRoleDesigns(processedData);,
+        setRoleDesigns(processedData)
 }
-      setLoading(false);,
+      setLoading(false)
 };
 
-    fetchRoleDesigns();,
+    fetchRoleDesigns()
 }, []);
 
-  const getRoleByName = (name: string) => { return roleDesigns.find(r => r.role_name === name);,
+/**
+ * getRoleByName函数
+ * 获取数据
+ *
+ * @param name - name参数
+ * @returns void
+ */
+const getRoleByName = (name: string) =>  {
+  return roleDesigns.find(r => r.role_name === name)
+
 };
 
-  const getRoleImageUrl = (roleName: string) => { // 优先使用本地图片
+/**
+ * getRoleImageUrl函数
+ * 获取数据
+ *
+ * @param roleName - roleName参数
+ * @returns void
+ */
+const getRoleImageUrl = (roleName: string) =>  { // 优先使用本地图片
     if (localRoleImages[roleName]) {
-      return localRoleImages[roleName];,
+      return localRoleImages[roleName]
 }
 
     // 如果没有本地图片，尝试从 storage 获取
     const role = getRoleByName(roleName);
-    if (!role || !role.role_image) { return null;,
+    if (!role || !role.role_image) { return null
 }
 
     const { data  } = supabase.storage;
     .from('role-design')
     .getPublicUrl(role.role_image);
 
-    return data.publicUrl;,
+    return data.publicUrl
 };
 
   // 根据角色设计ID获取本地图片URL
-  const getLocalImageByDesignId = (roleDesignId: string) => { const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
+/**
+ * getLocalImageByDesignId函数
+ * 获取数据
+ *
+ * @param roleDesignId - roleDesignId参数
+ * @returns void
+ */
+const getLocalImageByDesignId = (roleDesignId: string) =>  {
+  const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
     if (!roleDesign) return null;
 
-    return localRoleImages[roleDesign.role_name] || null;,
+    return localRoleImages[roleDesign.role_name] || null
+
 };
 
   // 获取角色的技能效果配置
-  const getSkillEffects = (roleDesignId: string): SkillEffects | null => { const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
-    return roleDesign?.skill_effects || null;,
+/**
+ * getSkillEffects函数
+ * 获取数据
+ *
+ * @param roleDesignId - roleDesignId参数
+ * @returns void
+ */
+const getSkillEffects = (roleDesignId: string): SkillEffects | null =>  {
+  const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
+    return roleDesign?.skill_effects || null
+
 };
 
   // 获取角色的属性配置
-  const getRoleAttributes = (roleDesignId: string): RoleAttributes | null => { const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
-    return roleDesign?.role_attributes || null;,
+/**
+ * getRoleAttributes函数
+ * 获取数据
+ *
+ * @param roleDesignId - roleDesignId参数
+ * @returns void
+ */
+const getRoleAttributes = (roleDesignId: string): RoleAttributes | null =>  {
+  const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
+    return roleDesign?.role_attributes || null
+
 };
 
   // 根据阵营筛选角色
-  const getRolesByFaction = (isWolfFaction: boolean): RoleDesign[] => { return roleDesigns.filter(role => role.faction === isWolfFaction);,
+/**
+ * getRolesByFaction函数
+ * 获取数据
+ *
+ * @param isWolfFaction - isWolfFaction参数
+ * @returns void
+ */
+const getRolesByFaction = (isWolfFaction: boolean): RoleDesign[] =>  {
+  return roleDesigns.filter(role => role.faction === isWolfFaction)
+
 };
 
   // 获取好人阵营角色
-  const getGoodRoles = (): RoleDesign[] => { return getRolesByFaction(false);,
+/**
+ * getGoodRoles函数
+ * 获取数据
+ * @returns void
+ */
+const getGoodRoles = (): RoleDesign[] =>  {
+  return getRolesByFaction(false)
+
 };
 
   // 获取狼人阵营角色
-  const getWolfRoles = (): RoleDesign[] => { return getRolesByFaction(true);,
+/**
+ * getWolfRoles函数
+ * 获取数据
+ * @returns void
+ */
+const getWolfRoles = (): RoleDesign[] =>  {
+  return getRolesByFaction(true)
+
 };
 
   return { roleDesigns,
@@ -112,6 +194,5 @@ export const useRoleDesigns = () => { const [roleDesigns, setRoleDesigns] = useS
     getRoleAttributes,
     getRolesByFaction,
     getGoodRoles,
-    getWolfRoles,
-};,
+    getWolfRoles }
 };

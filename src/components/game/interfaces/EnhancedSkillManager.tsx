@@ -1,17 +1,17 @@
-import { Alert, AlertDescription  } from '@/components/ui/alert';
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { createLogger  } from '@/lib/logger';
-import { EnhancedSkillService  } from '@/services/enhancedSkillService';
-import { PassiveSkillService  } from '@/services/passiveSkillService';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { Separator  } from '@/components/ui/separator';
-import { supabase  } from '@/integrations/supabase/client';
-import { useToast  } from '@/hooks/useToast';
-import { Zap,
-import React, { useState, useEffect  } from 'react';
-import type { Tables  } from '@/integrations/supabase/types';
+import { Alert, AlertDescription   } from '@/components/ui/alert';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { createLogger   } from '@/lib/logger';
+import { EnhancedSkillService   } from '@/services/enhancedSkillService';
+import { PassiveSkillService   } from '@/services/passiveSkillService';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { Separator   } from '@/components/ui/separator';
+import { supabase   } from '@/integrations/supabase/client';
+import { useToast   } from '@/hooks/useToast';
+import { Zap  } from
+import React, { useState, useEffect   } from 'react';
+import type { Tables   } from '@/integrations/supabase/types';
 
 /**
 * 文件级注释：EnhancedSkillManager 组件
@@ -38,8 +38,7 @@ import type { Tables  } from '@/integrations/supabase/types';
   Skull,
   Heart,
   Eye,
-  Beaker,
-} from 'lucide-react';
+  Beaker  } from 'lucide-react';
 
 const logger = createLogger('enhanced-skill-manager');
 
@@ -50,14 +49,15 @@ interface EnhancedSkillManagerProps { gameStateId: string;
   currentPhase: number;
   isJudge: boolean;
   roleDesign?: Tables<'role_design'> | null;
-  roleState?: Tables<'role_states'> | null;,
+  roleState?: Tables<'role_states'> | null
 }
 
 interface WitchPotionState { canUseProtection: boolean;
   canUseAttack: boolean;
-  nightDeaths?: Array<{ userId: string; reason: string; [key: string]: unknown  }>;
+  nightDeaths?: Array<{ userId: string; reason: string; [key: string]: unknown  
+}>;
   protectionReason?: string;
-  attackReason?: string;,
+  attackReason?: string
 }
 
 /**
@@ -74,19 +74,19 @@ interface WitchPotionState { canUseProtection: boolean;
 * // 使用示例
 * <EnhancedSkillManager { ...props } />
  */
-export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({ gameStateId,
+export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ( { gameStateId,
   roomId,
   userId,
   currentRound,
   currentPhase,
   isJudge,
   roleDesign,
-  roleState,
-}) => { const { toast  } = useToast();
+  roleState }) => { const { toast  } = useToast();
   const [loading, setLoading] = useState(false);
-  const [conflictData, setConflictData] = useState<{ conflicts: number; details: unknown  } | null>(null);
+  const [conflictData, setConflictData] = useState<{ conflicts: number; details: unknown  
+} | null>(null);
   const [witchPotionState, setWitchPotionState] = useState<WitchPotionState>({ canUseProtection: false,
-    canUseAttack: false,
+    canUseAttack: false 
 });
   const [hunterDyingActive, setHunterDyingActive] = useState(false);
 
@@ -95,7 +95,12 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({ game
   const isHunter = roleDesign?.role_name === 'hunter';
 
   // 检测技能冲突
-  const detectConflicts = async () => { if (!isJudge) return;
+/**
+ * detectConflicts函数
+ * detectConflicts函数的功能描述
+ * @returns Promise<void>
+ */
+const detectConflicts = async () =>  { if (!isJudge) return;
 
     setLoading(true);
     try {
@@ -110,26 +115,32 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({ game
       if (result.conflicts > 0) {
         toast({
           title: '检测到技能冲突',
-          description: `发现 ${result.conflicts } 个技能冲突，请处理`,
-          variant: 'destructive',
-});,
+          description: `发现 ${result.conflicts 
+} 个技能冲突，请处理`,
+          variant: 'destructive' 
+})
 } else { toast({
           title: '无技能冲突',
-          description: '当前轮次没有技能冲突',
-         });,
+          description: '当前轮次没有技能冲突' 
+})
 }
     } catch (error) { logger.error('技能冲突检测失败', error);
       toast({
         title: '检测失败',
         description: '技能冲突检测失败，请重试',
-        variant: 'destructive',
-});,
-} finally { setLoading(false);,
+        variant: 'destructive' 
+})
+} finally { setLoading(false)
 }
   };
 
   // 验证女巫药剂使用
-  const validateWitchPotions = async () => { if (!isWitch) return;
+/**
+ * validateWitchPotions函数
+ * 验证数据
+ * @returns Promise<void>
+ */
+const validateWitchPotions = async () =>  { if (!isWitch) return;
 
     try {
       // 检查解药
@@ -151,19 +162,24 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({ game
         canUseAttack: attackResult.canUse,
         nightDeaths: protectionResult.nightDeaths,
         protectionReason: protectionResult.reason,
-        attackReason: attackResult.reason,
+        attackReason: attackResult.reason 
 });
 
       logger.debug('女巫药剂状态更新', { canUseProtection: protectionResult.canUse,
         canUseAttack: attackResult.canUse,
-        nightDeaths: protectionResult.nightDeaths,
-});,
-} catch (error) { logger.error('女巫药剂验证失败', error);,
+        nightDeaths: protectionResult.nightDeaths 
+})
+} catch (error) { logger.error('女巫药剂验证失败', error)
 }
   };
 
   // 触发猎人濒死技能
-  const triggerHunterDying = async () => { if (!isHunter) return;
+/**
+ * triggerHunterDying函数
+ * triggerHunterDying函数的功能描述
+ * @returns Promise<void>
+ */
+const triggerHunterDying = async () =>  { if (!isHunter) return;
 
     try {
       const success = await EnhancedSkillService.triggerHunterDyingSkill(;
@@ -176,27 +192,27 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({ game
         setHunterDyingActive(true);
         toast({
           title: '猎人濒死技能激活',
-          description: '猎人进入濒死状态，可以进行反击',
-         });,
+          description: '猎人进入濒死状态，可以进行反击' 
+})
 }
     } catch (error) { logger.error('猎人濒死技能触发失败', error);
       toast({
         title: '触发失败',
         description: '猎人濒死技能触发失败',
-        variant: 'destructive',
-});,
+        variant: 'destructive' 
+})
 }
   };
 
   // 检查被动技能状态
   useEffect(() => { if (isWitch && currentPhase === 3) { // 夜晚阶段
-    validateWitchPotions();,
+    validateWitchPotions()
 }
 }, [isWitch, currentPhase, currentRound]);
 
 // 检查猎人状态
 useEffect(() => { if (isHunter && roleState?.role_status === 2) {
-    setHunterDyingActive(true);,
+    setHunterDyingActive(true)
 }
 }, [isHunter, roleState?.role_status]);
 
@@ -215,8 +231,8 @@ return (;
   </CardHeader>
   <CardContent className='space-y-4'>;
 
-  { /*  法官技能冲突检测  */ }
-  { isJudge && (
+  { /*  法官技能冲突检测  */
+} { isJudge && (
     <div className='space-y-3'>;
     <h4 className='text-sm font-medium text-werewolf-purple flex items-center gap-2'>;
     <AlertTriangle className='w-4 h-4' />;
@@ -246,7 +262,8 @@ return (;
     </div>
 
     { conflictData && (
-      <Alert className={conflictData.conflicts > 0 ? 'border-red-500/30 bg-red-500/10' : 'border-green-500/30 bg-green-500/10' }>;
+      <Alert className={conflictData.conflicts > 0 ? 'border-red-500/30 bg-red-500/10' : 'border-green-500/30 bg-green-500/10' 
+}>;
       <AlertTriangle className='h-4 w-4' />;
       <AlertDescription>
       { conflictData.conflicts > 0 ? (
@@ -262,8 +279,8 @@ return (;
 
   <Separator className='bg-werewolf-purple/30' />;
 
-  { /*  女巫药剂状态  */ }
-  { isWitch && (
+  { /*  女巫药剂状态  */
+} { isWitch && (
     <div className='space-y-3'>;
     <h4 className='text-sm font-medium text-purple-400 flex items-center gap-2'>;
     <Beaker className='w-4 h-4' />;
@@ -272,15 +289,18 @@ return (;
 
     <div className='grid grid-cols-2 gap-3'>;
     {/*  解药状态  */ }
-    <Card className={ `bg-werewolf-dark/50 border ${witchPotionState.canUseProtection ? 'border-green-500/50' : 'border-gray-500/50' }`}>;
+    <Card className={ `bg-werewolf-dark/50 border ${witchPotionState.canUseProtection ? 'border-green-500/50' : 'border-gray-500/50' 
+}`}>;
     <CardContent className='p-3'>;
     <div className='flex items-center justify-between'>;
     <div className='flex items-center gap-2'>;
     <Heart className='w-4 h-4 text-green-400' />;
     <span className='text-sm font-medium'>解药</span>;
     </div>
-    <Badge variant={ witchPotionState.canUseProtection ? 'default' : 'secondary' }>;
-    { witchPotionState.canUseProtection ? '可用' : '不可用' }
+    <Badge variant={ witchPotionState.canUseProtection ? 'default' : 'secondary' 
+}>;
+    { witchPotionState.canUseProtection ? '可用' : '不可用' 
+}
     </Badge>
     </div>
     { witchPotionState.protectionReason && (
@@ -292,15 +312,18 @@ return (;
     </Card>
 
     { /*  毒药状态  */ }
-    <Card className={ `bg-werewolf-dark/50 border ${witchPotionState.canUseAttack ? 'border-red-500/50' : 'border-gray-500/50' }`}>;
+    <Card className={ `bg-werewolf-dark/50 border ${witchPotionState.canUseAttack ? 'border-red-500/50' : 'border-gray-500/50' 
+}`}>;
     <CardContent className='p-3'>;
     <div className='flex items-center justify-between'>;
     <div className='flex items-center gap-2'>;
     <Skull className='w-4 h-4 text-red-400' />;
     <span className='text-sm font-medium'>毒药</span>;
     </div>
-    <Badge variant={ witchPotionState.canUseAttack ? 'destructive' : 'secondary' }>;
-    { witchPotionState.canUseAttack ? '可用' : '不可用' }
+    <Badge variant={ witchPotionState.canUseAttack ? 'destructive' : 'secondary' 
+}>;
+    { witchPotionState.canUseAttack ? '可用' : '不可用' 
+}
     </Badge>
     </div>
     { witchPotionState.attackReason && (
@@ -312,14 +335,17 @@ return (;
     </Card>
     </div>
 
-    { /*  夜晚死亡信息  */ }
-    { witchPotionState.nightDeaths && witchPotionState.nightDeaths.length > 0 && (<div className='bg-werewolf-dark/30 p-3 rounded-lg'>;
+    { /*  夜晚死亡信息  */
+} { witchPotionState.nightDeaths && witchPotionState.nightDeaths.length > 0 && (<div className='bg-werewolf-dark/30 p-3 rounded-lg'>;
       <h5 className='text-xs font-medium text-red-400 mb-2'>当夜死亡信息</h5>;
       <ScrollArea className='h-20'>;
       <div className='space-y-1'>;
-      {witchPotionState.nightDeaths.map((death: { userId: string; reason: string; [key: string]: unknown  }, index: number) => (;
+      {witchPotionState.nightDeaths.map((death: { userId: string; reason: string; [key: string]: unknown  
+}, index: number) => (;
         <div key={ index } className='text-xs text-gray-300 p-1 bg-werewolf-dark/50 rounded'>;
-        目标: { (death.target_user_id as string)?.slice(-8) } | 技能: { death.skill_name as string }
+        目标: { (death.target_user_id as string)?.slice(-8) 
+} | 技能: { death.skill_name as string 
+}
         </div>
       ))}
       </div>
@@ -331,8 +357,8 @@ return (;
 
   <Separator className='bg-werewolf-purple/30' />;
 
-  { /*  猎人濒死状态  */ }
-  { isHunter && (
+  { /*  猎人濒死状态  */
+} { isHunter && (
     <div className='space-y-3'>;
     <h4 className='text-sm font-medium text-orange-400 flex items-center gap-2'>;
     <Target className='w-4 h-4' />;
@@ -341,8 +367,10 @@ return (;
 
     <div className='flex items-center justify-between'>;
     <div className='flex items-center gap-3'>;
-    <Badge variant={hunterDyingActive ? 'destructive' : 'secondary' }>;
-    { hunterDyingActive ? '濒死状态' : '正常状态' }
+    <Badge variant={hunterDyingActive ? 'destructive' : 'secondary' 
+}>;
+    { hunterDyingActive ? '濒死状态' : '正常状态' 
+}
     </Badge>
     { hunterDyingActive && (
       <span className='text-xs text-orange-400'>可以进行反击</span>;
@@ -385,7 +413,13 @@ return (;
   </div>
   </CardContent>
   </Card>
-);,
+)
 };
 
+/**
+ * EnhancedSkillManager组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default EnhancedSkillManager;

@@ -1,24 +1,23 @@
 /**
  * 文件级注释：性能优化集成测试
- * 
+ *
  * 该文件实现了性能优化的集成测试，旨在：
  * - 验证组件渲染性能优化
  * - 测试内存管理和清理
  * - 验证缓存策略效果
  * - 测试实时订阅性能
  * - 验证查询优化效果
- * 
+ *
  * 测试覆盖：
  * - React组件渲染性能
  * - 内存使用和泄漏检测
  * - 缓存命中率和效率
  * - 实时数据订阅性能
  * - 数据库查询优化
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
-
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { act } from '@testing-library/react';
@@ -52,7 +51,7 @@ interface MemoryUsage {
 
 /**
  * 类级注释：性能测试工具类
- * 
+ *
  * 提供性能测试相关的工具方法
  */
 class PerformanceTestUtils {
@@ -65,9 +64,9 @@ class PerformanceTestUtils {
    */
   static startPerformanceMonitoring(): void {
     this.performanceEntries = [];
-    
+
     // 创建性能观察器
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       this.performanceEntries.push(...list.getEntries());
     });
 
@@ -92,10 +91,10 @@ class PerformanceTestUtils {
     const startTime = performance.now();
     const result = renderFunction();
     const endTime = performance.now();
-    
+
     return {
       result,
-      renderTime: endTime - startTime
+      renderTime: endTime - startTime,
     };
   }
 
@@ -143,12 +142,12 @@ class PerformanceTestUtils {
 
 /**
  * 类级注释：模拟组件类
- * 
+ *
  * 用于性能测试的模拟React组件
  */
-const MockHeavyComponent: React.FC<{ items: any[]; onUpdate?: () => void }> = ({ 
-  items, 
-  onUpdate 
+const MockHeavyComponent: React.FC<{ items: any[]; onUpdate?: () => void }> = ({
+  items,
+  onUpdate,
 }) => {
   const [localState, setLocalState] = React.useState(0);
 
@@ -159,67 +158,80 @@ const MockHeavyComponent: React.FC<{ items: any[]; onUpdate?: () => void }> = ({
     onUpdate?.();
   }, [items, onUpdate]);
 
-  return React.createElement('div', { 'data-testid': 'heavy-component' },
+  return React.createElement(
+    'div',
+    { 'data-testid': 'heavy-component' },
     React.createElement('h3', null, 'Heavy Component'),
     React.createElement('p', null, `Items: ${items.length}`),
     React.createElement('p', null, `Sum: ${localState}`),
-    ...items.map((item, index) => 
-      React.createElement('div', { 
-        key: item.id || index, 
-        className: 'item' 
-      }, `${item.name || `Item ${index}`}: ${item.value || 0}`)
+    ...items.map((item, index) =>
+      React.createElement(
+        'div',
+        {
+          key: item.id || index,
+          className: 'item',
+        },
+        `${item.name || `Item ${index}`}: ${item.value || 0}`
+      )
     )
   );
 };
 
 /**
  * 类级注释：优化后的组件类
- * 
+ *
  * 使用React.memo和useMemo优化的组件
  */
-const OptimizedComponent: React.FC<{ items: any[]; onUpdate?: () => void }> = React.memo(({ 
-  items, 
-  onUpdate 
-}) => {
-  const [localState, setLocalState] = React.useState(0);
+const OptimizedComponent: React.FC<{ items: any[]; onUpdate?: () => void }> =
+  React.memo(({ items, onUpdate }) => {
+    const [localState, setLocalState] = React.useState(0);
 
-  const memoizedSum = React.useMemo(() => {
-    return items.reduce((sum, item) => sum + (item.value || 0), 0);
-  }, [items]);
+    const memoizedSum = React.useMemo(() => {
+      return items.reduce((sum, item) => sum + (item.value || 0), 0);
+    }, [items]);
 
-  const memoizedCallback = React.useCallback(() => {
-    setLocalState(memoizedSum);
-    onUpdate?.();
-  }, [memoizedSum, onUpdate]);
+    const memoizedCallback = React.useCallback(() => {
+      setLocalState(memoizedSum);
+      onUpdate?.();
+    }, [memoizedSum, onUpdate]);
 
-  React.useEffect(() => {
-    memoizedCallback();
-  }, [memoizedCallback]);
+    React.useEffect(() => {
+      memoizedCallback();
+    }, [memoizedCallback]);
 
-  const memoizedItems = React.useMemo(() => {
-    return items.map((item, index) => 
-      React.createElement('div', { 
-        key: item.id || index, 
-        className: 'item' 
-      }, `${item.name || `Item ${index}`}: ${item.value || 0}`)
+    const memoizedItems = React.useMemo(() => {
+      return items.map((item, index) =>
+        React.createElement(
+          'div',
+          {
+            key: item.id || index,
+            className: 'item',
+          },
+          `${item.name || `Item ${index}`}: ${item.value || 0}`
+        )
+      );
+    }, [items]);
+
+    return React.createElement(
+      'div',
+      { 'data-testid': 'optimized-component' },
+      React.createElement('h3', null, 'Optimized Component'),
+      React.createElement('p', null, `Items: ${items.length}`),
+      React.createElement('p', null, `Sum: ${localState}`),
+      ...memoizedItems
     );
-  }, [items]);
-
-  return React.createElement('div', { 'data-testid': 'optimized-component' },
-    React.createElement('h3', null, 'Optimized Component'),
-    React.createElement('p', null, `Items: ${items.length}`),
-    React.createElement('p', null, `Sum: ${localState}`),
-    ...memoizedItems
-  );
-});
+  });
 
 /**
  * 类级注释：缓存管理器类
- * 
+ *
  * 模拟缓存管理功能
  */
 class MockCacheManager {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
   private hitCount = 0;
   private missCount = 0;
 
@@ -231,7 +243,7 @@ class MockCacheManager {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
   }
 
@@ -241,7 +253,7 @@ class MockCacheManager {
    */
   get(key: string): any {
     const item = this.cache.get(key);
-    
+
     if (!item) {
       this.missCount++;
       return null;
@@ -287,7 +299,7 @@ class MockCacheManager {
 
 /**
  * 类级注释：性能优化集成测试套件
- * 
+ *
  * 测试性能优化的各个方面
  */
 describe('性能优化集成测试', () => {
@@ -313,12 +325,12 @@ describe('性能优化集成测试', () => {
       memoryUsage: 0,
       componentCount: 0,
       updateTime: 0,
-      cacheHitRate: 0
+      cacheHitRate: 0,
     };
-    
+
     // 清理DOM
     cleanup();
-    
+
     // 强制垃圾回收
     PerformanceTestUtils.forceGarbageCollection();
   });
@@ -344,14 +356,17 @@ describe('性能优化集成测试', () => {
       const largeDataSet = Array.from({ length: 1000 }, (_, index) => ({
         id: index,
         name: `Item ${index}`,
-        value: Math.random() * 100
+        value: Math.random() * 100,
       }));
 
       const beforeMemory = PerformanceTestUtils.getMemorySnapshot();
-      
-      const { result: renderResult, renderTime } = await PerformanceTestUtils.measureRenderTime(() => {
-        return render(React.createElement(MockHeavyComponent, { items: largeDataSet }));
-      });
+
+      const { result: renderResult, renderTime } =
+        await PerformanceTestUtils.measureRenderTime(() => {
+          return render(
+            React.createElement(MockHeavyComponent, { items: largeDataSet })
+          );
+        });
 
       const afterMemory = PerformanceTestUtils.getMemorySnapshot();
 
@@ -381,11 +396,14 @@ describe('性能优化集成测试', () => {
       const initialData = Array.from({ length: 100 }, (_, index) => ({
         id: index,
         name: `Item ${index}`,
-        value: index
+        value: index,
       }));
 
       const { rerender } = render(
-        React.createElement(MockHeavyComponent, { items: initialData, onUpdate })
+        React.createElement(MockHeavyComponent, {
+          items: initialData,
+          onUpdate,
+        })
       );
 
       const updateStartTime = performance.now();
@@ -394,11 +412,16 @@ describe('性能优化集成测试', () => {
       for (let i = 0; i < 50; i++) {
         const updatedData = initialData.map(item => ({
           ...item,
-          value: item.value + Math.random()
+          value: item.value + Math.random(),
         }));
 
         await act(async () => {
-          rerender(React.createElement(MockHeavyComponent, { items: updatedData, onUpdate }));
+          rerender(
+            React.createElement(MockHeavyComponent, {
+              items: updatedData,
+              onUpdate,
+            })
+          );
           await PerformanceTestUtils.waitForIdle(10);
         });
       }
@@ -422,21 +445,25 @@ describe('性能优化集成测试', () => {
       const testData = Array.from({ length: 500 }, (_, index) => ({
         id: index,
         name: `Item ${index}`,
-        value: index * 2
+        value: index * 2,
       }));
 
       // 测试普通组件
-      const { result: normalResult, renderTime: normalRenderTime } = 
+      const { result: normalResult, renderTime: normalRenderTime } =
         await PerformanceTestUtils.measureRenderTime(() => {
-          return render(React.createElement(MockHeavyComponent, { items: testData }));
+          return render(
+            React.createElement(MockHeavyComponent, { items: testData })
+          );
         });
 
       cleanup();
 
       // 测试优化组件
-      const { result: optimizedResult, renderTime: optimizedRenderTime } = 
+      const { result: optimizedResult, renderTime: optimizedRenderTime } =
         await PerformanceTestUtils.measureRenderTime(() => {
-          return render(React.createElement(OptimizedComponent, { items: testData }));
+          return render(
+            React.createElement(OptimizedComponent, { items: testData })
+          );
         });
 
       // 优化组件的渲染时间应该更短或相近
@@ -459,10 +486,12 @@ describe('性能优化集成测试', () => {
         const data = Array.from({ length: 100 }, (_, index) => ({
           id: `${i}-${index}`,
           name: `Item ${i}-${index}`,
-          value: index
+          value: index,
         }));
 
-        components.push(render(React.createElement(MockHeavyComponent, { items: data })));
+        components.push(
+          render(React.createElement(MockHeavyComponent, { items: data }))
+        );
       }
 
       const afterRenderMemory = PerformanceTestUtils.getMemorySnapshot();
@@ -478,8 +507,10 @@ describe('性能优化集成测试', () => {
       const afterCleanupMemory = PerformanceTestUtils.getMemorySnapshot();
 
       // 验证内存得到释放
-      const memoryAfterRender = afterRenderMemory.heapUsed - beforeMemory.heapUsed;
-      const memoryAfterCleanup = afterCleanupMemory.heapUsed - beforeMemory.heapUsed;
+      const memoryAfterRender =
+        afterRenderMemory.heapUsed - beforeMemory.heapUsed;
+      const memoryAfterCleanup =
+        afterCleanupMemory.heapUsed - beforeMemory.heapUsed;
 
       expect(memoryAfterCleanup).toBeLessThan(memoryAfterRender * 0.8);
     });
@@ -562,7 +593,11 @@ describe('性能优化集成测试', () => {
         while (Date.now() - start < 10) {
           // 忙等待10ms
         }
-        return { id, data: `Expensive result for ${id}`, timestamp: Date.now() };
+        return {
+          id,
+          data: `Expensive result for ${id}`,
+          timestamp: Date.now(),
+        };
       };
 
       const testIds = [1, 2, 3, 4, 5];
@@ -576,13 +611,13 @@ describe('性能优化集成测试', () => {
       // 设置缓存
       testIds.forEach(id => {
         const result = expensiveOperation(id);
-        cacheManager.set(`expensive:${id}`, result, 60000);
+        cacheManager.set(`expensive: ${id}`, result, 60000);
       });
 
       // 测试有缓存的性能
       const cacheStartTime = performance.now();
       const cacheResults = testIds.map(id => {
-        return cacheManager.get(`expensive:${id}`);
+        return cacheManager.get(`expensive: ${id}`);
       });
       const cacheEndTime = performance.now();
       const cacheTime = cacheEndTime - cacheStartTime;
@@ -608,19 +643,21 @@ describe('性能优化集成测试', () => {
       for (let i = 0; i < 100; i++) {
         const data = Array.from({ length: 100 }, (_, index) => ({
           id: `${i}-${index}`,
-          value: Math.random()
+          value: Math.random(),
         }));
 
         // 渲染组件
-        const { unmount } = render(React.createElement(MockHeavyComponent, { items: data }));
-        
+        const { unmount } = render(
+          React.createElement(MockHeavyComponent, { items: data })
+        );
+
         // 使用缓存
-        cacheManager.set(`test:${i}`, data, 1000);
-        cacheManager.get(`test:${i}`);
-        
+        cacheManager.set(`test: ${i}`, data, 1000);
+        cacheManager.get(`test: ${i}`);
+
         // 立即卸载
         unmount();
-        
+
         // 清理缓存
         if (i % 10 === 0) {
           cacheManager.clear();
@@ -658,8 +695,8 @@ describe('性能优化集成测试', () => {
         metadata: {
           created: new Date().toISOString(),
           tags: [`tag${index % 10}`, `category${index % 5}`],
-          score: Math.random() * 100
-        }
+          score: Math.random() * 100,
+        },
       }));
 
       // 分批处理数据
@@ -668,12 +705,12 @@ describe('性能优化集成测试', () => {
 
       for (let i = 0; i < largeDataSet.length; i += batchSize) {
         const batch = largeDataSet.slice(i, i + batchSize);
-        
+
         // 模拟数据处理
         const processedBatch = batch.map(item => ({
           ...item,
           processed: true,
-          processedAt: Date.now()
+          processedAt: Date.now(),
         }));
 
         results.push(...processedBatch);
@@ -714,7 +751,7 @@ describe('性能优化集成测试', () => {
       for (let i = 0; i < 20; i++) {
         const data = Array.from({ length: 500 }, (_, index) => ({
           id: `${i}-${index}`,
-          data: new Array(1000).fill(`data-${i}-${index}`)
+          data: new Array(1000).fill(`data-${i}-${index}`),
         }));
 
         render(React.createElement(MockHeavyComponent, { items: data }));
@@ -759,7 +796,7 @@ describe('性能优化集成测试', () => {
           this.connections.set(id, {
             id,
             connected: true,
-            lastActivity: Date.now()
+            lastActivity: Date.now(),
           });
         }
 
@@ -813,7 +850,7 @@ describe('性能优化集成测试', () => {
         const userId = `user-${i % connectionCount}`;
         wsManager.sendMessage(userId, {
           type: 'update',
-          data: { id: i, timestamp: Date.now() }
+          data: { id: i, timestamp: Date.now() },
         });
       }
 
@@ -827,7 +864,9 @@ describe('性能优化集成测试', () => {
 
       // 测试清理功能
       wsManager.cleanup();
-      expect(wsManager.getConnectionCount()).toBeLessThanOrEqual(connectionCount);
+      expect(wsManager.getConnectionCount()).toBeLessThanOrEqual(
+        connectionCount
+      );
     });
 
     /**
@@ -886,11 +925,14 @@ describe('性能优化集成测试', () => {
       // 创建订阅者
       const unsubscribers: (() => void)[] = [];
       for (let i = 0; i < subscriberCount; i++) {
-        const unsubscribe = eventManager.subscribe('data-update', (data: any) => {
-          // 模拟处理事件
-          const processed = { ...data, processedBy: `subscriber-${i}` };
-          return processed;
-        });
+        const unsubscribe = eventManager.subscribe(
+          'data-update',
+          (data: any) => {
+            // 模拟处理事件
+            const processed = { ...data, processedBy: `subscriber-${i}` };
+            return processed;
+          }
+        );
         unsubscribers.push(unsubscribe);
       }
 
@@ -901,7 +943,7 @@ describe('性能优化集成测试', () => {
         eventManager.emit('data-update', {
           id: i,
           timestamp: Date.now(),
-          data: `Event data ${i}`
+          data: `Event data ${i}`,
         });
       }
 
@@ -909,7 +951,9 @@ describe('性能优化集成测试', () => {
       const totalTime = endTime - startTime;
 
       // 验证性能
-      expect(eventManager.getSubscriberCount('data-update')).toBe(subscriberCount);
+      expect(eventManager.getSubscriberCount('data-update')).toBe(
+        subscriberCount
+      );
       expect(eventManager.getEventCount()).toBe(subscriberCount * eventCount);
       expect(totalTime).toBeLessThan(2000); // 应该在2秒内完成
 
@@ -931,28 +975,31 @@ describe('性能优化集成测试', () => {
       // 模拟数据库查询
       const mockDatabase = {
         queryCount: 0,
-        
+
         async query(sql: string, params: any[] = []): Promise<any[]> {
           this.queryCount++;
-          
+
           // 模拟查询延迟
           await new Promise(resolve => setTimeout(resolve, 50));
-          
+
           // 模拟查询结果
           return Array.from({ length: 100 }, (_, index) => ({
             id: index,
             name: `Record ${index}`,
             sql,
             params,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           }));
-        }
+        },
       };
 
       // 带缓存的查询函数
-      const cachedQuery = async (sql: string, params: any[] = []): Promise<any[]> => {
-        const cacheKey = `query:${sql}:${JSON.stringify(params)}`;
-        
+      const cachedQuery = async (
+        sql: string,
+        params: any[] = []
+      ): Promise<any[]> => {
+        const cacheKey = `query: ${sql}: ${JSON.stringify(params)}`;
+
         let result = cacheManager.get(cacheKey);
         if (result) {
           return result;
@@ -960,14 +1007,14 @@ describe('性能优化集成测试', () => {
 
         result = await mockDatabase.query(sql, params);
         cacheManager.set(cacheKey, result, 30000); // 30秒缓存
-        
+
         return result;
       };
 
       const testQueries = [
         { sql: 'SELECT * FROM users WHERE active = ?', params: [true] },
         { sql: 'SELECT * FROM posts WHERE user_id = ?', params: [1] },
-        { sql: 'SELECT * FROM comments WHERE post_id = ?', params: [1] }
+        { sql: 'SELECT * FROM comments WHERE post_id = ?', params: [1] },
       ];
 
       // 第一次查询（无缓存）
@@ -1009,7 +1056,7 @@ describe('性能优化集成测试', () => {
         async query(id: string): Promise<any> {
           return new Promise((resolve, reject) => {
             this.pendingQueries.push({ id, resolve, reject });
-            
+
             if (!this.batchTimeout) {
               this.batchTimeout = setTimeout(() => {
                 this.executeBatch();
@@ -1023,16 +1070,18 @@ describe('性能优化集成测试', () => {
           this.pendingQueries = [];
           this.batchTimeout = null;
 
-          if (queries.length === 0) {return;}
+          if (queries.length === 0) {
+            return;
+          }
 
           try {
             // 模拟批量查询
             await new Promise(resolve => setTimeout(resolve, 20));
-            
+
             const results = queries.map(query => ({
               id: query.id,
               data: `Batch result for ${query.id}`,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             }));
 
             queries.forEach((query, index) => {
@@ -1047,11 +1096,14 @@ describe('性能优化集成测试', () => {
       }
 
       const batchOptimizer = new BatchQueryOptimizer();
-      const queryIds = Array.from({ length: 50 }, (_, index) => `query-${index}`);
+      const queryIds = Array.from(
+        { length: 50 },
+        (_, index) => `query-${index}`
+      );
 
       // 测试批量查询
       const startTime = performance.now();
-      
+
       const results = await Promise.all(
         queryIds.map(id => batchOptimizer.query(id))
       );
@@ -1061,8 +1113,10 @@ describe('性能优化集成测试', () => {
 
       // 验证结果
       expect(results.length).toBe(queryIds.length);
-      expect(results.every(result => result.data && result.timestamp)).toBe(true);
-      
+      expect(results.every(result => result.data && result.timestamp)).toBe(
+        true
+      );
+
       // 批量查询应该比单独查询快很多
       expect(totalTime).toBeLessThan(100); // 应该在100ms内完成
     });
@@ -1088,10 +1142,12 @@ describe('性能优化集成测试', () => {
         tasks.push(async () => {
           const data = Array.from({ length: 50 }, (_, index) => ({
             id: `${i}-${index}`,
-            value: Math.random()
+            value: Math.random(),
           }));
-          
-          const { unmount } = render(React.createElement(OptimizedComponent, { items: data }));
+
+          const { unmount } = render(
+            React.createElement(OptimizedComponent, { items: data })
+          );
           await PerformanceTestUtils.waitForIdle(10);
           unmount();
         });
@@ -1102,7 +1158,7 @@ describe('性能优化集成测试', () => {
         tasks.push(async () => {
           const key = `cache-test-${i}`;
           const data = { id: i, data: `Test data ${i}` };
-          
+
           cacheManager.set(key, data, 60000);
           const result = cacheManager.get(key);
           expect(result).toEqual(data);
@@ -1126,7 +1182,7 @@ describe('性能优化集成测试', () => {
 
       // 验证性能指标
       expect(totalTime).toBeLessThan(5000); // 应该在5秒内完成
-      
+
       const memoryIncrease = afterMemory.heapUsed - beforeMemory.heapUsed;
       expect(memoryIncrease).toBeLessThan(100 * 1024 * 1024); // 内存增长小于100MB
 
@@ -1149,19 +1205,22 @@ describe('性能优化集成测试', () => {
 
       const data = Array.from({ length: 200 }, (_, index) => ({
         id: index,
-        value: index * 2
+        value: index * 2,
       }));
 
-      const { unmount } = render(React.createElement(OptimizedComponent, { items: data }));
-      
+      const { unmount } = render(
+        React.createElement(OptimizedComponent, { items: data })
+      );
+
       performance.mark('test-end');
       performance.measure('test-duration', 'test-start', 'test-end');
 
-      const performanceEntries = PerformanceTestUtils.stopPerformanceMonitoring();
-      
+      const performanceEntries =
+        PerformanceTestUtils.stopPerformanceMonitoring();
+
       // 验证性能数据
-      const testMeasure = performanceEntries.find(entry => 
-        entry.name === 'test-duration' && entry.entryType === 'measure'
+      const testMeasure = performanceEntries.find(
+        entry => entry.name === 'test-duration' && entry.entryType === 'measure'
       );
 
       expect(testMeasure).toBeDefined();

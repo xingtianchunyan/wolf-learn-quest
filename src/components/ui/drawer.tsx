@@ -1,5 +1,5 @@
-import { cn  } from '@/lib/utils'
-import { Drawer as DrawerPrimitive  } from 'vaul'
+import { cn   } from '@/lib/utils'
+import { Drawer as DrawerPrimitive   } from 'vaul'
 import * as React from 'react'
 
 /**
@@ -31,9 +31,8 @@ import * as React from 'react'
 * // 使用示例
 * <drawer />
  */
-const Drawer = ({ shouldScaleBackground = true,
-  ...props,
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (;
+const Drawer = ( { shouldScaleBackground = true,
+  ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (;
   <DrawerPrimitive.Root
   shouldScaleBackground={ shouldScaleBackground }
   { ...props }
@@ -41,12 +40,36 @@ const Drawer = ({ shouldScaleBackground = true,
 )
 Drawer.displayName = 'Drawer';
 
+/**
+ * DrawerTrigger组件
+ * DrawerTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerTrigger = DrawerPrimitive.Trigger;
 
+/**
+ * DrawerPortal组件
+ * DrawerPortal组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerPortal = DrawerPrimitive.Portal;
 
+/**
+ * DrawerClose组件
+ * DrawerClose组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerClose = DrawerPrimitive.Close;
 
+/**
+ * DrawerOverlay组件
+ * DrawerOverlay组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerOverlay = React.forwardRef<;
 React.ElementRef<typeof DrawerPrimitive.Overlay>,
 React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
@@ -59,6 +82,12 @@ React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 ))
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
+/**
+ * DrawerContent组件
+ * DrawerContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerContent = React.forwardRef<;
 React.ElementRef<typeof DrawerPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
@@ -80,9 +109,14 @@ React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 ))
 DrawerContent.displayName = 'DrawerContent';
 
-const DrawerHeader = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * DrawerHeader组件
+ * 页头组件，显示导航和标题
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const DrawerHeader = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn('grid gap-1.5 p-4 text-center sm:text-left', className) }
   { ...props }
@@ -90,9 +124,14 @@ const DrawerHeader = ({ className,
 )
 DrawerHeader.displayName = 'DrawerHeader';
 
-const DrawerFooter = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * DrawerFooter组件
+ * 页脚组件，显示版权和链接
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const DrawerFooter = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn('mt-auto flex flex-col gap-2 p-4', className) }
   { ...props }
@@ -100,6 +139,12 @@ const DrawerFooter = ({ className,
 )
 DrawerFooter.displayName = 'DrawerFooter';
 
+/**
+ * DrawerTitle组件
+ * DrawerTitle组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerTitle = React.forwardRef<;
 React.ElementRef<typeof DrawerPrimitive.Title>,
 React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
@@ -115,6 +160,12 @@ React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
 ))
 DrawerTitle.displayName = DrawerPrimitive.Title.displayName;
 
+/**
+ * DrawerDescription组件
+ * DrawerDescription组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const DrawerDescription = React.forwardRef<;
 React.ElementRef<typeof DrawerPrimitive.Description>,
 React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
@@ -136,5 +187,4 @@ export { Drawer,
   DrawerHeader,
   DrawerFooter,
   DrawerTitle,
-  DrawerDescription,
- }
+  DrawerDescription }

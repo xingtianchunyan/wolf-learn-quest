@@ -1,45 +1,43 @@
-import { supabase  } from '@/integrations/supabase/client';
+import { supabase   } from '@/integrations/supabase/client';
 
 /**
 * 濒死状态管理服务
 * 处理濒死状态的转换和解除逻辑
  */
-
-export interface DyingStatusResolution { userId: string;
+export interface DyingStatusResolution  { userId: string;
   gameStateId: string;
-  resolutionType: 'protected' | 'answer_correct' | 'answer_wrong';,
+  resolutionType: 'protected' | 'answer_correct' | 'answer_wrong'
 }
 
 /**
 * 濒死状态解除类型
  */
-export enum DyingResolutionType { PROTECTED = 'protected',       // 获得保护：解除濒死状态，恢复为正常状态
+export enum DyingResolutionType  { PROTECTED = 'protected',       // 获得保护：解除濒死状态，恢复为正常状态
   ANSWER_CORRECT = 'answer_correct', // 答题正确：转为虚弱状态
-  ANSWER_WRONG = 'answer_wrong'      // 答题错误：转为淘汰状态,
-}
+  ANSWER_WRONG = 'answer_wrong'      // 答题错误：转为淘汰状态 }
 
 /**
 * 濒死状态管理服务类
  */
-export class DyingStatusService { /**
+export class DyingStatusService  { /**
   * 解除玩家的濒死状态
   * @param resolution 解除配置
   * @returns 是否成功解除
    */
-  static async resolveDyingStatus(resolution: DyingStatusResolution): Promise<boolean> {
+static async resolveDyingStatus(resolution: DyingStatusResolution): Promise<boolean>  {
     try {
       const { data, error  } = await supabase.rpc('resolve_dying_status', { p_user_id: resolution.userId,
         p_game_state_id: resolution.gameStateId,
-        p_resolution_type: resolution.resolutionType,
+        p_resolution_type: resolution.resolutionType 
 });
 
       if (error) { console.error('解除濒死状态失败:', error);
-        return false;,
+        return false
 }
 
-      return data === true;,
+      return data === true
 } catch (error) { console.error('解除濒死状态异常:', error);
-      return false;,
+      return false
 }
   }
 
@@ -48,7 +46,7 @@ export class DyingStatusService { /**
   * @param roomId 房间ID
   * @returns 濒死状态玩家列表
    */
-  static async getDyingPlayers(roomId: string) { try {
+static async getDyingPlayers(roomId: string) { try  {
       const { data, error  } = await supabase;
       .from('role_states')
       .select(`
@@ -63,12 +61,12 @@ export class DyingStatusService { /**
       .eq('role_status', 2); // 濒死状态
 
       if (error) { console.error('获取濒死玩家失败:', error);
-        return [];,
+        return []
 }
 
-      return data || [];,
+      return data || []
 } catch (error) { console.error('获取濒死玩家异常:', error);
-      return [];,
+      return []
 }
   }
 
@@ -78,7 +76,7 @@ export class DyingStatusService { /**
   * @param gameStateId 游戏状态ID
   * @returns 是否濒死状态
    */
-  static async isPlayerDying(userId: string, gameStateId: string): Promise<boolean> { try {
+static async isPlayerDying(userId: string, gameStateId: string): Promise<boolean> { try  {
       const { data, error  } = await supabase;
       .from('role_states')
       .select('role_status')
@@ -87,12 +85,12 @@ export class DyingStatusService { /**
       .single();
 
       if (error) { console.error('检查濒死状态失败:', error);
-        return false;,
+        return false
 }
 
-      return data?.role_status === 2;,
+      return data?.role_status === 2
 } catch (error) { console.error('检查濒死状态异常:', error);
-      return false;,
+      return false
 }
   }
 
@@ -102,11 +100,11 @@ export class DyingStatusService { /**
   * @param gameStateId 游戏状态ID
   * @returns 是否成功
    */
-  static async resolveByProtection(userId: string, gameStateId: string): Promise<boolean> { return this.resolveDyingStatus({
+static async resolveByProtection(userId: string, gameStateId: string): Promise<boolean> { return this.resolveDyingStatus( {
       userId,
       gameStateId,
-      resolutionType: DyingResolutionType.PROTECTED,
-});,
+      resolutionType: DyingResolutionType.PROTECTED 
+})
 }
 
   /**
@@ -116,10 +114,10 @@ export class DyingStatusService { /**
   * @param isCorrect 答题是否正确
   * @returns 是否成功
    */
-  static async resolveByAnswer(userId: string, gameStateId: string, isCorrect: boolean): Promise<boolean> { return this.resolveDyingStatus({
+static async resolveByAnswer(userId: string, gameStateId: string, isCorrect: boolean): Promise<boolean> { return this.resolveDyingStatus( {
       userId,
       gameStateId,
-      resolutionType: isCorrect ? DyingResolutionType.ANSWER_CORRECT : DyingResolutionType.ANSWER_WRONG,
-});,
+      resolutionType: isCorrect ? DyingResolutionType.ANSWER_CORRECT : DyingResolutionType.ANSWER_WRONG 
+})
 }
 }

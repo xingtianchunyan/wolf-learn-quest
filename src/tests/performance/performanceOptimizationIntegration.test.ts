@@ -3,7 +3,6 @@
  * 验证第二阶段性能关键问题修复的效果
  * 测试 EnhancedSkillSystem 组件渲染优化、内存管理和缓存策略
  */
-
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
@@ -17,8 +16,8 @@ vi.mock('@/hooks/skill/useSkillData', () => ({
     loading: false,
     lastSyncTime: Date.now(),
     setSkillUses: vi.fn(),
-    fetchAllSkillData: vi.fn().mockResolvedValue(undefined)
-  }))
+    fetchAllSkillData: vi.fn().mockResolvedValue(undefined),
+  })),
 }));
 
 vi.mock('@/hooks/skill/useSkillValidation', () => ({
@@ -26,8 +25,8 @@ vi.mock('@/hooks/skill/useSkillValidation', () => ({
     useSkillEnhanced: vi.fn().mockResolvedValue({ success: true }),
     getSkillSuggestion: vi.fn(),
     canUseSkill: vi.fn(() => true),
-    validateSkillFrontend: vi.fn(() => ({ isValid: true }))
-  }))
+    validateSkillFrontend: vi.fn(() => ({ isValid: true })),
+  })),
 }));
 
 vi.mock('@/hooks/skill/useSkillStats', () => ({
@@ -35,8 +34,8 @@ vi.mock('@/hooks/skill/useSkillStats', () => ({
     stats: { totalUses: 0, totalEffects: 0 },
     resolveSkillConflicts: vi.fn(),
     getUserSkillData: vi.fn(() => ({ uses: [], targets: [] })),
-    hasActiveEffect: vi.fn(() => false)
-  }))
+    hasActiveEffect: vi.fn(() => false),
+  })),
 }));
 
 vi.mock('@/hooks/usePerformanceOptimizationNew', () => ({
@@ -45,74 +44,74 @@ vi.mock('@/hooks/usePerformanceOptimizationNew', () => ({
       componentName: 'EnhancedSkillSystem',
       renderCount: 1,
       averageRenderTime: 10,
-      memoryUsage: 1024
+      memoryUsage: 1024,
     })),
-    createOptimizedCallback: vi.fn((callback) => callback),
-    resetMetrics: vi.fn()
-  }))
+    createOptimizedCallback: vi.fn(callback => callback),
+    resetMetrics: vi.fn(),
+  })),
 }));
 
 vi.mock('@/hooks/useMemoryManager', () => ({
   useMemoryManager: vi.fn(() => ({
     getResourceStats: vi.fn(() => ({
       memoryUsage: 1024,
-      componentCount: 1
+      componentCount: 1,
     })),
     registerInterval: vi.fn(() => vi.fn()),
-    forceCleanup: vi.fn()
-  }))
+    forceCleanup: vi.fn(),
+  })),
 }));
 
 vi.mock('@/utils/performanceCriticalFixes', () => ({
   useEnhancedSkillSystemFixes: vi.fn(() => ({
-    renderOptimizer: vi.fn((callback) => callback),
+    renderOptimizer: vi.fn(callback => callback),
     stateOptimizer: vi.fn((key, payload, callback) => callback(payload)),
     subscriptionManager: {
-      add: vi.fn()
+      add: vi.fn(),
     },
     cacheManager: {
       invalidate: vi.fn(),
-      preload: vi.fn()
+      preload: vi.fn(),
     },
     getStats: vi.fn(() => ({
       componentCount: 1,
       totalRenderCount: 1,
-      averageRenderTime: 10
-    }))
+      averageRenderTime: 10,
+    })),
   })),
   performanceCriticalFixes: {
     resetStats: vi.fn(),
     getPerformanceStats: vi.fn(() => ({
       componentCount: 1,
-      totalRenderCount: 1
-    }))
-  }
+      totalRenderCount: 1,
+    })),
+  },
 }));
 
 vi.mock('@/utils/enhancedRealtimeManager', () => ({
   useEnhancedRealtime: vi.fn(() => ({
     status: 'connected',
     subscribe: vi.fn(),
-    unsubscribe: vi.fn()
+    unsubscribe: vi.fn(),
   })),
   enhancedRealtimeManager: {
     getStats: vi.fn(() => ({
       totalSubscriptions: 2,
       connectedSubscriptions: 2,
       subscriptions: {
-        'skill_uses': { status: 'connected' },
-        'skill_effects': { status: 'connected' }
-      }
+        skill_uses: { status: 'connected' },
+        skill_effects: { status: 'connected' },
+      },
     })),
-    destroy: vi.fn()
-  }
+    destroy: vi.fn(),
+  },
 }));
 
 vi.mock('@/utils/intelligentCacheStrategy', () => ({
   useIntelligentCache: vi.fn(() => ({
     data: {},
     loading: false,
-    error: null
+    error: null,
   })),
   intelligentCacheStrategy: {
     getStats: vi.fn(() => ({
@@ -120,20 +119,20 @@ vi.mock('@/utils/intelligentCacheStrategy', () => ({
       cacheHits: 8,
       config: {
         strategy: 'adaptive',
-        ttl: 300000
-      }
-    }))
-  }
+        ttl: 300000,
+      },
+    })),
+  },
 }));
 
 vi.mock('@/utils/skillCache', () => ({
   skillCache: {
     getCacheStats: vi.fn(() => ({
       totalItems: 5,
-      hitRate: 0.8
+      hitRate: 0.8,
     })),
-    performMaintenance: vi.fn()
-  }
+    performMaintenance: vi.fn(),
+  },
 }));
 
 // Mock Supabase client
@@ -141,13 +140,13 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     channel: vi.fn(() => ({
       on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn((callback) => {
+      subscribe: vi.fn(callback => {
         callback('SUBSCRIBED', null);
         return Promise.resolve();
-      })
+      }),
     })),
-    removeChannel: vi.fn()
-  }
+    removeChannel: vi.fn(),
+  },
 }));
 
 // Mock logger
@@ -156,8 +155,8 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-    debug: vi.fn()
-  }))
+    debug: vi.fn(),
+  })),
 }));
 
 describe('性能优化集成测试', () => {
@@ -193,7 +192,7 @@ describe('性能优化集成测试', () => {
 
       // 获取性能统计
       const performanceStats = result.current.performanceStats;
-      
+
       // 验证渲染优化生效
       expect(performanceStats).toBeDefined();
       expect(performanceStats.componentCount).toBeGreaterThan(0);
@@ -209,7 +208,7 @@ describe('性能优化集成测试', () => {
 
       // 模拟快速状态更新
       const updates: Promise<void>[] = [];
-      
+
       for (let i = 0; i < 5; i++) {
         updates.push(
           act(async () => {
@@ -398,7 +397,7 @@ describe('性能优化集成测试', () => {
   describe('集成性能基准测试', () => {
     it('应该满足性能基准要求', async () => {
       const startTime = performance.now();
-      
+
       const { result } = renderHook(() =>
         useEnhancedSkillSystem(mockRoomId, mockGameStateId, mockUserId)
       );
@@ -413,7 +412,7 @@ describe('性能优化集成测试', () => {
 
       // 测试操作响应时间
       const operationStartTime = performance.now();
-      
+
       await act(async () => {
         await result.current.fetchAllSkillData();
       });

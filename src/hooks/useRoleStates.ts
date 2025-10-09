@@ -1,6 +1,6 @@
-import { RealtimePostgresChangesPayload  } from '@supabase/supabase-js';
-import { supabase  } from '@/integrations/supabase/client';
-import { useState, useEffect  } from 'react';
+import { RealtimePostgresChangesPayload   } from '@supabase/supabase-js';
+import { supabase   } from '@/integrations/supabase/client';
+import { useState, useEffect   } from 'react';
 
 export interface RoleState { id: string;
   game_state_id: string;
@@ -12,29 +12,41 @@ export interface RoleState { id: string;
   skill_uses_remaining: any;
   status_effects: any;
   created_at: string;
-  updated_at: string;,
+  updated_at: string
 }
 
-export const useRoleStates = (roomId: string | null | undefined) => { const [roleStates, setRoleStates] = useState<RoleState[]>([]);
+/**
+ * useRoleStates函数
+ * 自定义Hook
+ *
+ * @param roomId - roomId参数
+ * @returns void
+ */
+export const useRoleStates = (roomId: string | null | undefined) =>  { const [roleStates, setRoleStates] = useState<RoleState[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!roomId) {
       setRoleStates([]);
       setLoading(false);
-      return;,
+      return
 }
 
-    const fetchRoleStates = async () => { setLoading(true);
+/**
+ * fetchRoleStates函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchRoleStates = async () =>  { setLoading(true);
       const { data, error  } = await supabase;
       .from('role_states')
       .select('*')
       .eq('room_id', roomId);
 
-      if (error) { console.error('Error fetching role states:', error);,
-} else if (data) { setRoleStates(data as RoleState[]);,
+      if (error) { console.error('Error fetching role states:', error)
+} else if (data) { setRoleStates(data as RoleState[])
 }
-      setLoading(false);,
+      setLoading(false)
 };
 
     fetchRoleStates();
@@ -45,34 +57,35 @@ export const useRoleStates = (roomId: string | null | undefined) => { const [rol
       { event: '*',
         schema: 'public',
         table: 'role_states',
-        filter: `room_id=eq.${roomId }`,
-      },
+        filter: `room_id=eq.${roomId 
+}` },
       (payload: RealtimePostgresChangesPayload<RoleState>) => { if (payload.new && typeof payload.new === 'object') {
           const newRoleState = payload.new as RoleState;
           if (payload.eventType === 'INSERT') {
             setRoleStates(current => {
               if (current.some(rs => rs.id === newRoleState.id)) {
-                return current;,
+                return current
 }
-              return [...current, newRoleState];,
-});,
+              return [...current, newRoleState]
+})
 } else if (payload.eventType === 'UPDATE') { setRoleStates(current =>;
             current.map(rs =>;
             rs.id === newRoleState.id ? newRoleState : rs;
           )
-        );,
+        )
 } else if (payload.eventType === 'DELETE' && payload.old) { setRoleStates(current =>;
         current.filter(rs => rs.id !== (payload.old as RoleState).id);
-      );,
+      )
 }
-  },
-}
+  } }
 )
 .subscribe();
 
-return () => { supabase.removeChannel(channel);,
-};,
+return () => {
+  supabase.removeChannel(channel)
+}
+
 }, [roomId]);
 
-return { roleStates, loading  };,
+return { roleStates, loading  }
 };

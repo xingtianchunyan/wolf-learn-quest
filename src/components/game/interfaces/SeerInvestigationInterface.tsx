@@ -1,7 +1,7 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Eye  } from 'lucide-react';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Eye   } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -19,9 +19,9 @@ import React from 'react';
 * @category common
 * @filepath game\interfaces\SeerInvestigationInterface.tsx
  */
-
-interface SeerInvestigationInterfaceProps { onInvestigate: (playerId: string) => void;
-  availablePlayers: Array<{ userId: string; name: string  }>;,
+interface SeerInvestigationInterfaceProps  { onInvestigate: (playerId: string) => void;
+  availablePlayers: Array<{ userId: string; name: string  
+}>
 }
 
 /**
@@ -37,9 +37,8 @@ interface SeerInvestigationInterfaceProps { onInvestigate: (playerId: string) =>
 * // 使用示例
 * <SeerInvestigationInterface { ...props } />
  */
-const SeerInvestigationInterface: React.FC<SeerInvestigationInterfaceProps> = ({ onInvestigate,
-  availablePlayers,
-}) => { return (;
+const SeerInvestigationInterface: React.FC<SeerInvestigationInterfaceProps> = ( { onInvestigate,
+  availablePlayers }) => { return (;
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>;
     <CardHeader>
     <CardTitle className='flex items-center gap-2'>;
@@ -62,7 +61,13 @@ const SeerInvestigationInterface: React.FC<SeerInvestigationInterfaceProps> = ({
     ))}
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * SeerInvestigationInterface组件
+ * SeerInvestigationInterface组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default SeerInvestigationInterface;

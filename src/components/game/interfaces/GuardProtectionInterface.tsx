@@ -1,7 +1,7 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Shield  } from 'lucide-react';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Shield   } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -19,9 +19,9 @@ import React from 'react';
 * @category common
 * @filepath game\interfaces\GuardProtectionInterface.tsx
  */
-
-interface GuardProtectionInterfaceProps { onProtect: (playerId: string) => void;
-  availablePlayers: Array<{ userId: string; name: string  }>;,
+interface GuardProtectionInterfaceProps  { onProtect: (playerId: string) => void;
+  availablePlayers: Array<{ userId: string; name: string  
+}>
 }
 
 /**
@@ -37,9 +37,8 @@ interface GuardProtectionInterfaceProps { onProtect: (playerId: string) => void;
 * // 使用示例
 * <GuardProtectionInterface { ...props } />
  */
-const GuardProtectionInterface: React.FC<GuardProtectionInterfaceProps> = ({ onProtect,
-  availablePlayers,
-}) => { return (;
+const GuardProtectionInterface: React.FC<GuardProtectionInterfaceProps> = ( { onProtect,
+  availablePlayers }) => { return (;
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>;
     <CardHeader>
     <CardTitle className='flex items-center gap-2'>;
@@ -62,7 +61,13 @@ const GuardProtectionInterface: React.FC<GuardProtectionInterfaceProps> = ({ onP
     ))}
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * GuardProtectionInterface组件
+ * GuardProtectionInterface组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default GuardProtectionInterface;

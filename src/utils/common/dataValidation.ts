@@ -1,54 +1,41 @@
-import { createLogger  } from '@/lib/logger';
-import { RoleStatus,
-
-/**
-* 数据验证公共工具函数
-* 统一项目中的数据验证逻辑，消除重复代码
-*
-* @author SOLO Coding
-* @version 1.0.0
-* @since 2024-12-19
- */
-
-  GamePhase,
+import { createLogger   } from '@/lib/logger';
+import { RoleStatus,, GamePhase  } from
   SkillErrorType,
   ErrorSeverity,
-  ErrorHandlingStrategy,
-} from '@/types/skillSystem.types';
+  ErrorHandlingStrategy  } from '@/types/skillSystem.types';
 
 const logger = createLogger('data-validation');
 
 /**
 * 通用验证结果接口
  */
-export interface ValidationResult { /** 验证是否通过  */
+export interface ValidationResult  { /** 验证是否通过 */
   valid: boolean;
-  /** 失败原因  */
+  /** 失败原因 */
   reason?: string;
-  /** 额外数据  */
-  data?: any;,
+  /** 额外数据 */
+  data?: any
 }
 
 /**
 * 技能错误重试性检查配置
  */
-export interface RetryableErrorConfig { /** 可重试的错误类型列表  */
+export interface RetryableErrorConfig  { /** 可重试的错误类型列表 */
   retryableTypes: SkillErrorType[];
-  /** 最大重试次数  */
+  /** 最大重试次数 */
   maxRetries?: number;
-  /** 重试延迟基数（毫秒）  */
-  baseDelay?: number;,
+  /** 重试延迟基数（毫秒） */
+  baseDelay?: number
 }
 
 /**
-* 默认可重试错误配置
+ * 默认可重试错误配置
  */
-export const DEFAULT_RETRYABLE_CONFIG: RetryableErrorConfig = { retryableTypes: [SkillErrorType.NETWORK_ERROR,
+export const DEFAULT_RETRYABLE_CONFIG: RetryableErrorConfig =  { retryableTypes: [SkillErrorType.NETWORK_ERROR,
     SkillErrorType.EXECUTION_ERROR,
-    SkillErrorType.TIMEOUT_ERROR,
-],
+    SkillErrorType.TIMEOUT_ERROR ],
   maxRetries: 3,
-  baseDelay: 1000,
+  baseDelay: 1000  
 };
 
 /**
@@ -61,14 +48,15 @@ export const DEFAULT_RETRYABLE_CONFIG: RetryableErrorConfig = { retryableTypes: 
  */
 export function isSkillErrorRetryable(
   errorType: SkillErrorType,
-  config: Partial<RetryableErrorConfig> = {}
-): boolean { const finalConfig = { ...DEFAULT_RETRYABLE_CONFIG, ...config  };
+  config: Partial<RetryableErrorConfig> = {
+}
+): boolean { const finalConfig = { ...DEFAULT_RETRYABLE_CONFIG, ...config   };
 
   logger.debug('检查技能错误重试性', { errorType,
-    retryableTypes: finalConfig.retryableTypes,
+    retryableTypes: finalConfig.retryableTypes 
 });
 
-  return finalConfig.retryableTypes.includes(errorType);,
+  return finalConfig.retryableTypes.includes(errorType)
 }
 
 /**
@@ -86,8 +74,8 @@ export function validateRoleStatus(
   if (!Object.values(RoleStatus).includes(currentStatus)) {
     return {
       valid: false,
-      reason: '无效的角色状态',
-};,
+      reason: '无效的角色状态' 
+}
 }
 
   // 如果指定了要求的状态，检查是否匹配
@@ -96,19 +84,20 @@ export function validateRoleStatus(
         [RoleStatus.NORMAL]: '正常',
         [RoleStatus.DYING]: '濒死',
         [RoleStatus.WEAK]: '虚弱',
-        [RoleStatus.ELIMINATED]: '已淘汰',
-};
+        [RoleStatus.ELIMINATED]: '已淘汰'   
+}
 
       const currentName = statusNames[currentStatus];
       const requiredNames = requiredStatuses.map(s => statusNames[s]).join('、');
 
       return { valid: false,
-        reason: `当前状态'${currentName }'不满足要求，需要状态：${ requiredNames }`,
-};,
+        reason: `当前状态'${currentName 
+}'不满足要求，需要状态：${ requiredNames }` }
 }
   }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 }
 
 /**
@@ -127,13 +116,13 @@ export function validateGamePhase(
     1: 'day',
     2: 'evening',
     3: 'night',
-    4: 'dawn',
+    4: 'dawn'  
 };
 
   const phaseNumbers: Record<GamePhase, number> = { 'day': 1,
     'evening': 2,
     'night': 3,
-    'dawn': 4,
+    'dawn': 4  
 };
 
   // 标准化当前阶段
@@ -142,48 +131,48 @@ export function validateGamePhase(
     if (!normalizedCurrent) {
       return {
         valid: false,
-        reason: `无效的游戏阶段编号：${currentPhase }`,
-};,
+        reason: `无效的游戏阶段编号：${currentPhase 
+}` }
 }
   } else { normalizedCurrent = currentPhase;
     if (!Object.values(phaseNumbers).includes(phaseNumbers[currentPhase])) {
       return {
         valid: false,
-        reason: `无效的游戏阶段：${currentPhase }`,
-};,
+        reason: `无效的游戏阶段：${currentPhase 
+}` }
 }
   }
 
   // 如果指定了要求的阶段，检查是否匹配
   if (requiredPhases && requiredPhases.length > 0) { const normalizedRequired = requiredPhases.map(phase => {
       if (typeof phase === 'number') {
-        return phaseNames[phase];,
+        return phaseNames[phase]
 }
-      return phase;,
+      return phase
 }).filter(Boolean);
 
     if (!normalizedRequired.includes(normalizedCurrent)) { const phaseDisplayNames = {
         'day': '白天',
         'evening': '黄昏',
         'night': '夜晚',
-        'dawn': '黎明',
+        'dawn': '黎明'  
 };
 
       const currentName = phaseDisplayNames[normalizedCurrent];
       const requiredNames = normalizedRequired.map(p => phaseDisplayNames[p]).join('、');
 
       return { valid: false,
-        reason: `当前阶段'${currentName }'不满足要求，需要阶段：${ requiredNames }`,
-};,
+        reason: `当前阶段'${currentName 
+}'不满足要求，需要阶段：${ requiredNames }` }
 }
   }
 
   return { valid: true,
     data: {
       normalizedPhase: normalizedCurrent,
-      phaseNumber: phaseNumbers[normalizedCurrent],
+      phaseNumber: phaseNumbers[normalizedCurrent] 
 }
-  };,
+  }
 }
 
 /**
@@ -204,44 +193,45 @@ export function validateSkillTarget(
     if (!targetUserId) {
       return {
         valid: false,
-        reason: '该技能需要选择一个目标',
-};,
+        reason: '该技能需要选择一个目标' 
+}
 }
     if (targetUserIds && targetUserIds.length > 0) { return {
         valid: false,
-        reason: '该技能只能选择一个目标',
-};,
+        reason: '该技能只能选择一个目标' 
+}
 }
     break;
 
     case 'multiple':
     if (!targetUserIds || targetUserIds.length === 0) { return {
         valid: false,
-        reason: '该技能需要选择至少一个目标',
-};,
+        reason: '该技能需要选择至少一个目标' 
+}
 }
     if (targetUserId) { return {
         valid: false,
-        reason: '该技能需要选择多个目标，请使用目标列表',
-};,
+        reason: '该技能需要选择多个目标，请使用目标列表' 
+}
 }
     break;
 
     case 'none':
     if (targetUserId || (targetUserIds && targetUserIds.length > 0)) { return {
         valid: false,
-        reason: '该技能不需要选择目标',
-};,
+        reason: '该技能不需要选择目标' 
+}
 }
     break;
 
     default:
     return { valid: false,
-      reason: `未知的目标类型：${targetType }`,
-};,
+      reason: `未知的目标类型：${targetType 
+}` }
 }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 }
 
 /**
@@ -251,16 +241,16 @@ export function validateSkillTarget(
 * @param errorType - 技能错误类型
 * @returns 错误严重级别
  */
-export function determineErrorSeverity(errorType: SkillErrorType): ErrorSeverity { const severityMap: Record<SkillErrorType, ErrorSeverity> = {
+export function determineErrorSeverity(errorType: SkillErrorType): ErrorSeverity { const severityMap: Record<SkillErrorType, ErrorSeverity> =  {
     [SkillErrorType.PERMISSION_ERROR]: ErrorSeverity.HIGH,
     [SkillErrorType.CONFLICT_ERROR]: ErrorSeverity.MEDIUM,
     [SkillErrorType.EXECUTION_ERROR]: ErrorSeverity.MEDIUM,
     [SkillErrorType.VALIDATION_ERROR]: ErrorSeverity.LOW,
     [SkillErrorType.NETWORK_ERROR]: ErrorSeverity.LOW,
-    [SkillErrorType.CONFIG_ERROR]: ErrorSeverity.MEDIUM,
+    [SkillErrorType.CONFIG_ERROR]: ErrorSeverity.MEDIUM  
 };
 
-  return severityMap[errorType] || ErrorSeverity.MEDIUM;,
+  return severityMap[errorType] || ErrorSeverity.MEDIUM
 }
 
 /**
@@ -270,16 +260,16 @@ export function determineErrorSeverity(errorType: SkillErrorType): ErrorSeverity
 * @param errorType - 技能错误类型
 * @returns 错误处理策略
  */
-export function determineErrorStrategy(errorType: SkillErrorType): ErrorHandlingStrategy { const strategyMap: Record<SkillErrorType, ErrorHandlingStrategy> = {
+export function determineErrorStrategy(errorType: SkillErrorType): ErrorHandlingStrategy { const strategyMap: Record<SkillErrorType, ErrorHandlingStrategy> =  {
     [SkillErrorType.NETWORK_ERROR]: ErrorHandlingStrategy.RETRY,
     [SkillErrorType.EXECUTION_ERROR]: ErrorHandlingStrategy.RETRY,
     [SkillErrorType.CONFLICT_ERROR]: ErrorHandlingStrategy.FALLBACK,
     [SkillErrorType.PERMISSION_ERROR]: ErrorHandlingStrategy.MODAL,
     [SkillErrorType.VALIDATION_ERROR]: ErrorHandlingStrategy.TOAST,
-    [SkillErrorType.CONFIG_ERROR]: ErrorHandlingStrategy.MODAL,
+    [SkillErrorType.CONFIG_ERROR]: ErrorHandlingStrategy.MODAL  
 };
 
-  return strategyMap[errorType] || ErrorHandlingStrategy.TOAST;,
+  return strategyMap[errorType] || ErrorHandlingStrategy.TOAST
 }
 
 /**
@@ -294,7 +284,7 @@ export function getErrorUserMessage(
   errorType: SkillErrorType,
   customMessage?: string
 ): string { if (customMessage) {
-    return customMessage;,
+    return customMessage
 }
 
   const messageMap: Record<SkillErrorType, string> = { [SkillErrorType.VALIDATION_ERROR]: '技能使用条件不满足',
@@ -302,10 +292,10 @@ export function getErrorUserMessage(
     [SkillErrorType.NETWORK_ERROR]: '网络连接失败，请检查网络',
     [SkillErrorType.PERMISSION_ERROR]: '没有权限使用此技能',
     [SkillErrorType.CONFLICT_ERROR]: '技能冲突，请稍后重试',
-    [SkillErrorType.CONFIG_ERROR]: '技能配置错误，请联系管理员',
+    [SkillErrorType.CONFIG_ERROR]: '技能配置错误，请联系管理员'  
 };
 
-  return messageMap[errorType] || '技能操作失败';,
+  return messageMap[errorType] || '技能操作失败'
 }
 
 /**
@@ -315,14 +305,14 @@ export function getErrorUserMessage(
 * @param severity - 错误严重级别
 * @returns 严重级别对应的标题
  */
-export function getSeverityTitle(severity: ErrorSeverity): string { const titleMap: Record<ErrorSeverity, string> = {
+export function getSeverityTitle(severity: ErrorSeverity): string { const titleMap: Record<ErrorSeverity, string> =  {
     [ErrorSeverity.LOW]: '提示',
     [ErrorSeverity.MEDIUM]: '警告',
     [ErrorSeverity.HIGH]: '错误',
-    [ErrorSeverity.CRITICAL]: '严重错误',
+    [ErrorSeverity.CRITICAL]: '严重错误'  
 };
 
-  return titleMap[severity];,
+  return titleMap[severity]
 }
 
 /**
@@ -332,14 +322,14 @@ export function getSeverityTitle(severity: ErrorSeverity): string { const titleM
 * @param severity - 错误严重级别
 * @returns UI变体名称
  */
-export function getSeverityVariant(severity: ErrorSeverity): string { const variantMap: Record<ErrorSeverity, string> = {
+export function getSeverityVariant(severity: ErrorSeverity): string { const variantMap: Record<ErrorSeverity, string> =  {
     [ErrorSeverity.LOW]: 'default',
     [ErrorSeverity.MEDIUM]: 'warning',
     [ErrorSeverity.HIGH]: 'destructive',
-    [ErrorSeverity.CRITICAL]: 'destructive',
+    [ErrorSeverity.CRITICAL]: 'destructive'  
 };
 
-  return variantMap[severity];,
+  return variantMap[severity]
 }
 
 /**
@@ -360,23 +350,24 @@ export function validateNumberRange(
 ): ValidationResult { if (typeof value !== 'number' || isNaN(value)) {
     return {
       valid: false,
-      reason: `${fieldName }必须是有效数字`,
-};,
+      reason: `${fieldName 
+}必须是有效数字` }
 }
 
   if (min !== undefined && value < min) { return {
       valid: false,
-      reason: `${fieldName }不能小于${ min }`,
-};,
+      reason: `${fieldName 
+}不能小于${ min }` }
 }
 
   if (max !== undefined && value > max) { return {
       valid: false,
-      reason: `${fieldName }不能大于${ max }`,
-};,
+      reason: `${fieldName 
+}不能大于${ max }` }
 }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 }
 
 /**
@@ -397,23 +388,24 @@ export function validateStringLength(
 ): ValidationResult { if (typeof value !== 'string') {
     return {
       valid: false,
-      reason: `${fieldName }必须是字符串`,
-};,
+      reason: `${fieldName 
+}必须是字符串` }
 }
 
   if (minLength !== undefined && value.length < minLength) { return {
       valid: false,
-      reason: `${fieldName }长度不能少于${ minLength }个字符`,
-};,
+      reason: `${fieldName 
+}长度不能少于${ minLength }个字符` }
 }
 
   if (maxLength !== undefined && value.length > maxLength) { return {
       valid: false,
-      reason: `${fieldName }长度不能超过${ maxLength }个字符`,
-};,
+      reason: `${fieldName 
+}长度不能超过${ maxLength }个字符` }
 }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 }
 
 /**
@@ -430,9 +422,10 @@ export function validateRequired(
 ): ValidationResult { if (value === null || value === undefined || value === '') {
     return {
       valid: false,
-      reason: `${fieldName }不能为空`,
-};,
+      reason: `${fieldName 
+}不能为空` }
 }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 }

@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage  } from '@/components/ui/avatar';
-import { cn  } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage   } from '@/components/ui/avatar';
+import { cn   } from '@/lib/utils';
 import React from 'react';
 
 /**
@@ -17,12 +17,11 @@ import React from 'react';
 * @category ui
 * @filepath core\PlayerAvatar.tsx
  */
-
-interface PlayerAvatarProps { name: string;
+interface PlayerAvatarProps  { name: string;
   avatarUrl?: string;
   size?: 'sm' | 'md' | 'lg';
   status?: 'alive' | 'dead' | 'eliminated';
-  className?: string;,
+  className?: string
 }
 
 /**
@@ -38,23 +37,31 @@ interface PlayerAvatarProps { name: string;
 * // 使用示例
 * <PlayerAvatar { ...props } />
  */
-const PlayerAvatar: React.FC<PlayerAvatarProps> = ({ name,
+const PlayerAvatar: React.FC<PlayerAvatarProps> = ( { name,
   avatarUrl,
   size = 'md',
   status = 'alive',
-  className,
-}) => { const sizeClasses = {
+  className }) => { const sizeClasses = {
     sm: 'h-8 w-8',
     md: 'h-10 w-10',
-    lg: 'h-12 w-12',
+    lg: 'h-12 w-12'  
 };
 
   const statusClasses = { alive: '',
     dead: 'opacity-50 grayscale',
-    eliminated: 'opacity-30 grayscale',
+    eliminated: 'opacity-30 grayscale'  
 };
 
-  const getInitials = (name: string) => { return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);,
+/**
+ * getInitials函数
+ * 获取数据
+ *
+ * @param name - name参数
+ * @returns void
+ */
+const getInitials = (name: string) =>  {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
 };
 
   return (;
@@ -64,7 +71,13 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({ name,
     { getInitials(name) }
     </AvatarFallback>
     </Avatar>
-  );,
+  )
 };
 
+/**
+ * PlayerAvatar组件
+ * 玩家相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PlayerAvatar;

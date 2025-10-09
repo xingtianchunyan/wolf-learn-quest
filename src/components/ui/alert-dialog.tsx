@@ -1,5 +1,5 @@
-import { buttonVariants  } from '@/components/ui/button'
-import { cn  } from '@/lib/utils'
+import { buttonVariants   } from '@/components/ui/button'
+import { cn   } from '@/lib/utils'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import * as React from 'react'
 
@@ -21,10 +21,28 @@ import * as React from 'react'
 
 const AlertDialog = AlertDialogPrimitive.Root;
 
+/**
+ * AlertDialogTrigger组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
+/**
+ * AlertDialogPortal组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
+/**
+ * AlertDialogOverlay组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogOverlay = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
@@ -40,6 +58,12 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
 ))
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
+/**
+ * AlertDialogContent组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogContent = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
@@ -58,9 +82,14 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
 ))
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
-const AlertDialogHeader = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * AlertDialogHeader组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const AlertDialogHeader = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col space-y-2 text-center sm:text-left',
@@ -71,9 +100,14 @@ const AlertDialogHeader = ({ className,
 )
 AlertDialogHeader.displayName = 'AlertDialogHeader';
 
-const AlertDialogFooter = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLDivElement>) => (;
+/**
+ * AlertDialogFooter组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const AlertDialogFooter = ( { className,
+  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
@@ -84,6 +118,12 @@ const AlertDialogFooter = ({ className,
 )
 AlertDialogFooter.displayName = 'AlertDialogFooter';
 
+/**
+ * AlertDialogTitle组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogTitle = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Title>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
@@ -96,6 +136,12 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
 ))
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
+/**
+ * AlertDialogDescription组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogDescription = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Description>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
@@ -109,6 +155,12 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 AlertDialogDescription.displayName =;
 AlertDialogPrimitive.Description.displayName
 
+/**
+ * AlertDialogAction组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogAction = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Action>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
@@ -121,6 +173,12 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
 ))
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
+/**
+ * AlertDialogCancel组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AlertDialogCancel = React.forwardRef<;
 React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
 React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
@@ -128,7 +186,8 @@ React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
   <AlertDialogPrimitive.Cancel
   ref={ ref }
   className={ cn(;
-    buttonVariants({ variant: 'outline'  }),
+    buttonVariants({ variant: 'outline'  
+}),
     'mt-2 sm:mt-0',
     className
   )}
@@ -147,5 +206,4 @@ export { AlertDialog,
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogAction,
-  AlertDialogCancel,
- }
+  AlertDialogCancel }

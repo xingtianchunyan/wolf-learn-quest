@@ -76,6 +76,7 @@
 ## 📊 性能预算
 
 ### 渲染性能（毫秒）
+
 - 组件挂载：< 100ms
 - 组件更新：< 50ms
 - 技能面板渲染：< 200ms
@@ -83,17 +84,20 @@
 - 最大渲染时间：< 300ms
 
 ### 内存使用（MB）
+
 - JS 堆大小限制：100MB
 - 单个组件内存：< 10MB
 - 总内存警告阈值：200MB
 - 总内存严重阈值：500MB
 
 ### 缓存性能
+
 - 最大缓存条目：50 个
 - 缓存命中率：> 70%
 - 最大缓存时间：5 分钟
 
 ### 网络性能（毫秒）
+
 - API 响应时间：< 1000ms
 - 数据库查询：< 500ms
 - Edge Function：< 2000ms
@@ -101,6 +105,7 @@
 ## 🔍 ESLint 规则说明
 
 ### TypeScript 严格规则
+
 - `@typescript-eslint/no-floating-promises` - 防止未处理的 Promise
 - `@typescript-eslint/no-misused-promises` - 防止 Promise 误用
 - `@typescript-eslint/await-thenable` - 确保 await 用于 Promise
@@ -108,20 +113,24 @@
 - `@typescript-eslint/prefer-optional-chain` - 推荐使用可选链
 
 ### React 规则
+
 - `react-hooks/rules-of-hooks` (error) - Hook 使用规则
 - `react-hooks/exhaustive-deps` (error) - Hook 依赖完整性
 
 ### 代码质量规则
+
 - `eqeqeq` - 强制使用 `===` 和 `!==`
 - `no-duplicate-imports` - 禁止重复导入
 - `curly` - 强制所有控制语句使用大括号
 - `no-throw-literal` - 禁止抛出字面量
 
 ### 性能规则
+
 - `no-await-in-loop` - 警告循环中的 await（可能影响性能）
 - `require-atomic-updates` - 防止竞态条件
 
 ### 安全规则
+
 - `no-eval` - 禁止使用 eval
 - `no-implied-eval` - 禁止隐式 eval
 - `no-new-func` - 禁止使用 Function 构造器
@@ -129,22 +138,27 @@
 ## 🛠️ 使用指南
 
 ### 运行代码质量检查
+
 ```bash
 npm run lint
 ```
 
 ### 运行类型检查
+
 ```bash
 npx tsc --noEmit
 ```
 
 ### 运行测试（带覆盖率）
+
 ```bash
 npm run test:coverage
 ```
 
 ### 查看性能报告
+
 在代码中导入并使用性能监控服务：
+
 ```typescript
 import { performanceMonitoringService } from '@/services/performanceMonitoringService';
 

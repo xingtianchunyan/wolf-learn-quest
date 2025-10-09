@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { cn  } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { cn   } from '@/lib/utils';
 import React from 'react';
 
 /**
@@ -17,13 +17,13 @@ import React from 'react';
 * @category ui
 * @filepath core\BaseCard.tsx
  */
-
-interface BaseCardProps { title: string;
-  icon?: React.ComponentType<{ className?: string  }>;
+interface BaseCardProps  { title: string;
+  icon?: React.ComponentType<{ className?: string  
+}>;
   children: React.ReactNode;
   className?: string;
   contentClassName?: string;
-  headerClassName?: string;,
+  headerClassName?: string
 }
 
 /**
@@ -39,13 +39,12 @@ interface BaseCardProps { title: string;
 * // 使用示例
 * <BaseCard { ...props } />
  */
-const BaseCard: React.FC<BaseCardProps> = ({ title,
+const BaseCard: React.FC<BaseCardProps> = ( { title,
   icon: Icon,
   children,
   className,
   contentClassName,
-  headerClassName,
-}) => { return (;
+  headerClassName }) => { return (;
     <Card className={cn('bg-werewolf-card border-werewolf-purple/30', className) }>;
     <CardHeader className={ cn('pb-3', headerClassName) }>;
     <CardTitle className='text-werewolf-purple flex items-center text-lg'>;
@@ -57,7 +56,13 @@ const BaseCard: React.FC<BaseCardProps> = ({ title,
     { children }
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * BaseCard组件
+ * 卡片组件，用于内容分组展示
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default BaseCard;

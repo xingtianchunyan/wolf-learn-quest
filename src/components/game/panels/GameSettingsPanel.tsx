@@ -1,12 +1,12 @@
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Input  } from '@/components/ui/input';
-import { Label  } from '@/components/ui/label';
-import { Settings, Save  } from 'lucide-react';
-import { Switch  } from '@/components/ui/switch';
-import { useGameState  } from '@/hooks/useGameState';
-import { useToast  } from '@/hooks/useToast';
-import React, { useState  } from 'react';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Input   } from '@/components/ui/input';
+import { Label   } from '@/components/ui/label';
+import { Settings, Save   } from 'lucide-react';
+import { Switch   } from '@/components/ui/switch';
+import { useGameState   } from '@/hooks/useGameState';
+import { useToast   } from '@/hooks/useToast';
+import React, { useState   } from 'react';
 
 /**
 * 文件级注释：GameSettingsPanel 组件
@@ -23,8 +23,7 @@ import React, { useState  } from 'react';
 * @category game
 * @filepath game\panels\GameSettingsPanel.tsx
  */
-
-interface GameSettingsPanelProps { roomId: string;,
+interface GameSettingsPanelProps  { roomId: string
 }
 
 /**
@@ -41,15 +40,23 @@ interface GameSettingsPanelProps { roomId: string;,
 * // 使用示例
 * <GameSettingsPanel { ...props } />
  */
-const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  }) => { const { gameSettings, updateGameSettings  } = useGameState(roomId);
+const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  
+}) => { const  { gameSettings, updateGameSettings  } = useGameState(roomId);
   const { toast  } = useToast();
   const [localSettings, setLocalSettings] = useState(gameSettings);
   const [saving, setSaving] = useState(false);
 
-  React.useEffect(() => { setLocalSettings(gameSettings);,
+  React.useEffect(() => {
+  setLocalSettings(gameSettings)
+
 }, [gameSettings]);
 
-  const handleSave = async () => { if (!localSettings) return;
+/**
+ * handleSave函数
+ * 保存数据
+ * @returns Promise<void>
+ */
+const handleSave = async () =>  { if (!localSettings) return;
 
     setSaving(true);
     try {
@@ -58,20 +65,20 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  }) => { c
         dayDuration: localSettings.dayDuration,
         eveningDuration: localSettings.eveningDuration,
         nightDuration: localSettings.nightDuration,
-        dawnDuration: localSettings.dawnDuration,
-       });
+        dawnDuration: localSettings.dawnDuration 
+});
 
       if (success) { toast({
           title: '设置已保存',
-          description: '游戏设置已成功更新',
-         });,
+          description: '游戏设置已成功更新' 
+})
 } else { toast({
           title: '保存失败',
           description: '无法保存游戏设置，请重试',
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
-    } finally { setSaving(false);,
+    } finally { setSaving(false)
 }
   };
 
@@ -90,7 +97,7 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  }) => { c
       </div>
       </CardContent>
       </Card>
-    );,
+    )
 }
 
   return (;
@@ -114,7 +121,8 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  }) => { c
     id='auto-advance';
     checked={ localSettings.isAutoAdvance }
     onCheckedChange={ checked =>;
-    setLocalSettings(prev => prev ? { ...prev, isAutoAdvance: checked  } : null);,
+    setLocalSettings(prev => prev ? { ...prev, isAutoAdvance: checked  
+} : null)
 }
   />
   </div>
@@ -135,8 +143,8 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId  }) => { c
   onChange={ e =>;
   setLocalSettings(prev => prev ? {
     ...prev,
-    dayDuration: parseInt(e.target.value) || 300,
-} : null),
+    dayDuration: parseInt(e.target.value) || 300 
+} : null) 
 }
 className='bg-werewolf-dark/40 border-werewolf-purple/30';
 />
@@ -156,8 +164,8 @@ value={ localSettings.nightDuration }
 onChange={ e =>;
 setLocalSettings(prev => prev ? {
   ...prev,
-  nightDuration: parseInt(e.target.value) || 180,
-} : null),
+  nightDuration: parseInt(e.target.value) || 180 
+} : null) 
 }
 className='bg-werewolf-dark/40 border-werewolf-purple/30';
 />
@@ -177,8 +185,8 @@ value={ localSettings.eveningDuration }
 onChange={ e =>;
 setLocalSettings(prev => prev ? {
   ...prev,
-  eveningDuration: parseInt(e.target.value) || 40,
-} : null),
+  eveningDuration: parseInt(e.target.value) || 40 
+} : null) 
 }
 className='bg-werewolf-dark/40 border-werewolf-purple/30';
 />
@@ -198,8 +206,8 @@ value={ localSettings.dawnDuration }
 onChange={ e =>;
 setLocalSettings(prev => prev ? {
   ...prev,
-  dawnDuration: parseInt(e.target.value) || 40,
-} : null),
+  dawnDuration: parseInt(e.target.value) || 40 
+} : null) 
 }
 className='bg-werewolf-dark/40 border-werewolf-purple/30';
 />
@@ -217,7 +225,8 @@ disabled={ saving }
 className='w-full bg-werewolf-purple hover:bg-werewolf-light';
 >
 <Save className='h-4 w-4 mr-2' />;
-{ saving ? '保存中...' : '保存设置' }
+{ saving ? '保存中...' : '保存设置' 
+}
 </Button>
 
 { /*  Info  */ }
@@ -228,7 +237,13 @@ className='w-full bg-werewolf-purple hover:bg-werewolf-light';
 </div>
 </CardContent>
 </Card>
-);,
+)
 };
 
+/**
+ * GameSettingsPanel组件
+ * 游戏相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default GameSettingsPanel;

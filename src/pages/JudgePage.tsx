@@ -1,12 +1,12 @@
-import { JudgePageProvider  } from '@/contexts/JudgePageContext';
-import { useAuth  } from '@/providers/AuthProvider';
-import { useAutoDyingStatusProcessor  } from '@/hooks/useAutoDyingStatusProcessor';
-import { useAutoProcessDayVote  } from '@/hooks/useAutoProcessDayVote';
-import { useEveningRefresh  } from '@/hooks/useEveningRefresh';
-import { useGameState  } from '@/hooks/useGameState';
-import { useParams  } from 'react-router-dom';
-import { usePermissions  } from '@/contexts/PermissionContext';
-import { useRoomTransition  } from '@/hooks/useRoomTransition';
+import { JudgePageProvider   } from '@/contexts/JudgePageContext';
+import { useAuth   } from '@/providers/AuthProvider';
+import { useAutoDyingStatusProcessor   } from '@/hooks/useAutoDyingStatusProcessor';
+import { useAutoProcessDayVote   } from '@/hooks/useAutoProcessDayVote';
+import { useEveningRefresh   } from '@/hooks/useEveningRefresh';
+import { useGameState   } from '@/hooks/useGameState';
+import { useParams   } from 'react-router-dom';
+import { usePermissions   } from '@/contexts/PermissionContext';
+import { useRoomTransition   } from '@/hooks/useRoomTransition';
 import AnswerRecordPanel from '@/components/judge/management/AnswerRecordPanel';
 import EnhancedGameStateDisplay from '@/components/judge/monitoring/EnhancedGameStateDisplay';
 import JudgeActionPanel from '@/components/judge/management/JudgeActionPanel';
@@ -15,9 +15,17 @@ import PageLayout from '@/components/layout/PageLayout';
 import React from 'react';
 import TeacherSystemPanel from '@/components/judge/management/TeacherSystemPanel';
 
-const JudgePage = () => { const { id: roomId  } = useParams();
+/**
+ * JudgePage组件
+ * JudgePage组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const JudgePage = () => { const  { id: roomId  
+} = useParams();
   const { currentUser, requireAuth  } = useAuth();
-  const { isJudge, isRoomParticipant, loading: permissionsLoading  } = usePermissions(roomId);
+  const { isJudge, isRoomParticipant, loading: permissionsLoading  
+} = usePermissions(roomId);
   const { gameState  } = useGameState(roomId || '');
   useAutoProcessDayVote(roomId || '', gameState);
   useEveningRefresh(gameState);
@@ -35,7 +43,7 @@ const JudgePage = () => { const { id: roomId  } = useParams();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   if (!roomId) { return (;
@@ -46,7 +54,7 @@ const JudgePage = () => { const { id: roomId  } = useParams();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   // 检查权限加载状态
@@ -59,7 +67,7 @@ const JudgePage = () => { const { id: roomId  } = useParams();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   // 检查是否是法官
@@ -71,7 +79,7 @@ const JudgePage = () => { const { id: roomId  } = useParams();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   return (;
@@ -115,7 +123,13 @@ const JudgePage = () => { const { id: roomId  } = useParams();
     </div>
     </PageLayout>
     </JudgePageProvider>
-  );,
+  )
 };
 
+/**
+ * JudgePage组件
+ * JudgePage组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default JudgePage;

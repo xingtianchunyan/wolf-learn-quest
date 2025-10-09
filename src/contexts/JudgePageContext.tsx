@@ -1,7 +1,7 @@
-import { createLogger  } from '@/lib/logger';
-import { supabase  } from '@/integrations/supabase/client';
-import { useToast  } from '@/hooks/useToast';
-import React, { createContext, useContext, useState, useEffect  } from 'react';
+import { createLogger   } from '@/lib/logger';
+import { supabase   } from '@/integrations/supabase/client';
+import { useToast   } from '@/hooks/useToast';
+import React, { createContext, useContext, useState, useEffect   } from 'react';
 
 const logger = createLogger('JudgePageContext');
 
@@ -15,32 +15,32 @@ interface Question { id: string;
   explanation: string | null;
   difficulty: number | null;
   category: string | null;
-  generated_questions_id: string | null;,
+  generated_questions_id: string | null
 }
 
 // 带有顺序信息的题目结构 - 来自room_questions + questions的join结果
 interface LinkedQuestion { question_order: number; // 来自room_questions表
   question: Question;     // 来自questions表的详细信息
-  room_question_id: string; // room_questions表的id,
+  room_question_id: string; // room_questions表的id 
 }
 
 interface JudgePageContextType { linkedQuestions: LinkedQuestion[] | null;
   isSystemLinked: boolean;
   refreshLinkedQuestions: () => Promise<void>;
-  saveLinkedQuestions: (questions: Question[]) => Promise<void>;,
+  saveLinkedQuestions: (questions: Question[]) => Promise<void>
 }
 
 const JudgePageContext = createContext<JudgePageContextType | undefined>(undefined);
 
 export const useJudgePage = () => { const context = useContext(JudgePageContext);
   if (context === undefined) {
-    throw new Error('useJudgePage must be used within a JudgePageProvider');,
+    throw new Error('useJudgePage must be used within a JudgePageProvider')
 }
-  return context;,
+  return context
 };
 
 interface JudgePageProviderProps { roomId: string;
-  children: React.ReactNode;,
+  children: React.ReactNode
 }
 
 export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, children  }) => { const [linkedQuestions, setLinkedQuestions] = useState<LinkedQuestion[] | null>(null);
@@ -74,20 +74,21 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
       )
       `)
       .eq('room_id', roomId)
-      .order('question_order', { ascending: true  });
+      .order('question_order', { ascending: true  
+});
 
       logger.debug('题目查询结果', { data: roomQuestionsData, error  });
 
       if (error) { logger.error('获取题目失败', { error, roomId  });
         setLinkedQuestions(null);
         setIsSystemLinked(false);
-        return;,
+        return
 }
 
       if (!roomQuestionsData || roomQuestionsData.length === 0) { logger.info('房间未设置题目', { roomId  });
         setLinkedQuestions(null);
         setIsSystemLinked(false);
-        return;,
+        return
 }
 
       // 构建带顺序的题目数据结构
@@ -99,67 +100,69 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
           linkedQuestionsData.push({
             question_order: rq.question_order,
             question: rq.questions as Question,
-            room_question_id: rq.id,
-});,
+            room_question_id: rq.id 
+})
 } else { // questions缺失或已被删除
           missingQuestionsCount++;
           logger.warn('发现失联题目', {
             question_order: rq.question_order,
             room_question_id: rq.id,
-            roomId,
-});,
+            roomId })
 }
       });
 
       if (missingQuestionsCount > 0) { logger.warn('题目失联警告', {
           missingQuestionsCount,
           roomId,
-          message: `${missingQuestionsCount } 道题目失联（questions表中已删除但room_questions仍存在）`,
-});
+          message: `${missingQuestionsCount 
+} 道题目失联（questions表中已删除但room_questions仍存在）` });
         toast({ title: '题目数据警告',
-          description: `检测到 ${missingQuestionsCount } 道题目失联，建议检查题库设置`,
-          variant: 'destructive',
-        });,
+          description: `检测到 ${missingQuestionsCount 
+} 道题目失联，建议检查题库设置`,
+          variant: 'destructive' 
+})
 }
 
       logger.info('成功获取题目', { questionsCount: linkedQuestionsData.length,
-        roomId,
-});
+        roomId });
       setLinkedQuestions(linkedQuestionsData);
-      setIsSystemLinked(linkedQuestionsData.length > 0);,
+      setIsSystemLinked(linkedQuestionsData.length > 0)
 } catch (error) { logger.error('获取题目时发生错误', { error, roomId  });
       setLinkedQuestions(null);
-      setIsSystemLinked(false);,
+      setIsSystemLinked(false)
 }
   };
 
   const saveLinkedQuestions = async (questions: Question[]) => { if (!roomId || questions.length === 0) return;
 
     try {
-      logger.info('开始保存题目到房间', { roomId, questionsCount: questions.length  });
+      logger.info('开始保存题目到房间', { roomId, questionsCount: questions.length  
+});
 
       // 先删除现有的房间题目
-      const { error: deleteError  } = await supabase;
+      const { error: deleteError  
+} = await supabase;
       .from('room_questions')
       .delete()
       .eq('room_id', roomId);
 
       if (deleteError) { logger.error('删除旧题目失败', { deleteError, roomId  });
-        throw deleteError;,
+        throw deleteError
 }
 
       // 插入新的房间题目，显式按传入顺序生成question_order
       const roomQuestions = questions.map((question, index) => ({ room_id: roomId,
         question_id: question.id,
-        question_order: index + 1 // 确保从1开始递增,
+        question_order: index + 1 // 确保从1开始递增 
 }));
 
-      const { error: insertError  } = await supabase;
+      const { error: insertError  
+} = await supabase;
       .from('room_questions')
       .insert(roomQuestions);
 
       if (insertError) { logger.error('插入新题目失败', { insertError, roomId  });
-        throw insertError;,
+        throw insertError
 }
 
       logger.info('题目保存成功', { questionsCount: questions.length, roomId  });
@@ -168,16 +171,16 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
       await fetchLinkedQuestions();
 
       toast({ title: '题目设置成功',
-        description: `已为房间设置 ${questions.length } 道题目`,
-      });
+        description: `已为房间设置 ${questions.length 
+} 道题目` });
 
       // 发送实时通知，确保学生系统能够及时更新
-      logger.debug('发送题目更新通知', { roomId  });,
+      logger.debug('发送题目更新通知', { roomId  })
 } catch (error) { logger.error('保存题目时发生错误', { error, roomId  });
       toast({ title: '题目设置失败',
         description: '无法保存题目设置',
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
@@ -188,17 +191,19 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
     const currentLinkedQuestions = linkedQuestions;
     if (currentLinkedQuestions && currentLinkedQuestions.length > 0) { toast({
         title: '题目刷新成功',
-        description: `已加载 ${currentLinkedQuestions.length } 道题目`,
-      });,
+        description: `已加载 ${currentLinkedQuestions.length 
+} 道题目` })
 } else { toast({
         title: '题目刷新完成',
         description: '当前房间暂无题目',
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
-  useEffect(() => { fetchLinkedQuestions();,
+  useEffect(() => {
+  fetchLinkedQuestions()
+
 }, [roomId]);
 
   // 监听房间题目变化
@@ -211,27 +216,29 @@ export const JudgePageProvider: React.FC<JudgePageProviderProps> = ({ roomId, ch
       { event: '*',
         schema: 'public',
         table: 'room_questions',
-        filter: `room_id=eq.${roomId }`;,
+        filter: `room_id=eq.${roomId 
+}`
 },
       payload => { logger.debug('房间题目发生变化', { payload, roomId  });
-        fetchLinkedQuestions();,
+        fetchLinkedQuestions()
 }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(channel);,
-};,
+    return () => {
+  supabase.removeChannel(channel)
+}
+
 }, [roomId]);
 
   const value: JudgePageContextType = { linkedQuestions,
     isSystemLinked,
     refreshLinkedQuestions,
-    saveLinkedQuestions,
-   };
+    saveLinkedQuestions  };
 
   return (;
     <JudgePageContext.Provider value={ value }>;
     { children }
     </JudgePageContext.Provider>
-  );,
+  )
 };

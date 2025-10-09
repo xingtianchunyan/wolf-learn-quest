@@ -1,4 +1,4 @@
-import { cn  } from '@/lib/utils'
+import { cn   } from '@/lib/utils'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import * as React from 'react'
 
@@ -33,8 +33,20 @@ import * as React from 'react'
  */
 const Popover = PopoverPrimitive.Root;
 
+/**
+ * PopoverTrigger组件
+ * PopoverTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const PopoverTrigger = PopoverPrimitive.Trigger;
 
+/**
+ * PopoverContent组件
+ * PopoverContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const PopoverContent = React.forwardRef<;
 React.ElementRef<typeof PopoverPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>

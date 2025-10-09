@@ -1,26 +1,25 @@
-import { Brain, Plus, User, Users, Gavel, LogOut  } from 'lucide-react';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card';
-import { supabase  } from '@/integrations/supabase/client';
-import { Table,
-import { useAuth  } from '@/providers/AuthProvider';
-import { useLanguage  } from '@/components/layout/LanguageSwitcher';
-import { useNavigate  } from 'react-router-dom';
-import { usePlayerRoom  } from '@/hooks/usePlayerRoom';
-import { useRoomCleanup  } from '@/hooks/useRoomCleanup';
-import { useToast  } from '@/components/ui/useToast';
+import { Brain, Plus, User, Users, Gavel, LogOut   } from 'lucide-react';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle   } from '@/components/ui/card';
+import { supabase   } from '@/integrations/supabase/client';
+import {
+  Table, useAuth   } from '@/providers/AuthProvider';
+import { useLanguage   } from '@/components/layout/LanguageSwitcher';
+import { useNavigate   } from 'react-router-dom';
+import { usePlayerRoom   } from '@/hooks/usePlayerRoom';
+import { useRoomCleanup   } from '@/hooks/useRoomCleanup';
+import { useToast   } from '@/components/ui/useToast';
 import LobbyActionButtons from '@/components/lobby/LobbyActionButtons';
 import PageLayout from '@/components/layout/PageLayout';
 import PlayerInfoPanel from '@/components/lobby/PlayerInfoPanel';
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect   } from 'react';
 import RoomListTable from '@/components/lobby/RoomListTable';
 
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  TableRow  } from '@/components/ui/table';
 
 interface GameRoom { id: string;
   roomId: string;
@@ -32,10 +31,16 @@ interface GameRoom { id: string;
   isPrivate: boolean;
   status: string;
   judgeUserId?: string;
-  judgeName?: string;,
+  judgeName?: string
 }
 
-const GameLobby = () => { const navigate = useNavigate();
+/**
+ * GameLobby组件
+ * 游戏相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const GameLobby = () =>  { const navigate = useNavigate();
   const { toast  } = useToast();
   const { t  } = useLanguage();
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
@@ -54,7 +59,7 @@ const GameLobby = () => { const navigate = useNavigate();
   // Auto-redirect to player's room if they're already in one
   useEffect(() => { if (!initializing && currentUser && !playerRoom.isLoading && playerRoom.roomDbId) {
       console.log('Player already in room, redirecting to:', playerRoom.roomDbId);
-      navigate(`/room/${playerRoom.roomDbId }`);,
+      navigate(`/room/${playerRoom.roomDbId }`)
 }
   }, [initializing, currentUser, playerRoom, navigate]);
 
@@ -62,7 +67,7 @@ const GameLobby = () => { const navigate = useNavigate();
   useEffect(() => { const fetchJudgeRoom = async () => {
       if (!currentUser) {
         setJudgeRoomId(null);
-        return;,
+        return
 }
       // 查找 rooms 表，这个人是不是 judge
       const { data, error  } = await supabase;
@@ -72,12 +77,12 @@ const GameLobby = () => { const navigate = useNavigate();
       .eq('status', 'waiting')
       .maybeSingle();
       if (error || !data) { setJudgeRoomId(null);
-        return;,
+        return
 }
-      setJudgeRoomId(data.id);,
+      setJudgeRoomId(data.id)
 };
 
-    if (!initializing && currentUser && !playerRoom.isLoading) { fetchJudgeRoom();,
+    if (!initializing && currentUser && !playerRoom.isLoading) { fetchJudgeRoom()
 }
   }, [initializing, currentUser, playerRoom.isLoading]);
 
@@ -85,17 +90,16 @@ const GameLobby = () => { const navigate = useNavigate();
   useEffect(() => { if (!initializing && currentUser && !playerRoom.isLoading) {
       if (judgeRoomId) {
         // 如果当前为 judge，自动跳转 judge 页面
-        navigate(`/room/${judgeRoomId }/judge`);,
+        navigate(`/room/${judgeRoomId }/judge`)
 } else if (playerRoom.roomDbId) { // 玩家在房间，跳转回普通房间
-        navigate(`/room/${playerRoom.roomDbId }`);,
+        navigate(`/room/${playerRoom.roomDbId }`)
 }
-    },
-}, [initializing, currentUser, playerRoom, playerRoom.roomDbId, judgeRoomId, navigate]);
+    } }, [initializing, currentUser, playerRoom, playerRoom.roomDbId, judgeRoomId, navigate]);
 
   // Initialize authentication and fetch data
   useEffect(() => { if (!initializing && !currentUser) {
-      setIsLoginOpen(true);,
-} else if (currentUser && !playerRoom.roomDbId) { fetchRooms();,
+      setIsLoginOpen(true)
+} else if (currentUser && !playerRoom.roomDbId) { fetchRooms()
 }
   }, [initializing, currentUser, playerRoom.roomDbId]);
 
@@ -111,10 +115,12 @@ const GameLobby = () => { const navigate = useNavigate();
         event: '*',
         schema: 'public',
         table: 'rooms',
-        filter: `status=in.(waiting,active)`;,
+        filter: `status=in.(waiting,active)`
 },
-      () => { console.log('Room change detected, refreshing rooms...');
-        fetchRooms();,
+      () => {
+  console.log('Room change detected, refreshing rooms...');
+        fetchRooms()
+
 }
     )
     .subscribe();
@@ -125,21 +131,30 @@ const GameLobby = () => { const navigate = useNavigate();
     .on('postgres_changes',
       { event: '*',
         schema: 'public',
-        table: 'room_players',
+        table: 'room_players' 
 },
-      () => { console.log('Player change detected, refreshing rooms...');
-        fetchRooms();,
+      () => {
+  console.log('Player change detected, refreshing rooms...');
+        fetchRooms()
+
 }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(roomsChannel);
-      supabase.removeChannel(playersChannel);,
-};,
+    return () => {
+  supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(playersChannel)
+}
+
 }, [currentUser, playerRoom.roomDbId]);
 
   // Fetch rooms from the database
-  const fetchRooms = async () => { try {
+/**
+ * fetchRooms函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchRooms = async () => { try  {
       console.log('Fetching rooms...');
       const { data, error  } = await supabase;
       .from('rooms')
@@ -156,22 +171,26 @@ const GameLobby = () => { const navigate = useNavigate();
       .in('status', ['waiting', 'active']);
 
       if (error) { console.error('Error fetching rooms:', error);
-        return;,
+        return
 }
 
       console.log('Fetched rooms data:', data);
 
       // Get player counts for all waiting rooms in one call using SECURITY DEFINER function
-      const { data: playerCounts, error: playerCountError  } = await supabase;
+      const { data: playerCounts, error: playerCountError  
+} = await supabase;
       .rpc('get_waiting_room_player_counts');
 
-      if (playerCountError) { console.error('Error fetching player counts:', playerCountError);,
+      if (playerCountError) { console.error('Error fetching player counts:', playerCountError)
 }
 
       // Create a map for quick lookup of player counts
       const playerCountMap = new Map();
-      if (playerCounts) { playerCounts.forEach((item: { room_id: string; player_count: number  }) => { playerCountMap.set(item.room_id, Number(item.player_count));,
-});,
+      if (playerCounts) { playerCounts.forEach((item: { room_id: string; player_count: number  
+}) => {
+  playerCountMap.set(item.room_id, Number(item.player_count))
+})
+
 }
 
       // Get judge names and combine with player counts
@@ -179,10 +198,12 @@ const GameLobby = () => { const navigate = useNavigate();
         (data || []).map(async room => { let judgeName = null;
 
           if (room.judge_user_id) {
-            const { data: judgeData  } = await supabase;
-            .rpc('get_public_user_profile', { p_user_id: room.judge_user_id  });
+            const { data: judgeData  
+} = await supabase;
+            .rpc('get_public_user_profile', { p_user_id: room.judge_user_id  
+});
 
-            judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;,
+            judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null
 }
 
           // Get player count from the map
@@ -192,7 +213,8 @@ const GameLobby = () => { const navigate = useNavigate();
 
           return { id: room.id,
             roomId: room.room_id,
-            name: `Game Room ${room.room_id }`,
+            name: `Game Room ${room.room_id 
+}`,
             host: room.users?.player_name || 'Unknown',
             players: playerCount,
             maxPlayers: room.max_players || 8,
@@ -200,29 +222,38 @@ const GameLobby = () => { const navigate = useNavigate();
             isPrivate: false,
             status: room.status,
             judgeUserId: room.judge_user_id,
-            judgeName,
-};,
+            judgeName }
 })
       );
 
       console.log('Formatted rooms:', roomsWithJudges);
-      setGameRooms(roomsWithJudges);,
-} catch (error) { console.error('Error fetching rooms:', error);,
+      setGameRooms(roomsWithJudges)
+} catch (error) { console.error('Error fetching rooms:', error)
 }
   };
 
   // Generate a room ID based on the current date and sequence number
-  const generateRoomId = () => { const now = new Date();
+/**
+ * generateRoomId函数
+ * generateRoomId函数的功能描述
+ * @returns void
+ */
+const generateRoomId = () =>  { const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
 
     const sequence = Math.floor(Math.random() * 99) + 1;
 
-    return `${year }/${ month }/${ day }-${ String(sequence).padStart(2, '0') }`;,
+    return `${year }/${ month }/${ day }-${ String(sequence).padStart(2, '0') }`
 };
 
-  const handleLeaveCurrentRoom = async () => { if (!playerRoom.roomDbId) return;
+/**
+ * handleLeaveCurrentRoom函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleLeaveCurrentRoom = async () =>  { if (!playerRoom.roomDbId) return;
 
     setIsLeavingRoom(true);
 
@@ -232,43 +263,48 @@ const GameLobby = () => { const navigate = useNavigate();
       if (success) {
         toast({
           title: t('room_leave_success'),
-          description: t('room_leave_success'),
-         });
+          description: t('room_leave_success') 
+});
         // Refresh the room list
-        fetchRooms();,
+        fetchRooms()
 } else { toast({
           title: t('room_leave_failed'),
           description: t('room_leave_error'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
     } catch (error) { console.error('Error leaving room:', error);
       toast({
         title: t('room_leave_failed'),
         description: t('room_leave_error'),
-        variant: 'destructive',
-       });,
-} finally { setIsLeavingRoom(false);,
+        variant: 'destructive' 
+})
+} finally { setIsLeavingRoom(false)
 }
   };
 
-  const handleCreateRoom = async () => { console.log('Create room clicked, currentUser:', currentUser);
+/**
+ * handleCreateRoom函数
+ * 创建新项
+ * @returns Promise<void>
+ */
+const handleCreateRoom = async () =>  { console.log('Create room clicked, currentUser:', currentUser);
 
     if (!currentUser) {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (playerRoom.roomDbId) { toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setIsCreatingRoom(true);
@@ -278,13 +314,14 @@ const GameLobby = () => { const navigate = useNavigate();
       console.log('Creating room with user ID:', currentUser.id);
 
       // Create room in database
-      const { data: newRoom, error: roomError  } = await supabase;
+      const { data: newRoom, error: roomError  
+} = await supabase;
       .from('rooms')
       .insert({ room_id: roomId,
         host_id: currentUser.id,
         max_players: 12,
         status: 'waiting',
-        human_judge: true,
+        human_judge: true 
 })
       .select()
       .single();
@@ -293,63 +330,69 @@ const GameLobby = () => { const navigate = useNavigate();
         toast({
           title: t('room_create_failed'),
           description: roomError.message || t('room_create_error'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       console.log('Room created:', newRoom);
 
       // Add host as player to the room
-      const { error: playerError  } = await supabase;
+      const { error: playerError  
+} = await supabase;
       .from('room_players')
       .insert({ room_id: newRoom.id,
         user_id: currentUser.id,
         is_ready: false,
-        is_ai: false,
+        is_ai: false 
 });
 
       if (playerError) { console.error('Error adding player to room:', playerError);
         toast({
           title: t('room_create_failed'),
           description: t('room_create_error'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
 
       toast({ title: t('room_created'),
-        description: t('room_created_desc'),
-       });
+        description: t('room_created_desc') 
+});
 
       // Navigate to the specific room
-      navigate(`/room/${ newRoom.id }`);,
+      navigate(`/room/${ newRoom.id }`)
 } catch (error) { console.error('Error creating room:', error);
       toast({
         title: t('room_create_failed'),
         description: t('room_create_error'),
-        variant: 'destructive',
-       });,
-} finally { setIsCreatingRoom(false);,
+        variant: 'destructive' 
+})
+} finally { setIsCreatingRoom(false)
 }
   };
 
-  const handleCreateAIJudge = async () => { console.log('Create AI judge clicked, currentUser:', currentUser);
+/**
+ * handleCreateAIJudge函数
+ * 创建新项
+ * @returns Promise<void>
+ */
+const handleCreateAIJudge = async () =>  { console.log('Create AI judge clicked, currentUser:', currentUser);
 
     if (!currentUser) {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (playerRoom.roomDbId) { toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setIsCreatingAIRoom(true);
@@ -359,13 +402,14 @@ const GameLobby = () => { const navigate = useNavigate();
       console.log('Creating AI judge room with user ID:', currentUser.id);
 
       // Create room with AI judge in database
-      const { data: newRoom, error: roomError  } = await supabase;
+      const { data: newRoom, error: roomError  
+} = await supabase;
       .from('rooms')
       .insert({ room_id: roomId,
         host_id: currentUser.id,
         max_players: 12,
         status: 'waiting',
-        human_judge: false,
+        human_judge: false 
 })
       .select()
       .single();
@@ -374,67 +418,76 @@ const GameLobby = () => { const navigate = useNavigate();
         toast({
           title: t('room_create_failed'),
           description: roomError.message || t('room_create_error'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       console.log('AI judge room created:', newRoom);
 
       // Add host as player to the room
-      const { error: playerError  } = await supabase;
+      const { error: playerError  
+} = await supabase;
       .from('room_players')
       .insert({ room_id: newRoom.id,
         user_id: currentUser.id,
         is_ready: false,
-        is_ai: false,
+        is_ai: false 
 });
 
       if (playerError) { console.error('Error adding player to room:', playerError);
         toast({
           title: t('room_create_failed'),
           description: t('room_create_error'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
 
       toast({ title: t('room_created'),
-        description: t('room_created_desc'),
-       });
+        description: t('room_created_desc') 
+});
 
       // Navigate to the specific room
-      navigate(`/room/${ newRoom.id }`);,
+      navigate(`/room/${ newRoom.id }`)
 } catch (error) { console.error('Error creating AI judge room:', error);
       toast({
         title: t('room_create_failed'),
         description: t('room_create_error'),
-        variant: 'destructive',
-       });,
-} finally { setIsCreatingAIRoom(false);,
+        variant: 'destructive' 
+})
+} finally { setIsCreatingAIRoom(false)
 }
   };
 
-  const joinRoom = async (roomId: string) => { if (!currentUser) {
+/**
+ * joinRoom函数
+ * joinRoom函数的功能描述
+ *
+ * @param roomId - roomId参数
+ * @returns Promise<void>
+ */
+const joinRoom = async (roomId: string) => { if (!currentUser)  {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (playerRoom.roomDbId) { toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     try { console.log('Joining room:', roomId, 'as user:', currentUser.id);
 
       // 先检查房间是否还有空位
-      const { data: roomData, error: roomError  } = await supabase;
+      const { data: roomData, error: roomError  
+} = await supabase;
       .from('rooms')
       .select('max_players')
       .eq('id', roomId)
@@ -444,23 +497,25 @@ const GameLobby = () => { const navigate = useNavigate();
         toast({
           title: t('room_join_failed'),
           description: t('room_join_error'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       // 检查当前玩家数
-      const { count: currentPlayerCount  } = await supabase;
+      const { count: currentPlayerCount  
+} = await supabase;
       .from('room_players')
-      .select('*', { count: 'exact', head: true  })
+      .select('*', { count: 'exact', head: true  
+})
       .eq('room_id', roomId);
 
       if (currentPlayerCount && currentPlayerCount >= (roomData.max_players || 8)) { toast({
           title: t('room_join_failed'),
           description: t('room_full'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       // Add player to room
@@ -469,36 +524,43 @@ const GameLobby = () => { const navigate = useNavigate();
       .insert({ room_id: roomId,
         user_id: currentUser.id,
         is_ready: false,
-        is_ai: false,
+        is_ai: false 
 });
 
       if (error) { console.error('Error joining room:', error);
         toast({
           title: t('room_join_failed'),
           description: error.message || t('room_join_error'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       console.log('Successfully joined room:', roomId);
-      navigate(`/room/${ roomId }`);,
+      navigate(`/room/${ roomId }`)
 } catch (error) { console.error('Error joining room:', error);
       toast({
         title: t('room_join_failed'),
         description: t('room_join_error'),
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
-  const playAsJudge = async (roomId: string) => { if (!currentUser) {
+/**
+ * playAsJudge函数
+ * playAsJudge函数的功能描述
+ *
+ * @param roomId - roomId参数
+ * @returns Promise<void>
+ */
+const playAsJudge = async (roomId: string) => { if (!currentUser)  {
       toast({
         title: 'Authentication required',
         description: 'Please sign in to play as judge',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     try { console.log('Playing as judge in room:', roomId);
@@ -506,7 +568,8 @@ const GameLobby = () => { const navigate = useNavigate();
       // Update the room to set current user as judge
       const { error  } = await supabase;
       .from('rooms')
-      .update({ judge_user_id: currentUser.id  })
+      .update({ judge_user_id: currentUser.id  
+})
       .eq('id', roomId)
       .is('judge_user_id', null); // Only update if no judge is currently assigned
 
@@ -514,22 +577,22 @@ const GameLobby = () => { const navigate = useNavigate();
         toast({
           title: 'Failed to become judge',
           description: 'Another player may have already become the judge',
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       // 直接导航到对应房间的法官页面
       navigate(`/room/${ roomId }/judge`);
 
       // Refresh room list to update UI
-      fetchRooms();,
+      fetchRooms()
 } catch (error) { console.error('Error playing as judge:', error);
       toast({
         title: 'Failed to join as judge',
         description: 'An unexpected error occurred',
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
@@ -544,7 +607,7 @@ const GameLobby = () => { const navigate = useNavigate();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   return (;
@@ -589,7 +652,13 @@ const GameLobby = () => { const navigate = useNavigate();
     </div>
     </div>
     </PageLayout>
-  );,
+  )
 };
 
+/**
+ * GameLobby组件
+ * 游戏相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default GameLobby;

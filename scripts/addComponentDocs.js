@@ -27,13 +27,13 @@ class ComponentDocGenerator {
    */
   async run() {
     console.log('🔍 开始为组件添加文档...\n');
-    
+
     const componentFiles = await this.getComponentFiles(this.componentsPath);
-    
+
     for (const filePath of componentFiles) {
       await this.processComponentFile(filePath);
     }
-    
+
     this.printSummary();
   }
 
@@ -44,21 +44,21 @@ class ComponentDocGenerator {
    */
   async getComponentFiles(dir) {
     const files = [];
-    
+
     const items = fs.readdirSync(dir);
     for (const item of items) {
       const fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         if (!this.shouldSkipDirectory(item)) {
-          files.push(...await this.getComponentFiles(fullPath));
+          files.push(...(await this.getComponentFiles(fullPath)));
         }
       } else if (this.isComponentFile(fullPath)) {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -69,12 +69,12 @@ class ComponentDocGenerator {
    */
   isComponentFile(filePath) {
     const fileName = path.basename(filePath);
-    
+
     // 跳过某些文件
     if (this.shouldSkipFile(fileName)) {
       return false;
     }
-    
+
     // 只处理 .tsx 文件
     return fileName.endsWith('.tsx');
   }
@@ -90,9 +90,9 @@ class ComponentDocGenerator {
       /\.d\.ts$/,
       /\.test\.(ts|tsx)$/,
       /\.spec\.(ts|tsx)$/,
-      /^vite-env\.d\.ts$/
+      /^vite-env\.d\.ts$/,
     ];
-    
+
     return skipPatterns.some(pattern => pattern.test(fileName));
   }
 
@@ -102,7 +102,15 @@ class ComponentDocGenerator {
    * @returns {boolean} 是否跳过
    */
   shouldSkipDirectory(dirName) {
-    const skipDirs = ['node_modules', '.git', 'dist', 'build', '__tests__', 'test', 'tests'];
+    const skipDirs = [
+      'node_modules',
+      '.git',
+      'dist',
+      'build',
+      '__tests__',
+      'test',
+      'tests',
+    ];
     return skipDirs.includes(dirName);
   }
 
@@ -113,18 +121,18 @@ class ComponentDocGenerator {
   async processComponentFile(filePath) {
     try {
       const content = fs.readFileSync(filePath, 'utf8');
-      
+
       // 检查是否已有完整文档
       if (this.hasCompleteDocumentation(content)) {
         this.skippedFiles.push({
           path: filePath,
-          reason: '已有完整文档'
+          reason: '已有完整文档',
         });
         return;
       }
 
       const updatedContent = this.addDocumentation(content, filePath);
-      
+
       if (updatedContent !== content) {
         fs.writeFileSync(filePath, updatedContent, 'utf8');
         this.processedFiles.push(filePath);
@@ -132,14 +140,14 @@ class ComponentDocGenerator {
       } else {
         this.skippedFiles.push({
           path: filePath,
-          reason: '无需更新'
+          reason: '无需更新',
         });
       }
     } catch (error) {
       console.error(`❌ 处理失败 ${filePath}:`, error.message);
       this.skippedFiles.push({
         path: filePath,
-        reason: `错误: ${error.message}`
+        reason: `错误: ${error.message}`,
       });
     }
   }
@@ -152,12 +160,13 @@ class ComponentDocGenerator {
   hasCompleteDocumentation(content) {
     // 检查是否有文件级注释
     const hasFileComment = /\/\*\*[\s\S]*?\*\//.test(content);
-    
+
     // 检查是否有组件注释
-    const hasComponentComment = content.includes('@component') || 
-                               content.includes('@description') ||
-                               content.includes('文件级注释');
-    
+    const hasComponentComment =
+      content.includes('@component') ||
+      content.includes('@description') ||
+      content.includes('文件级注释');
+
     return hasFileComment && hasComponentComment;
   }
 
@@ -170,27 +179,31 @@ class ComponentDocGenerator {
   addDocumentation(content, filePath) {
     const fileName = path.basename(filePath, '.tsx');
     const relativePath = path.relative(this.componentsPath, filePath);
-    
+
     // 分析组件信息
     const componentInfo = this.analyzeComponent(content, fileName);
-    
+
     // 生成文件级注释
     const fileComment = this.generateFileComment(componentInfo, relativePath);
-    
+
     // 生成组件注释
     const componentComment = this.generateComponentComment(componentInfo);
-    
+
     // 插入文档
     let updatedContent = content;
-    
+
     // 添加文件级注释（如果没有）
     if (!this.hasFileComment(content)) {
       updatedContent = fileComment + '\n\n' + updatedContent;
     }
-    
+
     // 添加组件注释（如果没有）
-    updatedContent = this.insertComponentComment(updatedContent, componentComment, componentInfo);
-    
+    updatedContent = this.insertComponentComment(
+      updatedContent,
+      componentComment,
+      componentInfo
+    );
+
     return updatedContent;
   }
 
@@ -220,7 +233,7 @@ class ComponentDocGenerator {
       imports: [],
       hooks: [],
       description: '',
-      category: this.getComponentCategory(fileName)
+      category: this.getComponentCategory(fileName),
     };
 
     // 检查默认导出
@@ -246,7 +259,10 @@ class ComponentDocGenerator {
     }
 
     // 生成描述
-    info.description = this.generateComponentDescription(fileName, info.category);
+    info.description = this.generateComponentDescription(
+      fileName,
+      info.category
+    );
 
     return info;
   }
@@ -258,14 +274,23 @@ class ComponentDocGenerator {
    */
   getComponentCategory(fileName) {
     const categories = {
-      'ui': ['Button', 'Input', 'Card', 'Dialog', 'Sheet', 'Toast', 'Badge', 'Avatar'],
-      'game': ['Game', 'Player', 'Room', 'Skill', 'Vote', 'Role'],
-      'admin': ['Admin', 'Monitor', 'Dashboard', 'Performance'],
-      'chat': ['Chat', 'Message', 'Channel'],
-      'error': ['Error', 'Boundary'],
-      'layout': ['Layout', 'Navbar', 'Footer', 'Page'],
-      'lobby': ['Lobby', 'Stats', 'Info'],
-      'judge': ['Judge', 'Management', 'Panel']
+      ui: [
+        'Button',
+        'Input',
+        'Card',
+        'Dialog',
+        'Sheet',
+        'Toast',
+        'Badge',
+        'Avatar',
+      ],
+      game: ['Game', 'Player', 'Room', 'Skill', 'Vote', 'Role'],
+      admin: ['Admin', 'Monitor', 'Dashboard', 'Performance'],
+      chat: ['Chat', 'Message', 'Channel'],
+      error: ['Error', 'Boundary'],
+      layout: ['Layout', 'Navbar', 'Footer', 'Page'],
+      lobby: ['Lobby', 'Stats', 'Info'],
+      judge: ['Judge', 'Management', 'Panel'],
     };
 
     for (const [category, keywords] of Object.entries(categories)) {
@@ -285,15 +310,15 @@ class ComponentDocGenerator {
    */
   generateComponentDescription(fileName, category) {
     const descriptions = {
-      'ui': '提供用户界面交互功能',
-      'game': '处理游戏逻辑和状态管理',
-      'admin': '提供管理员功能和监控界面',
-      'chat': '处理聊天和通信功能',
-      'error': '处理错误展示和边界保护',
-      'layout': '提供页面布局和导航功能',
-      'lobby': '处理大厅和玩家信息展示',
-      'judge': '提供裁判功能和游戏管理',
-      'common': '提供通用功能组件'
+      ui: '提供用户界面交互功能',
+      game: '处理游戏逻辑和状态管理',
+      admin: '提供管理员功能和监控界面',
+      chat: '处理聊天和通信功能',
+      error: '处理错误展示和边界保护',
+      layout: '提供页面布局和导航功能',
+      lobby: '处理大厅和玩家信息展示',
+      judge: '提供裁判功能和游戏管理',
+      common: '提供通用功能组件',
     };
 
     return descriptions[category] || '提供特定功能的React组件';
@@ -329,12 +354,14 @@ class ComponentDocGenerator {
    * @returns {string} 组件注释
    */
   generateComponentComment(componentInfo) {
-    const propsDoc = componentInfo.hasProps ? 
-      `\n * @param {${componentInfo.propsInterface}} props - 组件属性` : 
-      '\n * @param {Object} props - 组件属性（可选）';
+    const propsDoc = componentInfo.hasProps
+      ? `\n * @param {${componentInfo.propsInterface}} props - 组件属性`
+      : '\n * @param {Object} props - 组件属性（可选）';
 
-    const hooksDoc = componentInfo.hooks.length > 0 ? 
-      `\n * @hooks ${componentInfo.hooks.join(', ')}` : '';
+    const hooksDoc =
+      componentInfo.hooks.length > 0
+        ? `\n * @hooks ${componentInfo.hooks.join(', ')}`
+        : '';
 
     return `/**
  * ${componentInfo.name} 组件
@@ -370,12 +397,12 @@ class ComponentDocGenerator {
     }
 
     const componentIndex = content.indexOf(match[0]);
-    
+
     // 检查是否已有组件注释
     const beforeComponent = content.substring(0, componentIndex);
     const lines = beforeComponent.split('\n');
     const lastNonEmptyLine = lines.reverse().find(line => line.trim() !== '');
-    
+
     if (lastNonEmptyLine && lastNonEmptyLine.trim().endsWith('*/')) {
       return content; // 已有注释
     }
@@ -383,7 +410,7 @@ class ComponentDocGenerator {
     // 插入注释
     const beforeMatch = content.substring(0, componentIndex);
     const afterMatch = content.substring(componentIndex);
-    
+
     return beforeMatch + comment + '\n' + afterMatch;
   }
 
@@ -395,21 +422,23 @@ class ComponentDocGenerator {
     console.log('==================================================');
     console.log(`✅ 已处理文件: ${this.processedFiles.length}`);
     console.log(`⏭️  跳过文件: ${this.skippedFiles.length}`);
-    
+
     if (this.processedFiles.length > 0) {
       console.log('\n📝 已更新的文件:');
       this.processedFiles.forEach(file => {
         console.log(`  - ${path.relative(process.cwd(), file)}`);
       });
     }
-    
+
     if (this.skippedFiles.length > 0) {
       console.log('\n⏭️  跳过的文件:');
       this.skippedFiles.forEach(({ path: filePath, reason }) => {
-        console.log(`  - ${path.relative(process.cwd(), filePath)} (${reason})`);
+        console.log(
+          `  - ${path.relative(process.cwd(), filePath)} (${reason})`
+        );
       });
     }
-    
+
     console.log('\n✨ 组件文档生成完成！');
   }
 }
@@ -423,7 +452,10 @@ async function main() {
 }
 
 // 执行脚本
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('addComponentDocs.js')) {
+if (
+  import.meta.url.endsWith(process.argv[1]) ||
+  process.argv[1].endsWith('addComponentDocs.js')
+) {
   main().catch(console.error);
 }
 

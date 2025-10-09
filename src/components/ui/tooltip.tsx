@@ -1,4 +1,4 @@
-import { cn  } from '@/lib/utils'
+import { cn   } from '@/lib/utils'
 import * as React from 'react'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
@@ -33,10 +33,28 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip'
  */
 const TooltipProvider = TooltipPrimitive.Provider;
 
+/**
+ * Tooltip组件
+ * Tooltip组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const Tooltip = TooltipPrimitive.Root;
 
+/**
+ * TooltipTrigger组件
+ * TooltipTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
+/**
+ * TooltipContent组件
+ * TooltipContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const TooltipContent = React.forwardRef<;
 React.ElementRef<typeof TooltipPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>

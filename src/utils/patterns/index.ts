@@ -13,8 +13,7 @@ export { EventEmitter,
   globalEventEmitter,
   EventNames,
   useEventListener,
-  useEventEmitter,
-} from './observer';
+  useEventEmitter  } from './observer';
 
 // 单例模式
 export { Singleton,
@@ -23,8 +22,7 @@ export { Singleton,
   ThreadSafeSingleton,
   SingletonRegistry,
   useSingleton,
-  useLazySingleton,
-} from './singleton';
+  useLazySingleton  } from './singleton';
 
 // 工厂模式
 export { type Factory,
@@ -37,8 +35,7 @@ export { type Factory,
   factoryMethod,
   useFactory,
   useAsyncFactory,
-  FactoryManager,
-} from './factory';
+  FactoryManager  } from './factory';
 
 // 策略模式
 export { type Strategy,
@@ -49,14 +46,13 @@ export { type Strategy,
   strategy,
   useStrategyContext,
   useConditionalStrategy,
-  StrategyManager,
-} from './strategy';
+  StrategyManager  } from './strategy';
 
 /**
 * 设计模式工具类
 * 提供设计模式的快速使用方法
  */
-export class PatternUtils { /**
+export class PatternUtils  { /**
   * 创建简单工厂
   *
   * @param types - 产品类型映射
@@ -64,7 +60,7 @@ export class PatternUtils { /**
    */
   static createSimpleFactory<T>(types: Record<string, new (...args: any[]) => T>;
   ): SimpleFactory<T> {
-    return new SimpleFactory(types);,
+    return new SimpleFactory(types)
 }
 
   /**
@@ -79,11 +75,12 @@ export class PatternUtils { /**
 
     if (strategies) {
       Object.entries(strategies).forEach(([name, strategy]) => {
-        context.registerStrategy(name, strategy);,
-});,
+  context.registerStrategy(name, strategy)
+})
 }
 
-    return context;,
+    return context
+
 }
 
   /**
@@ -91,7 +88,7 @@ export class PatternUtils { /**
   *
   * @returns 事件发射器实例
    */
-  static createEventEmitter(): EventEmitter { return new EventEmitter();,
+static createEventEmitter(): EventEmitter  { return new EventEmitter()
 }
 
   /**
@@ -99,7 +96,7 @@ export class PatternUtils { /**
   *
   * @returns 类型化事件发射器实例
    */
-  static createTypedEventEmitter<T extends Record<string, any>>(): TypedEventEmitter<T> { return new TypedEventEmitter<T>();,
+static createTypedEventEmitter<T extends Record<string, any>>(): TypedEventEmitter<T>  { return new TypedEventEmitter<T>()
 }
 
   /**
@@ -108,7 +105,7 @@ export class PatternUtils { /**
   * @param factory - 工厂函数
   * @returns 懒加载单例实例
    */
-  static createLazySingleton<T>(factory: () => T): LazySingleton<T> { return new LazySingleton(factory);,
+static createLazySingleton<T>(factory: () => T): LazySingleton<T>  { return new LazySingleton(factory)
 }
 
   /**
@@ -116,7 +113,7 @@ export class PatternUtils { /**
   *
   * @returns 条件策略选择器实例
    */
-  static createConditionalStrategySelector<TInput = any, TOutput = any>(): ConditionalStrategySelector<TInput, TOutput> { return new ConditionalStrategySelector<TInput, TOutput>();,
+static createConditionalStrategySelector<TInput = any, TOutput = any>(): ConditionalStrategySelector<TInput, TOutput>  { return new ConditionalStrategySelector<TInput, TOutput>()
 }
 
   /**
@@ -124,7 +121,7 @@ export class PatternUtils { /**
   *
   * @returns 策略链实例
    */
-  static createStrategyChain<TInput = any, TOutput = any>(): StrategyChain<TInput, TOutput> { return new StrategyChain<TInput, TOutput>();,
+static createStrategyChain<TInput = any, TOutput = any>(): StrategyChain<TInput, TOutput>  { return new StrategyChain<TInput, TOutput>()
 }
 
   /**
@@ -132,7 +129,7 @@ export class PatternUtils { /**
   *
   * @returns 异步工厂实例
    */
-  static createAsyncFactory<T>(): AsyncFactory<T> { return new AsyncFactory<T>();,
+static createAsyncFactory<T>(): AsyncFactory<T>  { return new AsyncFactory<T>()
 }
 
   /**
@@ -140,31 +137,31 @@ export class PatternUtils { /**
   *
   * @returns 条件工厂实例
    */
-  static createConditionalFactory<T>(): ConditionalFactory<T> { return new ConditionalFactory<T>();,
+static createConditionalFactory<T>(): ConditionalFactory<T>  { return new ConditionalFactory<T>()
 }
 }
 
 /**
 * 设计模式常量
  */
-export const PATTERN_CONSTANTS = { // 事件名称
+export const PATTERN_CONSTANTS =  { // 事件名称
   EVENTS: {
     PATTERN_CREATED: 'pattern:created',
     PATTERN_DESTROYED: 'pattern:destroyed',
     STRATEGY_CHANGED: 'strategy:changed',
     FACTORY_REGISTERED: 'factory:registered',
-    SINGLETON_CREATED: 'singleton:created',
+    SINGLETON_CREATED: 'singleton:created' 
 },
 
   // 默认配置
   DEFAULTS: { MAX_LISTENERS: 100,
     RETRY_ATTEMPTS: 3,
-    TIMEOUT: 5000,
+    TIMEOUT: 5000 
 }
 } as const;
 
 /**
-* 设计模式类型定义
+ * 设计模式类型定义
  */
 export type PatternType =;
 | 'observer'
@@ -176,22 +173,22 @@ export type PatternType =;
 | 'decorator';
 
 /**
-* 模式元数据接口
+ * 模式元数据接口
  */
-export interface PatternMetadata { type: PatternType;
+export interface PatternMetadata  { type: PatternType;
   name: string;
   description: string;
   createdAt: Date;
-  version: string;,
+  version: string
 }
 
 /**
 * 设计模式注册表
 * 统一管理所有设计模式实例
  */
-export class PatternRegistry { private static patterns: Map<string, {
+export class PatternRegistry { private static patterns: Map<string,  {
     instance: any;
-    metadata: PatternMetadata;,
+    metadata: PatternMetadata
 }> = new Map();
 
   /**
@@ -209,8 +206,7 @@ export class PatternRegistry { private static patterns: Map<string, {
 
     // 发送注册事件
     globalEventEmitter.emit(PATTERN_CONSTANTS.EVENTS.PATTERN_CREATED, { id,
-      metadata,
-});,
+      metadata })
 }
 
   /**
@@ -218,7 +214,7 @@ export class PatternRegistry { private static patterns: Map<string, {
   *
   * @param id - 实例ID
    */
-  static get<T = any>(id: string): T | undefined { return PatternRegistry.patterns.get(id)?.instance;,
+static get<T = any>(id: string): T | undefined  { return PatternRegistry.patterns.get(id)?.instance
 }
 
   /**
@@ -226,7 +222,7 @@ export class PatternRegistry { private static patterns: Map<string, {
   *
   * @param id - 实例ID
    */
-  static getMetadata(id: string): PatternMetadata | undefined { return PatternRegistry.patterns.get(id)?.metadata;,
+static getMetadata(id: string): PatternMetadata | undefined  { return PatternRegistry.patterns.get(id)?.metadata
 }
 
   /**
@@ -234,23 +230,23 @@ export class PatternRegistry { private static patterns: Map<string, {
   *
   * @param id - 实例ID
    */
-  static unregister(id: string): boolean { const pattern = PatternRegistry.patterns.get(id);
+static unregister(id: string): boolean  { const pattern = PatternRegistry.patterns.get(id);
     if (pattern) {
       // 如果实例有清理方法，调用它
       if (pattern.instance && typeof pattern.instance.destroy === 'function') {
-        pattern.instance.destroy();,
+        pattern.instance.destroy()
 }
 
       PatternRegistry.patterns.delete(id);
 
       // 发送注销事件
       globalEventEmitter.emit(PATTERN_CONSTANTS.EVENTS.PATTERN_DESTROYED, { id,
-        metadata: pattern.metadata,
+        metadata: pattern.metadata 
 });
 
-      return true;,
+      return true
 }
-    return false;,
+    return false
 }
 
   /**
@@ -258,14 +254,16 @@ export class PatternRegistry { private static patterns: Map<string, {
   *
   * @param type - 模式类型
    */
-  static getByType<T = any>(type: PatternType): Array<{ id: string; instance: T; metadata: PatternMetadata  }> { const results: Array<{ id: string; instance: T; metadata: PatternMetadata  }> = [];
+static getByType<T = any>(type: PatternType): Array<{ id: string; instance: T; metadata: PatternMetadata  
+}> { const results: Array< { id: string; instance: T; metadata: PatternMetadata  
+}> = [];
 
     for (const [id, { instance, metadata  }] of PatternRegistry.patterns) { if (metadata.type === type) {
-        results.push({ id, instance, metadata  });,
+        results.push({ id, instance, metadata  })
 }
     }
 
-    return results;,
+    return results
 }
 
   /**
@@ -273,39 +271,38 @@ export class PatternRegistry { private static patterns: Map<string, {
   *
   * @param id - 实例ID
    */
-  static has(id: string): boolean { return PatternRegistry.patterns.has(id);,
+static has(id: string): boolean  { return PatternRegistry.patterns.has(id)
 }
 
   /**
-  * 获取所有模式ID
-   */
-  static getIds(): string[] { return Array.from(PatternRegistry.patterns.keys());,
+ * 获取所有模式ID
+ */
+static getIds(): string[]  { return Array.from(PatternRegistry.patterns.keys())
 }
-
   /**
-  * 清理所有模式
-   */
-  static clear(): void { for (const [id, { instance, metadata  }] of PatternRegistry.patterns) { if (instance && typeof instance.destroy === 'function') {
+ * 清理所有模式
+ */
+static clear(): void { for (const [id, { instance, metadata  }] of PatternRegistry.patterns) { if (instance && typeof instance.destroy === 'function')  {
         try {
-          instance.destroy();,
-} catch (error) { console.error(`清理模式实例失败: ${id }`, error);,
+          instance.destroy()
+} catch (error) { console.error(`清理模式实例失败: ${id 
+}`, error)
 }
       }
 
       globalEventEmitter.emit(PATTERN_CONSTANTS.EVENTS.PATTERN_DESTROYED, { id,
-        metadata,
-});,
+        metadata })
 }
 
-    PatternRegistry.patterns.clear();,
+    PatternRegistry.patterns.clear()
 }
 
   /**
-  * 获取注册表统计信息
-   */
-  static getStats(): { totalPatterns: number;
+ * 获取注册表统计信息
+ */
+static getStats():  { totalPatterns: number;
     patternsByType: Record<PatternType, number>;
-    patternIds: string[];,
+    patternIds: string[]
 } { const patternsByType: Record<PatternType, number> = {
       observer: 0,
       singleton: 0,
@@ -313,15 +310,15 @@ export class PatternRegistry { private static patterns: Map<string, {
       strategy: 0,
       builder: 0,
       adapter: 0,
-      decorator: 0,
+      decorator: 0  
 };
 
-    for (const { metadata  } of PatternRegistry.patterns.values()) { patternsByType[metadata.type]++;,
+    for (const { metadata  } of PatternRegistry.patterns.values()) { patternsByType[metadata.type]++
 }
 
     return { totalPatterns: PatternRegistry.patterns.size,
       patternsByType,
-      patternIds: Array.from(PatternRegistry.patterns.keys()),
-};,
+      patternIds: Array.from(PatternRegistry.patterns.keys()) 
+}
 }
 }

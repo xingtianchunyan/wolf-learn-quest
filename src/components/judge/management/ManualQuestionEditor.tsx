@@ -1,12 +1,12 @@
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent  } from '@/components/ui/card';
-import { Checkbox  } from '@/components/ui/checkbox';
-import { Input  } from '@/components/ui/input';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
-import { Textarea  } from '@/components/ui/textarea';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent   } from '@/components/ui/card';
+import { Checkbox   } from '@/components/ui/checkbox';
+import { Input   } from '@/components/ui/input';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue   } from '@/components/ui/select';
+import { Textarea   } from '@/components/ui/textarea';
 import React from 'react';
-import { ManualQuestionForm  } from '../types/questionBank';
+import { ManualQuestionForm   } from '../types/questionBank';
 
 /**
 * 文件级注释：ManualQuestionEditor 组件
@@ -23,10 +23,9 @@ import { ManualQuestionForm  } from '../types/questionBank';
 * @category common
 * @filepath judge\management\ManualQuestionEditor.tsx
  */
-
-interface ManualQuestionEditorProps { manualQuestion: ManualQuestionForm;
+interface ManualQuestionEditorProps  { manualQuestion: ManualQuestionForm;
   onUpdateQuestion: (updates: Partial<ManualQuestionForm>) => void;
-  onSubmit: () => void;,
+  onSubmit: () => void
 }
 
 /**
@@ -42,10 +41,9 @@ interface ManualQuestionEditorProps { manualQuestion: ManualQuestionForm;
 * // 使用示例
 * <ManualQuestionEditor { ...props } />
  */
-const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuestion,
+const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ( { manualQuestion,
   onUpdateQuestion,
-  onSubmit,
-}) => { return (;
+  onSubmit }) => { return (;
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30 h-full'>;
     <CardContent className='p-6 h-full'>;
     <ScrollArea className='h-full'>;
@@ -54,7 +52,8 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <label className='text-white font-medium mb-2 block'>题干</label>;
     <Textarea
     value={manualQuestion.question }
-    onChange={ e => onUpdateQuestion({ question: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ question: e.target.value  
+})}
     placeholder='请输入题目内容...';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white resize-none';
     rows={ 3 }
@@ -66,7 +65,8 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <label className='text-white font-medium mb-2 block'>题目难度</label>;
     <Select
     value={ manualQuestion.difficulty.toString() }
-    onValueChange={ value => onUpdateQuestion({ difficulty: parseInt(value)  })}
+    onValueChange={ value => onUpdateQuestion({ difficulty: parseInt(value)  
+})}
     >
     <SelectTrigger className='bg-werewolf-dark border-werewolf-purple/30 text-white'>;
     <SelectValue />
@@ -88,14 +88,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <Checkbox
     checked={ manualQuestion.correct_option === 1 }
     onCheckedChange={ checked => {
-      if (checked) onUpdateQuestion({ correct_option: 1  });,
+      if (checked) onUpdateQuestion({ correct_option: 1  
+})
 }}
     />
     <label className='text-white font-medium'>选项 A</label>;
     </div>
     <Input
     value={ manualQuestion.option_a }
-    onChange={ e => onUpdateQuestion({ option_a: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ option_a: e.target.value  
+})}
     placeholder='选项 A 内容';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white';
     />
@@ -106,14 +108,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <Checkbox
     checked={ manualQuestion.correct_option === 2 }
     onCheckedChange={ checked => {
-      if (checked) onUpdateQuestion({ correct_option: 2  });,
+      if (checked) onUpdateQuestion({ correct_option: 2  
+})
 }}
     />
     <label className='text-white font-medium'>选项 B</label>;
     </div>
     <Input
     value={ manualQuestion.option_b }
-    onChange={ e => onUpdateQuestion({ option_b: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ option_b: e.target.value  
+})}
     placeholder='选项 B 内容';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white';
     />
@@ -124,14 +128,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <Checkbox
     checked={ manualQuestion.correct_option === 3 }
     onCheckedChange={ checked => {
-      if (checked) onUpdateQuestion({ correct_option: 3  });,
+      if (checked) onUpdateQuestion({ correct_option: 3  
+})
 }}
     />
     <label className='text-white font-medium'>选项 C（可选）</label>;
     </div>
     <Input
     value={ manualQuestion.option_c }
-    onChange={ e => onUpdateQuestion({ option_c: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ option_c: e.target.value  
+})}
     placeholder='选项 C 内容（可选）';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white';
     />
@@ -142,14 +148,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <Checkbox
     checked={ manualQuestion.correct_option === 4 }
     onCheckedChange={ checked => {
-      if (checked) onUpdateQuestion({ correct_option: 4  });,
+      if (checked) onUpdateQuestion({ correct_option: 4  
+})
 }}
     />
     <label className='text-white font-medium'>选项 D（可选）</label>;
     </div>
     <Input
     value={ manualQuestion.option_d }
-    onChange={ e => onUpdateQuestion({ option_d: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ option_d: e.target.value  
+})}
     placeholder='选项 D 内容（可选）';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white';
     />
@@ -160,7 +168,8 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     <label className='text-white font-medium mb-2 block'>题目解析</label>;
     <Textarea
     value={ manualQuestion.explanation }
-    onChange={ e => onUpdateQuestion({ explanation: e.target.value  })}
+    onChange={ e => onUpdateQuestion({ explanation: e.target.value  
+})}
     placeholder='请输入题目解析（可选）...';
     className='bg-werewolf-dark border-werewolf-purple/30 text-white resize-none';
     rows={ 3 }
@@ -177,7 +186,13 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({ manualQuest
     </ScrollArea>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * ManualQuestionEditor组件
+ * ManualQuestionEditor组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default ManualQuestionEditor;

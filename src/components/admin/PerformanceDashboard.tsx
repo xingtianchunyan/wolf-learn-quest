@@ -1,14 +1,14 @@
-import { Activity,
-import { Alert, AlertDescription  } from '@/components/ui/alert';
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card';
-import { createLogger  } from '@/lib/logger';
-import { performanceMonitoringService  } from '@/services/performanceMonitoringService';
-import { Progress  } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
-import { useToast  } from '@/hooks/useToast';
-import React, { useState, useEffect, useCallback, useMemo  } from 'react';
+import {
+  Activity, Alert, AlertDescription   } from '@/components/ui/alert';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle   } from '@/components/ui/card';
+import { createLogger   } from '@/lib/logger';
+import { performanceMonitoringService   } from '@/services/performanceMonitoringService';
+import { Progress   } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
+import { useToast   } from '@/hooks/useToast';
+import React, { useState, useEffect, useCallback, useMemo   } from 'react';
 
 /**
 * 性能监控仪表板组件
@@ -24,45 +24,44 @@ import React, { useState, useEffect, useCallback, useMemo  } from 'react';
   Zap,
   BarChart3,
   Cpu,
-  Memory,
-} from 'lucide-react';
+  Memory  } from 'lucide-react';
 
 const logger = createLogger('performance-dashboard');
 
 /**
 * 性能仪表板属性接口
  */
-interface PerformanceDashboardProps { /** 是否自动刷新数据  */
+interface PerformanceDashboardProps  { /** 是否自动刷新数据 */
   autoRefresh?: boolean;
-  /** 刷新间隔（毫秒）  */
+  /** 刷新间隔（毫秒） */
   refreshInterval?: number;
-  /** 是否显示详细信息  */
-  showDetails?: boolean;,
+  /** 是否显示详细信息 */
+  showDetails?: boolean
 }
 
 /**
 * 性能指标汇总接口
  */
-interface PerformanceSummary { /** 总体健康状态  */
+interface PerformanceSummary  { /** 总体健康状态 */
   overallHealth: 'healthy' | 'warning' | 'critical';
-  /** 渲染性能  */
+  /** 渲染性能 */
   renderingHealth: 'healthy' | 'warning' | 'critical';
-  /** 内存使用情况  */
+  /** 内存使用情况 */
   memoryHealth: 'healthy' | 'warning' | 'critical';
-  /** 网络性能  */
+  /** 网络性能 */
   networkHealth: 'healthy' | 'warning' | 'critical';
-  /** 活跃告警数量  */
+  /** 活跃告警数量 */
   activeAlerts: number;
-  /** 最近的指标数量  */
-  recentMetrics: number;,
+  /** 最近的指标数量 */
+  recentMetrics: number
 }
 
 /**
-* 性能监控仪表板组件
+ * 性能监控仪表板组件
  */
-export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ autoRefresh = true,
+export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ( { autoRefresh = true,
   refreshInterval = 5000,
-  showDetails = true;,
+  showDetails = true
 }) => { // 状态管理
   const [summary, setSummary] = useState<PerformanceSummary>({
     overallHealth: 'healthy',
@@ -70,7 +69,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
     memoryHealth: 'healthy',
     networkHealth: 'healthy',
     activeAlerts: 0,
-    recentMetrics: 0,
+    recentMetrics: 0 
 });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -78,9 +77,9 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
   const { toast  } = useToast();
 
   /**
-  * 获取性能数据
-   */
-  const fetchPerformanceData = useCallback(async (): Promise<void> => { setIsLoading(true);
+ * 获取性能数据
+ */
+const fetchPerformanceData = useCallback(async (): Promise<void> =>  { setIsLoading(true);
     try {
       // 获取性能报告
       const report = performanceMonitoringService.getPerformanceReport();
@@ -95,106 +94,124 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
         memoryHealth: analyzeMemoryHealth(report),
         networkHealth: analyzeNetworkHealth(report),
         activeAlerts: alerts.length,
-        recentMetrics: report.summary.totalMetrics,
+        recentMetrics: report.summary.totalMetrics  
 };
 
       // 计算总体健康状况
       const healthLevels = [;
         newSummary.renderingHealth,
         newSummary.memoryHealth,
-        newSummary.networkHealth,
-];
+        newSummary.networkHealth ];
 
-      if (healthLevels.includes('critical') || newSummary.activeAlerts > 5) { newSummary.overallHealth = 'critical';,
-} else if (healthLevels.includes('warning') || newSummary.activeAlerts > 2) { newSummary.overallHealth = 'warning';,
+      if (healthLevels.includes('critical') || newSummary.activeAlerts > 5) { newSummary.overallHealth = 'critical'
+} else if (healthLevels.includes('warning') || newSummary.activeAlerts > 2) { newSummary.overallHealth = 'warning'
 }
 
       setSummary(newSummary);
       setLastUpdate(new Date());
 
-      logger.debug('Performance data updated', newSummary);,
+      logger.debug('Performance data updated', newSummary)
 } catch (error: unknown) { const errorMessage = error instanceof Error ? error.message : '未知错误';
       logger.error('Failed to fetch performance data', error);
       toast({
         title: '性能数据获取失败',
         description: errorMessage,
-        variant: 'destructive',
-});,
-} finally { setIsLoading(false);,
+        variant: 'destructive' 
+})
+} finally { setIsLoading(false)
 }
   }, [toast]);
 
   /**
-  * 分析渲染性能健康状况
-   */
-  const analyzeRenderingHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' => { const avgRenderTime = report.summary.avgResponseTime;
-
+ * 分析渲染性能健康状况
+ */
+const analyzeRenderingHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' =>  {
+  const avgRenderTime = report.summary.avgResponseTime;
     if (avgRenderTime > 300) return 'critical';
     if (avgRenderTime > 150) return 'warning';
-    return 'healthy';,
+    return 'healthy'
+
 }, []);
 
   /**
   * 分析内存健康状况
    */
-  const analyzeMemoryHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' => { // 这里可以添加实际的内存分析逻辑
+const analyzeMemoryHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' =>  {
+  // 这里可以添加实际的内存分析逻辑
     const memoryUsage = performance.memory?.usedJSHeapSize || 0;
     const memoryLimit = performance.memory?.jsHeapSizeLimit || Infinity;
     const memoryPercentage = memoryUsage / memoryLimit;
 
     if (memoryPercentage > 0.8) return 'critical';
     if (memoryPercentage > 0.6) return 'warning';
-    return 'healthy';,
+    return 'healthy'
+
 }, []);
 
   /**
-  * 分析网络健康状况
-   */
-  const analyzeNetworkHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' => { const maxResponseTime = report.summary.maxResponseTime;
-
+ * 分析网络健康状况
+ */
+const analyzeNetworkHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' =>  {
+  const maxResponseTime = report.summary.maxResponseTime;
     if (maxResponseTime > 2000) return 'critical';
     if (maxResponseTime > 1000) return 'warning';
-    return 'healthy';,
+    return 'healthy'
+
 }, []);
 
   /**
-  * 获取健康状态的颜色和图标
-   */
-  const getHealthDisplay = useMemo(() => { return (health: 'healthy' | 'warning' | 'critical') => {
+ * 获取健康状态的颜色和图标
+ */
+const getHealthDisplay = useMemo(() => { return (health: 'healthy' | 'warning' | 'critical') =>  {
       switch (health) {
         case 'healthy':
-        return { color: 'text-green-600', icon: CheckCircle, badge: 'default' as const  };
+        return {
+    color: 'text-green-600', icon: CheckCircle, badge: 'default' as const   
+};
         case 'warning':
-        return { color: 'text-yellow-600', icon: AlertTriangle, badge: 'secondary' as const  };
+        return {
+    color: 'text-yellow-600', icon: AlertTriangle, badge: 'secondary' as const   
+};
         case 'critical':
-        return { color: 'text-red-600', icon: AlertTriangle, badge: 'destructive' as const  };,
+        return { color: 'text-red-600', icon: AlertTriangle, badge: 'destructive' as const  
 }
-    };,
+}
+    }
 }, []);
 
   /**
-  * 清理性能数据
-   */
-  const handleClearData = useCallback((): void => { performanceMonitoringService.clearMetrics();
+ * 清理性能数据
+ */
+const handleClearData = useCallback((): void =>  { performanceMonitoringService.clearMetrics();
     fetchPerformanceData();
     toast({
       title: '数据已清理',
-      description: '所有性能指标和告警已清除',
-});,
+      description: '所有性能指标和告警已清除' 
+})
 }, [fetchPerformanceData, toast]);
 
   // 自动刷新效果
-  useEffect(() => { if (!autoRefresh) return;
+  useEffect(() => {
+  if (!autoRefresh) return;
 
     const interval = setInterval(fetchPerformanceData, refreshInterval);
-    return () => clearInterval(interval);,
+    return () => clearInterval(interval)
+
 }, [autoRefresh, refreshInterval, fetchPerformanceData]);
 
   // 初始数据加载
-  useEffect(() => { fetchPerformanceData();,
+  useEffect(() => {
+  fetchPerformanceData()
+
 }, [fetchPerformanceData]);
 
   const overallDisplay = getHealthDisplay(summary.overallHealth);
+/**
+ * OverallIcon组件
+ * OverallIcon组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
   const OverallIcon = overallDisplay.icon;
 
   return (;
@@ -209,11 +226,13 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
     <div className='flex items-center justify-between'>;
     <div className='space-y-1'>;
     <Badge variant={ overallDisplay.badge } className='text-xs'>;
-    { summary.overallHealth === 'healthy' ? '健康' :;
-    summary.overallHealth === 'warning' ? '警告' : '严重' }
+    { summary.overallHealth === 'healthy' ? '健康' : unknown;
+    summary.overallHealth === 'warning' ? '警告' : '严重' 
+}
     </Badge>
     <p className='text-xs text-muted-foreground'>;
-    最后更新: { lastUpdate.toLocaleTimeString() }
+    最后更新: { lastUpdate.toLocaleTimeString() 
+}
     </p>
     </div>
     <div className='flex space-x-2'>;
@@ -223,7 +242,8 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
     onClick={ fetchPerformanceData }
     disabled={ isLoading }
     >
-    <RefreshCw className={ `h-4 w-4 ${isLoading ? 'animate-spin' : '' }`} />;
+    <RefreshCw className={ `h-4 w-4 ${isLoading ? 'animate-spin' : '' 
+}`} />;
     </Button>
     <Button
     variant='outline';
@@ -237,8 +257,8 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
     </CardContent>
     </Card>
 
-    { /*  详细指标  */ }
-    { showDetails && (
+    { /*  详细指标  */
+} { showDetails && (
       <Tabs defaultValue='overview' className='space-y-4'>;
       <TabsList>
       <TabsTrigger value='overview'>概览</TabsTrigger>;
@@ -282,8 +302,9 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
       </CardHeader>
       <CardContent>
       <Badge variant={ getHealthDisplay(summary.renderingHealth).badge }>;
-      { summary.renderingHealth === 'healthy' ? '正常' :;
-      summary.renderingHealth === 'warning' ? '警告' : '严重' }
+      { summary.renderingHealth === 'healthy' ? '正常' : unknown;
+      summary.renderingHealth === 'warning' ? '警告' : '严重' 
+}
       </Badge>
       <p className='text-xs text-muted-foreground mt-1'>;
       组件渲染和更新性能
@@ -298,8 +319,9 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
       </CardHeader>
       <CardContent>
       <Badge variant={ getHealthDisplay(summary.memoryHealth).badge }>;
-      { summary.memoryHealth === 'healthy' ? '正常' :;
-      summary.memoryHealth === 'warning' ? '警告' : '严重' }
+      { summary.memoryHealth === 'healthy' ? '正常' : unknown;
+      summary.memoryHealth === 'warning' ? '警告' : '严重' 
+}
       </Badge>
       <p className='text-xs text-muted-foreground mt-1'>;
       JavaScript 堆内存状态
@@ -388,8 +410,8 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
       </Tabs>
     )}
 
-    { /*  告警信息  */ }
-    { summary.activeAlerts > 0 && (
+    { /*  告警信息  */
+} { summary.activeAlerts > 0 && (
       <Alert>
       <AlertTriangle className='h-4 w-4' />;
       <AlertDescription>
@@ -399,7 +421,13 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ auto
       </Alert>
     )}
     </div>
-  );,
+  )
 };
 
+/**
+ * PerformanceDashboard组件
+ * 性能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PerformanceDashboard;

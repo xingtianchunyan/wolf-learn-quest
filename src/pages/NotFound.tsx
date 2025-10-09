@@ -1,13 +1,19 @@
-import { useEffect  } from 'react';
-import { useLocation  } from 'react-router-dom';
+import { useEffect   } from 'react';
+import { useLocation   } from 'react-router-dom';
 
-const NotFound = () => { const location = useLocation();
+/**
+ * NotFound组件
+ * NotFound组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const NotFound = () =>  { const location = useLocation();
 
   useEffect(() => {
-    console.error(
+  console.error(
       '404 Error: User attempted to access non-existent route:',
       location.pathname
-    );,
+    )
 }, [location.pathname]);
 
   return (;
@@ -20,7 +26,14 @@ const NotFound = () => { const location = useLocation();
     </a>
     </div>
     </div>
-  );,
+  )
+
 };
 
+/**
+ * NotFound组件
+ * NotFound组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default NotFound;

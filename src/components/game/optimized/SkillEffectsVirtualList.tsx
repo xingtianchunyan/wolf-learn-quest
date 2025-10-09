@@ -1,9 +1,9 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { ChevronDown,
-import { createLogger  } from '@/lib/logger';
-import { Progress  } from '@/components/ui/progress';
-import { ScrollArea  } from '@/components/ui/scroll-area';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import {
+  ChevronDown, createLogger   } from '@/lib/logger';
+import { Progress   } from '@/components/ui/progress';
+import { ScrollArea   } from '@/components/ui/scroll-area';
 import React, { useState,
 
 /**
@@ -32,22 +32,20 @@ import React, { useState,
   useRef,
   useCallback,
   useMemo,
-  memo,
-} from 'react';
+  memo  } from 'react';
   ChevronUp,
   Clock,
   Layers,
   AlertCircle,
   CheckCircle2,
-  XCircle,
-} from 'lucide-react';
+  XCircle  } from 'lucide-react';
 
 const logger = createLogger('skill-effects-virtual-list');
 
 /**
-* 接口注释：技能效果数据
+ * 接口注释：技能效果数据
  */
-export interface SkillEffect { id: string;
+export interface SkillEffect  { id: string;
   effectType: string;
   isActive: boolean;
   remainingTime: number;
@@ -56,49 +54,49 @@ export interface SkillEffect { id: string;
   targetName?: string;
   description?: string;
   priority?: 'high' | 'medium' | 'low';
-  metadata?: Record<string, any>;,
+  metadata?: Record<string, any>
 }
 
 /**
 * 接口注释：虚拟化列表属性
  */
-export interface SkillEffectsVirtualListProps { /** 技能效果列表  */
+export interface SkillEffectsVirtualListProps  { /** 技能效果列表 */
   effects: SkillEffect[];
-  /** 获取效果图标的函数  */
+  /** 获取效果图标的函数 */
   getEffectIcon: (effectType: string) => JSX.Element;
-  /** 项目高度（默认80px）  */
+  /** 项目高度（默认80px） */
   itemHeight?: number;
-  /** 容器高度（默认400px）  */
+  /** 容器高度（默认400px） */
   containerHeight?: number;
-  /** 缓冲区大小（默认5）  */
+  /** 缓冲区大小（默认5） */
   bufferSize?: number;
-  /** 是否启用动画  */
+  /** 是否启用动画 */
   enableAnimation?: boolean;
-  /** 是否启用性能监控  */
+  /** 是否启用性能监控 */
   enablePerformanceMonitoring?: boolean;
-  /** 点击效果项的回调  */
-  onEffectClick?: (effect: SkillEffect) => void;,
+  /** 点击效果项的回调 */
+  onEffectClick?: (effect: SkillEffect) => void
 }
 
 /**
-* 接口注释：虚拟化状态
+ * 接口注释：虚拟化状态
  */
-interface VirtualizationState { scrollTop: number;
+interface VirtualizationState  { scrollTop: number;
   startIndex: number;
   endIndex: number;
   visibleItems: SkillEffect[];
   totalHeight: number;
-  itemHeights: Map<string, number>;,
+  itemHeights: Map<string, number>
 }
 
 /**
-* 接口注释：性能监控状态
+ * 接口注释：性能监控状态
  */
-interface PerformanceMonitoringState { renderCount: number;
+interface PerformanceMonitoringState  { renderCount: number;
   averageRenderTime: number;
   scrollEventCount: number;
   memoryUsage: number;
-  lastOptimizationTime: number;,
+  lastOptimizationTime: number
 }
 
 /**
@@ -111,22 +109,21 @@ interface PerformanceMonitoringState { renderCount: number;
 * - 内存优化
 * - 性能监控
  */
-const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
+const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(( { effects,
   getEffectIcon,
   itemHeight = 80,
   containerHeight = 400,
   bufferSize = 5,
   enableAnimation = true,
   enablePerformanceMonitoring = true,
-  onEffectClick,
-}) => { // 虚拟化状态
+  onEffectClick }) => { // 虚拟化状态
   const [virtualizationState, setVirtualizationState] = useState<VirtualizationState>({
     scrollTop: 0,
     startIndex: 0,
     endIndex: 0,
     visibleItems: [],
     totalHeight: 0,
-    itemHeights: new Map(),
+    itemHeights: new Map() 
 });
 
   // 性能监控状态
@@ -134,7 +131,7 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
     averageRenderTime: 0,
     scrollEventCount: 0,
     memoryUsage: 0,
-    lastOptimizationTime: Date.now(),
+    lastOptimizationTime: Date.now() 
 });
 
   // 引用
@@ -149,7 +146,8 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
   * 函数级注释：计算可见项目范围
   * 基于滚动位置和容器高度计算需要渲染的项目范围
    */
-  const calculateVisibleRange = useCallback((scrollTop: number, effects: SkillEffect[]) => { const { itemHeights  } = virtualizationState;
+const calculateVisibleRange = useCallback((scrollTop: number, effects: SkillEffect[]) => { const  { itemHeights  
+} = virtualizationState;
 
     let startIndex = 0;
     let currentHeight = 0;
@@ -159,10 +157,10 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
 
       if (currentHeight + cachedHeight > scrollTop) {
         startIndex = Math.max(0, i - bufferSize);
-        break;,
+        break
 }
 
-      currentHeight += cachedHeight;,
+      currentHeight += cachedHeight
 }
 
     // 计算结束索引
@@ -174,54 +172,58 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
 
       if (visibleHeight >= containerHeight + (bufferSize * itemHeight)) {
         endIndex = i;
-        break;,
+        break
 }
     }
 
     endIndex = Math.min(effects.length - 1, endIndex + bufferSize);
 
-    return { startIndex, endIndex  };,
+    return { startIndex, endIndex  }
 }, [virtualizationState.itemHeights, itemHeight, containerHeight, bufferSize]);
 
   /**
   * 函数级注释：计算总高度
   * 基于缓存的项目高度计算列表总高度
    */
-  const calculateTotalHeight = useCallback((effects: SkillEffect[]) => { const { itemHeights  } = virtualizationState;
+const calculateTotalHeight = useCallback((effects: SkillEffect[]) => { const  { itemHeights  
+} = virtualizationState;
 
-    return effects.reduce((total, effect) => { return total + (itemHeights.get(effect.id) || itemHeight);,
-}, 0);,
+    return effects.reduce((total, effect) => {
+  return total + (itemHeights.get(effect.id) || itemHeight)
+}, 0)
+
 }, [virtualizationState.itemHeights, itemHeight]);
 
   /**
   * 函数级注释：计算偏移量
   * 计算可见区域之前的总高度
    */
-  const calculateOffset = useCallback((startIndex: number, effects: SkillEffect[]) => { const { itemHeights  } = virtualizationState;
+const calculateOffset = useCallback((startIndex: number, effects: SkillEffect[]) => { const  { itemHeights  
+} = virtualizationState;
 
     let offset = 0;
-    for (let i = 0; i < startIndex; i++) { offset += itemHeights.get(effects[i].id) || itemHeight;,
+    for (let i = 0; i < startIndex; i++) { offset += itemHeights.get(effects[i].id) || itemHeight
 }
 
-    return offset;,
+    return offset
 }, [virtualizationState.itemHeights, itemHeight]);
 
   /**
   * 函数级注释：处理滚动事件
   * 优化的滚动处理，包含防抖和性能监控
    */
-  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => { const scrollTop = event.currentTarget.scrollTop;
+const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) =>  { const scrollTop = event.currentTarget.scrollTop;
 
     // 性能监控
     if (enablePerformanceMonitoring) {
       setPerformanceState(prev => ({
         ...prev,
-        scrollEventCount: prev.scrollEventCount + 1,
-}));,
+        scrollEventCount: prev.scrollEventCount + 1 
+}))
 }
 
     // 防抖处理
-    if (scrollTimeout.current) { clearTimeout(scrollTimeout.current);,
+    if (scrollTimeout.current) { clearTimeout(scrollTimeout.current)
 }
 
     scrollTimeout.current = setTimeout(() => { const { startIndex, endIndex  } = calculateVisibleRange(scrollTop, effects);
@@ -233,16 +235,14 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
         startIndex,
         endIndex,
         visibleItems,
-        totalHeight,
-}));,
-}, 16); // 约60fps,
-}, [calculateVisibleRange, calculateTotalHeight, effects, enablePerformanceMonitoring]);
+        totalHeight }))
+}, 16); // 约60fps }, [calculateVisibleRange, calculateTotalHeight, effects, enablePerformanceMonitoring]);
 
   /**
   * 函数级注释：测量项目高度
   * 使用ResizeObserver精确测量项目高度并缓存
    */
-  const measureItemHeight = useCallback((effectId: string, element: HTMLDivElement) => { if (!element) return;
+const measureItemHeight = useCallback((effectId: string, element: HTMLDivElement) =>  { if (!element) return;
 
     const height = element.getBoundingClientRect().height;
 
@@ -253,16 +253,16 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
       return {
         ...prev,
         itemHeights: newItemHeights,
-        totalHeight: calculateTotalHeight(effects),
-};,
-});,
+        totalHeight: calculateTotalHeight(effects) 
+}
+})
 }, [calculateTotalHeight, effects]);
 
   /**
   * 函数级注释：设置项目引用
   * 管理项目DOM引用并设置ResizeObserver
    */
-  const setItemRef = useCallback((effectId: string, element: HTMLDivElement | null) => { if (element) {
+const setItemRef = useCallback((effectId: string, element: HTMLDivElement | null) => { if (element)  {
       itemRefs.current.set(effectId, element);
 
       // 设置ResizeObserver
@@ -271,51 +271,51 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
           entries.forEach(entry => {
             const effectId = entry.target.getAttribute('data-effect-id');
             if (effectId) {
-              measureItemHeight(effectId, entry.target as HTMLDivElement);,
+              measureItemHeight(effectId, entry.target as HTMLDivElement)
 }
-          });,
-});,
+          })
+})
 }
 
       element.setAttribute('data-effect-id', effectId);
-      resizeObserver.current.observe(element);,
+      resizeObserver.current.observe(element)
 } else { // 清理
       const existingElement = itemRefs.current.get(effectId);
       if (existingElement && resizeObserver.current) {
-        resizeObserver.current.unobserve(existingElement);,
+        resizeObserver.current.unobserve(existingElement)
 }
-      itemRefs.current.delete(effectId);,
+      itemRefs.current.delete(effectId)
 }
   }, [measureItemHeight]);
 
   /**
-  * 函数级注释：获取效果状态图标
-   */
-  const getStatusIcon = useCallback((effect: SkillEffect) => { if (!effect.isActive) {
-      return <XCircle className='w-4 h-4 text-red-500' />;,
+ * 函数级注释：获取效果状态图标
+ */
+const getStatusIcon = useCallback((effect: SkillEffect) => { if (!effect.isActive)  {
+      return <XCircle className='w-4 h-4 text-red-500' />
 }
 
-    if (effect.remainingTime <= effect.maxTime * 0.2) { return <AlertCircle className='w-4 h-4 text-yellow-500' />;,
+    if (effect.remainingTime <= effect.maxTime * 0.2) { return <AlertCircle className='w-4 h-4 text-yellow-500' />
 }
 
-    return <CheckCircle2 className='w-4 h-4 text-green-500' />;,
+    return <CheckCircle2 className='w-4 h-4 text-green-500' />
 }, []);
 
   /**
-  * 函数级注释：获取优先级颜色
-   */
-  const getPriorityColor = useCallback((priority: string = 'medium') => { switch (priority) {
+ * 函数级注释：获取优先级颜色
+ */
+const getPriorityColor = useCallback((priority: string = 'medium') => { switch (priority)  {
       case 'high': return 'bg-red-500/20 border-red-500/50';
       case 'medium': return 'bg-yellow-500/20 border-yellow-500/50';
       case 'low': return 'bg-green-500/20 border-green-500/50';
-      default: return 'bg-gray-500/20 border-gray-500/50';,
+      default: return 'bg-gray-500/20 border-gray-500/50'
 }
   }, []);
 
   /**
-  * 函数级注释：渲染效果项目
-   */
-  const renderEffectItem = useCallback((effect: SkillEffect, index: number) => { const progressPercentage = effect.maxTime > 0;
+ * 函数级注释：渲染效果项目
+ */
+const renderEffectItem = useCallback((effect: SkillEffect, index: number) =>  { const progressPercentage = effect.maxTime > 0;
     ? (effect.remainingTime / effect.maxTime) * 100
     : 0;
 
@@ -327,10 +327,12 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
       p-4 border rounded-lg transition-all duration-200 cursor-pointer
       hover:bg-werewolf-dark/60 hover:border-werewolf-purple/50
       ${getPriorityColor(effect.priority) }
-      ${ enableAnimation ? 'animate-in slide-in-from-left-2' : '' }
+      ${ enableAnimation ? 'animate-in slide-in-from-left-2' : '' 
+}
       `}
       style={ {
-        animationDelay: enableAnimation ? `${index * 50 }ms` : undefined,
+        animationDelay: enableAnimation ? `${index * 50 
+}ms` : undefined 
 }}
       onClick={ () => onEffectClick?.(effect) }
       >
@@ -349,7 +351,8 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
       </span>
       { effect.targetName && (
         <Badge variant='outline' className='text-xs'>;
-        目标: {effect.targetName }
+        目标: {effect.targetName 
+}
         </Badge>
       )}
       { effect.stackCount && effect.stackCount > 1 && (
@@ -374,8 +377,8 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
       </div>
       </div>
 
-      { /*  时间进度条  */ }
-      { effect.maxTime > 0 && (
+      { /*  时间进度条  */
+} { effect.maxTime > 0 && (
         <div className='mt-3 space-y-1'>;
         <div className='flex items-center justify-between text-xs'>;
         <span className='flex items-center gap-1 text-muted-foreground'>;
@@ -390,20 +393,19 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
         value={ progressPercentage }
         className='h-2';
         style={ {
-          '--progress-background': progressPercentage > 20 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))',
+          '--progress-background': progressPercentage > 20 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))' 
 } as React.CSSProperties}
         />
         </div>
       )}
       </div>
-    );,
+    )
 }, [setItemRef,
     getPriorityColor,
     enableAnimation,
     onEffectClick,
     getEffectIcon,
-    getStatusIcon,
-]);
+    getStatusIcon ]);
 
   // 初始化虚拟化状态
   useEffect(() => { if (effects.length > 0) {
@@ -415,8 +417,7 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
         startIndex,
         endIndex,
         visibleItems,
-        totalHeight,
-}));,
+        totalHeight }))
 }
   }, [effects, calculateVisibleRange, calculateTotalHeight]);
 
@@ -430,36 +431,38 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
     setPerformanceState(prev => ({
       ...prev,
       renderCount: prev.renderCount + 1,
-      averageRenderTime: (prev.averageRenderTime + renderTime) / 2,
+      averageRenderTime: (prev.averageRenderTime + renderTime) / 2 
 }));
 
     // 内存监控
     const memoryMonitor = setInterval(() => { if (performance.memory) {
         setPerformanceState(prev => ({
           ...prev,
-          memoryUsage: performance.memory.usedJSHeapSize,
-}));,
+          memoryUsage: performance.memory.usedJSHeapSize 
+}))
 }
     }, 5000);
 
-    return () => clearInterval(memoryMonitor);,
+    return () => clearInterval(memoryMonitor)
 }, [enablePerformanceMonitoring, virtualizationState.visibleItems]);
 
   // 清理
   useEffect(() => { return () => {
       if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);,
+        clearTimeout(scrollTimeout.current)
 }
 
-      if (resizeObserver.current) { resizeObserver.current.disconnect();,
+      if (resizeObserver.current) { resizeObserver.current.disconnect()
 }
 
-      itemRefs.current.clear();,
-};,
+      itemRefs.current.clear()
+}
 }, []);
 
   // 计算偏移量
-  const offset = useMemo(() => { return calculateOffset(virtualizationState.startIndex, effects);,
+  const offset = useMemo(() => {
+  return calculateOffset(virtualizationState.startIndex, effects)
+
 }, [calculateOffset, virtualizationState.startIndex, effects]);
 
   // 如果没有效果，显示空状态
@@ -473,19 +476,24 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
       当前没有活跃的技能效果
       </p>
       </div>
-    );,
+    )
 }
 
   return (;
     <div className='space-y-4'>;
-    { /*  性能信息（调试用）  */ }
-    { enablePerformanceMonitoring && process.env.NODE_ENV === 'development' && (;
+    { /*  性能信息（调试用）  */
+} { enablePerformanceMonitoring && process.env.NODE_ENV === 'development' && (;
       <div className='text-xs text-muted-foreground bg-werewolf-dark/20 p-2 rounded'>;
-      渲染: {performanceState.renderCount } |
-      平均耗时: { Math.round(performanceState.averageRenderTime) }ms |
-      滚动事件: { performanceState.scrollEventCount } |
-      内存: { Math.round(performanceState.memoryUsage / 1024 / 1024) }MB |
-      可见项: { virtualizationState.visibleItems.length }/{ effects.length }
+      渲染: {performanceState.renderCount 
+} |
+      平均耗时: { Math.round(performanceState.averageRenderTime) 
+}ms |
+      滚动事件: { performanceState.scrollEventCount 
+} |
+      内存: { Math.round(performanceState.memoryUsage / 1024 / 1024) 
+}MB |
+      可见项: { virtualizationState.visibleItems.length 
+}/{ effects.length }
       </div>
     )}
 
@@ -493,7 +501,8 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
     <div
     ref={ containerRef }
     className='relative overflow-hidden';
-    style={ { height: containerHeight  }}
+    style={ { height: containerHeight  
+}}
     >
     <ScrollArea
     ref={ scrollAreaRef }
@@ -501,15 +510,17 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
     onScrollCapture={ handleScroll }
     >
     { /*  虚拟容器  */ }
-    <div style={ { height: virtualizationState.totalHeight, position: 'relative'  }}>;
+    <div style={ { height: virtualizationState.totalHeight, position: 'relative'  
+}}>;
     { /*  可见项目容器  */ }
     <div
     style={ {
-      transform: `translateY(${offset }px)`,
+      transform: `translateY(${offset 
+}px)`,
       position: 'absolute',
       top: 0,
       left: 0,
-      right: 0,
+      right: 0 
 }}
     >
     <div className='space-y-3'>;
@@ -526,15 +537,23 @@ const SkillEffectsVirtualList = memo<SkillEffectsVirtualListProps>(({ effects,
   <div className='flex items-center justify-between text-xs text-muted-foreground'>;
   <span>共 { effects.length } 个效果</span>
   <span>
-  活跃: { effects.filter(e => e.isActive).length } |;
-  即将过期: { effects.filter(e => e.isActive && e.remainingTime <= e.maxTime * 0.2).length }
+  活跃: { effects.filter(e => e.isActive).length 
+} |;
+  即将过期: { effects.filter(e => e.isActive && e.remainingTime <= e.maxTime * 0.2).length 
+}
   </span>
   </div>
   </div>
-);,
+)
 });
 
 // 设置 displayName 以便调试
 SkillEffectsVirtualList.displayName = 'SkillEffectsVirtualList';
 
+/**
+ * SkillEffectsVirtualList组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default SkillEffectsVirtualList;

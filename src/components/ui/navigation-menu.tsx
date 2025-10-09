@@ -1,6 +1,6 @@
-import { ChevronDown  } from 'lucide-react'
-import { cn  } from '@/lib/utils'
-import { cva  } from 'class-variance-authority'
+import { ChevronDown   } from 'lucide-react'
+import { cn   } from '@/lib/utils'
+import { cva   } from 'class-variance-authority'
 import * as NavigationMenuPrimitive from '@radix-ui/react-navigation-menu'
 import * as React from 'react'
 
@@ -38,6 +38,12 @@ React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
 ))
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName;
 
+/**
+ * NavigationMenuList组件
+ * NavigationMenuList组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuList = React.forwardRef<;
 React.ElementRef<typeof NavigationMenuPrimitive.List>,
 React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
@@ -53,12 +59,24 @@ React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
 ))
 NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 
+/**
+ * NavigationMenuItem组件
+ * NavigationMenuItem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuItem = NavigationMenuPrimitive.Item;
 
 const navigationMenuTriggerStyle = cva(;
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50';
 )
 
+/**
+ * NavigationMenuTrigger组件
+ * NavigationMenuTrigger组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuTrigger = React.forwardRef<;
 React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
 React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
@@ -77,6 +95,12 @@ React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
 ))
 NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName;
 
+/**
+ * NavigationMenuContent组件
+ * NavigationMenuContent组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuContent = React.forwardRef<;
 React.ElementRef<typeof NavigationMenuPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
@@ -92,8 +116,20 @@ React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
 ))
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName;
 
+/**
+ * NavigationMenuLink组件
+ * NavigationMenuLink组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuLink = NavigationMenuPrimitive.Link;
 
+/**
+ * NavigationMenuViewport组件
+ * NavigationMenuViewport组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuViewport = React.forwardRef<;
 React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
 React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
@@ -112,6 +148,12 @@ React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
 NavigationMenuViewport.displayName =;
 NavigationMenuPrimitive.Viewport.displayName
 
+/**
+ * NavigationMenuIndicator组件
+ * NavigationMenuIndicator组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const NavigationMenuIndicator = React.forwardRef<;
 React.ElementRef<typeof NavigationMenuPrimitive.Indicator>,
 React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>
@@ -138,5 +180,4 @@ export { navigationMenuTriggerStyle,
   NavigationMenuTrigger,
   NavigationMenuLink,
   NavigationMenuIndicator,
-  NavigationMenuViewport,
- }
+  NavigationMenuViewport }

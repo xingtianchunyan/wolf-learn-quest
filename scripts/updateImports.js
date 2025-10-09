@@ -17,20 +17,20 @@ const __dirname = path.dirname(__filename);
 const importUpdates = [
   {
     from: '@/hooks/use-toast',
-    to: '@/hooks/useToast'
+    to: '@/hooks/useToast',
   },
   {
     from: '@/components/ui/use-toast',
-    to: '@/components/ui/useToast'
+    to: '@/components/ui/useToast',
   },
   {
     from: '@/hooks/use-mobile',
-    to: '@/hooks/useMobile'
+    to: '@/hooks/useMobile',
   },
   {
     from: './use-toast',
-    to: './useToast'
-  }
+    to: './useToast',
+  },
 ];
 
 /**
@@ -43,7 +43,10 @@ function updateFileImports(filePath) {
     let hasChanges = false;
 
     importUpdates.forEach(({ from, to }) => {
-      const regex = new RegExp(`(['"])${from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1`, 'g');
+      const regex = new RegExp(
+        `(['"])${from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1`,
+        'g'
+      );
       if (regex.test(content)) {
         content = content.replace(regex, `$1${to}$1`);
         hasChanges = true;
@@ -86,15 +89,18 @@ function scanAndUpdate(dir) {
  */
 function main() {
   console.log('🔄 开始更新导入引用...\n');
-  
+
   const srcPath = path.join(process.cwd(), 'src');
   scanAndUpdate(srcPath);
-  
+
   console.log('\n✨ 导入引用更新完成！');
 }
 
 // 执行脚本
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('updateImports.js')) {
+if (
+  import.meta.url.endsWith(process.argv[1]) ||
+  process.argv[1].endsWith('updateImports.js')
+) {
   main();
 }
 

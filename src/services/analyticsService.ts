@@ -1,5 +1,5 @@
-import { createLogger  } from '@/lib/logger';
-import { supabase  } from '@/integrations/supabase/client';
+import { createLogger   } from '@/lib/logger';
+import { supabase   } from '@/integrations/supabase/client';
 
 // 用户行为分析服务
 
@@ -8,7 +8,7 @@ const logger = createLogger('analytics-service');
 export interface UserAction { userId: string;
   action: string;
   timestamp: number;
-  metadata?: Record<string, any>;,
+  metadata?: Record<string, any>
 }
 
 export interface SkillUsageStats { skillName: string;
@@ -16,7 +16,7 @@ export interface SkillUsageStats { skillName: string;
   successRate: number;
   avgResponseTime: number;
   mostCommonTargets: string[];
-  usageByPhase: Record<string, number>;,
+  usageByPhase: Record<string, number>
 }
 
 export interface UserBehaviorPattern { userId: string;
@@ -26,33 +26,33 @@ export interface UserBehaviorPattern { userId: string;
   preferredPhases: string[];
   activityPattern: {
     hour: number;
-    count: number;,
-}[];,
+    count: number
+}[]
 }
 
 class AnalyticsService { private actions: UserAction[] = [];
   private readonly MAX_ACTIONS = 10000;
 
   /**
-  * 记录用户行为
-   */
-  trackAction(action: UserAction): void {
+ * 记录用户行为
+ */
+trackAction(action: UserAction): void  {
     this.actions.push({
       ...action,
-      timestamp: Date.now(),
+      timestamp: Date.now() 
 });
 
     // 限制存储的行为数量
-    if (this.actions.length > this.MAX_ACTIONS) { this.actions = this.actions.slice(-this.MAX_ACTIONS);,
+    if (this.actions.length > this.MAX_ACTIONS) { this.actions = this.actions.slice(-this.MAX_ACTIONS)
 }
 
-    logger.debug('用户行为记录', action);,
+    logger.debug('用户行为记录', action)
 }
 
   /**
-  * 获取技能使用统计
-   */
-  async getSkillUsageStats(
+ * 获取技能使用统计
+ */
+async getSkillUsageStats(
     gameStateId?: string,
     timeRange?: number
   ): Promise<SkillUsageStats[]> { try {
@@ -61,24 +61,24 @@ class AnalyticsService { private actions: UserAction[] = [];
       .select('skill_name, execution_status, phase, created_at, target_user_id');
 
       if (gameStateId) {
-        query = query.eq('game_state_id', gameStateId);,
+        query = query.eq('game_state_id', gameStateId)
 }
 
       if (timeRange) { const startTime = new Date(Date.now() - timeRange).toISOString();
-        query = query.gte('created_at', startTime);,
+        query = query.gte('created_at', startTime)
 }
 
       const { data, error  } = await query;
 
       if (error) { logger.error('获取技能使用统计失败', error);
-        return [];,
+        return []
 }
 
       // 按技能名称分组统计
       const statsMap = new Map<string, { total: number;
         success: number;
         targets: Map<string, number>;
-        phases: Map<string, number>;,
+        phases: Map<string, number>
 }>();
 
       data?.forEach(skill => { if (!statsMap.has(skill.skill_name)) {
@@ -86,22 +86,22 @@ class AnalyticsService { private actions: UserAction[] = [];
             total: 0,
             success: 0,
             targets: new Map(),
-            phases: new Map(),
-});,
+            phases: new Map() 
+})
 }
 
         const stats = statsMap.get(skill.skill_name)!;
         stats.total++;
 
-        if (skill.execution_status === 'completed') { stats.success++;,
+        if (skill.execution_status === 'completed') { stats.success++
 }
 
         if (skill.target_user_id) { const targetCount = stats.targets.get(skill.target_user_id) || 0;
-          stats.targets.set(skill.target_user_id, targetCount + 1);,
+          stats.targets.set(skill.target_user_id, targetCount + 1)
 }
 
         const phaseCount = stats.phases.get(skill.phase) || 0;
-        stats.phases.set(skill.phase, phaseCount + 1);,
+        stats.phases.set(skill.phase, phaseCount + 1)
 });
 
       // 转换为结果格式
@@ -111,8 +111,10 @@ class AnalyticsService { private actions: UserAction[] = [];
         .slice(0, 3)
         .map(([target]) => target);
 
-        const usageByPhase: Record<string, number> = { };
-        stats.phases.forEach((count, phase) => { usageByPhase[phase] = count;,
+        const usageByPhase: Record<string, number> = {  };
+        stats.phases.forEach((count, phase) => {
+  usageByPhase[phase] = count
+
 });
 
         results.push({ skillName,
@@ -120,20 +122,19 @@ class AnalyticsService { private actions: UserAction[] = [];
           successRate: stats.total > 0 ? stats.success / stats.total : 0,
           avgResponseTime: 0, // 需要额外的性能数据
           mostCommonTargets,
-          usageByPhase,
-});,
+          usageByPhase })
 });
 
-      return results;,
+      return results
 } catch (error) { logger.error('获取技能使用统计异常', error);
-      return [];,
+      return []
 }
   }
 
   /**
-  * 分析用户行为模式
-   */
-  analyzeUserBehavior(userId: string, timeRange: number = 86400000): UserBehaviorPattern { const now = Date.now();
+ * 分析用户行为模式
+ */
+analyzeUserBehavior(userId: string, timeRange: number = 86400000): UserBehaviorPattern  { const now = Date.now();
     const userActions = this.actions.filter(;
       a => a.userId === userId && now - a.timestamp < timeRange;
     );
@@ -148,21 +149,21 @@ class AnalyticsService { private actions: UserAction[] = [];
       if (action.action === 'use_skill') {
         const skillName = action.metadata?.skillName;
         if (skillName) {
-          skillUsage.set(skillName, (skillUsage.get(skillName) || 0) + 1);,
+          skillUsage.set(skillName, (skillUsage.get(skillName) || 0) + 1)
 }
 
         const decisionTime = action.metadata?.decisionTime;
-        if (decisionTime) { decisionTimes.push(decisionTime);,
+        if (decisionTime) { decisionTimes.push(decisionTime)
 }
 
         const phase = action.metadata?.phase;
-        if (phase) { phaseActivity.set(phase, (phaseActivity.get(phase) || 0) + 1);,
+        if (phase) { phaseActivity.set(phase, (phaseActivity.get(phase) || 0) + 1)
 }
       }
 
       // 统计活动时段
       const hour = new Date(action.timestamp).getHours();
-      hourlyActivity.set(hour, (hourlyActivity.get(hour) || 0) + 1);,
+      hourlyActivity.set(hour, (hourlyActivity.get(hour) || 0) + 1)
 });
 
     // 获取最常用的技能
@@ -192,32 +193,33 @@ class AnalyticsService { private actions: UserAction[] = [];
       avgDecisionTime,
       skillSuccessRate: 0, // 需要额外计算
       preferredPhases,
-      activityPattern,
-};,
+      activityPattern }
 }
 
   /**
-  * 识别潜在问题
-   */
-  async detectPotentialIssues(gameStateId: string): Promise<{ issues: Array<{
+ * 识别潜在问题
+ */
+async detectPotentialIssues(gameStateId: string): Promise<{ issues: Array< {
       type: string;
       severity: 'low' | 'medium' | 'high';
       description: string;
-      affectedUsers?: string[];,
-}>;,
+      affectedUsers?: string[]
+}>
 }> { const issues: Array<{
       type: string;
       severity: 'low' | 'medium' | 'high';
       description: string;
-      affectedUsers?: string[];,
+      affectedUsers?: string[]
 }> = [];
 
     try { // 检查技能使用异常
-      const { data: skillUses  } = await supabase;
+      const { data: skillUses  
+} = await supabase;
       .from('skill_uses')
       .select('user_id, skill_name, execution_status, created_at')
       .eq('game_state_id', gameStateId)
-      .order('created_at', { ascending: false  })
+      .order('created_at', { ascending: false  
+})
       .limit(100);
 
       if (skillUses) { // 检查失败率
@@ -228,14 +230,17 @@ class AnalyticsService { private actions: UserAction[] = [];
           issues.push({
             type: 'high_failure_rate',
             severity: 'high',
-            description: `技能失败率过高: ${(failureRate * 100).toFixed(1) }%`,
-            affectedUsers: Array.from(new Set(failedSkills.map(s => s.user_id)));,
-});,
+            description: `技能失败率过高: ${(failureRate * 100).toFixed(1) 
+}%`,
+            affectedUsers: Array.from(new Set(failedSkills.map(s => s.user_id)))
+})
 }
 
         // 检查用户活跃度
         const userActivity = new Map<string, number>();
-        skillUses.forEach(skill => { userActivity.set(skill.user_id, (userActivity.get(skill.user_id) || 0) + 1);,
+        skillUses.forEach(skill => {
+  userActivity.set(skill.user_id, (userActivity.get(skill.user_id) || 0) + 1)
+
 });
 
         const inactiveUsers = Array.from(userActivity.entries());
@@ -245,9 +250,10 @@ class AnalyticsService { private actions: UserAction[] = [];
         if (inactiveUsers.length > 0) { issues.push({
             type: 'low_activity',
             severity: 'medium',
-            description: `${inactiveUsers.length } 个用户活跃度过低`,
-            affectedUsers: inactiveUsers,
-});,
+            description: `${inactiveUsers.length 
+} 个用户活跃度过低`,
+            affectedUsers: inactiveUsers 
+})
 }
       }
 
@@ -264,30 +270,30 @@ class AnalyticsService { private actions: UserAction[] = [];
           type: 'slow_response',
           severity: 'high',
           description: '系统响应速度过慢',
-          affectedUsers: Array.from(new Set(slowActions.map(a => a.userId)));,
-});,
+          affectedUsers: Array.from(new Set(slowActions.map(a => a.userId)))
+})
 }
 
-      return { issues  };,
+      return { issues  }
 } catch (error) { logger.error('检测潜在问题失败', error);
-      return { issues  };,
+      return { issues  }
 }
   }
 
   /**
-  * 生成分析报告
-   */
-  async generateAnalyticsReport(
+ * 生成分析报告
+ */
+async generateAnalyticsReport(
     gameStateId: string,
     timeRange: number = 86400000;
   ): Promise<{ summary: {
       totalActions: number;
       uniqueUsers: number;
       totalSkillUses: number;
-      avgSuccessRate: number;,
+      avgSuccessRate: number
 };
     topSkills: SkillUsageStats[];
-    potentialIssues: any;,
+    potentialIssues: any
 }> { const skillStats = await this.getSkillUsageStats(gameStateId, timeRange);
     const issues = await this.detectPotentialIssues(gameStateId);
 
@@ -308,19 +314,18 @@ class AnalyticsService { private actions: UserAction[] = [];
         totalActions: recentActions.length,
         uniqueUsers,
         totalSkillUses: skillActions.length,
-        avgSuccessRate,
-},
+        avgSuccessRate },
       topSkills: skillStats.slice(0, 10),
-      potentialIssues: issues,
-};,
+      potentialIssues: issues 
+}
 }
 
   /**
-  * 清理旧数据
-   */
-  cleanup(maxAge: number = 86400000): void { const now = Date.now();
+ * 清理旧数据
+ */
+cleanup(maxAge: number = 86400000): void  { const now = Date.now();
     this.actions = this.actions.filter(a => now - a.timestamp < maxAge);
-    logger.debug('清理旧分析数据完成');,
+    logger.debug('清理旧分析数据完成')
 }
 }
 

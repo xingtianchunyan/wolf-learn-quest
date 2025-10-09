@@ -1,0 +1,171 @@
+{
+  "timestamp": "2025-10-08T19:30:05.497Z",
+  "summary": {
+    "totalFiles": 363,
+    "typescriptFiles": 363,
+    "components": 151,
+    "hooks": 38,
+    "utils": 62
+  },
+  "quality": {
+    "documentationCoverage": "1.3%",
+    "testCoverage": "0.0%",
+    "complexityIssues": 3,
+    "importIssues": 0
+  },
+  "details": {
+    "files": {
+      "total": 363,
+      "typescript": 363,
+      "react": 170,
+      "vue": 0
+    },
+    "components": {
+      "total": 151,
+      "withTests": 0,
+      "documented": 2
+    },
+    "hooks": {
+      "total": 38,
+      "custom": 38
+    },
+    "utils": {
+      "total": 62,
+      "categories": [
+        "advancedInputValidationSystem",
+        "advancedRBACSystem",
+        "apiSecurityConfig",
+        "automatedSecurityChecker",
+        "codeAnalyzer",
+        "common",
+        "componentRenderOptimizer",
+        "comprehensiveSecurityAudit",
+        "consoleCleanup",
+        "date",
+        "debugSystem",
+        "enhancedInputValidation",
+        "enhancedPermissionSystem",
+        "enhancedQueryCacheStrategy",
+        "enhancedRealtimeManager",
+        "enhancedSkillSystemOptimizer",
+        "enhancedUserErrorInterface",
+        "enhancedUserNotificationSystem",
+        "errorClassifier",
+        "errorHandler",
+        "errorHandlerInterface",
+        "errorHandlingExamples",
+        "errorMonitoringAndReporting",
+        "globalErrorMonitor",
+        "improvedErrorSystem",
+        "index",
+        "inputValidationManager",
+        "intelligentCacheStrategy",
+        "masterErrorHandler",
+        "memoryLeakPrevention",
+        "memoryManagementSystem",
+        "optimizedQueryCache",
+        "optimizedRenderingSystem",
+        "performanceCriticalFixes",
+        "phaseUtils",
+        "queryCacheOptimizer",
+        "realtimeSubscriptionManager",
+        "roleConfiguration",
+        "roleStateHelpers",
+        "roleUtils",
+        "securityEnhancement",
+        "securityMiddleware",
+        "skillBatchProcessor",
+        "skillCache",
+        "skillDataStandardizer",
+        "skillEffectsManager",
+        "skillEffectStandardization",
+        "skillErrorHandler",
+        "skillMappingConfig",
+        "skillSystemCache",
+        "skillSystemHelpers",
+        "skillSystemValidation",
+        "skillUsageRestrictions",
+        "skillValidationRules",
+        "unifiedCacheManager",
+        "unifiedErrorHandler",
+        "unifiedErrorManager",
+        "unifiedErrorSystem",
+        "unifiedPermissionManager",
+        "userNotificationSystem",
+        "validation",
+        "votingSystemHelpers"
+      ]
+    },
+    "complexity": {
+      "highComplexity": [
+        {
+          "file": "components\\admin\\SkillSystemMonitor.tsx",
+          "complexity": 25
+        },
+        {
+          "file": "components\\common\\hoc\\withPermission.tsx",
+          "complexity": 31
+        },
+        {
+          "file": "components\\debug\\PerformanceMonitor.tsx",
+          "complexity": 41
+        }
+      ],
+      "longFiles": [
+        {
+          "file": "components\\admin\\PerformanceDashboard.tsx",
+          "lines": 405
+        },
+        {
+          "file": "components\\admin\\SkillSystemMonitor.tsx",
+          "lines": 495
+        },
+        {
+          "file": "components\\common\\hoc\\withErrorBoundary.tsx",
+          "lines": 367
+        },
+        {
+          "file": "components\\common\\hoc\\withLoading.tsx",
+          "lines": 392
+        },
+        {
+          "file": "components\\common\\hoc\\withPermission.tsx",
+          "lines": 510
+        },
+        {
+          "file": "components\\debug\\DebugPanel.tsx",
+          "lines": 582
+        },
+        {
+          "file": "components\\debug\\DebugTools.tsx",
+          "lines": 347
+        },
+        {
+          "file": "components\\debug\\PerformanceMonitor.tsx",
+          "lines": 687
+        },
+        {
+          "file": "components\\dialogs\\GameRulesDialog.tsx",
+          "lines": 341
+        },
+        {
+          "file": "components\\dialogs\\LoginDialog.tsx",
+          "lines": 334
+        }
+      ]
+    },
+    "imports": {
+      "issues": [],
+      "suggestions": []
+    }
+  },
+  "recommendations": [
+    "建议为组件添加JSDoc文档注释",
+    "建议增加组件单元测试覆盖率",
+    "建议拆分过长的文件为多个模块",
+    "建议简化复杂的函数逻辑",
+    "定期运行代码质量检查",
+    "建立代码审查流程",
+    "使用ESLint和Prettier保持代码风格"
+  ]
+}

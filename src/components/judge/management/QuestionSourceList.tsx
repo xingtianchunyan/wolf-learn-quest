@@ -1,10 +1,10 @@
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Checkbox  } from '@/components/ui/checkbox';
-import { Database, Shuffle, X  } from 'lucide-react';
-import { ScrollArea  } from '@/components/ui/scroll-area';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Checkbox   } from '@/components/ui/checkbox';
+import { Database, Shuffle, X   } from 'lucide-react';
+import { ScrollArea   } from '@/components/ui/scroll-area';
 import React from 'react';
-import { QuestionSource  } from '../types/questionBank';
+import { QuestionSource   } from '../types/questionBank';
 
 /**
 * 文件级注释：QuestionSourceList 组件
@@ -21,13 +21,12 @@ import { QuestionSource  } from '../types/questionBank';
 * @category common
 * @filepath judge\management\QuestionSourceList.tsx
  */
-
-interface QuestionSourceListProps { questionSources: QuestionSource[];
+interface QuestionSourceListProps  { questionSources: QuestionSource[];
   selectedSources: string[];
   onToggleSource: (sourceId: string) => void;
   onSelectAllFromSource: (sourceId: string) => void;
   onRandomSelectAll: () => void;
-  onClearAllSelections: () => void;,
+  onClearAllSelections: () => void
 }
 
 /**
@@ -43,13 +42,12 @@ interface QuestionSourceListProps { questionSources: QuestionSource[];
 * // 使用示例
 * <QuestionSourceList { ...props } />
  */
-const QuestionSourceList: React.FC<QuestionSourceListProps> = ({ questionSources,
+const QuestionSourceList: React.FC<QuestionSourceListProps> = ( { questionSources,
   selectedSources,
   onToggleSource,
   onSelectAllFromSource,
   onRandomSelectAll,
-  onClearAllSelections,
-}) => { return (;
+  onClearAllSelections }) => { return (;
     <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>;
     <CardHeader className='flex-shrink-0 pb-3'>;
     <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>;
@@ -127,7 +125,13 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({ questionSources
     </ScrollArea>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * QuestionSourceList组件
+ * QuestionSourceList组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default QuestionSourceList;

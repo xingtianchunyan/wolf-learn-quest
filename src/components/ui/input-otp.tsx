@@ -1,6 +1,6 @@
-import { cn  } from '@/lib/utils'
-import { Dot  } from 'lucide-react'
-import { OTPInput, OTPInputContext  } from 'input-otp'
+import { cn   } from '@/lib/utils'
+import { Dot   } from 'lucide-react'
+import { OTPInput, OTPInputContext   } from 'input-otp'
 import * as React from 'react'
 
 /**
@@ -35,6 +35,12 @@ React.ComponentPropsWithoutRef<typeof OTPInput>
 ))
 InputOTP.displayName = 'InputOTP';
 
+/**
+ * InputOTPGroup组件
+ * 输入框组件，支持验证和格式化
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const InputOTPGroup = React.forwardRef<;
 React.ElementRef<'div'>,
 React.ComponentPropsWithoutRef<'div'>
@@ -43,9 +49,16 @@ React.ComponentPropsWithoutRef<'div'>
 ))
 InputOTPGroup.displayName = 'InputOTPGroup';
 
+/**
+ * InputOTPSlot组件
+ * 输入框组件，支持验证和格式化
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const InputOTPSlot = React.forwardRef<;
 React.ElementRef<'div'>,
-React.ComponentPropsWithoutRef<'div'> & { index: number  }
+React.ComponentPropsWithoutRef<'div'> & { index: number  
+}
 >(({ index, className, ...props  }, ref) => { const inputOTPContext = React.useContext(OTPInputContext);
   const { char, hasFakeCaret, isActive  } = inputOTPContext.slots[index];
 
@@ -66,10 +79,15 @@ React.ComponentPropsWithoutRef<'div'> & { index: number  }
       </div>
     ) }
     </div>
-  ),
-})
+  ) })
 InputOTPSlot.displayName = 'InputOTPSlot';
 
+/**
+ * InputOTPSeparator组件
+ * 输入框组件，支持验证和格式化
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const InputOTPSeparator = React.forwardRef<;
 React.ElementRef<'div'>,
 React.ComponentPropsWithoutRef<'div'>

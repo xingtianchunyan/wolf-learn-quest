@@ -1,5 +1,5 @@
-import { Toaster as Sonner, toast  } from 'sonner'
-import { useTheme  } from 'next-themes'
+import { Toaster as Sonner, toast   } from 'sonner'
+import { useTheme   } from 'next-themes'
 
 /**
 * 文件级注释：sonner 组件
@@ -19,7 +19,14 @@ import { useTheme  } from 'next-themes'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
-const Toaster = ({ ...props  }: ToasterProps) => { const { theme = 'system'  } = useTheme();
+/**
+ * Toaster组件
+ * Toaster组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const Toaster = ({ ...props  }: ToasterProps) => { const  { theme = 'system'  
+} = useTheme();
 
   return (;
     <Sonner
@@ -32,13 +39,10 @@ const Toaster = ({ ...props  }: ToasterProps) => { const { theme = 'system'  } =
         description: 'group-[.toast]:text-muted-foreground',
         actionButton:
         'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-        cancelButton:
-        'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-       },
-    }}
+        cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground' 
+} }}
     { ...props }
     />
-  ),
-}
+  ) }
 
 export { Toaster, toast  }

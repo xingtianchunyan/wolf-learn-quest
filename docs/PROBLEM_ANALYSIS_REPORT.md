@@ -9,10 +9,12 @@
 ### 1.1 EnhancedSkillSystem组件渲染频繁问题
 
 **问题描述：**
+
 - 组件在短时间内（1000ms）渲染次数过多（6-9次）
 - 触发性能监控警告
 
 **影响的组件链：**
+
 ```
 EnhancedSkillSystem (Hook)
 ├── useEnhancedSkillSystem
@@ -24,14 +26,16 @@ EnhancedSkillSystem (Hook)
 ```
 
 **根本原因：**
+
 1. **状态更新频繁**：多个子Hook同时更新状态
 2. **实时订阅**：useSkillRealtime频繁接收数据更新
 3. **依赖链复杂**：多层Hook依赖导致连锁渲染
 4. **缓存失效**：skillCache频繁清理导致重新计算
 
 **数据流分析：**
+
 ```
-Supabase实时订阅 → useSkillRealtime → setSkillUses → 
+Supabase实时订阅 → useSkillRealtime → setSkillUses →
 useEnhancedSkillSystem → 多个组件重新渲染
 ```
 
@@ -40,6 +44,7 @@ useEnhancedSkillSystem → 多个组件重新渲染
 ### 2.1 未使用的导入和变量（错误级别）
 
 **涉及文件：**
+
 - `RoleSpecificSkills.tsx`
 - `SkillUsePanel.tsx`
 - `GamePage.tsx`
@@ -49,6 +54,7 @@ useEnhancedSkillSystem → 多个组件重新渲染
 **具体问题：**
 
 #### RoleSpecificSkills.tsx
+
 ```typescript
 // 未使用的导入
 import { useState } from 'react';        // 第1行
@@ -62,10 +68,11 @@ usageRestriction: any  // 第56行
 ```
 
 #### SkillUsePanel.tsx
+
 ```typescript
 // 未使用的导入
-import { Button, Select, SelectContent, SelectItem, 
-         SelectTrigger, SelectValue, Badge, Loader2, 
+import { Button, Select, SelectContent, SelectItem,
+         SelectTrigger, SelectValue, Badge, Loader2,
          AlertCircle } from '@/components/ui/*';
 
 // 未使用的变量
@@ -75,6 +82,7 @@ const skillPriority = ...;     // 第53行
 ```
 
 #### GamePage.tsx
+
 ```typescript
 // 未使用的导入
 import { useEffect } from 'react';        // 第2行
@@ -92,6 +100,7 @@ const getUserSkillData = ...;             // 第59行
 **问题文件：** `SkillUsePanel.tsx`
 
 **具体错误：**
+
 ```typescript
 // 第87行：在普通函数中调用Hook
 const _handleUseSkill = async () => {
@@ -105,6 +114,7 @@ const handleSkillUse = async () => {
 ```
 
 **正确做法：**
+
 ```typescript
 // Hook应该在组件顶层调用
 const { useSkillEnhanced } = useEnhancedSkillSystem(...);
@@ -117,6 +127,7 @@ const handleUseSkill = async () => {
 ### 2.3 TypeScript类型问题（警告级别）
 
 **问题分布：**
+
 - `RoleSpecificSkills.tsx`: 5个 `any` 类型
 - `SkillUsePanel.tsx`: 3个 `any` 类型
 - `GamePage.tsx`: 1个 `any` 类型
@@ -124,6 +135,7 @@ const handleUseSkill = async () => {
 - 其他文件: 多个 `any` 类型
 
 **典型问题：**
+
 ```typescript
 // 应该定义具体类型
 skillEffects: any;           // ❌
@@ -141,6 +153,7 @@ interface SkillEffects {
 ### 2.4 React Hook依赖项问题（警告级别）
 
 **问题示例：**
+
 ```typescript
 // RoleSpecificSkills.tsx 第335行
 useEffect(() => {
@@ -156,6 +169,7 @@ useEffect(() => {
 ### 2.5 Console语句问题（警告级别）
 
 **涉及文件：**
+
 - `EnhancedVotingManager.tsx`: 3个console语句
 - `GameRoom.tsx`: 15个console语句
 - `GamePage.tsx`: 1个console语句
@@ -166,20 +180,23 @@ useEffect(() => {
 ### 3.1 技能系统模块
 
 **核心组件：**
+
 - `useEnhancedSkillSystem` (主Hook)
 - `EnhancedSkillPanel` (UI组件)
 - `RoleSpecificSkills` (角色技能界面)
 - `SkillUsePanel` (技能使用面板)
 
 **数据流：**
+
 ```
-数据库(Supabase) → useSkillRealtime → useEnhancedSkillSystem → 
+数据库(Supabase) → useSkillRealtime → useEnhancedSkillSystem →
 UI组件(EnhancedSkillPanel, RoleSpecificSkills, SkillUsePanel)
 ```
 
 ### 3.2 游戏状态管理模块
 
 **核心组件：**
+
 - `GamePage` (主页面)
 - `useGameState` (游戏状态Hook)
 - `usePlayersRealtime` (玩家实时状态)
@@ -188,6 +205,7 @@ UI组件(EnhancedSkillPanel, RoleSpecificSkills, SkillUsePanel)
 ### 3.3 投票系统模块
 
 **核心组件：**
+
 - `EnhancedVotingManager`
 - `VotingPanel`
 - `useVotingSystem`
@@ -200,7 +218,7 @@ UI组件(EnhancedSkillPanel, RoleSpecificSkills, SkillUsePanel)
 Supabase Database → useSkillRealtime → useEnhancedSkillSystem
                                     ↓
                               skillUses State
-                              skillTargets State  
+                              skillTargets State
                               skillEffectsQueue State
                                     ↓
                     EnhancedSkillPanel, RoleSpecificSkills, SkillUsePanel
@@ -225,11 +243,13 @@ usePerformanceOptimization → 渲染计数/内存监控/性能指标
 ### 5.1 技能系统
 
 **前端：**
+
 - Hook: `useEnhancedSkillSystem`
 - 服务: `enhancedSkillService`
 - 组件: `EnhancedSkillPanel`, `RoleSpecificSkills`
 
 **后端：**
+
 - 数据库表: `skill_uses`, `skill_effects`, `role_states`
 - 实时订阅: Supabase Realtime
 - 函数: `process_seer_investigation`, `check_wolf_immunity`
@@ -237,10 +257,12 @@ usePerformanceOptimization → 渲染计数/内存监控/性能指标
 ### 5.2 游戏状态管理
 
 **前端：**
+
 - Hook: `useGameState`, `usePlayersRealtime`
 - 组件: `GamePage`, `GameInfoPanel`
 
 **后端：**
+
 - 数据库表: `game_states`, `players`, `rooms`
 - 实时订阅: 游戏状态变更
 
@@ -281,6 +303,7 @@ usePerformanceOptimization → 渲染计数/内存监控/性能指标
 ### 7.1 立即修复（高优先级）
 
 1. **修复React Hook使用错误**
+
    ```typescript
    // 修复 SkillUsePanel.tsx 中的Hook调用
    const { useSkillEnhanced } = useEnhancedSkillSystem(...);
@@ -333,6 +356,7 @@ usePerformanceOptimization → 渲染计数/内存监控/性能指标
 ### 8.2 代码质量保证
 
 1. **ESLint规则强化**
+
    ```json
    {
      "rules": {
@@ -351,6 +375,7 @@ usePerformanceOptimization → 渲染计数/内存监控/性能指标
 ## 9. 总结
 
 本次分析发现了系统中的多个问题，主要集中在：
+
 - 性能优化（渲染频繁）
 - 代码质量（未使用变量、类型安全）
 - React最佳实践（Hook使用）

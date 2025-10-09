@@ -1,11 +1,11 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { DragDropContext, Droppable, Draggable  } from 'react-beautiful-dnd';
-import { GripVertical  } from 'lucide-react';
-import { ScrollArea  } from '@/components/ui/scroll-area';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { DragDropContext, Droppable, Draggable   } from 'react-beautiful-dnd';
+import { GripVertical   } from 'lucide-react';
+import { ScrollArea   } from '@/components/ui/scroll-area';
 import React from 'react';
-import { Question  } from '../types/questionBank';
+import { Question   } from '../types/questionBank';
 
 /**
 * 文件级注释：QuestionOrderEditor 组件
@@ -22,11 +22,10 @@ import { Question  } from '../types/questionBank';
 * @category common
 * @filepath judge\management\QuestionOrderEditor.tsx
  */
-
-interface QuestionOrderEditorProps { selectedQuestions: Question[];
+interface QuestionOrderEditorProps  { selectedQuestions: Question[];
   onDragEnd: (result: any) => void;
   onLinkSystem: () => void;
-  isSystemLinked: boolean;,
+  isSystemLinked: boolean
 }
 
 /**
@@ -42,33 +41,46 @@ interface QuestionOrderEditorProps { selectedQuestions: Question[];
 * // 使用示例
 * <QuestionOrderEditor { ...props } />
  */
-const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({ selectedQuestions,
+const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ( { selectedQuestions,
   onDragEnd,
   onLinkSystem,
-  isSystemLinked,
- }) => { const getPhaseLabel = (index: number) => {
+  isSystemLinked }) => { const getPhaseLabel = (index: number) => {
     const round = Math.floor(index / 2) + 1;
     const phase = index % 2 === 0 ? '傍晚' : '黎明';
-    return `第${round }轮 ${ phase }阶段`;,
+    return `第${round }轮 ${ phase }阶段`
 };
 
-  const getDifficultyColor = (difficulty: number) => { switch (difficulty) {
+/**
+ * getDifficultyColor函数
+ * 获取数据
+ *
+ * @param difficulty - difficulty参数
+ * @returns void
+ */
+const getDifficultyColor = (difficulty: number) => { switch (difficulty)  {
       case 1: return 'bg-green-500';
       case 2: return 'bg-yellow-500';
       case 3: return 'bg-orange-500';
       case 4: return 'bg-red-500';
       case 5: return 'bg-purple-500';
-      default: return 'bg-gray-500';,
+      default: return 'bg-gray-500'
 }
   };
 
-  const getDifficultyLabel = (difficulty: number) => { switch (difficulty) {
+/**
+ * getDifficultyLabel函数
+ * 获取数据
+ *
+ * @param difficulty - difficulty参数
+ * @returns void
+ */
+const getDifficultyLabel = (difficulty: number) => { switch (difficulty)  {
       case 1: return '简单';
       case 2: return '容易';
       case 3: return '中等';
       case 4: return '困难';
       case 5: return '极难';
-      default: return '未知';,
+      default: return '未知'
 }
   };
 
@@ -83,7 +95,8 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({ selectedQuest
     size='sm';
     className='bg-werewolf-purple hover:bg-werewolf-light text-white';
     >
-    { isSystemLinked ? '更新教师系统' : '链接教师系统' }
+    { isSystemLinked ? '更新教师系统' : '链接教师系统' 
+}
     </Button>
     </div>
     <p className='text-gray-400 text-sm'>;
@@ -95,7 +108,8 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({ selectedQuest
       <div className='flex items-center justify-center h-full'>;
       <p className='text-gray-400'>请先在'已生成题目'页面选择题目</p>;
       </div>
-    ) : (<DragDropContext onDragEnd={onDragEnd }>;
+    ) : (<DragDropContext onDragEnd={onDragEnd 
+}>;
       <Droppable droppableId='questions'>;
       { provided => (;
         <ScrollArea className='h-full'>;
@@ -107,7 +121,7 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({ selectedQuest
             ref={provided.innerRef }
             { ...provided.draggableProps }
             className={ `bg-werewolf-dark/20 border border-werewolf-purple/30 rounded-lg p-4 transition-all ${
-              snapshot.isDragging ? 'shadow-lg bg-werewolf-purple/20' : '',
+              snapshot.isDragging ? 'shadow-lg bg-werewolf-purple/20' : '' 
 }`}
             >
             <div className='flex items-start justify-between'>;
@@ -146,7 +160,13 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({ selectedQuest
     )}
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * QuestionOrderEditor组件
+ * QuestionOrderEditor组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default QuestionOrderEditor;

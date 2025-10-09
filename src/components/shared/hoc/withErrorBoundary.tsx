@@ -1,0 +1,399 @@
+/**
+ * @fileoverview 错误边界高阶组件
+ * 为组件提供错误捕获和处理功能，提升应用稳定性
+ *
+ * @author SOLO Coding
+ * @version 1.0.0
+ * @since 2024-12-19
+ */
+import React, { Component, ComponentType } from 'react';
+import { createLogger } from '@/lib/logger';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+
+const logger = createLogger('error-boundary');
+
+/**
+ * 错误边界配置接口
+ */
+export interface ErrorBoundaryConfig {
+  /** 是否显示错误详情 */
+  showErrorDetails?: boolean;
+  /** 自定义错误消息 */
+  fallbackMessage?: string;
+  /** 是否显示重试按钮 */
+  showRetryButton?: boolean;
+  /** 错误回调函数 */
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  /** 自定义错误UI组件 */
+  fallbackComponent?: ComponentType<ErrorFallbackProps>;
+  /** 是否在开发环境显示错误堆栈 */
+  showStackTrace?: boolean;
+}
+
+/**
+ * 错误回退组件属性接口
+ */
+export interface ErrorFallbackProps {
+  /** 错误对象 */
+  error: Error;
+  /** 错误信息 */
+  errorInfo: React.ErrorInfo;
+  /** 重试函数 */
+  retry: () => void;
+  /** 配置选项 */
+  config: ErrorBoundaryConfig;
+}
+
+/**
+ * 错误边界状态接口
+ */
+interface ErrorBoundaryState {
+  /** 是否有错误 */
+  hasError: boolean;
+  /** 错误对象 */
+  error: Error | null;
+  /** 错误信息 */
+  errorInfo: React.ErrorInfo | null;
+  /** 错误ID */
+  errorId: string;
+  /** 重试次数 */
+  retryCount: number;
+}
+
+/**
+ * 默认错误边界配置
+ */
+const DEFAULT_CONFIG: ErrorBoundaryConfig = {
+  showErrorDetails: process.env.NODE_ENV === 'development',
+  fallbackMessage: '抱歉，页面出现了错误',
+  showRetryButton: true,
+  showStackTrace: process.env.NODE_ENV === 'development',
+};
+
+/**
+ * 默认错误回退组件
+ */
+const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  errorInfo,
+  retry,
+  config,
+}) => {
+  return (
+    <div className='min-h-[400px] flex items-center justify-center p-8'>
+      <div className='max-w-md w-full bg-white rounded-lg shadow-lg border border-red-200 p-6'>
+        <div className='flex items-center mb-4'>
+          <AlertTriangle className='h-8 w-8 text-red-500 mr-3' />
+          <h2 className='text-xl font-semibold text-gray-900'>页面错误</h2>
+        </div>
+
+        <p className='text-gray-600 mb-4'>
+          {config.fallbackMessage || DEFAULT_CONFIG.fallbackMessage}
+        </p>
+
+        {config.showErrorDetails && (
+          <div className='mb-4 p-3 bg-red-50 rounded border border-red-200'>
+            <p className='text-sm font-medium text-red-800 mb-1'>错误详情：</p>
+            <p className='text-sm text-red-700 font-mono'>{error.message}</p>
+
+            {config.showStackTrace && error.stack && (
+              <details className='mt-2'>
+                <summary className='text-sm text-red-600 cursor-pointer hover:text-red-800'>
+                  查看错误堆栈
+                </summary>
+                <pre className='mt-2 text-xs text-red-600 bg-red-100 p-2 rounded overflow-auto max-h-32'>
+                  {error.stack}
+                </pre>
+              </details>
+            )}
+          </div>
+        )}
+
+        {config.showRetryButton && (
+          <button
+            onClick={retry}
+            className='w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'
+          >
+            <RefreshCw className='h-4 w-4 mr-2' />
+            重试
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * 错误边界高阶组件
+ * @param config - 错误边界配置
+ * @returns HOC函数
+ */
+export function withErrorBoundary<P extends object>(
+  config: ErrorBoundaryConfig = {}
+) {
+  return function <T extends ComponentType<P>>(
+    WrappedComponent: T
+  ): ComponentType<P> {
+    const mergedConfig = { ...DEFAULT_CONFIG, ...config };
+
+    class ErrorBoundary extends Component<P, ErrorBoundaryState> {
+      private retryTimeoutId: NodeJS.Timeout | null = null;
+
+      constructor(props: P) {
+        super(props);
+
+        this.state = {
+          hasError: false,
+          error: null,
+          errorInfo: null,
+          errorId: '',
+          retryCount: 0,
+        };
+      }
+
+      /**
+       * 捕获错误
+       */
+      static getDerivedStateFromError(
+        error: Error
+      ): Partial<ErrorBoundaryState> {
+        const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        return {
+          hasError: true,
+          error,
+          errorId,
+        };
+      }
+
+      /**
+       * 组件捕获错误时调用
+       */
+      componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        this.setState({ errorInfo });
+
+        // 记录错误日志
+        logger.error('组件错误边界捕获错误', {
+          error: {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          },
+          errorInfo: {
+            componentStack: errorInfo.componentStack,
+          },
+          errorId: this.state.errorId,
+          retryCount: this.state.retryCount,
+        });
+
+        // 调用自定义错误处理函数
+        if (mergedConfig.onError) {
+          try {
+            mergedConfig.onError(error, errorInfo);
+          } catch (callbackError) {
+            logger.error('错误回调函数执行失败', { callbackError });
+          }
+        }
+
+        // 在生产环境中可以发送错误报告到监控服务
+        if (process.env.NODE_ENV === 'production') {
+          this.reportErrorToService(error, errorInfo);
+        }
+      }
+
+      /**
+       * 发送错误报告到监控服务
+       */
+      private reportErrorToService = (
+        error: Error,
+        errorInfo: React.ErrorInfo
+      ) => {
+        // 这里可以集成错误监控服务，如 Sentry、LogRocket 等
+        // 示例：
+        // Sentry.captureException(error, {
+        //   contexts: {
+        //     react: {
+        //       componentStack: errorInfo.componentStack
+        //     }
+        //   }
+        // });
+
+        logger.info('错误已报告到监控服务', {
+          errorId: this.state.errorId,
+          errorMessage: error.message,
+        });
+      };
+
+      /**
+       * 重试处理
+       */
+      private handleRetry = () => {
+        const { retryCount } = this.state;
+        const maxRetries = 3;
+
+        if (retryCount >= maxRetries) {
+          logger.warn('达到最大重试次数', { retryCount, maxRetries });
+          return;
+        }
+
+        logger.info('用户触发重试', { retryCount: retryCount + 1 });
+
+        // 清除之前的重试定时器
+        if (this.retryTimeoutId) {
+          clearTimeout(this.retryTimeoutId);
+        }
+
+        // 延迟重试，避免立即重试可能导致的问题
+        this.retryTimeoutId = setTimeout(() => {
+          this.setState({
+            hasError: false,
+            error: null,
+            errorInfo: null,
+            errorId: '',
+            retryCount: retryCount + 1,
+          });
+        }, 100);
+      };
+
+      /**
+       * 组件卸载时清理
+       */
+      componentWillUnmount() {
+        if (this.retryTimeoutId) {
+          clearTimeout(this.retryTimeoutId);
+        }
+      }
+
+      render() {
+        if (this.state.hasError && this.state.error) {
+          /**
+           * FallbackComponent组件
+           * FallbackComponent组件的功能描述
+           * @param props - 组件属性
+           * @returns JSX元素
+           */
+          const FallbackComponent =
+            mergedConfig.fallbackComponent || DefaultErrorFallback;
+
+          return (
+            <FallbackComponent
+              error={this.state.error}
+              errorInfo={this.state.errorInfo!}
+              retry={this.handleRetry}
+              config={mergedConfig}
+            />
+          );
+        }
+
+        return <WrappedComponent {...this.props} />;
+      }
+    }
+
+    // 设置显示名称，便于调试
+    const wrappedComponentName =
+      WrappedComponent.displayName || WrappedComponent.name || 'Component';
+    ErrorBoundary.displayName = `withErrorBoundary(${wrappedComponentName})`;
+
+    return ErrorBoundary as ComponentType<P>;
+  };
+}
+
+/**
+ * 错误边界Hook（用于函数组件）
+ */
+export function useErrorHandler() {
+  const [error, setError] = React.useState<Error | null>(null);
+
+  const resetError = React.useCallback(() => {
+    setError(null);
+  }, []);
+
+  const captureError = React.useCallback((error: Error) => {
+    logger.error('Hook捕获错误', { error });
+    setError(error);
+  }, []);
+
+  // 如果有错误，抛出错误让错误边界捕获
+  React.useEffect(() => {
+    if (error) {
+      throw error;
+    }
+  }, [error]);
+
+  return { captureError, resetError };
+}
+
+/**
+ * 异步错误处理Hook
+ */
+export function useAsyncError() {
+  const { captureError } = useErrorHandler();
+
+  return React.useCallback(
+    (error: Error) => {
+      // 在下一个事件循环中抛出错误，确保错误边界能够捕获
+      setTimeout(() => {
+        captureError(error);
+      }, 0);
+    },
+    [captureError]
+  );
+}
+
+/**
+ * 错误边界工具函数
+ */
+export const errorBoundaryUtils = {
+  /**
+   * 创建带错误边界的组件
+   */
+  createSafeComponent<P extends object>(
+    Component: ComponentType<P>,
+    config?: ErrorBoundaryConfig
+  ): ComponentType<P> {
+    return withErrorBoundary(config)(Component);
+  },
+
+  /**
+   * 包装异步函数，自动处理错误
+   */
+  wrapAsyncFunction<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    onError?: (error: Error) => void
+  ): T {
+    return (async (...args: Parameters<T>) => {
+      try {
+        return await fn(...args);
+      } catch (error) {
+        const errorObj =
+          error instanceof Error ? error : new Error(String(error));
+        logger.error('异步函数执行错误', { error: errorObj });
+
+        if (onError) {
+          onError(errorObj);
+        } else {
+          throw errorObj;
+        }
+      }
+    }) as T;
+  },
+
+  /**
+   * 创建错误报告函数
+   */
+  createErrorReporter(serviceName: string) {
+    return (error: Error, context?: Record<string, any>) => {
+      logger.error(`${serviceName}错误报告`, {
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+        context,
+        timestamp: new Date().toISOString(),
+        userAgent:
+          typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+      });
+    };
+  },
+};

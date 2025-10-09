@@ -1,19 +1,24 @@
-import { supabase  } from '@/integrations/supabase/client';
+import { supabase   } from '@/integrations/supabase/client';
 
 /**
-* 统一的技能验证规则配置
+ * 统一的技能验证规则配置
  */
-
-export interface SkillValidationRule { skillName: string;
+export interface SkillValidationRule  { skillName: string;
   phases: number[]; // 允许的游戏阶段 (1=day, 2=evening, 3=night, 4=dawn)
   maxUsesPerGame?: number; // 每局游戏最大使用次数
   maxUsesPerRound?: number; // 每回合最大使用次数
   requiresTarget: boolean; // 是否需要目标
   targetValidation?: (targetId: string, gameStateId: string) => Promise<boolean>;
-  customValidation?: (userId: string, gameStateId: string, skillData: any) => Promise<boolean>;,
+  customValidation?: (userId: string, gameStateId: string, skillData: any) => Promise<boolean>
 }
 
-export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { werewolf_attack: {
+/**
+ * SKILL组件
+ * SKILL组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { werewolf_attack:  {
     skillName: 'werewolf_attack',
     phases: [3], // 夜晚阶段
     maxUsesPerRound: 1,
@@ -28,7 +33,7 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .single();
 
       // 简化验证，只检查目标是否存活
-      return data?.role_status !== 4;,
+      return data?.role_status !== 4
 }
   },
 
@@ -46,7 +51,7 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .single();
 
       // 简化验证，只检查目标是否存活
-      return data?.role_status !== 4;,
+      return data?.role_status !== 4
 }
   },
 
@@ -63,7 +68,7 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .eq('game_state_id', gameStateId)
       .single();
 
-      return data?.role_status !== 4;,
+      return data?.role_status !== 4
 }
   },
 
@@ -80,7 +85,7 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .eq('game_state_id', gameStateId)
       .single();
 
-      return data?.role_status !== 4;,
+      return data?.role_status !== 4
 }
   },
 
@@ -98,13 +103,15 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .eq('game_state_id', gameStateId)
       .eq('skill_name', 'magic_potion');
 
-      const usedPotions = data?.filter(use => { const effects = use.skill_effects as any;
-        return effects?.potionType === potionType;,
+      const usedPotions = data?.filter(use => {
+  const effects = use.skill_effects as any;
+        return effects?.potionType === potionType
 }) || [];
 
-      return usedPotions.length === 0;,
+      return usedPotions.length === 0
 }
-  },
+  
+},
 
   guard_protection: { skillName: 'guard_protection',
     phases: [3], // 夜晚阶段
@@ -119,13 +126,14 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .eq('user_id', userId)
       .eq('game_state_id', gameStateId)
       .eq('skill_name', 'guard_protection')
-      .order('round_number', { ascending: false  })
+      .order('round_number', { ascending: false  
+})
       .limit(1);
 
-      if (data && data.length > 0) { return data[0].target_user_id !== targetId;,
+      if (data && data.length > 0) { return data[0].target_user_id !== targetId
 }
 
-      return true;,
+      return true
 }
   },
 
@@ -142,13 +150,14 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .eq('user_id', userId)
       .eq('game_state_id', gameStateId)
       .eq('skill_name', 'vigil')
-      .order('round_number', { ascending: false  })
+      .order('round_number', { ascending: false  
+})
       .limit(1);
 
-      if (data && data.length > 0) { return data[0].target_user_id !== targetId;,
+      if (data && data.length > 0) { return data[0].target_user_id !== targetId
 }
 
-      return true;,
+      return true
 }
   },
 
@@ -166,10 +175,10 @@ export const SKILL_VALIDATION_RULES: Record<string, SkillValidationRule> = { wer
       .single();
 
       if (data?.role_status === 2) { // 濒死状态
-      return true;,
+      return true
 }
 
-    return false;,
+    return false
 }
 },
 
@@ -187,10 +196,10 @@ dying_shot: { skillName: 'dying_shot',
     .single();
 
     if (data?.role_status === 2) { // 濒死状态
-    return true;,
+    return true
 }
 
-  return false;,
+  return false
 }
 },
 
@@ -207,7 +216,7 @@ demon_eye: { skillName: 'demon_eye',
     .eq('game_state_id', gameStateId)
     .single();
 
-    return data?.role_status !== 4;,
+    return data?.role_status !== 4
 }
 },
 
@@ -224,7 +233,7 @@ voodoo: { skillName: 'voodoo',
     .eq('game_state_id', gameStateId)
     .single();
 
-    return data?.role_status !== 4;,
+    return data?.role_status !== 4
 }
 },
 
@@ -241,38 +250,40 @@ self_destruct: { skillName: 'self_destruct',
     .eq('game_state_id', gameStateId)
     .single();
 
-    return data?.role_status === 2; // 濒死状态才能使用,
-}
+    return data?.role_status === 2; // 濒死状态才能使用 }
 },
 
 Sleep: { skillName: 'Sleep',
   phases: [3], // 夜晚阶段
   requiresTarget: false,
-  customValidation: async () => true // 村民睡觉无特殊限制,
+  customValidation: async () => true // 村民睡觉无特殊限制 
 }
 };
 
 /**
-* 统一的技能验证函数
+ * 统一的技能验证函数
  */
 export const validateSkillUnified = async (;
   skillName: string,
   userId: string,
   gameStateId: string,
   currentPhase: number,
-  skillData: any = {}
-): Promise<{ valid: boolean, reason?: string }> => { const rule = SKILL_VALIDATION_RULES[skillName];
+  skillData: any = {
+}
+): Promise<{ valid: boolean, reason?: string 
+}> => { const rule = SKILL_VALIDATION_RULES[skillName];
 
   if (!rule) {
-    return { valid: false, reason: '未知技能'  };,
+    return { valid: false, reason: '未知技能'  
+}
 }
 
   // 验证游戏阶段
   if (!rule.phases.includes(currentPhase)) { const phaseNames = ['', '白天', '黄昏', '夜晚', '黎明'];
     return {
       valid: false,
-      reason: `当前阶段 '${phaseNames[currentPhase] }' 不是技能使用阶段，需要在指定阶段使用`,
-};,
+      reason: `当前阶段 '${phaseNames[currentPhase] 
+}' 不是技能使用阶段，需要在指定阶段使用` }
 }
 
   // 验证使用次数限制
@@ -285,12 +296,13 @@ export const validateSkillUnified = async (;
     );
 
     if (!usageValid.valid) {
-      return usageValid;,
+      return usageValid
 }
   }
 
   // 验证目标
-  if (rule.requiresTarget && !skillData.targetUserId) { return { valid: false, reason: '该技能需要选择目标'  };,
+  if (rule.requiresTarget && !skillData.targetUserId) { return { valid: false, reason: '该技能需要选择目标'  
+}
 }
 
   if (rule.targetValidation && skillData.targetUserId) { const targetValid = await rule.targetValidation(;
@@ -299,7 +311,8 @@ export const validateSkillUnified = async (;
     );
 
     if (!targetValid) {
-      return { valid: false, reason: '目标无效'  };,
+      return { valid: false, reason: '目标无效'  
+}
 }
   }
 
@@ -311,15 +324,17 @@ export const validateSkillUnified = async (;
     );
 
     if (!customValid) {
-      return { valid: false, reason: '技能使用条件不满足'  };,
+      return { valid: false, reason: '技能使用条件不满足'  
+}
 }
   }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 };
 
 /**
-* 验证技能使用次数限制
+ * 验证技能使用次数限制
  */
 const validateSkillUsageLimits = async (;
   skillName: string,
@@ -327,22 +342,26 @@ const validateSkillUsageLimits = async (;
   gameStateId: string,
   maxUsesPerGame?: number,
   maxUsesPerRound?: number
-): Promise<{ valid: boolean, reason?: string }> => { const { data  } = await supabase;
+): Promise<{ valid: boolean, reason?: string 
+}> => { const { data  } = await supabase;
   .from('skill_uses')
   .select('round_number')
   .eq('user_id', userId)
   .eq('game_state_id', gameStateId)
   .eq('skill_name', skillName);
 
-  if (!data) { return { valid: true  };,
+  if (!data) { return { valid: true  
+}
 }
 
   // 检查每局游戏使用次数
-  if (maxUsesPerGame && data.length >= maxUsesPerGame) { return { valid: false, reason: '技能使用次数已达上限'  };,
+  if (maxUsesPerGame && data.length >= maxUsesPerGame) { return { valid: false, reason: '技能使用次数已达上限'  
+}
 }
 
   // 检查每回合使用次数
-  if (maxUsesPerRound) { const { data: gameState  } = await supabase;
+  if (maxUsesPerRound) { const { data: gameState  
+} = await supabase;
     .from('game_states')
     .select('current_round')
     .eq('id', gameStateId)
@@ -352,9 +371,11 @@ const validateSkillUsageLimits = async (;
       use => use.round_number === gameState?.current_round;
     );
 
-    if (currentRoundUses.length >= maxUsesPerRound) { return { valid: false, reason: '本回合技能使用次数已达上限'  };,
+    if (currentRoundUses.length >= maxUsesPerRound) { return { valid: false, reason: '本回合技能使用次数已达上限'  
+}
 }
   }
 
-  return { valid: true  };,
+  return { valid: true  
+}
 };

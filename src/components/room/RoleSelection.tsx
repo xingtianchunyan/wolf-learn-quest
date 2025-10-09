@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { getRoleConfiguration, expandRolesWithDesigns  } from '@/utils/roleConfiguration';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { useLanguage  } from '@/components/layout/LanguageSwitcher';
-import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useToast  } from '@/components/ui/useToast';
-import React, { useState  } from 'react';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { getRoleConfiguration, expandRolesWithDesigns   } from '@/utils/roleConfiguration';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { useLanguage   } from '@/components/layout/LanguageSwitcher';
+import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
+import { useRoleSelection   } from '@/hooks/useRoleSelection';
+import { useToast   } from '@/components/ui/useToast';
+import React, { useState   } from 'react';
 
 /**
 * 文件级注释：RoleSelection 组件
@@ -22,14 +22,13 @@ import React, { useState  } from 'react';
 * @category game
 * @filepath room\RoleSelection.tsx
  */
-
-interface RoleSelectionProps { maxPlayers: number;
+interface RoleSelectionProps  { maxPlayers: number;
   currentPlayerCount: number;
   selectedCharacter: string | null;
   onCharacterSelect: (characterId: string | null) => void;
   roomId: string;
   currentPlayerId: string | null;
-  isReady: boolean;,
+  isReady: boolean
 }
 
 /**
@@ -46,14 +45,13 @@ interface RoleSelectionProps { maxPlayers: number;
 * // 使用示例
 * <RoleSelection { ...props } />
  */
-const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
+const RoleSelection: React.FC<RoleSelectionProps> = ( { maxPlayers,
   currentPlayerCount,
   selectedCharacter,
   onCharacterSelect,
   roomId,
   currentPlayerId,
-  isReady,
-}) => { const { t  } = useLanguage();
+  isReady }) => { const { t  } = useLanguage();
   const { toast  } = useToast();
   const { roleDesigns, loading: roleDesignsLoading, getLocalImageByDesignId  } = useRoleDesigns();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -63,7 +61,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
     isRoleSelected,
     getCurrentPlayerSelection,
     canSelectRoles,
-    loading: roleSelectionLoading,
+    loading: roleSelectionLoading 
 } = useRoleSelection(roomId, currentPlayerId, currentPlayerCount, maxPlayers);
 
   // 获取角色配置并与设计数据结合
@@ -74,51 +72,66 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
   const currentSelection = getCurrentPlayerSelection();
   const currentSelectedRoleId = currentSelection?.roleId || null;
 
-  const handleCardFlip = (roleInstanceId: string) => { setFlippedCards(prev => {
+/**
+ * handleCardFlip函数
+ * 处理事件
+ *
+ * @param roleInstanceId - roleInstanceId参数
+ * @returns void
+ */
+const handleCardFlip = (roleInstanceId: string) => { setFlippedCards(prev =>  {
       const newSet = new Set(prev);
       if (newSet.has(roleInstanceId)) {
-        newSet.delete(roleInstanceId);,
-} else { newSet.add(roleInstanceId);,
+        newSet.delete(roleInstanceId)
+} else { newSet.add(roleInstanceId)
 }
-      return newSet;,
-});,
+      return newSet
+})
 };
 
-  const handleRoleSelect = async (role: any) => { // 检查是否可以选择角色（玩家数是否等于最大玩家数）
+/**
+ * handleRoleSelect函数
+ * 处理事件
+ *
+ * @param role - role参数
+ * @returns Promise<void>
+ */
+const handleRoleSelect = async (role: any) =>  { // 检查是否可以选择角色（玩家数是否等于最大玩家数）
     if (!canSelectRoles()) {
       toast({
         title: '角色选择暂未开放',
-        description: `需要等待房间人数达到${maxPlayers }人才能选择角色`,
-        variant: 'destructive',
-      });
-      return;,
+        description: `需要等待房间人数达到${maxPlayers 
+}人才能选择角色`,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 如果已经准备，不能选择角色
     if (isReady) { toast({
         title: t('cannot_select_role'),
         description: '请先取消准备状态才能选择角色',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 如果没有 roleDesignId，无法选择
     if (!role.roleDesignId) { toast({
         title: t('error'),
         description: '角色设计数据缺失，无法选择此角色',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 如果角色已被其他玩家选择，不能选择
     if (isRoleSelected(role.roleDesignId) && currentSelectedRoleId !== role.roleDesignId) { toast({
         title: t('role_already_selected'),
         description: '该角色已被其他玩家选择',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 如果当前玩家已选择这个角色，则取消选择
@@ -127,15 +140,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
         onCharacterSelect(null);
         toast({
           title: t('role_unselected'),
-          description: '已取消角色选择',
-         });,
+          description: '已取消角色选择' 
+})
 } else { toast({
           title: t('error'),
           description: '取消选择失败，请重试',
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
-      return;,
+      return
 }
 
     // 选择新角色
@@ -143,21 +156,37 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
     if (success) { onCharacterSelect(role.roleDesignId);
       toast({
         title: t('role_selected'),
-        description: `已选择角色：${role.displayName }`,
-      });,
+        description: `已选择角色：${role.displayName 
+}` })
 } else { toast({
         title: t('error'),
         description: '选择角色失败，请重试',
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
+/**
+ * isFlipped函数
+ * isFlipped函数的功能描述
+ *
+ * @param roleInstanceId - roleInstanceId参数
+ * @returns void
+ */
   const isFlipped = (roleInstanceId: string) => flippedCards.has(roleInstanceId);
 
   // 根据 roleDesignId 获取角色设计信息
-  const getRoleDesignById = (roleDesignId: string | undefined) => { if (!roleDesignId) return null;
-    return roleDesigns.find(design => design.id === roleDesignId);,
+/**
+ * getRoleDesignById函数
+ * 获取数据
+ *
+ * @param roleDesignId - roleDesignId参数
+ * @returns void
+ */
+const getRoleDesignById = (roleDesignId: string | undefined) =>  {
+  if (!roleDesignId) return null;
+    return roleDesigns.find(design => design.id === roleDesignId)
+
 };
 
   if (roleDesignsLoading) { return (;
@@ -169,7 +198,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
       <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple'></div>;
       </CardContent>
       </Card>
-    );,
+    )
 }
 
   return (;
@@ -178,10 +207,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
     <CardTitle className='text-werewolf-purple'>{ t('select_role') }</CardTitle>;
     <div className='space-y-2'>;
     <p className='text-sm text-gray-400'>;
-    { t('current_config') }: { maxPlayers }{ t('players_game') } ({ expandedRoles.length }{ t('roles') })
+    { t('current_config') }: { maxPlayers 
+}{ t('players_game') } ({ expandedRoles.length }{ t('roles') })
     </p>
     <p className='text-sm text-gray-400'>;
-    当前玩家数: { currentPlayerCount } / { maxPlayers }
+    当前玩家数: { currentPlayerCount 
+} / { maxPlayers }
     </p>
     { !canSelectRoles() && (
       <p className='text-sm text-yellow-400'>;
@@ -216,9 +247,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
           ? 'ring-2 ring-werewolf-purple'
           : isSelected
           ? 'ring-2 ring-red-500'
-          : '',
+          : '' 
 }`}
-        style={ { perspective: '1000px'  }}
+        style={ { perspective: '1000px'  
+}}
         >
         { isSelected && !isCurrentSelection && (
           <div className='absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs'>;
@@ -232,9 +264,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
         ) }
         <div
         className={ `relative w-full h-80 transition-transform duration-700 transform-style-preserve-3d ${
-          flipped ? 'rotate-y-180' : '',
+          flipped ? 'rotate-y-180' : '' 
 }`}
-        style={ { transformStyle: 'preserve-3d'  }}
+        style={ { transformStyle: 'preserve-3d'  
+}}
         >
         { /*  正面 - 角色形象和名称  */ }
         <div
@@ -243,15 +276,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
           ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
           : isSelected
           ? 'bg-red-900/30 border-2 border-red-500'
-          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60',
+          : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60' 
 }`}
-        style={ { backfaceVisibility: 'hidden'  }}
+        style={ { backfaceVisibility: 'hidden'  
+}}
         >
         <div className='h-full flex flex-col'>;
         { /*  图片区域 - 点击选择角色  */ }
         <div
         className={ `flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
-          canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60',
+          canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' 
 }`}
         onClick={ () => canSelect && handleRoleSelect(role) }
         >
@@ -267,12 +301,14 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
             target.style.display = 'none';
             const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
             if (fallback) {
-              fallback.style.display = 'flex';,
+              fallback.style.display = 'flex'
 }
           }}
           />
-        ) : null}
-        <div className={ `fallback-icon ${imageUrl ? 'hidden' : 'flex' } absolute inset-0 text-6xl items-center justify-center w-full h-full`}>;
+        ) : null
+}
+        <div className={ `fallback-icon ${imageUrl ? 'hidden' : 'flex' 
+} absolute inset-0 text-6xl items-center justify-center w-full h-full`}>;
         🎭
         </div>
         </div>
@@ -298,11 +334,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
           ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
           : isSelected
           ? 'bg-red-900/30 border-2 border-red-500'
-          : 'bg-werewolf-dark/40',
+          : 'bg-werewolf-dark/40' 
 }`}
         style={ {
           backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
+          transform: 'rotateY(180deg)' 
 }}
         >
         <div className='h-full flex flex-col'>;
@@ -313,12 +349,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
         </h3>
         <span
         className={ `inline-block px-3 py-1 rounded-full text-sm font-medium ${
-          roleDesign?.faction === false ? 'bg-green-900/60 text-green-200' :;
-          roleDesign?.faction === true ? 'bg-red-900/60 text-red-200' :;
-          'bg-purple-900/60 text-purple-200',
-}`}
+          roleDesign?.faction === false ? 'bg-green-900/60 text-green-200' : unknown;
+          roleDesign?.faction === true ? 'bg-red-900/60 text-red-200' : unknown;
+          'bg-purple-900/60 text-purple-200' }`}
         >
-        { roleDesign?.faction === false ? '村民' : roleDesign?.faction === true ? '狼人' : '未知' }阵营;
+        { roleDesign?.faction === false ? '村民' : roleDesign?.faction === true ? '狼人' : '未知' 
+}阵营;
         </span>
         </div>
 
@@ -348,7 +384,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
         使用次数
         </h4>
         <p className='text-sm text-gray-300'>;
-        { roleDesign?.skill_usage === -1 ? '无限制' : roleDesign?.skill_usage || 0 }
+        { roleDesign?.skill_usage === -1 ? '无限制' : roleDesign?.skill_usage || 0 
+}
         </p>
         </div>
 
@@ -359,7 +396,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
         <p className='text-sm text-gray-300'>;
         { roleDesign?.skill_type ?
         (Array.isArray(roleDesign.skill_type) ? roleDesign.skill_type.join(', ') : JSON.stringify(roleDesign.skill_type))
-        : '无',
+        : '无' 
 }
       </p>
       </div>
@@ -379,13 +416,19 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ maxPlayers,
       </div>
       </div>
       </div>
-    );,
+    )
 })}
   </div>
   </ScrollArea>
   </CardContent>
   </Card>
-);,
+)
 };
 
+/**
+ * RoleSelection组件
+ * 角色相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default RoleSelection;

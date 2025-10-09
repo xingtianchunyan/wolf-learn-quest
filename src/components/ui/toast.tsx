@@ -1,6 +1,6 @@
-import { cn  } from '@/lib/utils'
-import { cva, type VariantProps  } from 'class-variance-authority'
-import { X  } from 'lucide-react'
+import { cn   } from '@/lib/utils'
+import { cva, type VariantProps   } from 'class-variance-authority'
+import { X   } from 'lucide-react'
 import * as React from 'react'
 import * as ToastPrimitives from '@radix-ui/react-toast'
 
@@ -35,6 +35,12 @@ import * as ToastPrimitives from '@radix-ui/react-toast'
  */
 const ToastProvider = ToastPrimitives.Provider;
 
+/**
+ * ToastViewport组件
+ * ToastViewport组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToastViewport = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Viewport>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
@@ -55,15 +61,18 @@ const toastVariants = cva(;
   { variants: {
       variant: {
         default: 'border bg-background text-foreground',
-        destructive:
-        'destructive group border-destructive bg-destructive text-destructive-foreground',
-       },
-    },
-    defaultVariants: { variant: 'default',
-     },
-  }
+        destructive: 'destructive group border-destructive bg-destructive text-destructive-foreground' 
+} },
+    defaultVariants: { variant: 'default' 
+} }
 )
 
+/**
+ * Toast组件
+ * Toast组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const Toast = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Root>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
@@ -74,10 +83,15 @@ VariantProps<typeof toastVariants>
     className={ cn(toastVariants({ variant  }), className)}
     { ...props }
     />
-  ),
-})
+  ) })
 Toast.displayName = ToastPrimitives.Root.displayName;
 
+/**
+ * ToastAction组件
+ * ToastAction组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToastAction = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Action>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
@@ -93,6 +107,12 @@ React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
 ))
 ToastAction.displayName = ToastPrimitives.Action.displayName;
 
+/**
+ * ToastClose组件
+ * ToastClose组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToastClose = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Close>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
@@ -111,6 +131,12 @@ React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName;
 
+/**
+ * ToastTitle组件
+ * ToastTitle组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToastTitle = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Title>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
@@ -123,6 +149,12 @@ React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
 ))
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
 
+/**
+ * ToastDescription组件
+ * ToastDescription组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToastDescription = React.forwardRef<;
 React.ElementRef<typeof ToastPrimitives.Description>,
 React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
@@ -147,5 +179,4 @@ export { type ToastProps,
   ToastTitle,
   ToastDescription,
   ToastClose,
-  ToastAction,
- }
+  ToastAction }

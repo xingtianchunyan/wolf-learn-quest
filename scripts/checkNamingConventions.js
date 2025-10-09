@@ -19,13 +19,13 @@ const NAMING_RULES = {
   files: {
     component: /^[A-Z][a-zA-Z0-9]*\.tsx?$/,
     hook: /^use[A-Z][a-zA-Z0-9]*\.(ts|tsx)$/,
-    service: /^[a-z][a-zA-Z0-9]*Service\.ts$/,
+    service: /^[A-Z][a-zA-Z0-9]*Service\.ts$/,
     util: /^[a-z][a-zA-Z0-9]*\.ts$/,
     config: /^[a-z][a-zA-Z0-9]*\.config\.ts$/,
     types: /^[a-z][a-zA-Z0-9]*[Tt]ypes?\.ts$/,
-    ui: /^[a-z][a-z0-9-]*\.tsx$/
+    ui: /^[a-z][a-z0-9-]*\.tsx$/,
   },
-  
+
   // 代码命名规则
   code: {
     variable: /^[a-z][a-zA-Z0-9]*$/,
@@ -34,8 +34,8 @@ const NAMING_RULES = {
     class: /^[A-Z][a-zA-Z0-9]*$/,
     interface: /^I?[A-Z][a-zA-Z0-9]*$/,
     enum: /^[A-Z][a-zA-Z0-9]*$/,
-    enumMember: /^[A-Z][A-Z0-9_]*$/
-  }
+    enumMember: /^[A-Z][A-Z0-9_]*$/,
+  },
 };
 
 /**
@@ -50,7 +50,7 @@ class NamingCheckResult {
       totalFiles: 0,
       checkedFiles: 0,
       errorCount: 0,
-      warningCount: 0
+      warningCount: 0,
     };
   }
 
@@ -104,10 +104,10 @@ class NamingConventionChecker {
    */
   async checkAll() {
     console.log('🔍 开始检查命名规范...\n');
-    
+
     await this.checkFileNaming();
     await this.checkCodeNaming();
-    
+
     this.generateReport();
     return this.result;
   }
@@ -117,10 +117,10 @@ class NamingConventionChecker {
    */
   async checkFileNaming() {
     console.log('📁 检查文件命名规范...');
-    
+
     const files = await this.getAllFiles(this.srcPath);
     this.result.stats.totalFiles = files.length;
-    
+
     for (const file of files) {
       this.result.stats.checkedFiles++;
       await this.checkSingleFile(file);
@@ -135,12 +135,12 @@ class NamingConventionChecker {
     const fileName = path.basename(filePath);
     const relativePath = path.relative(this.srcPath, filePath);
     const dir = path.dirname(relativePath);
-    
+
     // 跳过特殊文件
     if (this.shouldSkipFile(fileName)) {
       return;
     }
-    
+
     // 检查组件文件
     if (this.isComponentFile(filePath)) {
       if (!NAMING_RULES.files.component.test(fileName)) {
@@ -152,7 +152,7 @@ class NamingConventionChecker {
         );
       }
     }
-    
+
     // 检查 Hook 文件
     else if (this.isHookFile(filePath)) {
       if (!NAMING_RULES.files.hook.test(fileName)) {
@@ -164,19 +164,19 @@ class NamingConventionChecker {
         );
       }
     }
-    
+
     // 检查服务文件
     else if (this.isServiceFile(filePath)) {
       if (!NAMING_RULES.files.service.test(fileName)) {
         this.result.addError(
           'service-naming',
           relativePath,
-          `服务文件应以 'Service' 结尾并使用 camelCase: ${fileName}`,
+          `服务文件应以 'Service' 结尾并使用 PascalCase: ${fileName}`,
           this.suggestServiceName(fileName)
         );
       }
     }
-    
+
     // 检查 UI 组件文件
     else if (this.isUIComponentFile(filePath)) {
       if (!NAMING_RULES.files.ui.test(fileName)) {
@@ -188,7 +188,7 @@ class NamingConventionChecker {
         );
       }
     }
-    
+
     // 检查配置文件
     else if (this.isConfigFile(filePath)) {
       if (!NAMING_RULES.files.config.test(fileName)) {
@@ -207,9 +207,9 @@ class NamingConventionChecker {
    */
   async checkCodeNaming() {
     console.log('💻 检查代码命名规范...');
-    
+
     const tsFiles = await this.getTSFiles(this.srcPath);
-    
+
     for (const file of tsFiles) {
       await this.checkCodeInFile(file);
     }
@@ -223,19 +223,18 @@ class NamingConventionChecker {
     try {
       const content = fs.readFileSync(filePath, 'utf-8');
       const relativePath = path.relative(this.srcPath, filePath);
-      
+
       // 检查接口命名
       this.checkInterfaceNaming(content, relativePath);
-      
+
       // 检查枚举命名
       this.checkEnumNaming(content, relativePath);
-      
+
       // 检查类命名
       this.checkClassNaming(content, relativePath);
-      
+
       // 检查函数命名
       this.checkFunctionNaming(content, relativePath);
-      
     } catch (error) {
       console.warn(`⚠️  无法读取文件: ${filePath}`);
     }
@@ -247,17 +246,22 @@ class NamingConventionChecker {
    * @param {string} filePath - 文件路径
    */
   checkInterfaceNaming(content, filePath) {
-    const interfaceRegex = /(?:^|\s)interface\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\s+extends|\s*\{)/g;
+    const interfaceRegex =
+      /(?:^|\s)interface\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\s+extends|\s*\{)/g;
     let match;
-    
+
     while ((match = interfaceRegex.exec(content)) !== null) {
       const interfaceName = match[1];
-      
+
       // 跳过关键字
-      if (['extends', 'implements', 'interface', 'type', 'enum'].includes(interfaceName)) {
+      if (
+        ['extends', 'implements', 'interface', 'type', 'enum'].includes(
+          interfaceName
+        )
+      ) {
         continue;
       }
-      
+
       if (!NAMING_RULES.code.interface.test(interfaceName)) {
         this.result.addError(
           'interface-naming',
@@ -277,7 +281,7 @@ class NamingConventionChecker {
   checkEnumNaming(content, filePath) {
     const enumRegex = /enum\s+([A-Za-z_][A-Za-z0-9_]*)/g;
     let match;
-    
+
     while ((match = enumRegex.exec(content)) !== null) {
       const enumName = match[1];
       if (!NAMING_RULES.code.enum.test(enumName)) {
@@ -297,17 +301,22 @@ class NamingConventionChecker {
    * @param {string} filePath - 文件路径
    */
   checkClassNaming(content, filePath) {
-    const classRegex = /(?:^|\s)class\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\s+extends|\s+implements|\s*\{)/g;
+    const classRegex =
+      /(?:^|\s)class\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\s+extends|\s+implements|\s*\{)/g;
     let match;
-    
+
     while ((match = classRegex.exec(content)) !== null) {
       const className = match[1];
-      
+
       // 跳过关键字
-      if (['extends', 'implements', 'interface', 'type', 'enum'].includes(className)) {
+      if (
+        ['extends', 'implements', 'interface', 'type', 'enum'].includes(
+          className
+        )
+      ) {
         continue;
       }
-      
+
       if (!NAMING_RULES.code.class.test(className)) {
         this.result.addError(
           'class-naming',
@@ -325,17 +334,18 @@ class NamingConventionChecker {
    * @param {string} filePath - 文件路径
    */
   checkFunctionNaming(content, filePath) {
-    const functionRegex = /(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_][A-Za-z0-9_]*)\s*(?:=\s*(?:async\s+)?(?:function|\(|\w+\s*=>))/g;
+    const functionRegex =
+      /(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_][A-Za-z0-9_]*)\s*(?:=\s*(?:async\s+)?(?:function|\(|\w+\s*=>))/g;
     let match;
-    
+
     while ((match = functionRegex.exec(content)) !== null) {
       const functionName = match[1];
-      
+
       // 跳过组件名（PascalCase）
       if (this.isPascalCase(functionName)) {
         continue;
       }
-      
+
       if (!NAMING_RULES.code.function.test(functionName)) {
         this.result.addWarning(
           'function-naming',
@@ -354,21 +364,21 @@ class NamingConventionChecker {
    */
   async getAllFiles(dir) {
     const files = [];
-    
+
     const items = fs.readdirSync(dir);
     for (const item of items) {
       const fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         if (!this.shouldSkipDirectory(item)) {
-          files.push(...await this.getAllFiles(fullPath));
+          files.push(...(await this.getAllFiles(fullPath)));
         }
       } else {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -393,9 +403,9 @@ class NamingConventionChecker {
       /\.d\.ts$/,
       /\.test\.(ts|tsx)$/,
       /\.spec\.(ts|tsx)$/,
-      /^vite-env\.d\.ts$/
+      /^vite-env\.d\.ts$/,
     ];
-    
+
     return skipPatterns.some(pattern => pattern.test(fileName));
   }
 
@@ -405,7 +415,15 @@ class NamingConventionChecker {
    * @returns {boolean} 是否跳过
    */
   shouldSkipDirectory(dirName) {
-    const skipDirs = ['node_modules', '.git', 'dist', 'build', '__tests__', 'test', 'tests'];
+    const skipDirs = [
+      'node_modules',
+      '.git',
+      'dist',
+      'build',
+      '__tests__',
+      'test',
+      'tests',
+    ];
     return skipDirs.includes(dirName);
   }
 
@@ -417,12 +435,12 @@ class NamingConventionChecker {
   isComponentFile(filePath) {
     const fileName = path.basename(filePath);
     const dir = path.dirname(filePath);
-    
+
     // UI 组件目录下的文件不算作普通组件
     if (dir.includes('ui')) {
       return false;
     }
-    
+
     return fileName.endsWith('.tsx') && !fileName.startsWith('use');
   }
 
@@ -434,21 +452,25 @@ class NamingConventionChecker {
   isHookFile(filePath) {
     const fileName = path.basename(filePath);
     const relativePath = path.relative(this.srcPath, filePath);
-    
+
     // 必须以 'use' 开头
     if (!fileName.startsWith('use')) {
       return false;
     }
-    
+
     // 必须是 .ts 或 .tsx 文件
     if (!/\.(ts|tsx)$/.test(fileName)) {
       return false;
     }
-    
+
     // 在 hooks 目录下或者文件名明确是 Hook
-    return relativePath.includes('hooks/') || 
-           relativePath.includes('components/ui/use-') ||
-           (fileName.startsWith('use') && fileName.length > 3 && fileName[3] === fileName[3].toUpperCase());
+    return (
+      relativePath.includes('hooks/') ||
+      relativePath.includes('components/ui/use-') ||
+      (fileName.startsWith('use') &&
+        fileName.length > 3 &&
+        fileName[3] === fileName[3].toUpperCase())
+    );
   }
 
   /**
@@ -459,7 +481,7 @@ class NamingConventionChecker {
   isServiceFile(filePath) {
     const fileName = path.basename(filePath);
     const dir = path.dirname(filePath);
-    
+
     return dir.includes('services') && fileName.endsWith('.ts');
   }
 
@@ -511,11 +533,11 @@ class NamingConventionChecker {
   suggestHookName(fileName) {
     const nameWithoutExt = fileName.replace(/\.(ts|tsx)$/, '');
     const ext = fileName.endsWith('.tsx') ? '.tsx' : '.ts';
-    
+
     if (!nameWithoutExt.startsWith('use')) {
       return 'use' + this.suggestPascalCase(nameWithoutExt) + ext;
     }
-    
+
     return this.suggestCamelCase(nameWithoutExt) + ext;
   }
 
@@ -526,12 +548,12 @@ class NamingConventionChecker {
    */
   suggestServiceName(fileName) {
     const nameWithoutExt = fileName.replace(/\.ts$/, '');
-    
+
     if (!nameWithoutExt.endsWith('Service')) {
-      return this.suggestCamelCase(nameWithoutExt) + 'Service.ts';
+      return this.suggestPascalCase(nameWithoutExt) + 'Service.ts';
     }
-    
-    return this.suggestCamelCase(nameWithoutExt) + '.ts';
+
+    return this.suggestPascalCase(nameWithoutExt) + '.ts';
   }
 
   /**
@@ -551,11 +573,11 @@ class NamingConventionChecker {
    */
   suggestConfigName(fileName) {
     const nameWithoutExt = fileName.replace(/\.ts$/, '');
-    
+
     if (!nameWithoutExt.includes('.config')) {
       return this.suggestCamelCase(nameWithoutExt) + '.config.ts';
     }
-    
+
     return fileName;
   }
 
@@ -600,13 +622,13 @@ class NamingConventionChecker {
   generateReport() {
     console.log('\n📊 命名规范检查报告');
     console.log('='.repeat(50));
-    
+
     console.log(`\n📈 统计信息:`);
     console.log(`  总文件数: ${this.result.stats.totalFiles}`);
     console.log(`  检查文件数: ${this.result.stats.checkedFiles}`);
     console.log(`  错误数: ${this.result.stats.errorCount}`);
     console.log(`  警告数: ${this.result.stats.warningCount}`);
-    
+
     if (this.result.errors.length > 0) {
       console.log(`\n❌ 错误 (${this.result.errors.length}):`);
       this.result.errors.forEach((error, index) => {
@@ -618,7 +640,7 @@ class NamingConventionChecker {
         console.log('');
       });
     }
-    
+
     if (this.result.warnings.length > 0) {
       console.log(`\n⚠️  警告 (${this.result.warnings.length}):`);
       this.result.warnings.forEach((warning, index) => {
@@ -630,7 +652,7 @@ class NamingConventionChecker {
         console.log('');
       });
     }
-    
+
     if (this.result.suggestions.length > 0) {
       console.log(`\n💡 建议 (${this.result.suggestions.length}):`);
       this.result.suggestions.forEach((suggestion, index) => {
@@ -639,14 +661,16 @@ class NamingConventionChecker {
         console.log('');
       });
     }
-    
+
     if (this.result.errors.length === 0 && this.result.warnings.length === 0) {
       console.log('\n✅ 恭喜！所有文件都符合命名规范！');
     } else {
       console.log('\n🔧 请根据上述建议修复命名问题。');
     }
-    
-    console.log('\n📚 详细的命名规范请参考: .trae/documents/NAMING_CONVENTIONS.md');
+
+    console.log(
+      '\n📚 详细的命名规范请参考: .trae/documents/NAMING_CONVENTIONS.md'
+    );
   }
 }
 
@@ -657,12 +681,11 @@ async function main() {
   try {
     const checker = new NamingConventionChecker();
     const result = await checker.checkAll();
-    
+
     // 如果有错误，退出码为 1
     if (result.errors.length > 0) {
       process.exit(1);
     }
-    
   } catch (error) {
     console.error('❌ 检查过程中发生错误:', error.message);
     process.exit(1);
@@ -670,7 +693,10 @@ async function main() {
 }
 
 // 如果直接运行此脚本
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('checkNamingConventions.js')) {
+if (
+  import.meta.url.endsWith(process.argv[1]) ||
+  process.argv[1].endsWith('checkNamingConventions.js')
+) {
   main();
 }
 

@@ -1,4 +1,4 @@
-import { LucideIcon  } from 'lucide-react';
+import { LucideIcon   } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -16,10 +16,9 @@ import React from 'react';
 * @category ui
 * @filepath home\FeatureCard.tsx
  */
-
-interface FeatureCardProps { title: string;
+interface FeatureCardProps  { title: string;
   description: string;
-  icon: LucideIcon;,
+  icon: LucideIcon
 }
 
 /**
@@ -35,7 +34,8 @@ interface FeatureCardProps { title: string;
 * // 使用示例
 * <FeatureCard { ...props } />
  */
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Icon  }) => { return (;
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Icon  
+}) =>  { return (;
     <div className='feature-card'>;
     <div className='feature-icon'>;
     <Icon className='h-8 w-8 text-werewolf-purple' />;
@@ -43,7 +43,13 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Ico
     <h3 className='text-lg font-bold mb-2 text-werewolf-purple'>{title }</h3>;
     <p className='text-center text-sm'>{ description }</p>;
     </div>
-  );,
+  )
 };
 
+/**
+ * FeatureCard组件
+ * 卡片组件，用于内容分组展示
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default FeatureCard;

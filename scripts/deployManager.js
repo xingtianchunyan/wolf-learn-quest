@@ -47,63 +47,85 @@ class DeploymentManager {
    */
   setupEnvironments() {
     // 开发环境
-    this.addEnvironment('development', new DeploymentEnvironment('development', {
-      url: 'http://localhost:3000',
-      branch: 'develop',
-      buildCommand: 'npm run build:dev',
-      deployCommand: 'npm run start:dev',
-      healthCheckUrl: 'http://localhost:3000/health',
-      envVars: {
-        NODE_ENV: 'development',
-        DEBUG: 'true'
-      }
-    }));
+    this.addEnvironment(
+      'development',
+      new DeploymentEnvironment('development', {
+        url: 'http://localhost:3000',
+        branch: 'develop',
+        buildCommand: 'npm run build:dev',
+        deployCommand: 'npm run start:dev',
+        healthCheckUrl: 'http://localhost:3000/health',
+        envVars: {
+          NODE_ENV: 'development',
+          DEBUG: 'true',
+        },
+      })
+    );
 
     // 测试环境
-    this.addEnvironment('staging', new DeploymentEnvironment('staging', {
-      url: 'https://staging.example.com',
-      branch: 'staging',
-      buildCommand: 'npm run build:staging',
-      deployCommand: 'vercel --target staging',
-      healthCheckUrl: 'https://staging.example.com/health',
-      envVars: {
-        NODE_ENV: 'staging',
-        API_URL: 'https://api-staging.example.com'
-      },
-      preDeployHooks: ['test:unit', 'test:integration'],
-      postDeployHooks: ['test:smoke', 'notify:slack']
-    }));
+    this.addEnvironment(
+      'staging',
+      new DeploymentEnvironment('staging', {
+        url: 'https://staging.example.com',
+        branch: 'staging',
+        buildCommand: 'npm run build:staging',
+        deployCommand: 'vercel --target staging',
+        healthCheckUrl: 'https://staging.example.com/health',
+        envVars: {
+          NODE_ENV: 'staging',
+          API_URL: 'https://api-staging.example.com',
+        },
+        preDeployHooks: ['test:unit', 'test:integration'],
+        postDeployHooks: ['test:smoke', 'notify:slack'],
+      })
+    );
 
     // 生产环境
-    this.addEnvironment('production', new DeploymentEnvironment('production', {
-      url: 'https://example.com',
-      branch: 'main',
-      buildCommand: 'npm run build:production',
-      deployCommand: 'vercel --prod',
-      healthCheckUrl: 'https://example.com/health',
-      envVars: {
-        NODE_ENV: 'production',
-        API_URL: 'https://api.example.com'
-      },
-      preDeployHooks: ['test:unit', 'test:integration', 'test:e2e', 'security:audit'],
-      postDeployHooks: ['test:smoke', 'monitor:setup', 'notify:slack', 'backup:create'],
-      rollbackCommand: 'vercel rollback',
-      timeout: 900000 // 15分钟
-    }));
+    this.addEnvironment(
+      'production',
+      new DeploymentEnvironment('production', {
+        url: 'https://example.com',
+        branch: 'main',
+        buildCommand: 'npm run build:production',
+        deployCommand: 'vercel --prod',
+        healthCheckUrl: 'https://example.com/health',
+        envVars: {
+          NODE_ENV: 'production',
+          API_URL: 'https://api.example.com',
+        },
+        preDeployHooks: [
+          'test:unit',
+          'test:integration',
+          'test:e2e',
+          'security:audit',
+        ],
+        postDeployHooks: [
+          'test:smoke',
+          'monitor:setup',
+          'notify:slack',
+          'backup:create',
+        ],
+        rollbackCommand: 'vercel rollback',
+        timeout: 900000, // 15分钟
+      })
+    );
 
     // 预览环境
-    this.addEnvironment('preview', new DeploymentEnvironment('preview', {
-      url: 'https://preview-{branch}.example.com',
-      branch: 'feature/*',
-      buildCommand: 'npm run build',
-      deployCommand: 'vercel',
-      healthCheckUrl: 'https://preview-{branch}.example.com/health',
-      envVars: {
-        NODE_ENV: 'preview'
-      },
-      preDeployHooks: ['test:unit'],
-      postDeployHooks: ['test:smoke']
-    }));
+    this.addEnvironment(
+      'preview',
+      new DeploymentEnvironment('preview', {
+        url: 'https://preview-{branch}.example.com',
+        branch: 'feature/*',
+        buildCommand: 'npm run build',
+        deployCommand: 'vercel',
+        healthCheckUrl: 'https://preview-{branch}.example.com/health',
+        envVars: {
+          NODE_ENV: 'preview',
+        },
+        preDeployHooks: ['test:unit'],
+        postDeployHooks: ['test:smoke'],
+      })
+    );
   }
 
   /**
@@ -132,38 +154,38 @@ class DeploymentManager {
    */
   async executeCommand(command, options = {}) {
     const startTime = Date.now();
-    
+
     try {
       console.log(`🚀 执行命令: ${command}`);
-      
+
       const result = execSync(command, {
         cwd: projectRoot,
         stdio: 'inherit',
         timeout: options.timeout || 300000,
         env: { ...process.env, ...options.env },
-        ...options
+        ...options,
       });
 
       const duration = Date.now() - startTime;
       console.log(`✅ 命令执行成功 (${duration}ms): ${command}`);
-      
+
       return {
         success: true,
         duration,
         command,
-        output: result?.toString() || ''
+        output: result?.toString() || '',
       };
     } catch (error) {
       const duration = Date.now() - startTime;
       console.error(`❌ 命令执行失败 (${duration}ms): ${command}`);
       console.error(`错误信息: ${error.message}`);
-      
+
       return {
         success: false,
         duration,
         command,
         error: error.message,
-        exitCode: error.status
+        exitCode: error.status,
       };
     }
   }
@@ -173,7 +195,7 @@ class DeploymentManager {
    */
   async checkEnvironmentVariables(environment) {
     console.log(`🔍 检查环境变量...`);
-    
+
     const requiredVars = Object.keys(environment.envVars);
     const missingVars = [];
 
@@ -200,9 +222,9 @@ class DeploymentManager {
 
     try {
       // 检查是否有未提交的更改
-      const status = execSync('git status --porcelain', { 
-        cwd: projectRoot, 
-        encoding: 'utf8' 
+      const status = execSync('git status --porcelain', {
+        cwd: projectRoot,
+        encoding: 'utf8',
       });
 
       if (status.trim()) {
@@ -212,23 +234,31 @@ class DeploymentManager {
       }
 
       // 检查当前分支
-      const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { 
-        cwd: projectRoot, 
-        encoding: 'utf8' 
+      const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
+        cwd: projectRoot,
+        encoding: 'utf8',
       }).trim();
 
-      if (environment.branch !== '*' && !this.matchesBranchPattern(currentBranch, environment.branch)) {
-        console.warn(`⚠️  当前分支 '${currentBranch}' 不匹配目标分支 '${environment.branch}'`);
+      if (
+        environment.branch !== '*' &&
+        !this.matchesBranchPattern(currentBranch, environment.branch)
+      ) {
+        console.warn(
+          `⚠️  当前分支 '${currentBranch}' 不匹配目标分支 '${environment.branch}'`
+        );
         return false;
       }
 
       // 检查是否与远程同步
       try {
         execSync('git fetch', { cwd: projectRoot, stdio: 'pipe' });
-        const behind = execSync(`git rev-list --count HEAD..origin/${currentBranch}`, { 
-          cwd: projectRoot, 
-          encoding: 'utf8' 
-        }).trim();
+        const behind = execSync(
+          `git rev-list --count HEAD..origin/${currentBranch}`,
+          {
+            cwd: projectRoot,
+            encoding: 'utf8',
+          }
+        ).trim();
 
         if (parseInt(behind) > 0) {
           console.warn(`⚠️  本地分支落后远程 ${behind} 个提交`);
@@ -268,7 +298,7 @@ class DeploymentManager {
 
     for (const hook of hooks) {
       console.log(`  📌 执行钩子: ${hook}`);
-      
+
       let command;
       if (hook.startsWith('npm run ') || hook.startsWith('npx ')) {
         command = hook;
@@ -278,7 +308,7 @@ class DeploymentManager {
 
       const result = await this.executeCommand(command, {
         timeout: environment.timeout / 2,
-        env: environment.envVars
+        env: environment.envVars,
       });
 
       if (!result.success) {
@@ -299,19 +329,23 @@ class DeploymentManager {
 
     for (let i = 0; i < maxRetries; i++) {
       try {
-        const response = await fetch(url, { 
+        const response = await fetch(url, {
           method: 'GET',
-          timeout: 10000
+          timeout: 10000,
         });
 
         if (response.ok) {
           console.log(`✅ 健康检查通过 (尝试 ${i + 1}/${maxRetries})`);
           return true;
         } else {
-          console.warn(`⚠️  健康检查失败: HTTP ${response.status} (尝试 ${i + 1}/${maxRetries})`);
+          console.warn(
+            `⚠️  健康检查失败: HTTP ${response.status} (尝试 ${i + 1}/${maxRetries})`
+          );
         }
       } catch (error) {
-        console.warn(`⚠️  健康检查失败: ${error.message} (尝试 ${i + 1}/${maxRetries})`);
+        console.warn(
+          `⚠️  健康检查失败: ${error.message} (尝试 ${i + 1}/${maxRetries})`
+        );
       }
 
       if (i < maxRetries - 1) {
@@ -331,7 +365,11 @@ class DeploymentManager {
     console.log(`💾 创建部署备份...`);
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupDir = path.join(projectRoot, 'backups', `${environment.name}-${timestamp}`);
+    const backupDir = path.join(
+      projectRoot,
+      'backups',
+      `${environment.name}-${timestamp}`
+    );
 
     try {
       await fs.mkdir(backupDir, { recursive: true });
@@ -348,7 +386,12 @@ class DeploymentManager {
       }
 
       // 备份配置文件
-      const configFiles = ['package.json', 'package-lock.json', 'vercel.json', '.env.example'];
+      const configFiles = [
+        'package.json',
+        'package-lock.json',
+        'vercel.json',
+        '.env.example',
+      ];
       for (const file of configFiles) {
         const filePath = path.join(projectRoot, file);
         try {
@@ -362,10 +405,16 @@ class DeploymentManager {
 
       // 记录Git信息
       const gitInfo = {
-        commit: execSync('git rev-parse HEAD', { cwd: projectRoot, encoding: 'utf8' }).trim(),
-        branch: execSync('git rev-parse --abbrev-ref HEAD', { cwd: projectRoot, encoding: 'utf8' }).trim(),
+        commit: execSync('git rev-parse HEAD', {
+          cwd: projectRoot,
+          encoding: 'utf8',
+        }).trim(),
+        branch: execSync('git rev-parse --abbrev-ref HEAD', {
+          cwd: projectRoot,
+          encoding: 'utf8',
+        }).trim(),
         timestamp: new Date().toISOString(),
-        environment: environment.name
+        environment: environment.name,
       };
 
       await fs.writeFile(
@@ -406,13 +455,13 @@ class DeploymentManager {
       steps: [],
       error: null,
       backupPath: null,
-      rollbackAvailable: false
+      rollbackAvailable: false,
     };
 
     try {
       // 1. 预检查
       console.log(`\n📋 步骤 1/8: 预检查`);
-      
+
       if (!options.skipGitCheck) {
         const gitOk = await this.checkGitStatus(environment);
         if (!gitOk && !options.force) {
@@ -425,7 +474,11 @@ class DeploymentManager {
         throw new Error('环境变量检查失败，使用 --force 强制部署');
       }
 
-      deploymentRecord.steps.push({ name: 'precheck', success: true, duration: Date.now() - startTime });
+      deploymentRecord.steps.push({
+        name: 'precheck',
+        success: true,
+        duration: Date.now() - startTime,
+      });
 
       // 2. 创建备份
       if (!options.skipBackup) {
@@ -439,7 +492,11 @@ class DeploymentManager {
 
       // 3. 运行预部署钩子
       console.log(`\n📋 步骤 3/8: 预部署钩子`);
-      const preHooksOk = await this.runHooks(environment.preDeployHooks, environment, '预部署');
+      const preHooksOk = await this.runHooks(
+        environment.preDeployHooks,
+        environment,
+        '预部署'
+      );
       if (!preHooksOk) {
         throw new Error('预部署钩子执行失败');
       }
@@ -449,23 +506,34 @@ class DeploymentManager {
       console.log(`\n📋 步骤 4/8: 构建应用`);
       const buildResult = await this.executeCommand(environment.buildCommand, {
         timeout: environment.timeout,
-        env: environment.envVars
+        env: environment.envVars,
       });
       if (!buildResult.success) {
         throw new Error('应用构建失败');
       }
-      deploymentRecord.steps.push({ name: 'build', success: true, duration: buildResult.duration });
+      deploymentRecord.steps.push({
+        name: 'build',
+        success: true,
+        duration: buildResult.duration,
+      });
 
       // 5. 部署应用
       console.log(`\n📋 步骤 5/8: 部署应用`);
-      const deployResult = await this.executeCommand(environment.deployCommand, {
-        timeout: environment.timeout,
-        env: environment.envVars
-      });
+      const deployResult = await this.executeCommand(
+        environment.deployCommand,
+        {
+          timeout: environment.timeout,
+          env: environment.envVars,
+        }
+      );
       if (!deployResult.success) {
         throw new Error('应用部署失败');
       }
-      deploymentRecord.steps.push({ name: 'deploy', success: true, duration: deployResult.duration });
+      deploymentRecord.steps.push({
+        name: 'deploy',
+        success: true,
+        duration: deployResult.duration,
+      });
 
       // 6. 健康检查
       if (environment.healthCheckUrl && !options.skipHealthCheck) {
@@ -479,7 +547,11 @@ class DeploymentManager {
 
       // 7. 运行后部署钩子
       console.log(`\n📋 步骤 7/8: 后部署钩子`);
-      const postHooksOk = await this.runHooks(environment.postDeployHooks, environment, '后部署');
+      const postHooksOk = await this.runHooks(
+        environment.postDeployHooks,
+        environment,
+        '后部署'
+      );
       if (!postHooksOk) {
         console.warn('⚠️  后部署钩子执行失败，但部署已完成');
       }
@@ -487,10 +559,11 @@ class DeploymentManager {
 
       // 8. 完成
       console.log(`\n📋 步骤 8/8: 部署完成`);
-      
+
       deploymentRecord.success = true;
       deploymentRecord.endTime = Date.now();
-      deploymentRecord.duration = deploymentRecord.endTime - deploymentRecord.startTime;
+      deploymentRecord.duration =
+        deploymentRecord.endTime - deploymentRecord.startTime;
 
       console.log(`\n🎉 部署成功完成！`);
       console.log(`📊 部署统计:`);
@@ -502,15 +575,15 @@ class DeploymentManager {
       }
 
       return deploymentRecord;
-
     } catch (error) {
       deploymentRecord.success = false;
       deploymentRecord.error = error.message;
       deploymentRecord.endTime = Date.now();
-      deploymentRecord.duration = deploymentRecord.endTime - deploymentRecord.startTime;
+      deploymentRecord.duration =
+        deploymentRecord.endTime - deploymentRecord.startTime;
 
       console.error(`\n💥 部署失败: ${error.message}`);
-      
+
       if (deploymentRecord.rollbackAvailable && options.autoRollback) {
         console.log(`🔄 自动回滚...`);
         await this.rollback(environmentName, deploymentId);
@@ -538,7 +611,7 @@ class DeploymentManager {
         console.log(`📋 执行回滚命令...`);
         const result = await this.executeCommand(environment.rollbackCommand, {
           timeout: environment.timeout,
-          env: environment.envVars
+          env: environment.envVars,
         });
 
         if (!result.success) {
@@ -575,22 +648,24 @@ class DeploymentManager {
   /**
    * 生成部署报告
    */
-  async generateDeploymentReport(outputPath = 'reports/deployment-report.json') {
+  async generateDeploymentReport(
+    outputPath = 'reports/deployment-report.json'
+  ) {
     const report = {
       timestamp: new Date().toISOString(),
       environments: this.getAllEnvironments().map(env => ({
         name: env.name,
         url: env.url,
         branch: env.branch,
-        lastDeployment: this.getLastDeployment(env.name)
+        lastDeployment: this.getLastDeployment(env.name),
       })),
       deploymentHistory: this.getDeploymentHistory(),
-      statistics: this.calculateDeploymentStatistics()
+      statistics: this.calculateDeploymentStatistics(),
     };
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, JSON.stringify(report, null, 2));
-    
+
     console.log(`📄 部署报告已生成: ${outputPath}`);
     return report;
   }
@@ -599,7 +674,9 @@ class DeploymentManager {
    * 获取最后一次部署
    */
   getLastDeployment(environmentName) {
-    const deployments = this.deploymentHistory.filter(d => d.environment === environmentName);
+    const deployments = this.deploymentHistory.filter(
+      d => d.environment === environmentName
+    );
     return deployments.length > 0 ? deployments[deployments.length - 1] : null;
   }
 
@@ -608,19 +685,22 @@ class DeploymentManager {
    */
   calculateDeploymentStatistics() {
     const history = this.getDeploymentHistory();
-    
+
     if (history.length === 0) {
       return {
         totalDeployments: 0,
         successRate: 0,
         averageDuration: 0,
-        environmentStats: {}
+        environmentStats: {},
       };
     }
 
     const successCount = history.filter(h => h.success).length;
-    const totalDuration = history.reduce((sum, h) => sum + (h.duration || 0), 0);
-    
+    const totalDuration = history.reduce(
+      (sum, h) => sum + (h.duration || 0),
+      0
+    );
+
     const environmentStats = {};
     for (const record of history) {
       if (!environmentStats[record.environment]) {
@@ -629,15 +709,15 @@ class DeploymentManager {
           successes: 0,
           failures: 0,
           totalDuration: 0,
-          averageDuration: 0
+          averageDuration: 0,
         };
       }
-      
+
       const stats = environmentStats[record.environment];
       stats.deployments++;
       stats.totalDuration += record.duration || 0;
       stats.averageDuration = stats.totalDuration / stats.deployments;
-      
+
       if (record.success) {
         stats.successes++;
       } else {
@@ -649,7 +729,7 @@ class DeploymentManager {
       totalDeployments: history.length,
       successRate: (successCount / history.length) * 100,
       averageDuration: totalDuration / history.length,
-      environmentStats
+      environmentStats,
     };
   }
 
@@ -699,7 +779,7 @@ class DeploymentManager {
 async function main() {
   const manager = new DeploymentManager();
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     manager.showHelp();
     return;
@@ -707,7 +787,7 @@ async function main() {
 
   const command = args[0];
   const options = {};
-  
+
   // 解析选项
   for (let i = 1; i < args.length; i++) {
     if (args[i] === '--force') {
@@ -768,7 +848,9 @@ async function main() {
           const status = record.success ? '✅' : '❌';
           const duration = record.duration ? `${record.duration}ms` : 'N/A';
           const date = new Date(record.startTime).toLocaleString();
-          console.log(`  ${status} ${record.environment.padEnd(12)} ${duration.padStart(8)} ${date}`);
+          console.log(
+            `  ${status} ${record.environment.padEnd(12)} ${duration.padStart(8)} ${date}`
+          );
         });
         break;
 
@@ -791,7 +873,8 @@ async function main() {
 }
 
 // 如果直接运行此脚本
-const isMainModule = process.argv[1] && process.argv[1].endsWith('deployManager.js');
+const isMainModule =
+  process.argv[1] && process.argv[1].endsWith('deployManager.js');
 if (isMainModule) {
   main().catch(error => {
     console.error('💥 程序异常:', error);

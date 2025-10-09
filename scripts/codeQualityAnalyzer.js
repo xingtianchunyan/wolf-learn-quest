@@ -24,7 +24,7 @@ class CodeQualityAnalyzer {
       duplicates: [],
       codeSmells: [],
       maintainabilityIndex: 0,
-      technicalDebt: 0
+      technicalDebt: 0,
     };
   }
 
@@ -33,7 +33,7 @@ class CodeQualityAnalyzer {
    */
   async run() {
     console.log('🔍 开始代码质量分析...\n');
-    
+
     // 确保报告目录存在
     if (!fs.existsSync(this.reportsPath)) {
       fs.mkdirSync(this.reportsPath, { recursive: true });
@@ -41,22 +41,22 @@ class CodeQualityAnalyzer {
 
     // 扫描所有文件
     await this.scanFiles();
-    
+
     // 分析代码复杂度
     await this.analyzeComplexity();
-    
+
     // 检测重复代码
     await this.detectDuplicates();
-    
+
     // 检测代码异味
     await this.detectCodeSmells();
-    
+
     // 计算可维护性指数
     await this.calculateMaintainabilityIndex();
-    
+
     // 生成报告
     await this.generateReports();
-    
+
     console.log('✨ 代码质量分析完成！');
   }
 
@@ -65,13 +65,18 @@ class CodeQualityAnalyzer {
    */
   async scanFiles() {
     console.log('📁 扫描项目文件...');
-    
-    const files = this.getFilesRecursively(this.srcPath, ['.ts', '.tsx', '.js', '.jsx']);
-    
+
+    const files = this.getFilesRecursively(this.srcPath, [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+    ]);
+
     for (const filePath of files) {
       const content = fs.readFileSync(filePath, 'utf8');
       const relativePath = path.relative(this.srcPath, filePath);
-      
+
       const fileMetrics = {
         path: relativePath,
         fullPath: filePath,
@@ -83,12 +88,12 @@ class CodeQualityAnalyzer {
         functions: this.countFunctions(content),
         classes: this.countClasses(content),
         imports: this.countImports(content),
-        exports: this.countExports(content)
+        exports: this.countExports(content),
       };
-      
+
       this.metrics.files.push(fileMetrics);
     }
-    
+
     console.log(`✅ 扫描完成，共 ${this.metrics.files.length} 个文件`);
   }
 
@@ -100,17 +105,17 @@ class CodeQualityAnalyzer {
    */
   getFilesRecursively(dir, extensions) {
     const files = [];
-    
+
     if (!fs.existsSync(dir)) {
       return files;
     }
-    
+
     const items = fs.readdirSync(dir);
-    
+
     for (const item of items) {
       const fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         if (!this.shouldSkipDirectory(item)) {
           files.push(...this.getFilesRecursively(fullPath, extensions));
@@ -119,7 +124,7 @@ class CodeQualityAnalyzer {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -129,7 +134,16 @@ class CodeQualityAnalyzer {
    * @returns {boolean} 是否跳过
    */
   shouldSkipDirectory(dirName) {
-    const skipDirs = ['node_modules', '.git', 'dist', 'build', '__tests__', 'test', 'tests', 'coverage'];
+    const skipDirs = [
+      'node_modules',
+      '.git',
+      'dist',
+      'build',
+      '__tests__',
+      'test',
+      'tests',
+      'coverage',
+    ];
     return skipDirs.includes(dirName);
   }
 
@@ -142,7 +156,12 @@ class CodeQualityAnalyzer {
     const lines = content.split('\n');
     return lines.filter(line => {
       const trimmed = line.trim();
-      return trimmed !== '' && !trimmed.startsWith('//') && !trimmed.startsWith('*') && !trimmed.startsWith('/*');
+      return (
+        trimmed !== '' &&
+        !trimmed.startsWith('//') &&
+        !trimmed.startsWith('*') &&
+        !trimmed.startsWith('/*')
+      );
     }).length;
   }
 
@@ -155,7 +174,11 @@ class CodeQualityAnalyzer {
     const lines = content.split('\n');
     return lines.filter(line => {
       const trimmed = line.trim();
-      return trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*');
+      return (
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('*') ||
+        trimmed.startsWith('/*')
+      );
     }).length;
   }
 
@@ -180,9 +203,9 @@ class CodeQualityAnalyzer {
       /const\s+\w+\s*=\s*\(/g,
       /const\s+\w+\s*=\s*async\s*\(/g,
       /\w+\s*:\s*\(/g,
-      /=>\s*{/g
+      /=>\s*{/g,
     ];
-    
+
     let count = 0;
     for (const pattern of functionPatterns) {
       const matches = content.match(pattern);
@@ -190,7 +213,7 @@ class CodeQualityAnalyzer {
         count += matches.length;
       }
     }
-    
+
     return count;
   }
 
@@ -222,7 +245,8 @@ class CodeQualityAnalyzer {
    * @returns {number} 导出数量
    */
   countExports(content) {
-    const exportPattern = /export\s+(default\s+|const\s+|function\s+|class\s+)/g;
+    const exportPattern =
+      /export\s+(default\s+|const\s+|function\s+|class\s+)/g;
     const matches = content.match(exportPattern);
     return matches ? matches.length : 0;
   }
@@ -232,18 +256,18 @@ class CodeQualityAnalyzer {
    */
   async analyzeComplexity() {
     console.log('🧮 分析代码复杂度...');
-    
+
     for (const file of this.metrics.files) {
       const content = fs.readFileSync(file.fullPath, 'utf8');
       const complexity = this.calculateCyclomaticComplexity(content);
-      
+
       this.metrics.complexity[file.path] = {
         cyclomatic: complexity,
         cognitive: this.calculateCognitiveComplexity(content),
-        halstead: this.calculateHalsteadComplexity(content)
+        halstead: this.calculateHalsteadComplexity(content),
       };
     }
-    
+
     console.log('✅ 复杂度分析完成');
   }
 
@@ -255,7 +279,7 @@ class CodeQualityAnalyzer {
   calculateCyclomaticComplexity(content) {
     // 基础复杂度为1
     let complexity = 1;
-    
+
     // 计算决策点
     const decisionPatterns = [
       /if\s*\(/g,
@@ -267,16 +291,16 @@ class CodeQualityAnalyzer {
       /catch\s*\(/g,
       /&&/g,
       /\|\|/g,
-      /\?/g
+      /\?/g,
     ];
-    
+
     for (const pattern of decisionPatterns) {
       const matches = content.match(pattern);
       if (matches) {
         complexity += matches.length;
       }
     }
-    
+
     return complexity;
   }
 
@@ -288,36 +312,36 @@ class CodeQualityAnalyzer {
   calculateCognitiveComplexity(content) {
     let complexity = 0;
     let nestingLevel = 0;
-    
+
     const lines = content.split('\n');
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // 增加嵌套级别
       if (trimmed.includes('{')) {
         nestingLevel++;
       }
-      
+
       // 减少嵌套级别
       if (trimmed.includes('}')) {
         nestingLevel = Math.max(0, nestingLevel - 1);
       }
-      
+
       // 计算复杂度
       if (trimmed.match(/if\s*\(|while\s*\(|for\s*\(/)) {
         complexity += 1 + nestingLevel;
       }
-      
+
       if (trimmed.match(/else|catch/)) {
         complexity += 1;
       }
-      
+
       if (trimmed.match(/&&|\|\|/)) {
         complexity += 1;
       }
     }
-    
+
     return complexity;
   }
 
@@ -330,18 +354,18 @@ class CodeQualityAnalyzer {
     // 简化的Halstead计算
     const operators = content.match(/[+\-*/=<>!&|?:;,(){}[\]]/g) || [];
     const operands = content.match(/\b\w+\b/g) || [];
-    
+
     const uniqueOperators = new Set(operators).size;
     const uniqueOperands = new Set(operands).size;
-    
+
     const vocabulary = uniqueOperators + uniqueOperands;
     const length = operators.length + operands.length;
-    
+
     return {
       vocabulary,
       length,
       difficulty: (uniqueOperators / 2) * (operands.length / uniqueOperands),
-      effort: vocabulary * length * Math.log2(vocabulary)
+      effort: vocabulary * length * Math.log2(vocabulary),
     };
   }
 
@@ -350,20 +374,23 @@ class CodeQualityAnalyzer {
    */
   async detectDuplicates() {
     console.log('🔍 检测重复代码...');
-    
+
     const codeBlocks = new Map();
-    
+
     for (const file of this.metrics.files) {
       const content = fs.readFileSync(file.fullPath, 'utf8');
       const lines = content.split('\n');
-      
+
       // 检查连续的代码块
       for (let i = 0; i < lines.length - 5; i++) {
-        const block = lines.slice(i, i + 6).join('\n').trim();
-        
+        const block = lines
+          .slice(i, i + 6)
+          .join('\n')
+          .trim();
+
         if (block && !this.isCommentBlock(block)) {
           const hash = this.hashCode(block);
-          
+
           if (codeBlocks.has(hash)) {
             const existing = codeBlocks.get(hash);
             this.metrics.duplicates.push({
@@ -371,19 +398,19 @@ class CodeQualityAnalyzer {
               block,
               files: [existing.file, file.path],
               lines: [existing.startLine, i + 1],
-              similarity: 1.0
+              similarity: 1.0,
             });
           } else {
             codeBlocks.set(hash, {
               file: file.path,
               startLine: i + 1,
-              block
+              block,
             });
           }
         }
       }
     }
-    
+
     console.log(`✅ 发现 ${this.metrics.duplicates.length} 处重复代码`);
   }
 
@@ -396,9 +423,13 @@ class CodeQualityAnalyzer {
     const lines = block.split('\n');
     const commentLines = lines.filter(line => {
       const trimmed = line.trim();
-      return trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*');
+      return (
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('*') ||
+        trimmed.startsWith('/*')
+      );
     });
-    
+
     return commentLines.length > lines.length * 0.5;
   }
 
@@ -411,7 +442,7 @@ class CodeQualityAnalyzer {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // 转换为32位整数
     }
     return hash;
@@ -422,54 +453,62 @@ class CodeQualityAnalyzer {
    */
   async detectCodeSmells() {
     console.log('👃 检测代码异味...');
-    
+
     for (const file of this.metrics.files) {
       const content = fs.readFileSync(file.fullPath, 'utf8');
       const smells = [];
-      
+
       // 检测长函数
       const longFunctions = this.detectLongFunctions(content);
-      smells.push(...longFunctions.map(f => ({
-        type: 'Long Function',
-        severity: 'medium',
-        file: file.path,
-        line: f.line,
-        description: `函数 ${f.name} 有 ${f.lines} 行，建议拆分`
-      })));
-      
+      smells.push(
+        ...longFunctions.map(f => ({
+          type: 'Long Function',
+          severity: 'medium',
+          file: file.path,
+          line: f.line,
+          description: `函数 ${f.name} 有 ${f.lines} 行，建议拆分`,
+        }))
+      );
+
       // 检测长参数列表
       const longParameterLists = this.detectLongParameterLists(content);
-      smells.push(...longParameterLists.map(f => ({
-        type: 'Long Parameter List',
-        severity: 'low',
-        file: file.path,
-        line: f.line,
-        description: `函数 ${f.name} 有 ${f.params} 个参数，建议使用对象参数`
-      })));
-      
+      smells.push(
+        ...longParameterLists.map(f => ({
+          type: 'Long Parameter List',
+          severity: 'low',
+          file: file.path,
+          line: f.line,
+          description: `函数 ${f.name} 有 ${f.params} 个参数，建议使用对象参数`,
+        }))
+      );
+
       // 检测大类
       const largeClasses = this.detectLargeClasses(content);
-      smells.push(...largeClasses.map(c => ({
-        type: 'Large Class',
-        severity: 'high',
-        file: file.path,
-        line: c.line,
-        description: `类 ${c.name} 有 ${c.methods} 个方法，建议拆分`
-      })));
-      
+      smells.push(
+        ...largeClasses.map(c => ({
+          type: 'Large Class',
+          severity: 'high',
+          file: file.path,
+          line: c.line,
+          description: `类 ${c.name} 有 ${c.methods} 个方法，建议拆分`,
+        }))
+      );
+
       // 检测深度嵌套
       const deepNesting = this.detectDeepNesting(content);
-      smells.push(...deepNesting.map(n => ({
-        type: 'Deep Nesting',
-        severity: 'medium',
-        file: file.path,
-        line: n.line,
-        description: `嵌套深度 ${n.depth}，建议重构`
-      })));
-      
+      smells.push(
+        ...deepNesting.map(n => ({
+          type: 'Deep Nesting',
+          severity: 'medium',
+          file: file.path,
+          line: n.line,
+          description: `嵌套深度 ${n.depth}，建议重构`,
+        }))
+      );
+
       this.metrics.codeSmells.push(...smells);
     }
-    
+
     console.log(`✅ 发现 ${this.metrics.codeSmells.length} 个代码异味`);
   }
 
@@ -483,43 +522,49 @@ class CodeQualityAnalyzer {
     const lines = content.split('\n');
     let currentFunction = null;
     let braceCount = 0;
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const trimmed = line.trim();
-      
+
       // 检测函数开始
-      const functionMatch = trimmed.match(/(?:function\s+(\w+)|const\s+(\w+)\s*=|(\w+)\s*:\s*(?:async\s*)?\()/);
+      const functionMatch = trimmed.match(
+        /(?:function\s+(\w+)|const\s+(\w+)\s*=|(\w+)\s*:\s*(?:async\s*)?\()/
+      );
       if (functionMatch && trimmed.includes('{')) {
         currentFunction = {
-          name: functionMatch[1] || functionMatch[2] || functionMatch[3] || 'anonymous',
+          name:
+            functionMatch[1] ||
+            functionMatch[2] ||
+            functionMatch[3] ||
+            'anonymous',
           startLine: i + 1,
-          lines: 0
+          lines: 0,
         };
         braceCount = 1;
       }
-      
+
       if (currentFunction) {
         currentFunction.lines++;
-        
+
         // 计算大括号
         braceCount += (line.match(/{/g) || []).length;
         braceCount -= (line.match(/}/g) || []).length;
-        
+
         // 函数结束
         if (braceCount === 0) {
           if (currentFunction.lines > 50) {
             functions.push({
               name: currentFunction.name,
               line: currentFunction.startLine,
-              lines: currentFunction.lines
+              lines: currentFunction.lines,
             });
           }
           currentFunction = null;
         }
       }
     }
-    
+
     return functions;
   }
 
@@ -530,23 +575,24 @@ class CodeQualityAnalyzer {
    */
   detectLongParameterLists(content) {
     const functions = [];
-    const functionPattern = /(?:function\s+(\w+)|const\s+(\w+)\s*=.*?)\s*\(([^)]*)\)/g;
-    
+    const functionPattern =
+      /(?:function\s+(\w+)|const\s+(\w+)\s*=.*?)\s*\(([^)]*)\)/g;
+
     let match;
     while ((match = functionPattern.exec(content)) !== null) {
       const name = match[1] || match[2] || 'anonymous';
       const params = match[3].split(',').filter(p => p.trim() !== '').length;
-      
+
       if (params > 5) {
         const lineNumber = content.substring(0, match.index).split('\n').length;
         functions.push({
           name,
           line: lineNumber,
-          params
+          params,
         });
       }
     }
-    
+
     return functions;
   }
 
@@ -558,26 +604,26 @@ class CodeQualityAnalyzer {
   detectLargeClasses(content) {
     const classes = [];
     const classPattern = /class\s+(\w+)/g;
-    
+
     let match;
     while ((match = classPattern.exec(content)) !== null) {
       const className = match[1];
       const classStart = match.index;
       const lineNumber = content.substring(0, classStart).split('\n').length;
-      
+
       // 简单计算类中的方法数量
       const classContent = this.extractClassContent(content, classStart);
       const methodCount = (classContent.match(/\w+\s*\(/g) || []).length;
-      
+
       if (methodCount > 20) {
         classes.push({
           name: className,
           line: lineNumber,
-          methods: methodCount
+          methods: methodCount,
         });
       }
     }
-    
+
     return classes;
   }
 
@@ -590,23 +636,23 @@ class CodeQualityAnalyzer {
   extractClassContent(content, startIndex) {
     let braceCount = 0;
     let i = startIndex;
-    
+
     // 找到第一个大括号
     while (i < content.length && content[i] !== '{') {
       i++;
     }
-    
+
     const start = i;
     braceCount = 1;
     i++;
-    
+
     // 找到匹配的结束大括号
     while (i < content.length && braceCount > 0) {
       if (content[i] === '{') braceCount++;
       if (content[i] === '}') braceCount--;
       i++;
     }
-    
+
     return content.substring(start, i);
   }
 
@@ -619,24 +665,24 @@ class CodeQualityAnalyzer {
     const nesting = [];
     const lines = content.split('\n');
     let currentDepth = 0;
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       // 计算嵌套深度
       const openBraces = (line.match(/{/g) || []).length;
       const closeBraces = (line.match(/}/g) || []).length;
-      
+
       currentDepth += openBraces - closeBraces;
-      
+
       if (currentDepth > 4) {
         nesting.push({
           line: i + 1,
-          depth: currentDepth
+          depth: currentDepth,
         });
       }
     }
-    
+
     return nesting;
   }
 
@@ -645,10 +691,10 @@ class CodeQualityAnalyzer {
    */
   async calculateMaintainabilityIndex() {
     console.log('📊 计算可维护性指数...');
-    
+
     let totalMI = 0;
     let fileCount = 0;
-    
+
     for (const file of this.metrics.files) {
       const complexity = this.metrics.complexity[file.path];
       if (complexity) {
@@ -656,26 +702,31 @@ class CodeQualityAnalyzer {
         const halstead = complexity.halstead;
         const cyclomatic = complexity.cyclomatic;
         const linesOfCode = file.codeLines;
-        
+
         // MI = 171 - 5.2 * ln(Halstead Volume) - 0.23 * (Cyclomatic Complexity) - 16.2 * ln(Lines of Code)
-        const mi = Math.max(0, 
-          171 - 5.2 * Math.log(halstead.length || 1) - 
-          0.23 * cyclomatic - 
-          16.2 * Math.log(linesOfCode || 1)
+        const mi = Math.max(
+          0,
+          171 -
+            5.2 * Math.log(halstead.length || 1) -
+            0.23 * cyclomatic -
+            16.2 * Math.log(linesOfCode || 1)
         );
-        
+
         totalMI += mi;
         fileCount++;
       }
     }
-    
+
     this.metrics.maintainabilityIndex = fileCount > 0 ? totalMI / fileCount : 0;
-    
+
     // 计算技术债务（简化计算）
-    this.metrics.technicalDebt = this.metrics.codeSmells.length * 0.5 + 
-                                this.metrics.duplicates.length * 1.0;
-    
-    console.log(`✅ 可维护性指数: ${this.metrics.maintainabilityIndex.toFixed(2)}`);
+    this.metrics.technicalDebt =
+      this.metrics.codeSmells.length * 0.5 +
+      this.metrics.duplicates.length * 1.0;
+
+    console.log(
+      `✅ 可维护性指数: ${this.metrics.maintainabilityIndex.toFixed(2)}`
+    );
     console.log(`✅ 技术债务: ${this.metrics.technicalDebt.toFixed(2)} 小时`);
   }
 
@@ -684,16 +735,16 @@ class CodeQualityAnalyzer {
    */
   async generateReports() {
     console.log('📝 生成质量报告...');
-    
+
     // 生成HTML报告
     await this.generateHtmlReport();
-    
+
     // 生成JSON报告
     await this.generateJsonReport();
-    
+
     // 生成Markdown报告
     await this.generateMarkdownReport();
-    
+
     console.log('✅ 报告生成完成');
   }
 
@@ -762,7 +813,9 @@ class CodeQualityAnalyzer {
                 </tr>
             </thead>
             <tbody>
-                ${this.metrics.codeSmells.map(smell => `
+                ${this.metrics.codeSmells
+                  .map(
+                    smell => `
                     <tr>
                         <td>${smell.type}</td>
                         <td class="severity-${smell.severity}">${smell.severity}</td>
@@ -770,7 +823,9 @@ class CodeQualityAnalyzer {
                         <td>${smell.line}</td>
                         <td>${smell.description}</td>
                     </tr>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </tbody>
         </table>
     </div>
@@ -787,21 +842,29 @@ class CodeQualityAnalyzer {
                 </tr>
             </thead>
             <tbody>
-                ${this.metrics.duplicates.map(dup => `
+                ${this.metrics.duplicates
+                  .map(
+                    dup => `
                     <tr>
                         <td>${dup.files[0]}</td>
                         <td>${dup.files[1]}</td>
                         <td>${dup.lines[0]} - ${dup.lines[1]}</td>
                         <td>${(dup.similarity * 100).toFixed(1)}%</td>
                     </tr>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </tbody>
         </table>
     </div>
 </body>
 </html>`;
 
-    fs.writeFileSync(path.join(this.reportsPath, 'code-quality.html'), html, 'utf8');
+    fs.writeFileSync(
+      path.join(this.reportsPath, 'code-quality.html'),
+      html,
+      'utf8'
+    );
   }
 
   /**
@@ -817,14 +880,14 @@ class CodeQualityAnalyzer {
         maintainabilityIndex: this.metrics.maintainabilityIndex,
         technicalDebt: this.metrics.technicalDebt,
         codeSmells: this.metrics.codeSmells.length,
-        duplicates: this.metrics.duplicates.length
+        duplicates: this.metrics.duplicates.length,
       },
-      details: this.metrics
+      details: this.metrics,
     };
 
     fs.writeFileSync(
-      path.join(this.reportsPath, 'code-quality.json'), 
-      JSON.stringify(report, null, 2), 
+      path.join(this.reportsPath, 'code-quality.json'),
+      JSON.stringify(report, null, 2),
       'utf8'
     );
   }
@@ -854,19 +917,27 @@ class CodeQualityAnalyzer {
 
 发现 **${this.metrics.codeSmells.length}** 个代码异味：
 
-${this.metrics.codeSmells.map(smell => `
+${this.metrics.codeSmells
+  .map(
+    smell => `
 - **${smell.type}** (${smell.severity}) - ${smell.file}:${smell.line}
   - ${smell.description}
-`).join('')}
+`
+  )
+  .join('')}
 
 ## 重复代码
 
 发现 **${this.metrics.duplicates.length}** 处重复代码：
 
-${this.metrics.duplicates.map(dup => `
+${this.metrics.duplicates
+  .map(
+    dup => `
 - ${dup.files[0]} (行 ${dup.lines[0]}) 与 ${dup.files[1]} (行 ${dup.lines[1]})
   - 相似度: ${(dup.similarity * 100).toFixed(1)}%
-`).join('')}
+`
+  )
+  .join('')}
 
 ## 建议
 
@@ -889,7 +960,11 @@ ${this.metrics.duplicates.map(dup => `
 
 *报告由代码质量分析工具自动生成*`;
 
-    fs.writeFileSync(path.join(this.reportsPath, 'code-quality.md'), report, 'utf8');
+    fs.writeFileSync(
+      path.join(this.reportsPath, 'code-quality.md'),
+      report,
+      'utf8'
+    );
   }
 }
 
@@ -902,7 +977,10 @@ async function main() {
 }
 
 // 执行脚本
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('codeQualityAnalyzer.js')) {
+if (
+  import.meta.url.endsWith(process.argv[1]) ||
+  process.argv[1].endsWith('codeQualityAnalyzer.js')
+) {
   main().catch(console.error);
 }
 

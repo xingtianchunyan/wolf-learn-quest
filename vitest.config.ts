@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -19,12 +19,12 @@ export default defineConfig({
         'src/test/',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/types/**'
-      ]
+        '**/types/**',
+      ],
     },
     env: {
-      DEV: 'true'
-    }
+      DEV: 'true',
+    },
   },
   resolve: {
     alias: {
@@ -32,6 +32,6 @@ export default defineConfig({
     },
   },
   define: {
-    'import.meta.env.DEV': true
-  }
-})
+    'import.meta.env.DEV': true,
+  },
+});

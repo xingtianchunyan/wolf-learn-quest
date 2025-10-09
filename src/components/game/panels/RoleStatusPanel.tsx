@@ -1,13 +1,13 @@
-import { Badge  } from '@/components/ui/badge';
-import { canUseSkillInPhase, getSkillEffectTypes  } from '@/utils/skillSystemHelpers';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Clock, Info  } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger  } from '@/components/ui/collapsible';
-import { getRoleStatusName,
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
-import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
-import { useRoleStates  } from '@/hooks/useRoleStates';
-import React, { useState, useEffect  } from 'react';
+import { Badge   } from '@/components/ui/badge';
+import { canUseSkillInPhase, getSkillEffectTypes   } from '@/utils/skillSystemHelpers';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Clock, Info   } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger   } from '@/components/ui/collapsible';
+import {
+  getRoleStatusName, usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
+import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
+import { useRoleStates   } from '@/hooks/useRoleStates';
+import React, { useState, useEffect   } from 'react';
 import RoleSkillInfo from '../displays/RoleSkillInfo';
 
 /**
@@ -31,10 +31,9 @@ import RoleSkillInfo from '../displays/RoleSkillInfo';
   getSkillUsesRemaining,
   isHunterRevenge,
   getHunterRevengeTimeLeft,
-  canUseSkillWithCurrentStatus,
-} from '@/utils/roleStateHelpers';
+  canUseSkillWithCurrentStatus  } from '@/utils/roleStateHelpers';
 
-interface RoleStatusPanelProps { roomId: string;,
+interface RoleStatusPanelProps { roomId: string
 }
 
 /**
@@ -51,7 +50,8 @@ interface RoleStatusPanelProps { roomId: string;,
 * // 使用示例
 * <RoleStatusPanel { ...props } />
  */
-const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const { roleStates, loading  } = useRoleStates(roomId);
+const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  
+}) => { const  { roleStates, loading  } = useRoleStates(roomId);
   const { players  } = usePlayersRealtime(roomId);
   const { roleDesigns, getSkillEffects, getRoleAttributes  } = useRoleDesigns();
   const [_currentTime, setCurrentTime] = useState(Date.now());
@@ -59,20 +59,28 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
 
   // 每秒更新时间，用于猎人反击倒计时
   useEffect(() => { const timer = setInterval(() => {
-      setCurrentTime(Date.now());,
+  setCurrentTime(Date.now())
 }, 1000);
 
-    return () => clearInterval(timer);,
+    return () => clearInterval(timer)
+
 }, []);
 
-  const togglePlayerExpansion = (playerId: string) => { setExpandedPlayers(prev => {
+/**
+ * togglePlayerExpansion函数
+ * togglePlayerExpansion函数的功能描述
+ *
+ * @param playerId - playerId参数
+ * @returns void
+ */
+const togglePlayerExpansion = (playerId: string) => { setExpandedPlayers(prev =>  {
       const newSet = new Set(prev);
       if (newSet.has(playerId)) {
-        newSet.delete(playerId);,
-} else { newSet.add(playerId);,
+        newSet.delete(playerId)
+} else { newSet.add(playerId)
 }
-      return newSet;,
-});,
+      return newSet
+})
 };
 
   if (loading) { return (;
@@ -87,7 +95,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
       </div>
       </CardContent>
       </Card>
-    );,
+    )
 }
 
   return (;
@@ -116,7 +124,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
         <div className={ `rounded-md border ${
           isHunterRevengeState
           ? 'bg-yellow-900/40 border-yellow-500/50'
-          : 'bg-werewolf-dark/40 border-gray-600',
+          : 'bg-werewolf-dark/40 border-gray-600' 
 }`}>
         <CollapsibleTrigger className='w-full p-3 text-left hover:bg-werewolf-dark/20 transition-colors'>;
         <div className='flex justify-between items-start mb-2'>;
@@ -151,7 +159,8 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
 
         <div className='text-xs text-gray-500 space-y-1'>;
         <div>
-        技能剩余: { skillRemaining === 'unlimited' ? '无限' : skillRemaining }
+        技能剩余: { skillRemaining === 'unlimited' ? '无限' : skillRemaining 
+}
         </div>
 
         { isHunterRevengeState && (
@@ -190,7 +199,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
         </CollapsibleContent>
         </div>
         </Collapsible>
-      );,
+      )
 })}
 
     { roleStates.length === 0 && (;
@@ -201,7 +210,13 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId  }) => { const
     </div>
     </CardContent>
     </Card>
-  );,
+  )
 };
 
+/**
+ * RoleStatusPanel组件
+ * 角色相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default RoleStatusPanel;

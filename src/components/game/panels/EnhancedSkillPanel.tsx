@@ -1,20 +1,20 @@
-import { Alert, AlertDescription  } from '@/components/ui/alert';
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { Progress  } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
-import { Separator  } from '@/components/ui/separator';
-import { skillConfigs  } from '@/data/skillConfigs';
-import { Skull, Shield, Search, Zap, Clock, Target, Info, CheckCircle,
-import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
-import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
-import { useEnhancedSkillSystemFixes  } from '@/utils/performanceCriticalFixes';
-import { useMemoryManager  } from '@/hooks/useMemoryManager';
-import { usePerformanceOptimization  } from '@/hooks/usePerformanceOptimizationNew';
-import { useWitchPotionManager  } from '@/hooks/useWitchPotionManager';
-import React, { useState, useCallback, useMemo, useEffect, useRef  } from 'react';
-import type { RoleDesign, GameState, Player  } from '@/types/game';
+import { Alert, AlertDescription   } from '@/components/ui/alert';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { Progress   } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue   } from '@/components/ui/select';
+import { Separator   } from '@/components/ui/separator';
+import { skillConfigs   } from '@/data/skillConfigs';
+import {
+  Skull, Shield, Search, Zap, Clock, Target, Info, CheckCircle, Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
+import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
+import { useEnhancedSkillSystemFixes   } from '@/utils/performanceCriticalFixes';
+import { useMemoryManager   } from '@/hooks/useMemoryManager';
+import { usePerformanceOptimization   } from '@/hooks/usePerformanceOptimizationNew';
+import { useWitchPotionManager   } from '@/hooks/useWitchPotionManager';
+import React, { useState, useCallback, useMemo, useEffect, useRef   } from 'react';
+import type { RoleDesign, GameState, Player   } from '@/types/game';
 
 /**
 * 文件级注释：增强的技能面板组件（性能优化版）
@@ -28,48 +28,47 @@ import type { RoleDesign, GameState, Player  } from '@/types/game';
 * 4. 优化状态更新频率和批处理
 * 5. 实施内存监控和自动清理机制
  */
-  XCircle, AlertTriangle, Loader2, Settings, RefreshCw,
-} from 'lucide-react';
+  XCircle, AlertTriangle, Loader2, Settings, RefreshCw  } from 'lucide-react';
 
 /**
 * 接口注释：增强技能面板属性接口
 * 定义组件所需的所有属性和回调函数
  */
-export interface EnhancedSkillPanelProps { /** 房间ID  */
+export interface EnhancedSkillPanelProps  { /** 房间ID */
   roomId: string;
-  /** 游戏状态ID  */
+  /** 游戏状态ID */
   gameStateId?: string;
-  /** 用户ID  */
+  /** 用户ID */
   userId?: string;
-  /** 角色设计配置  */
+  /** 角色设计配置 */
   roleDesign: RoleDesign;
-  /** 角色状态  */
+  /** 角色状态 */
   roleState: any;
-  /** 当前阶段  */
+  /** 当前阶段 */
   currentPhase: string;
-  /** 当前轮次  */
+  /** 当前轮次 */
   currentRound: number;
-  /** 是否为法官  */
+  /** 是否为法官 */
   isJudge?: boolean;
-  /** 可用目标列表  */
+  /** 可用目标列表 */
   availableTargets: Player[];
-  /** 游戏状态  */
-  gameState?: GameState;,
+  /** 游戏状态 */
+  gameState?: GameState
 }
 
 /**
-* 接口注释：组件内部状态接口
+ * 接口注释：组件内部状态接口
  */
-interface ComponentState { selectedTarget: string;
+interface ComponentState  { selectedTarget: string;
   lastUpdateTime: number;
-  renderCount: number;,
+  renderCount: number
 }
 
 /**
 * 函数级注释：深度比较函数
 * 用于 React.memo 的比较函数，避免不必要的重新渲染
  */
-const arePropsEqual = (prevProps: EnhancedSkillPanelProps, nextProps: EnhancedSkillPanelProps): boolean => { // 基础属性比较
+const arePropsEqual = (prevProps: EnhancedSkillPanelProps, nextProps: EnhancedSkillPanelProps): boolean =>  { // 基础属性比较
   if (
     prevProps.roomId !== nextProps.roomId ||;
     prevProps.gameStateId !== nextProps.gameStateId ||;
@@ -78,28 +77,28 @@ const arePropsEqual = (prevProps: EnhancedSkillPanelProps, nextProps: EnhancedSk
     prevProps.currentRound !== nextProps.currentRound ||;
     prevProps.isJudge !== nextProps.isJudge;
   ) {
-    return false;,
+    return false
 }
 
   // 角色设计比较
   if (
     prevProps.roleDesign.skill_name !== nextProps.roleDesign.skill_name ||;
     prevProps.roleDesign.skill_description !== nextProps.roleDesign.skill_description;
-  ) { return false;,
+  ) { return false
 }
 
   // 可用目标比较（只比较长度和关键属性）
-  if (prevProps.availableTargets.length !== nextProps.availableTargets.length) { return false;,
+  if (prevProps.availableTargets.length !== nextProps.availableTargets.length) { return false
 }
 
   for (let i = 0; i < prevProps.availableTargets.length; i++) { const prev = prevProps.availableTargets[i];
     const next = nextProps.availableTargets[i];
     if (prev.userId !== next.userId || prev.roleStatus !== next.roleStatus) {
-      return false;,
+      return false
 }
   }
 
-  return true;,
+  return true
 };
 
 /**
@@ -107,7 +106,7 @@ const arePropsEqual = (prevProps: EnhancedSkillPanelProps, nextProps: EnhancedSk
 * 提供技能使用、效果管理、统计信息和法官管理功能
 * 集成全面的性能优化和内存管理机制
  */
-const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
+const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(( { roomId,
   gameStateId,
   userId,
   roleDesign,
@@ -116,8 +115,7 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
   currentRound,
   isJudge = false,
   availableTargets,
-  gameState,
-}) => { // 性能修复 Hook
+  gameState }) => { // 性能修复 Hook
   const performanceFixes = useEnhancedSkillSystemFixes();
 
   // 性能优化 Hook
@@ -125,13 +123,13 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
     componentName: 'EnhancedSkillPanel',
     enableMemoryTracking: true,
     enableRenderTracking: true,
-    debounceTime: 200 // 增加防抖时间以减少渲染频率,
+    debounceTime: 200 // 增加防抖时间以减少渲染频率 
 });
 
   // 内存管理 Hook
   const memoryManager = useMemoryManager({ componentName: 'EnhancedSkillPanel',
     maxMemoryThreshold: 20, // 降低内存阈值
-    enableAutoCleanup: true,
+    enableAutoCleanup: true 
 });
 
   // 增强技能系统 Hook
@@ -143,11 +141,10 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
     loading,
     optimizeCache,
     getPerformanceMetrics,
-    getCacheStats,
-} = useEnhancedSkillSystem(roomId, gameStateId, userId);
+    getCacheStats } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 女巫药水管理（仅女巫角色）
-  const { loading: potionLoading,
+  const { loading: potionLoading 
 } = useWitchPotionManager(;
     roleDesign.skill_name === 'witch' ? gameStateId : undefined,
     userId
@@ -156,14 +153,16 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
   // 组件状态 - 使用 useRef 避免不必要的重新渲染
   const stateRef = useRef<ComponentState>({ selectedTarget: '',
     lastUpdateTime: Date.now(),
-    renderCount: 0,
+    renderCount: 0 
 });
 
   const [selectedTarget, setSelectedTarget] = useState('');
 
   // 渲染计数器
-  useEffect(() => { stateRef.current.renderCount++;
-    stateRef.current.lastUpdateTime = Date.now();,
+  useEffect(() => {
+  stateRef.current.renderCount++;
+    stateRef.current.lastUpdateTime = Date.now()
+
 });
 
   // 缓存技能配置 - 使用 useMemo 和智能缓存
@@ -172,11 +171,13 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
     // 尝试从性能修复缓存获取
     return performanceFixes.cacheManager.get(;
       cacheKey,
-      async () => { const config = skillConfigs[roleDesign.skill_name as keyof typeof skillConfigs];
-        return config || null;,
+      async () => {
+  const config = skillConfigs[roleDesign.skill_name as keyof typeof skillConfigs];
+        return config || null
 },
       600000 // 10分钟缓存
-    );,
+    )
+
 }, [roleDesign.skill_name, performanceFixes.cacheManager]);
 
   // 缓存技能建议 - 使用防抖和智能缓存
@@ -186,28 +187,34 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
 
     return performanceFixes.cacheManager.get(;
       cacheKey,
-      async () => { return getSkillSuggestion(;
+      async () => {
+  return getSkillSuggestion(;
           skillConfig.englishName,
           currentPhase,
           currentRound,
           availableTargets
-        );,
+        )
 },
       60000 // 1分钟缓存
-    );,
+    )
+
 }, [skillConfig, getSkillSuggestion, gameStateId, currentPhase, currentRound, availableTargets.length, performanceFixes.cacheManager]);
 
   // 缓存用户技能数据 - 使用智能缓存
-  const userSkillData = useMemo(() => { if (!userId || !getUserSkillData) return { uses: [], targets: []  };
+  const userSkillData = useMemo(() => { if (!userId || !getUserSkillData) return {
+    uses: [], targets: []   
+};
 
     const cacheKey = `user_skill_data_${ userId }_${ gameStateId }`;
 
     return performanceFixes.cacheManager.get(;
       cacheKey,
-      async () => { return getUserSkillData(userId);,
+      async () => {
+  return getUserSkillData(userId)
 },
       30000 // 30秒缓存
-    );,
+    )
+
 }, [userId, getUserSkillData, gameStateId, performanceFixes.cacheManager]);
 
   /**
@@ -234,9 +241,9 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
           // 清理相关缓存
           performanceFixes.cacheManager.invalidate('skill_suggestion');
           performanceFixes.cacheManager.invalidate('user_skill_data');
-          optimizeCache?.();,
+          optimizeCache?.()
 }
-      } catch (error) { console.error('技能使用失败:', error);,
+      } catch (error) { console.error('技能使用失败:', error)
 }
     }),
     [skillConfig,
@@ -248,8 +255,7 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
       currentRound,
       performanceFixes.renderOptimizer,
       performanceFixes.cacheManager,
-      optimizeCache,
-]
+      optimizeCache ]
   );
 
   /**
@@ -258,8 +264,10 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
   * - 仅法官可用的功能
    */
   const handleResolveConflicts = useCallback(;
-    performanceFixes.renderOptimizer(async () => { if (!isJudge || !resolveSkillConflicts) return;
-      await resolveSkillConflicts(currentRound);,
+    performanceFixes.renderOptimizer(async () => {
+  if (!isJudge || !resolveSkillConflicts) return;
+      await resolveSkillConflicts(currentRound)
+
 }),
     [isJudge, resolveSkillConflicts, currentRound, performanceFixes.renderOptimizer]
   );
@@ -269,56 +277,56 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
   * - 使用智能缓存减少重复计算
   * - 预定义图标映射提高性能
    */
-  const getEffectIcon = useCallback((effectType: string) => { const iconMap = {
+const getEffectIcon = useCallback((effectType: string) => { const iconMap =  {
       'elimination': <Skull className='w-4 h-4' />,
       'protection': <Shield className='w-4 h-4' />,
       'investigation': <Search className='w-4 h-4' />,
       'status_change': <Zap className='w-4 h-4' />,
       'passive': <Clock className='w-4 h-4' />,
-      'default': <Target className='w-4 h-4' />;,
+      'default': <Target className='w-4 h-4' />
 };
 
-    return iconMap[effectType as keyof typeof iconMap] || iconMap.default;,
+    return iconMap[effectType as keyof typeof iconMap] || iconMap.default
 }, []);
 
   /**
   * 函数级注释：获取优先级颜色（缓存优化版）
   * - 使用预定义映射提高性能
    */
-  const getPriorityColor = useCallback((priority: 'high' | 'medium' | 'low') => { const colorMap = {
+const getPriorityColor = useCallback((priority: 'high' | 'medium' | 'low') => { const colorMap =  {
       'high': 'bg-red-500',
       'medium': 'bg-yellow-500',
-      'low': 'bg-green-500',
+      'low': 'bg-green-500'  
 };
 
-    return colorMap[priority] || 'bg-gray-500';,
+    return colorMap[priority] || 'bg-gray-500'
 }, []);
 
   /**
   * 函数级注释：获取状态图标（缓存优化版）
   * - 使用预定义映射提高性能
    */
-  const getStatusIcon = useCallback((status: string) => { const iconMap = {
+const getStatusIcon = useCallback((status: string) => { const iconMap =  {
       'completed': <CheckCircle className='w-4 h-4 text-green-500' />,
       'pending': <Clock className='w-4 h-4 text-yellow-500' />,
       'cancelled': <XCircle className='w-4 h-4 text-red-500' />,
       'failed': <AlertTriangle className='w-4 h-4 text-red-500' />,
-      'default': <Info className='w-4 h-4 text-gray-500' />;,
+      'default': <Info className='w-4 h-4 text-gray-500' />
 };
 
-    return iconMap[status as keyof typeof iconMap] || iconMap.default;,
+    return iconMap[status as keyof typeof iconMap] || iconMap.default
 }, []);
 
   /**
   * 函数级注释：优化的缓存清理函数
   * - 批量清理缓存以提高性能
    */
-  const handleOptimizeCache = useCallback(() => { performanceFixes.cacheManager.invalidate();
+const handleOptimizeCache = useCallback(() =>  { performanceFixes.cacheManager.invalidate();
     optimizeCache?.();
 
     // 强制垃圾回收（如果可用）
     if (typeof window !== 'undefined' && 'gc' in window) {
-      (window as any).gc();,
+      (window as any).gc()
 }
   }, [performanceFixes.cacheManager, optimizeCache]);
 
@@ -328,8 +336,7 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
       const renderCount = stateRef.current.renderCount;
       if (renderCount > 10) { // 如果渲染次数过多
       console.warn('EnhancedSkillPanel 渲染频率过高:', renderCount);
-      stateRef.current.renderCount = 0; // 重置计数器,
-}
+      stateRef.current.renderCount = 0; // 重置计数器 }
 
     // 定期清理过期缓存
     performanceFixes.cacheManager.invalidate();
@@ -338,19 +345,20 @@ const EnhancedSkillPanel = React.memo<EnhancedSkillPanelProps>(({ roomId,
     const resourceStats = memoryManager.getResourceStats();
     if (resourceStats.memoryUsage > 15 * 1024 * 1024) { // 15MB
     memoryManager.forceCleanup();
-    handleOptimizeCache();,
+    handleOptimizeCache()
 }
 }, 30000); // 每30秒检查一次
 
 const cleanup = memoryManager.registerInterval(interval);
-return cleanup;,
+return cleanup
 }, [performanceFixes.cacheManager, memoryManager, handleOptimizeCache]);
 
 // 组件卸载时清理资源
 useEffect(() => { return () => {
-    performanceFixes.cacheManager.invalidate();
-    memoryManager.forceCleanup();,
-};,
+  performanceFixes.cacheManager.invalidate();
+    memoryManager.forceCleanup()
+}
+
 }, [performanceFixes.cacheManager, memoryManager]);
 
 // 如果技能配置不存在，显示提示信息
@@ -368,7 +376,7 @@ if (!skillConfig) { return (;
     </Alert>
     </CardContent>
     </Card>
-  );,
+  )
 }
 
 return (;
@@ -380,7 +388,8 @@ return (;
   { getEffectIcon(skillConfig.effectType[0]) }
   { skillConfig.chineseName }
   <Badge variant='outline' className='ml-auto'>;
-  优先级: { skillConfig.priority }
+  优先级: { skillConfig.priority 
+}
   </Badge>
   </CardTitle>
   </CardHeader>
@@ -395,7 +404,8 @@ return (;
   { skillConfig.phase }阶段
   </Badge>
   <Badge variant='secondary'>;
-  { skillConfig.usageLimit === 'unlimited' ? '无限使用' : `${skillConfig.usageLimit }次`}
+  { skillConfig.usageLimit === 'unlimited' ? '无限使用' : `${skillConfig.usageLimit 
+}次`}
   </Badge>
   { skillConfig.effectType.map((type, index) => (;
     <Badge key={index } variant='outline'>;
@@ -408,8 +418,8 @@ return (;
   </div>
   </div>
 
-  { /*  使用建议  */ }
-  { suggestion && (
+  { /*  使用建议  */
+} { suggestion && (
     <Alert className={`border-l-4 ${getPriorityColor(suggestion.priority) } border-l-4`}>;
     <AlertTriangle className='w-4 h-4' />;
     <AlertDescription>
@@ -417,18 +427,19 @@ return (;
     <div className='font-medium'>使用建议</div>;
     <div className='text-sm'>{ suggestion.suggestion }</div>;
     <div className='text-xs text-muted-foreground'>;
-    适用时机: { suggestion.timing }
+    适用时机: { suggestion.timing 
+}
     </div>
     </div>
     </AlertDescription>
     </Alert>
   )}
 
-  { /*  技能使用界面  */ }
-  { suggestion?.canUse ? (
+  { /*  技能使用界面  */
+} { suggestion?.canUse ? (
     <div className='space-y-3'>;
-    {/*  目标选择  */ }
-    { skillConfig.targetType === 'single' && (;
+    {/*  目标选择  */
+} { skillConfig.targetType === 'single' && (;
       <div>
       <label className='text-sm font-medium text-gray-300 mb-2 block'>;
       选择目标
@@ -442,9 +453,10 @@ return (;
         <SelectItem key={player.userId } value={ player.userId }>;
         { player.name }
         <Badge variant='outline' className='ml-2'>;
-        状态: { player.roleStatus === 1 ? '正常' :;
-        player.roleStatus === 2 ? '濒死' :;
-        player.roleStatus === 3 ? '虚弱' : '淘汰' }
+        状态: { player.roleStatus === 1 ? '正常' : unknown;
+        player.roleStatus === 2 ? '濒死' : unknown;
+        player.roleStatus === 3 ? '虚弱' : '淘汰' 
+}
         </Badge>
         </SelectItem>
       ))}
@@ -458,7 +470,7 @@ return (;
     onClick={ handleUseSkill }
     disabled={ loading ||
       potionLoading ||
-      (skillConfig.targetType === 'single' && !selectedTarget);,
+      (skillConfig.targetType === 'single' && !selectedTarget)
 }
     className='w-full bg-werewolf-purple hover:bg-werewolf-purple/80';
     >
@@ -517,8 +529,10 @@ return (;
       { effect.target_type }
       </span>
       </div>
-      <Badge variant={ effect.is_active ? 'default' : 'secondary' }>;
-      { effect.is_active ? '生效中' : '已失效' }
+      <Badge variant={ effect.is_active ? 'default' : 'secondary' 
+}>;
+      { effect.is_active ? '生效中' : '已失效' 
+}
       </Badge>
       </div>
 
@@ -542,7 +556,8 @@ return (;
 
     { effect.stack_count > 1 && (
       <div className='text-xs text-muted-foreground'>;
-      叠加层数: {effect.stack_count }
+      叠加层数: {effect.stack_count 
+}
       </div>
     )}
     </div>
@@ -557,8 +572,8 @@ return (;
 </Card>
 </TabsContent>
 
-{ /*  法官管理面板  */ }
-{ isJudge && (
+{ /*  法官管理面板  */
+} { isJudge && (
   <TabsContent value='management'>;
   <Card className='bg-werewolf-card border-werewolf-purple/30'>;
   <CardHeader>
@@ -617,10 +632,16 @@ return (;
 )}
 </Tabs>
 </div>
-);,
+)
 }, arePropsEqual);
 
 // 设置 displayName 以便调试
 EnhancedSkillPanel.displayName = 'EnhancedSkillPanel';
 
+/**
+ * EnhancedSkillPanel组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default EnhancedSkillPanel;

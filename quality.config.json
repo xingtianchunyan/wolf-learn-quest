@@ -1,0 +1,29 @@
+{
+  "eslint": {
+    "enabled": true,
+    "autoFix": true,
+    "maxErrors": 0,
+    "maxWarnings": 10
+  },
+  "prettier": {
+    "enabled": true,
+    "autoFormat": true
+  },
+  "typescript": {
+    "enabled": true,
+    "strict": true,
+    "maxErrors": 0
+  },
+  "tests": {
+    "enabled": true,
+    "coverage": {
+      "threshold": 80
+    }
+  },
+  "preCommitHooks": {
+    "enabled": true,
+    "runLint": true,
+    "runTests": true,
+    "runTypeCheck": true
+  }
+}

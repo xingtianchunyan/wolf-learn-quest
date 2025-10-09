@@ -92,10 +92,7 @@
     ]
   },
   "circularDependencies": [
-    [
-      "integrations\\supabase\\client.ts",
-      "integrations\\supabase\\client.ts"
-    ],
+    ["integrations\\supabase\\client.ts", "integrations\\supabase\\client.ts"],
     [
       "services\\errorMonitoringService.ts",
       "utils\\automatedSecurityChecker.ts",

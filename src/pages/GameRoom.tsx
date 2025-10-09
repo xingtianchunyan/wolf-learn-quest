@@ -1,21 +1,21 @@
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { supabase  } from '@/integrations/supabase/client';
-import { useGameState  } from '@/hooks/useGameState';
-import { useLanguage  } from '@/components/layout/LanguageSwitcher';
-import { useNavigate, useParams  } from 'react-router-dom';
-import { usePlayerPresence  } from '@/hooks/usePlayerPresence';
-import { usePlayerRoom  } from '@/hooks/usePlayerRoom';
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
-import { useRoleSelection  } from '@/hooks/useRoleSelection';
-import { useRoomCleanup  } from '@/hooks/useRoomCleanup';
-import { useRoomRealtime  } from '@/hooks/useRoomRealtime';
-import { useRoomTransition  } from '@/hooks/useRoomTransition';
-import { useToast  } from '@/hooks/useToast';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { supabase   } from '@/integrations/supabase/client';
+import { useGameState   } from '@/hooks/useGameState';
+import { useLanguage   } from '@/components/layout/LanguageSwitcher';
+import { useNavigate, useParams   } from 'react-router-dom';
+import { usePlayerPresence   } from '@/hooks/usePlayerPresence';
+import { usePlayerRoom   } from '@/hooks/usePlayerRoom';
+import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
+import { useRoleSelection   } from '@/hooks/useRoleSelection';
+import { useRoomCleanup   } from '@/hooks/useRoomCleanup';
+import { useRoomRealtime   } from '@/hooks/useRoomRealtime';
+import { useRoomTransition   } from '@/hooks/useRoomTransition';
+import { useToast   } from '@/hooks/useToast';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
 import PageLayout from '@/components/layout/PageLayout';
 import PlayersList from '@/components/room/PlayersList';
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect   } from 'react';
 import RoleSelection from '@/components/room/RoleSelection';
 
 /**
@@ -32,8 +32,7 @@ import RoleSelection from '@/components/room/RoleSelection';
 * - 确保所有玩家都能正确查看房主和法官信息
 * - 统一数据获取方式，提高权限兼容性
  */
-
-const GameRoom = () => { const navigate = useNavigate();
+const GameRoom = () =>  { const navigate = useNavigate();
   const { id  } = useParams();
   const { toast  } = useToast();
   const { t  } = useLanguage();
@@ -57,7 +56,7 @@ const GameRoom = () => { const navigate = useNavigate();
   // 监听游戏状态变化，当游戏开始时自动跳转
   useEffect(() => { if (gameState?.status === 'active' && roomData?.id) {
       console.log('Game started, navigating to game page...');
-      navigate(`/room/${roomData.id }/game`);,
+      navigate(`/room/${roomData.id }/game`)
 }
   }, [gameState?.status, roomData?.id, navigate]);
 
@@ -73,8 +72,7 @@ const GameRoom = () => { const navigate = useNavigate();
   const { canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections,
-    getCurrentPlayerSelection,
-} = useRoleSelection(roomData?.id || '', currentUserId, players.length, currentMaxPlayers);
+    getCurrentPlayerSelection } = useRoleSelection(roomData?.id || '', currentUserId, players.length, currentMaxPlayers);
 
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
@@ -93,7 +91,12 @@ const GameRoom = () => { const navigate = useNavigate();
   // 查找当前用户的玩家记录
   useEffect(() => { if (currentUserId && players.length > 0) {
       // 通过查询数据库来获取当前用户的玩家记录
-      const fetchCurrentPlayerRecord = async () => {
+/**
+ * fetchCurrentPlayerRecord函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchCurrentPlayerRecord = async () =>  {
         try {
           const { data: playerRecord, error  } = await supabase;
           .from('room_players')
@@ -102,55 +105,67 @@ const GameRoom = () => { const navigate = useNavigate();
           .eq('user_id', currentUserId)
           .single();
 
-          if (error) { console.error('Error fetching current player record:', error);,
+          if (error) { console.error('Error fetching current player record:', error)
 } else { console.log('Current player record found:', playerRecord);
             setCurrentPlayerRecord(playerRecord);
-            setIsReady(playerRecord?.is_ready || false);,
+            setIsReady(playerRecord?.is_ready || false)
 }
-        } catch (error) { console.error('Error fetching current player record:', error);,
+        } catch (error) { console.error('Error fetching current player record:', error)
 }
       };
 
-      fetchCurrentPlayerRecord();,
+      fetchCurrentPlayerRecord()
 }
   }, [currentUserId, players.length, roomData?.id]);
 
   // 监听法官变化并更新法官名字
   useEffect(() => { const judgeUserId = realtimeRoomData?.judge_user_id;
 
-    const fetchJudgeName = async (userId: string) => {
+/**
+ * fetchJudgeName函数
+ * 获取远程数据
+ *
+ * @param userId - userId参数
+ * @returns Promise<void>
+ */
+const fetchJudgeName = async (userId: string) =>  {
       const { data, error  } = await supabase;
-      .rpc('get_public_user_profile', { p_user_id: userId  });
+      .rpc('get_public_user_profile', { p_user_id: userId  
+});
 
-      if (!error && Array.isArray(data) && data.length > 0) { setJudgeName(data[0].player_name);,
+      if (!error && Array.isArray(data) && data.length > 0) { setJudgeName(data[0].player_name)
 } else { console.error('Error fetching judge name for realtime update', error);
-        setJudgeName('未知');,
+        setJudgeName('未知')
 }
     };
 
-    if (judgeUserId) { fetchJudgeName(judgeUserId);,
-} else { setJudgeName(null); // No judge,
-}
+    if (judgeUserId) { fetchJudgeName(judgeUserId)
+} else { setJudgeName(null); // No judge }
   }, [realtimeRoomData?.judge_user_id]);
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => { if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
       // 最大玩家数发生变化，清除所有角色选择
-      const resetRoleSelections = async () => {
+/**
+ * resetRoleSelections函数
+ * 设置数据
+ * @returns Promise<void>
+ */
+const resetRoleSelections = async () =>  {
         const success = await clearAllRoleSelections();
         if (success) {
           setSelectedCharacter(null);
           setIsReady(false);
           toast({
             title: '角色选择已重置',
-            description: '由于最大玩家数变化，所有角色选择已重置',
-           });,
+            description: '由于最大玩家数变化，所有角色选择已重置' 
+})
 }
       };
 
-      resetRoleSelections();,
+      resetRoleSelections()
 }
-    setPreviousMaxPlayers(currentMaxPlayers);,
+    setPreviousMaxPlayers(currentMaxPlayers)
 }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast]);
 
   /**
@@ -166,7 +181,7 @@ const GameRoom = () => { const navigate = useNavigate();
   * - 避免直接使用外键关联查询导致的权限问题
   * - 确保所有玩家都能查看房主和法官信息
    */
-  useEffect(() => { /**
+useEffect(() =>  { /**
     * 异步获取数据函数
     *
     * 处理逻辑：
@@ -175,21 +190,29 @@ const GameRoom = () => { const navigate = useNavigate();
     * 3. 分别获取房主和法官的用户信息
     * 4. 处理fallback情况（无房间ID时获取用户最近房间）
      */
-    const fetchData = async () => {
+/**
+ * fetchData函数
+ * 获取远程数据
+ * @returns Promise<void>
+ */
+const fetchData = async () =>  {
       try {
         // Get current session
-        const { data: { session  } } = await supabase.auth.getSession();
+        const { data: { session  
+} } = await supabase.auth.getSession();
         if (session?.user) { setCurrentUser(session.user);
           setCurrentUserId(session.user.id);
 
           // Get user profile for player name
-          const { data: userData  } = await supabase;
+          const { data: userData  
+} = await supabase;
           .from('users')
           .select('player_name')
           .eq('user_id', session.user.id)
           .maybeSingle();
 
-          if (userData) { setCurrentUser({ ...session.user, player_name: userData.player_name  });,
+          if (userData) { setCurrentUser({ ...session.user, player_name: userData.player_name  
+})
 }
         }
 
@@ -197,7 +220,8 @@ const GameRoom = () => { const navigate = useNavigate();
         if (id) { console.log('Fetching room data for room ID:', id);
 
           // Fetch specific room by ID
-          const { data: roomData, error: roomError  } = await supabase;
+          const { data: roomData, error: roomError  
+} = await supabase;
           .from('rooms')
           .select(`
           id,
@@ -214,9 +238,9 @@ const GameRoom = () => { const navigate = useNavigate();
             toast({
               title: t('error'),
               description: t('error_loading_room'),
-              variant: 'destructive',
-             });
-            return;,
+              variant: 'destructive' 
+});
+            return
 }
 
           if (roomData) { console.log('Room data found:', roomData);
@@ -231,10 +255,12 @@ const GameRoom = () => { const navigate = useNavigate();
              */
             let hostPlayerName = 'Unknown';
             if (roomData.host_id) {
-              const { data: hostData  } = await supabase;
-              .rpc('get_public_user_profile', { p_user_id: roomData.host_id  });
+              const { data: hostData  
+} = await supabase;
+              .rpc('get_public_user_profile', { p_user_id: roomData.host_id  
+});
 
-              if (hostData && Array.isArray(hostData) && hostData.length > 0) { hostPlayerName = hostData[0].player_name;,
+              if (hostData && Array.isArray(hostData) && hostData.length > 0) { hostPlayerName = hostData[0].player_name
 }
             }
 
@@ -242,23 +268,26 @@ const GameRoom = () => { const navigate = useNavigate();
               roomId: roomData.room_id,
               hostPlayerId: hostPlayerName,
               maxPlayers: roomData.max_players,
-              judge_user_id: roomData.judge_user_id,
-             });
-            if (roomData.judge_user_id) { const { data: judgeData  } = await supabase;
-              .rpc('get_public_user_profile', { p_user_id: roomData.judge_user_id  });
+              judge_user_id: roomData.judge_user_id 
+});
+            if (roomData.judge_user_id) { const { data: judgeData  
+} = await supabase;
+              .rpc('get_public_user_profile', { p_user_id: roomData.judge_user_id  
+});
 
-              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) { setJudgeName(judgeData[0].player_name);,
-} else { setJudgeName('未知法官');,
+              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) { setJudgeName(judgeData[0].player_name)
+} else { setJudgeName('未知法官')
 }
-            } else { setJudgeName(null);,
+            } else { setJudgeName(null)
 }
-            setPreviousMaxPlayers(roomData.max_players);,
-} else { console.log('No room found with ID:', id);,
+            setPreviousMaxPlayers(roomData.max_players)
+} else { console.log('No room found with ID:', id)
 }
         } else if (session?.user) { // Fallback: fetch user's most recent room
           console.log('No room ID in URL, fetching user\'s most recent room');
 
-          const { data: roomPlayerData  } = await supabase;
+          const { data: roomPlayerData  
+} = await supabase;
           .from('room_players')
           .select(`
           id,
@@ -272,7 +301,8 @@ const GameRoom = () => { const navigate = useNavigate();
           )
           `)
           .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false  })
+          .order('created_at', { ascending: false  
+})
           .limit(1)
           .maybeSingle();
 
@@ -287,10 +317,12 @@ const GameRoom = () => { const navigate = useNavigate();
              */
             let hostPlayerName = 'Unknown';
             if (room.host_id) {
-              const { data: hostData  } = await supabase;
-              .rpc('get_public_user_profile', { p_user_id: room.host_id  });
+              const { data: hostData  
+} = await supabase;
+              .rpc('get_public_user_profile', { p_user_id: room.host_id  
+});
 
-              if (hostData && Array.isArray(hostData) && hostData.length > 0) { hostPlayerName = hostData[0].player_name;,
+              if (hostData && Array.isArray(hostData) && hostData.length > 0) { hostPlayerName = hostData[0].player_name
 }
             }
 
@@ -298,33 +330,41 @@ const GameRoom = () => { const navigate = useNavigate();
               roomId: room.room_id,
               hostPlayerId: hostPlayerName,
               maxPlayers: room.max_players,
-              judge_user_id: room.judge_user_id,
-             });
-            if (room.judge_user_id) { const { data: judgeData  } = await supabase;
-              .rpc('get_public_user_profile', { p_user_id: room.judge_user_id  });
+              judge_user_id: room.judge_user_id 
+});
+            if (room.judge_user_id) { const { data: judgeData  
+} = await supabase;
+              .rpc('get_public_user_profile', { p_user_id: room.judge_user_id  
+});
 
-              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) { setJudgeName(judgeData[0].player_name);,
-} else { setJudgeName('未知法官');,
+              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) { setJudgeName(judgeData[0].player_name)
+} else { setJudgeName('未知法官')
 }
-            } else { setJudgeName(null);,
+            } else { setJudgeName(null)
 }
-            setPreviousMaxPlayers(room.max_players);,
+            setPreviousMaxPlayers(room.max_players)
 }
-        },
-} catch (error) { console.error('Error fetching data:', error);
+        } } catch (error) { console.error('Error fetching data:', error);
         toast({
           title: t('error'),
           description: t('error_loading_room'),
-          variant: 'destructive',
-         });,
-} finally { setIsLoading(false);,
+          variant: 'destructive' 
+})
+} finally { setIsLoading(false)
 }
     };
 
-    fetchData();,
+    fetchData()
 }, [toast, id]);
 
-  const handleMaxPlayersChange = async (increment: number) => { if (!roomData || !currentUser) return;
+/**
+ * handleMaxPlayersChange函数
+ * 处理事件
+ *
+ * @param increment - increment参数
+ * @returns Promise<void>
+ */
+const handleMaxPlayersChange = async (increment: number) =>  { if (!roomData || !currentUser) return;
 
     const newMaxPlayers = Math.max(6, Math.min(12, currentMaxPlayers + increment));
 
@@ -337,33 +377,39 @@ const GameRoom = () => { const navigate = useNavigate();
         toast({
           title: t('error'),
           description: t('error_updating_players'),
-          variant: 'destructive',
-         });
-        return;,
+          variant: 'destructive' 
+});
+        return
 }
 
       // Update local state for immediate feedback
-      setRoomData({ ...roomData, maxPlayers: newMaxPlayers  });
+      setRoomData({ ...roomData, maxPlayers: newMaxPlayers  
+});
 
       toast({ title: t('max_players_updated'),
-        description: `${t('max_players_set') } ${ newMaxPlayers }`,
-      });,
+        description: `${t('max_players_set') 
+} ${ newMaxPlayers }` })
 } catch (error) { console.error('Error updating max players:', error);
       toast({
         title: t('error'),
         description: t('error_updating_players'),
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
-  const handleAddAIPlayer = async () => { if (players.length >= currentMaxPlayers) {
+/**
+ * handleAddAIPlayer函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleAddAIPlayer = async () => { if (players.length >= currentMaxPlayers)  {
       toast({
         title: t('room_full'),
         description: t('room_is_full'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     try { const success = await addAIPlayer();
@@ -371,50 +417,56 @@ const GameRoom = () => { const navigate = useNavigate();
       if (success) {
         toast({
           title: t('ai_player_added'),
-          description: t('ai_player_joined'),
-         });,
+          description: t('ai_player_joined') 
+})
 } else { toast({
           title: t('error'),
           description: t('failed_to_add_ai'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
     } catch (error) { console.error('Error adding AI player:', error);
       toast({
         title: t('error'),
         description: t('failed_to_add_ai'),
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
-  const handleReadyToggle = async () => { if (!currentUser || !roomData || !currentPlayerRecord) return;
+/**
+ * handleReadyToggle函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleReadyToggle = async () =>  { if (!currentUser || !roomData || !currentPlayerRecord) return;
 
     // 检查是否满足准备条件
     if (!canSelectRoles()) {
       toast({
         title: '无法准备',
-        description: `需要等待房间人数达到${currentMaxPlayers }人`,
-        variant: 'destructive',
-      });
-      return;,
+        description: `需要等待房间人数达到${currentMaxPlayers 
+}人`,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (!allPlayersSelectedRoles()) { toast({
         title: '无法准备',
         description: '需要等待所有玩家选择角色',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 使用数据库状态检查角色选择
     if (!isReady && !currentPlayerHasSelectedRole) { toast({
         title: t('select_character_first'),
         description: '请先选择角色才能进入准备状态',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     const newReadyState = !isReady;
@@ -425,78 +477,95 @@ const GameRoom = () => { const navigate = useNavigate();
         setIsReady(newReadyState);
         toast({
           title: newReadyState ? t('ready') : t('not_ready'),
-          description: newReadyState ? t('you_are_ready') : t('you_are_not_ready'),
-         });,
+          description: newReadyState ? t('you_are_ready') : t('you_are_not_ready') 
+})
 } else { toast({
           title: t('error'),
           description: t('failed_to_update_status'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
     } catch (error) { console.error('Error updating ready status:', error);
       toast({
         title: t('error'),
         description: t('failed_to_update_status'),
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
-  const handleCharacterSelect = (characterId: string | null) => { // 如果已经准备，不能更改角色选择
+/**
+ * handleCharacterSelect函数
+ * 处理事件
+ *
+ * @param characterId - characterId参数
+ * @returns void
+ */
+const handleCharacterSelect = (characterId: string | null) =>  { // 如果已经准备，不能更改角色选择
     if (isReady && characterId !== selectedCharacter) {
       toast({
         title: t('cannot_change_character'),
         description: '请先取消准备状态才能更换角色',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
-    setSelectedCharacter(characterId);,
+    setSelectedCharacter(characterId)
 };
 
-  const handleStartGame = () => { if (!allReady) {
+/**
+ * handleStartGame函数
+ * 处理事件
+ * @returns void
+ */
+const handleStartGame = () => { if (!allReady)  {
       toast({
         title: t('cannot_start_game'),
         description: t('players_not_ready'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     if (!selectedCharacter) { toast({
         title: t('select_character'),
         description: t('select_character_desc'),
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     // 导航到游戏页面，传递房间ID
-    navigate(`/room/${ roomData.id }/game`);,
+    navigate(`/room/${ roomData.id }/game`)
 };
 
-  const handleLeaveRoom = async () => { try {
+/**
+ * handleLeaveRoom函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleLeaveRoom = async () => { try  {
       const success = await leaveCurrentRoom();
 
       if (success) {
         toast({
           title: t('left_room'),
-          description: t('left_room_desc'),
-         });
-        navigate('/lobby');,
+          description: t('left_room_desc') 
+});
+        navigate('/lobby')
 } else { toast({
           title: t('error'),
           description: t('leave_room_failed'),
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
     } catch (error) { console.error('Error leaving room:', error);
       toast({
         title: t('error'),
         description: t('leave_room_failed'),
-        variant: 'destructive',
-       });,
+        variant: 'destructive' 
+})
 }
   };
 
@@ -511,7 +580,7 @@ const GameRoom = () => { const navigate = useNavigate();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   if (!roomData) { return (;
@@ -521,7 +590,8 @@ const GameRoom = () => { const navigate = useNavigate();
       <div className='text-center'>;
       <p className='text-gray-400 mb-4'>{t('room_not_found') }</p>;
       <p className='text-sm text-gray-500 mb-4'>;
-      { t('room_id_label') }: { id || t('not_specified') }
+      { t('room_id_label') }: { id || t('not_specified') 
+}
       </p>
       <Button onClick={ () => navigate('/lobby') }>;
       { t('return_to_lobby') }
@@ -530,7 +600,7 @@ const GameRoom = () => { const navigate = useNavigate();
       </div>
       </div>
       </PageLayout>
-    );,
+    )
 }
 
   return (;
@@ -622,7 +692,13 @@ const GameRoom = () => { const navigate = useNavigate();
     </div>
     </div>
     </PageLayout>
-  );,
+  )
 };
 
+/**
+ * GameRoom组件
+ * 游戏相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default GameRoom;

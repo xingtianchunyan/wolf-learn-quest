@@ -1,60 +1,60 @@
-import { AlertTriangle, RefreshCw, Home  } from 'lucide-react';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import React, { Component, ReactNode  } from 'react';
-import { createLogger  } from './logger';
+import { AlertTriangle, RefreshCw, Home   } from 'lucide-react';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import React, { Component, ReactNode   } from 'react';
+import { createLogger   } from './logger';
 
 const logger = createLogger('error-boundary');
 
 interface ErrorBoundaryProps { children: ReactNode;
-  fallback?: React.ComponentType<{ error: Error; retry: () => void  }>;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;,
+  fallback?: React.ComponentType<{ error: Error; retry: () => void  
+}>;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
 interface ErrorBoundaryState { hasError: boolean;
   error?: Error;
-  errorInfo?: React.ErrorInfo;,
+  errorInfo?: React.ErrorInfo
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> { constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false  };,
+    this.state = { hasError: false  
+}
 }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState { return {
       hasError: true,
-      error,
-};,
+      error }
 }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) { this.setState({
       error,
-      errorInfo,
-});
+      errorInfo });
 
     // 记录错误到日志系统
     logger.error('组件错误边界捕获到错误', { error: error.message,
       stack: error.stack,
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack 
 });
 
     // 调用自定义错误处理器
-    if (this.props.onError) { this.props.onError(error, errorInfo);,
+    if (this.props.onError) { this.props.onError(error, errorInfo)
 }
   }
 
   retry = () => { this.setState({
       hasError: false,
       error: undefined,
-      errorInfo: undefined,
-});,
+      errorInfo: undefined 
+})
 };
 
   render() { if (this.state.hasError) {
       // 如果提供了自定义回退组件，使用它
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback;
-        return <FallbackComponent error={this.state.error! } retry={ this.retry } />;,
+        return <FallbackComponent error={this.state.error! } retry={ this.retry } />
 }
 
       // 默认错误界面
@@ -100,17 +100,18 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> { 
         </CardContent>
         </Card>
         </div>
-      );,
+      )
 }
 
-    return this.props.children;,
+    return this.props.children
 }
 }
 
 export default ErrorBoundary;
 
 // 简化的错误边界组件
-export const SimpleErrorBoundary: React.FC<{ children: ReactNode  }> = ({ children  }) => { return (;
+export const SimpleErrorBoundary: React.FC<{ children: ReactNode  
+}> = ({ children  }) => { return (;
     <ErrorBoundary
     fallback={({ error, retry  }) => (;
       <div className='p-4 text-center'>;
@@ -121,5 +122,5 @@ export const SimpleErrorBoundary: React.FC<{ children: ReactNode  }> = ({ childr
     >
     { children }
     </ErrorBoundary>
-  );,
+  )
 };

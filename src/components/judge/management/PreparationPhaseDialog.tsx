@@ -1,10 +1,10 @@
-import { Button  } from '@/components/ui/button';
-import { createLogger  } from '@/lib/logger';
-import { Play  } from 'lucide-react';
-import { useGameState  } from '@/hooks/useGameState';
-import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
-import { useToast  } from '@/hooks/useToast';
-import React, { useState, useRef, useEffect  } from 'react';
+import { Button   } from '@/components/ui/button';
+import { createLogger   } from '@/lib/logger';
+import { Play   } from 'lucide-react';
+import { useGameState   } from '@/hooks/useGameState';
+import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
+import { useToast   } from '@/hooks/useToast';
+import React, { useState, useRef, useEffect   } from 'react';
 import RoomInfoCard from '@/components/room/RoomInfoCard';
 import PlayerStatusPanel from './PlayerStatusPanel';
 import QuestionBankPanel from './QuestionBankPanel';
@@ -29,7 +29,7 @@ const logger = createLogger('PreparationPhaseDialog');
 
 interface PreparationPhaseDialogProps { isOpen: boolean;
   onClose: () => void;
-  roomId: string;,
+  roomId: string
 }
 
 /**
@@ -46,12 +46,13 @@ interface PreparationPhaseDialogProps { isOpen: boolean;
 * // 使用示例
 * <PreparationPhaseDialog { ...props } />
  */
-const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
+const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ( { isOpen,
   onClose,
-  roomId,
-}) => { const [position, setPosition] = useState({ x: 0, y: 0  });
+  roomId }) => { const [position, setPosition] = useState({ x: 0, y: 0  
+});
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0  });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0  
+});
   const [isStarting, setIsStarting] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const { toast  } = useToast();
@@ -62,12 +63,19 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
   const allPlayersReady = players.every(player => player.isReady);
 
   // 拖动处理函数
-  const handleMouseDown = (e: React.MouseEvent) => { if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
+/**
+ * handleMouseDown函数
+ * 处理事件
+ *
+ * @param e - e参数
+ * @returns void
+ */
+const handleMouseDown = (e: React.MouseEvent) => { if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header'))  {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - position.x,
-        y: e.clientY - position.y,
-});,
+        y: e.clientY - position.y 
+})
 }
   };
 
@@ -75,30 +83,44 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
       if (isDragging) {
         setPosition({
           x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-});,
+          y: e.clientY - dragStart.y 
+})
 }
     };
 
-    const handleMouseUp = () => { setIsDragging(false);,
+/**
+ * handleMouseUp函数
+ * 处理事件
+ * @returns void
+ */
+const handleMouseUp = () =>  {
+  setIsDragging(false)
+
 };
 
     if (isDragging) { document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);,
+      document.addEventListener('mouseup', handleMouseUp)
 }
 
-    return () => { document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);,
-};,
+    return () => {
+  document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp)
+}
+
 }, [isDragging, dragStart]);
 
-  const handleStartGame = async () => { if (!allPlayersReady || players.length === 0) {
+/**
+ * handleStartGame函数
+ * 处理事件
+ * @returns Promise<void>
+ */
+const handleStartGame = async () => { if (!allPlayersReady || players.length === 0)  {
       toast({
         title: '无法开始游戏',
         description: '请确保所有玩家都已准备就绪',
-        variant: 'destructive',
-       });
-      return;,
+        variant: 'destructive' 
+});
+      return
 }
 
     setIsStarting(true);
@@ -107,22 +129,22 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
       if (success) {
         toast({
           title: '游戏开始',
-          description: '游戏已成功开始，玩家将自动跳转到游戏页面',
-         });
-        onClose();,
+          description: '游戏已成功开始，玩家将自动跳转到游戏页面' 
+});
+        onClose()
 } else { toast({
           title: '开始游戏失败',
           description: '请稍后重试',
-          variant: 'destructive',
-         });,
+          variant: 'destructive' 
+})
 }
     } catch (error) { logger.error('Error starting game:', error);
       toast({
         title: '开始游戏时发生错误',
         description: '请稍后重试',
-        variant: 'destructive',
-       });,
-} finally { setIsStarting(false);,
+        variant: 'destructive' 
+})
+} finally { setIsStarting(false)
 }
   };
 
@@ -134,10 +156,12 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
     ref={ dialogRef }
     className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl';
     style={ {
-      left: `${position.x + 100 }px`,
-      top: `${ position.y + 50 }px`,
+      left: `${position.x + 100 
+}px`,
+      top: `${ position.y + 50 
+}px`,
       width: '900px',
-      height: '600px',
+      height: '600px' 
 }}
     onMouseDown={ handleMouseDown }
     >
@@ -170,11 +194,12 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
     className={ `w-full px-4 py-3 text-lg ${
       allPlayersReady && players.length > 0 && !isStarting
       ? 'bg-werewolf-purple hover:bg-werewolf-light'
-      : 'bg-gray-600 cursor-not-allowed',
+      : 'bg-gray-600 cursor-not-allowed' 
 }`}
     >
     <Play className='mr-2 h-5 w-5' />;
-    { isStarting ? '正在开始游戏...' : '开始游戏' }
+    { isStarting ? '正在开始游戏...' : '开始游戏' 
+}
     </Button>
     </div>
     </div>
@@ -194,7 +219,13 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({ isOpen,
     </div>
     </div>
     </div>
-  );,
+  )
 };
 
+/**
+ * PreparationPhaseDialog组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default PreparationPhaseDialog;

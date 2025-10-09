@@ -12,7 +12,7 @@ export enum DebugLevel {
   WARN = 1,
   INFO = 2,
   DEBUG = 3,
-  TRACE = 4
+  TRACE = 4,
 }
 
 /**
@@ -136,7 +136,7 @@ export class DebugSystem {
       persistLogs: true,
       maxLogs: 1000,
       enabledModules: [],
-      disabledModules: []
+      disabledModules: [],
     };
   }
 
@@ -176,19 +176,19 @@ export class DebugSystem {
    * 设置全局错误处理器
    */
   private setupGlobalErrorHandler(): void {
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       this.error('Global', 'Uncaught error', {
         message: event.message,
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
-        error: event.error
+        error: event.error,
       });
     });
 
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       this.error('Global', 'Unhandled promise rejection', {
-        reason: event.reason
+        reason: event.reason,
       });
     });
   }
@@ -231,7 +231,12 @@ export class DebugSystem {
   /**
    * 添加日志条目
    */
-  private addLogEntry(level: DebugLevel, module: string, message: string, data?: any): void {
+  private addLogEntry(
+    level: DebugLevel,
+    module: string,
+    message: string,
+    data?: any
+  ): void {
     if (!this.shouldLog(level) || !this.isModuleEnabled(module)) {
       return;
     }
@@ -242,7 +247,7 @@ export class DebugSystem {
       module,
       message,
       data,
-      sessionId: this.sessionId
+      sessionId: this.sessionId,
     };
 
     if (this.config.showStack) {
@@ -269,10 +274,10 @@ export class DebugSystem {
    * 输出到控制台
    */
   private outputToConsole(entry: DebugLogEntry): void {
-    const timestamp = this.config.showTimestamp 
-      ? `[${new Date(entry.timestamp).toISOString()}]` 
+    const timestamp = this.config.showTimestamp
+      ? `[${new Date(entry.timestamp).toISOString()}]`
       : '';
-    
+
     const prefix = `${timestamp}[${DebugLevel[entry.level]}][${entry.module}]`;
     const message = `${prefix} ${entry.message}`;
 
@@ -302,13 +307,13 @@ export class DebugSystem {
     try {
       const logs = this.getPersistedLogs();
       logs.push(entry);
-      
+
       // 限制持久化日志数量
       const maxPersistedLogs = this.config.maxLogs * 2;
       if (logs.length > maxPersistedLogs) {
         logs.splice(0, logs.length - maxPersistedLogs);
       }
-      
+
       localStorage.setItem('debug-logs', JSON.stringify(logs));
     } catch (error) {
       console.warn('Failed to persist log:', error);
@@ -371,9 +376,9 @@ export class DebugSystem {
       startTime: performance.now(),
       label,
       module,
-      memoryUsage: (performance as any).memory?.usedJSHeapSize
+      memoryUsage: (performance as any).memory?.usedJSHeapSize,
     };
-    
+
     this.performanceMetrics.set(label, metrics);
     this.debug(module, `Performance measurement started: ${label}`);
   }
@@ -384,21 +389,33 @@ export class DebugSystem {
   public endPerformance(label: string): PerformanceMetrics | null {
     const metrics = this.performanceMetrics.get(label);
     if (!metrics) {
-      this.warn('Performance', `No performance measurement found for label: ${label}`);
+      this.warn(
+        'Performance',
+        `No performance measurement found for label: ${label}`
+      );
       return null;
     }
 
     metrics.endTime = performance.now();
     metrics.duration = metrics.endTime - metrics.startTime;
-    
+
     if ((performance as any).memory) {
+      /**
+       * currentMemory函数
+       * currentMemory函数的功能描述
+       *
+       * @param performance - performance参数
+       * @returns void
+       */
       const currentMemory = (performance as any).memory.usedJSHeapSize;
       metrics.memoryUsage = currentMemory - (metrics.memoryUsage || 0);
     }
 
     this.info(metrics.module, `Performance measurement completed: ${label}`, {
       duration: `${metrics.duration.toFixed(2)}ms`,
-      memoryUsage: metrics.memoryUsage ? `${(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB` : 'N/A'
+      memoryUsage: metrics.memoryUsage
+        ? `${(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB`
+        : 'N/A',
     });
 
     this.performanceMetrics.delete(label);
@@ -408,13 +425,18 @@ export class DebugSystem {
   /**
    * 记录状态快照
    */
-  public captureState(module: string, state: any, action?: string, userId?: string): void {
+  public captureState(
+    module: string,
+    state: any,
+    action?: string,
+    userId?: string
+  ): void {
     const snapshot: StateSnapshot = {
       timestamp: Date.now(),
       module,
       state: JSON.parse(JSON.stringify(state)), // 深拷贝
       action,
-      userId
+      userId,
     };
 
     this.stateSnapshots.push(snapshot);
@@ -424,10 +446,14 @@ export class DebugSystem {
       this.stateSnapshots = this.stateSnapshots.slice(-100);
     }
 
-    this.debug(module, `State captured${action ? ` for action: ${action}` : ''}`, {
-      stateSize: JSON.stringify(state).length,
-      userId
-    });
+    this.debug(
+      module,
+      `State captured${action ? ` for action: ${action}` : ''}`,
+      {
+        stateSize: JSON.stringify(state).length,
+        userId,
+      }
+    );
   }
 
   /**
@@ -449,10 +475,14 @@ export class DebugSystem {
         filteredLogs = filteredLogs.filter(log => log.module === filter.module);
       }
       if (filter.startTime) {
-        filteredLogs = filteredLogs.filter(log => log.timestamp >= filter.startTime!);
+        filteredLogs = filteredLogs.filter(
+          log => log.timestamp >= filter.startTime!
+        );
       }
       if (filter.endTime) {
-        filteredLogs = filteredLogs.filter(log => log.timestamp <= filter.endTime!);
+        filteredLogs = filteredLogs.filter(
+          log => log.timestamp <= filter.endTime!
+        );
       }
     }
 
@@ -520,7 +550,7 @@ export class DebugSystem {
       logs: this.logs,
       performanceMetrics: Array.from(this.performanceMetrics.values()),
       stateSnapshots: this.stateSnapshots,
-      sessionId: this.sessionId
+      sessionId: this.sessionId,
     };
   }
 
@@ -529,15 +559,21 @@ export class DebugSystem {
    */
   public createModuleDebugger(moduleName: string) {
     return {
-      error: (message: string, data?: any) => this.error(moduleName, message, data),
-      warn: (message: string, data?: any) => this.warn(moduleName, message, data),
-      info: (message: string, data?: any) => this.info(moduleName, message, data),
-      debug: (message: string, data?: any) => this.debug(moduleName, message, data),
-      trace: (message: string, data?: any) => this.trace(moduleName, message, data),
-      startPerformance: (label: string) => this.startPerformance(label, moduleName),
+      error: (message: string, data?: any) =>
+        this.error(moduleName, message, data),
+      warn: (message: string, data?: any) =>
+        this.warn(moduleName, message, data),
+      info: (message: string, data?: any) =>
+        this.info(moduleName, message, data),
+      debug: (message: string, data?: any) =>
+        this.debug(moduleName, message, data),
+      trace: (message: string, data?: any) =>
+        this.trace(moduleName, message, data),
+      startPerformance: (label: string) =>
+        this.startPerformance(label, moduleName),
       endPerformance: (label: string) => this.endPerformance(label),
-      captureState: (state: any, action?: string, userId?: string) => 
-        this.captureState(moduleName, state, action, userId)
+      captureState: (state: any, action?: string, userId?: string) =>
+        this.captureState(moduleName, state, action, userId),
     };
   }
 }
@@ -546,5 +582,12 @@ export class DebugSystem {
 export const debugSystem = DebugSystem.getInstance();
 
 // 导出便捷函数
-export const createDebugger = (moduleName: string) => 
+/**
+ * createDebugger函数
+ * 创建新项
+ *
+ * @param moduleName - moduleName参数
+ * @returns void
+ */
+export const createDebugger = (moduleName: string) =>
   debugSystem.createModuleDebugger(moduleName);

@@ -7,6 +7,7 @@ This project uses environment variables to manage sensitive configuration data s
 ### Setup Steps
 
 1. **Copy the example file:**
+
    ```bash
    cp .env.example .env
    ```
@@ -36,6 +37,7 @@ This project uses environment variables to manage sensitive configuration data s
 ### Troubleshooting
 
 If you encounter connection issues:
+
 1. Verify your Supabase project is active
 2. Check that your environment variables match your Supabase dashboard
 3. Ensure you're using the correct project URL format: `https://your-project.supabase.co`

@@ -1,8 +1,8 @@
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent  } from '@/components/ui/card';
-import { Play,
-import { useGameState  } from '@/hooks/useGameState';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent   } from '@/components/ui/card';
+import {
+  Play, useGameState   } from '@/hooks/useGameState';
 import React from 'react';
 
 /**
@@ -29,11 +29,10 @@ import React from 'react';
   Sun,
   Sunset,
   Moon,
-  Sunrise,
-} from 'lucide-react';
+  Sunrise  } from 'lucide-react';
 
 interface GameStateDisplayProps { roomId: string;
-  isJudge: boolean; // 移除默认值，强制上层传入,
+  isJudge: boolean; // 移除默认值，强制上层传入 
 }
 
 /**
@@ -50,7 +49,7 @@ interface GameStateDisplayProps { roomId: string;
 * // 使用示例
 * <GameStateDisplay { ...props } />
  */
-const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge  }) => { const {
+const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge  }) => { const  {
     gameState,
     gameSettings,
     loading,
@@ -60,8 +59,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge  })
     togglePause,
     endGame,
     formatTime,
-    getPhaseDisplayName,
-   } = useGameState(roomId);
+    getPhaseDisplayName } = useGameState(roomId);
 
   if (loading) { return (;
       <Card className='bg-werewolf-card border-werewolf-purple/30'>;
@@ -72,37 +70,56 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({ roomId, isJudge  })
       </div>
       </CardContent>
       </Card>
-    );,
+    )
 }
 
-  const getPhaseIcon = (phase: number) => { switch (phase) {
+/**
+ * getPhaseIcon函数
+ * 获取数据
+ *
+ * @param phase - phase参数
+ * @returns void
+ */
+const getPhaseIcon = (phase: number) => { switch (phase)  {
       case 1: return <Sun className='h-5 w-5 text-yellow-400' />;
       case 2: return <Sunset className='h-5 w-5 text-orange-400' />;
       case 3: return <Moon className='h-5 w-5 text-blue-400' />;
       case 4: return <Sunrise className='h-5 w-5 text-pink-400' />;
-      default: return <Clock className='h-5 w-5' />;,
+      default: return <Clock className='h-5 w-5' />
 }
   };
 
-  const getPhaseColor = (phase: number) => { switch (phase) {
+/**
+ * getPhaseColor函数
+ * 获取数据
+ *
+ * @param phase - phase参数
+ * @returns void
+ */
+const getPhaseColor = (phase: number) => { switch (phase)  {
       case 1: return 'bg-yellow-900/30 text-yellow-200 border-yellow-500';
       case 2: return 'bg-orange-900/30 text-orange-200 border-orange-500';
       case 3: return 'bg-blue-900/30 text-blue-200 border-blue-500';
       case 4: return 'bg-pink-900/30 text-pink-200 border-pink-500';
-      default: return 'bg-gray-900/30 text-gray-200 border-gray-500';,
+      default: return 'bg-gray-900/30 text-gray-200 border-gray-500'
 }
   };
 
-  const canAdvancePhase = () => { if (!gameState || !gameSettings) return false;
+/**
+ * canAdvancePhase函数
+ * canAdvancePhase函数的功能描述
+ * @returns void
+ */
+const canAdvancePhase = () =>  { if (!gameState || !gameSettings) return false;
     if (gameState.status !== 'active') return false;
 
     // Auto phases always advance automatically
     if (gameState.currentPhase === 2 || gameState.currentPhase === 4) { // 傍晚=2, 黎明=4
-    return false;,
+    return false
 }
 
   // Manual phases can be advanced when not in auto mode
-  return !gameSettings.isAutoAdvance;,
+  return !gameSettings.isAutoAdvance
 };
 
 if (!gameState) { return (;
@@ -123,7 +140,7 @@ if (!gameState) { return (;
     </div>
     </CardContent>
     </Card>
-  );,
+  )
 }
 
 return (;
@@ -152,27 +169,28 @@ return (;
   variant='outline';
   className={ gameState.status === 'active';
     ? 'border-green-500 text-green-200'
-    : 'border-gray-500 text-gray-200',
+    : 'border-gray-500 text-gray-200' 
 }
   >
-  { gameState.status === 'active' ? '进行中' : '等待中' }
+  { gameState.status === 'active' ? '进行中' : '等待中' 
+}
   </Badge>
   </div>
   </div>
 
-  { /*  Timer Display  */ }
-  { gameState.status === 'active' && gameState.phaseEndTime && (;
+  { /*  Timer Display  */
+} { gameState.status === 'active' && gameState.phaseEndTime && (;
     <div className='text-center'>;
     <div className='flex items-center justify-center space-x-2 mb-2'>;
     <Clock className='h-4 w-4 text-gray-400' />;
     <span className='text-sm text-gray-400'>剩余时间</span>;
     </div>
     <div className={`text-3xl font-bold ${
-      timeRemaining <= 10 ? 'text-red-400' :;
-      timeRemaining <= 30 ? 'text-yellow-400' :;
-      'text-werewolf-purple',
-}`}>
-    { gameState.isPaused ? '已暂停' : formatTime(timeRemaining) }
+      timeRemaining <= 10 ? 'text-red-400' : unknown;
+      timeRemaining <= 30 ? 'text-yellow-400' : unknown;
+      'text-werewolf-purple' }`}>
+    { gameState.isPaused ? '已暂停' : formatTime(timeRemaining) 
+}
     </div>
     </div>
   )}
@@ -187,8 +205,8 @@ return (;
   </p>
   </div>
 
-  { /*  Judge Controls  */ }
-  { isJudge && gameState.status === 'active' && (;
+  { /*  Judge Controls  */
+} { isJudge && gameState.status === 'active' && (;
     <div className='space-y-3 pt-3 border-t border-werewolf-purple/30'>;
     <h4 className='text-sm font-semibold text-werewolf-purple flex items-center'>;
     <Settings className='h-4 w-4 mr-2' />;
@@ -239,13 +257,15 @@ return (;
     </div>
   )}
 
-  { /*  Game Mode Info  */ }
-  { gameSettings && (
+  { /*  Game Mode Info  */
+} { gameSettings && (
     <div className='pt-3 border-t border-werewolf-purple/30'>;
     <div className='flex items-center justify-between text-xs text-gray-400'>;
     <span>游戏模式:</span>
-    <span className={gameSettings.isAutoAdvance ? 'text-green-400' : 'text-yellow-400' }>;
-    { gameSettings.isAutoAdvance ? '自动切换' : '半自动切换' }
+    <span className={gameSettings.isAutoAdvance ? 'text-green-400' : 'text-yellow-400' 
+}>;
+    { gameSettings.isAutoAdvance ? '自动切换' : '半自动切换' 
+}
     </span>
     </div>
     { !gameSettings.isAutoAdvance && (
@@ -258,7 +278,13 @@ return (;
   </div>
   </CardContent>
   </Card>
-);,
+)
 };
 
+/**
+ * GameStateDisplay组件
+ * 游戏相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default GameStateDisplay;

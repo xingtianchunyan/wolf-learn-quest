@@ -1,8 +1,8 @@
-import { cn  } from '@/lib/utils'
-import { Command as CommandPrimitive  } from 'cmdk'
-import { Dialog, DialogContent  } from '@/components/ui/dialog'
-import { Search  } from 'lucide-react'
-import { type DialogProps  } from '@radix-ui/react-dialog'
+import { cn   } from '@/lib/utils'
+import { Command as CommandPrimitive   } from 'cmdk'
+import { Dialog, DialogContent   } from '@/components/ui/dialog'
+import { Search   } from 'lucide-react'
+import { type DialogProps   } from '@radix-ui/react-dialog'
 import * as React from 'react'
 
 /**
@@ -51,7 +51,13 @@ Command.displayName = CommandPrimitive.displayName;
 
 interface CommandDialogProps extends DialogProps {}
 
-const CommandDialog = ({ children, ...props  }: CommandDialogProps) => { return (;
+/**
+ * CommandDialog组件
+ * 对话框组件，用于用户交互确认
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const CommandDialog = ({ children, ...props  }: CommandDialogProps) =>  { return (;
     <Dialog {...props }>
     <DialogContent className='overflow-hidden p-0 shadow-lg'>;
     <Command className='[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5'>;
@@ -59,9 +65,14 @@ const CommandDialog = ({ children, ...props  }: CommandDialogProps) => { return 
     </Command>
     </DialogContent>
     </Dialog>
-  ),
-}
+  ) }
 
+/**
+ * CommandInput组件
+ * 输入框组件，支持验证和格式化
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandInput = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.Input>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
@@ -81,6 +92,12 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 
 CommandInput.displayName = CommandPrimitive.Input.displayName;
 
+/**
+ * CommandList组件
+ * CommandList组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandList = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.List>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
@@ -94,6 +111,12 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
 
 CommandList.displayName = CommandPrimitive.List.displayName;
 
+/**
+ * CommandEmpty组件
+ * CommandEmpty组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandEmpty = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.Empty>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
@@ -107,6 +130,12 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
 
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
+/**
+ * CommandGroup组件
+ * CommandGroup组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandGroup = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.Group>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
@@ -123,6 +152,12 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName;
 
+/**
+ * CommandSeparator组件
+ * CommandSeparator组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandSeparator = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.Separator>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
@@ -135,6 +170,12 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
 ))
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
+/**
+ * CommandItem组件
+ * CommandItem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const CommandItem = React.forwardRef<;
 React.ElementRef<typeof CommandPrimitive.Item>,
 React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
@@ -151,9 +192,14 @@ React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
 
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
-const CommandShortcut = ({ className,
-  ...props,
-}: React.HTMLAttributes<HTMLSpanElement>) => { return (;
+/**
+ * CommandShortcut组件
+ * CommandShortcut组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
+const CommandShortcut = ( { className,
+  ...props }: React.HTMLAttributes<HTMLSpanElement>) => { return (;
     <span
     className={cn(;
       'ml-auto text-xs tracking-widest text-muted-foreground',
@@ -161,8 +207,7 @@ const CommandShortcut = ({ className,
     ) }
     { ...props }
     />
-  ),
-}
+  ) }
 CommandShortcut.displayName = 'CommandShortcut';
 
 export { Command,
@@ -173,5 +218,4 @@ export { Command,
   CommandGroup,
   CommandItem,
   CommandShortcut,
-  CommandSeparator,
- }
+  CommandSeparator }

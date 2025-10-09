@@ -1,0 +1,506 @@
+/**
+ * @fileoverview 权限控制高阶组件
+ * 为组件提供基于角色和权限的访问控制功能
+ *
+ * @author SOLO Coding
+ * @version 1.0.0
+ * @since 2024-12-19
+ */
+
+import React, { ComponentType, ReactNode } from 'react';
+import { createLogger } from '@/lib/logger';
+import { Lock, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { UserRole, Permission } from '@/types/auth.types';
+
+const logger = createLogger('permission-hoc');
+
+/**
+ * 权限检查配置接口
+ */
+export interface PermissionConfig {
+  /** 必需的角色列表 */
+  requiredRoles?: UserRole[];
+  /** 必需的权限列表 */
+  requiredPermissions?: Permission[];
+  /** 权限检查模式：all-需要所有权限，any-需要任一权限 */
+  mode?: 'all' | 'any';
+  /** 无权限时的回退组件 */
+  fallbackComponent?: ComponentType<PermissionFallbackProps>;
+  /** 无权限时的回退消息 */
+  fallbackMessage?: string;
+  /** 是否显示权限详情 */
+  showPermissionDetails?: boolean;
+  /** 权限检查失败时的回调 */
+  onPermissionDenied?: (
+    missingPermissions: Permission[],
+    userRoles: UserRole[]
+  ) => void;
+  /** 是否在权限不足时隐藏组件（而不是显示回退UI） */
+  hideOnDenied?: boolean;
+  /** 自定义权限检查函数 */
+  customCheck?: (
+    userRoles: UserRole[],
+    userPermissions: Permission[]
+  ) => boolean;
+}
+
+/**
+ * 权限回退组件属性接口
+ */
+export interface PermissionFallbackProps {
+  /** 缺失的权限 */
+  missingPermissions: Permission[];
+  /** 缺失的角色 */
+  missingRoles: UserRole[];
+  /** 用户当前角色 */
+  userRoles: UserRole[];
+  /** 用户当前权限 */
+  userPermissions: Permission[];
+  /** 配置选项 */
+  config: PermissionConfig;
+}
+
+/**
+ * 默认权限回退组件
+ */
+const DefaultPermissionFallback: React.FC<PermissionFallbackProps> = ({
+  missingPermissions,
+  missingRoles,
+  userRoles,
+  config,
+}) => {
+  return (
+    <div className='flex items-center justify-center p-8 min-h-[200px]'>
+      <div className='max-w-md w-full bg-white rounded-lg shadow-lg border border-orange-200 p-6 text-center'>
+        <div className='flex justify-center mb-4'>
+          <Lock className='h-12 w-12 text-orange-500' />
+        </div>
+
+        <h3 className='text-lg font-semibold text-gray-900 mb-2'>权限不足</h3>
+
+        <p className='text-gray-600 mb-4'>
+          {config.fallbackMessage || '您没有访问此内容的权限'}
+        </p>
+
+        {config.showPermissionDetails && (
+          <div className='text-left bg-orange-50 rounded p-3 mb-4'>
+            {missingRoles.length > 0 && (
+              <div className='mb-2'>
+                <p className='text-sm font-medium text-orange-800 mb-1'>
+                  需要角色：
+                </p>
+                <div className='flex flex-wrap gap-1'>
+                  {missingRoles.map(role => (
+                    <span
+                      key={role}
+                      className='inline-block px-2 py-1 bg-orange-200 text-orange-800 text-xs rounded'
+                    >
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {missingPermissions.length > 0 && (
+              <div className='mb-2'>
+                <p className='text-sm font-medium text-orange-800 mb-1'>
+                  需要权限：
+                </p>
+                <div className='flex flex-wrap gap-1'>
+                  {missingPermissions.map(permission => (
+                    <span
+                      key={permission}
+                      className='inline-block px-2 py-1 bg-orange-200 text-orange-800 text-xs rounded'
+                    >
+                      {permission}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <p className='text-sm font-medium text-orange-800 mb-1'>
+                当前角色：
+              </p>
+              <div className='flex flex-wrap gap-1'>
+                {userRoles.map(role => (
+                  <span
+                    key={role}
+                    className='inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded'
+                  >
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className='flex items-center justify-center text-sm text-gray-500'>
+          <AlertCircle className='h-4 w-4 mr-1' />
+          请联系管理员获取相应权限
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * 权限检查工具函数
+ */
+export const permissionUtils = {
+  /**
+   * 检查用户是否具有指定角色
+   * @param userRoles - 用户角色列表
+   * @param requiredRoles - 必需角色列表
+   * @param mode - 检查模式
+   * @returns 是否具有权限
+   */
+  hasRoles(
+    userRoles: UserRole[],
+    requiredRoles: UserRole[],
+    mode: 'all' | 'any' = 'any'
+  ): boolean {
+    if (!requiredRoles || requiredRoles.length === 0) return true;
+
+    if (mode === 'all') {
+      return requiredRoles.every(role => userRoles.includes(role));
+    } else {
+      return requiredRoles.some(role => userRoles.includes(role));
+    }
+  },
+
+  /**
+   * 检查用户是否具有指定权限
+   * @param userPermissions - 用户权限列表
+   * @param requiredPermissions - 必需权限列表
+   * @param mode - 检查模式
+   * @returns 是否具有权限
+   */
+  hasPermissions(
+    userPermissions: Permission[],
+    requiredPermissions: Permission[],
+    mode: 'all' | 'any' = 'any'
+  ): boolean {
+    if (!requiredPermissions || requiredPermissions.length === 0) return true;
+
+    if (mode === 'all') {
+      return requiredPermissions.every(permission =>
+        userPermissions.includes(permission)
+      );
+    } else {
+      return requiredPermissions.some(permission =>
+        userPermissions.includes(permission)
+      );
+    }
+  },
+
+  /**
+   * 获取缺失的角色
+   * @param userRoles - 用户角色列表
+   * @param requiredRoles - 必需角色列表
+   * @returns 缺失的角色列表
+   */
+  getMissingRoles(
+    userRoles: UserRole[],
+    requiredRoles: UserRole[]
+  ): UserRole[] {
+    if (!requiredRoles) return [];
+    return requiredRoles.filter(role => !userRoles.includes(role));
+  },
+
+  /**
+   * 获取缺失的权限
+   * @param userPermissions - 用户权限列表
+   * @param requiredPermissions - 必需权限列表
+   * @returns 缺失的权限列表
+   */
+  getMissingPermissions(
+    userPermissions: Permission[],
+    requiredPermissions: Permission[]
+  ): Permission[] {
+    if (!requiredPermissions) return [];
+    return requiredPermissions.filter(
+      permission => !userPermissions.includes(permission)
+    );
+  },
+
+  /**
+   * 检查是否为超级管理员
+   * @param userRoles - 用户角色列表
+   * @returns 是否为超级管理员
+   */
+  isSuperAdmin(userRoles: UserRole[]): boolean {
+    return userRoles.includes('SUPER_ADMIN');
+  },
+
+  /**
+   * 检查是否为游戏管理员
+   * @param userRoles - 用户角色列表
+   * @returns 是否为游戏管理员
+   */
+  isGameAdmin(userRoles: UserRole[]): boolean {
+    return userRoles.includes('GAME_ADMIN') || this.isSuperAdmin(userRoles);
+  },
+};
+
+/**
+ * 权限控制高阶组件
+ * @param config - 权限配置
+ * @returns HOC函数
+ */
+export function withPermission<P extends object>(config: PermissionConfig) {
+  return function <T extends ComponentType<P>>(
+    WrappedComponent: T
+  ): ComponentType<P> {
+    const PermissionWrapper: React.FC<P> = props => {
+      const { user, userRoles, userPermissions, isLoading } = useAuth();
+
+      // 如果正在加载用户信息，显示加载状态
+      if (isLoading) {
+        return (
+          <div className='flex items-center justify-center p-8'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+          </div>
+        );
+      }
+
+      // 如果用户未登录，显示未授权
+      if (!user) {
+        if (config.hideOnDenied) {
+          return null;
+        }
+
+        const FallbackComponent =
+          config.fallbackComponent || DefaultPermissionFallback;
+        return (
+          <FallbackComponent
+            missingPermissions={config.requiredPermissions || []}
+            missingRoles={config.requiredRoles || []}
+            userRoles={[]}
+            userPermissions={[]}
+            config={config}
+          />
+        );
+      }
+
+      // 超级管理员拥有所有权限
+      if (permissionUtils.isSuperAdmin(userRoles)) {
+        return <WrappedComponent {...props} />;
+      }
+
+      // 执行自定义权限检查
+      if (config.customCheck) {
+        const hasPermission = config.customCheck(userRoles, userPermissions);
+        if (!hasPermission) {
+          if (config.hideOnDenied) {
+            return null;
+          }
+
+          const FallbackComponent =
+            config.fallbackComponent || DefaultPermissionFallback;
+          return (
+            <FallbackComponent
+              missingPermissions={[]}
+              missingRoles={[]}
+              userRoles={userRoles}
+              userPermissions={userPermissions}
+              config={config}
+            />
+          );
+        }
+        return <WrappedComponent {...props} />;
+      }
+
+      // 检查角色权限
+      const hasRequiredRoles = permissionUtils.hasRoles(
+        userRoles,
+        config.requiredRoles || [],
+        config.mode
+      );
+
+      // 检查功能权限
+      const hasRequiredPermissions = permissionUtils.hasPermissions(
+        userPermissions,
+        config.requiredPermissions || [],
+        config.mode
+      );
+
+      // 根据模式判断是否有权限
+      let hasPermission = false;
+      if (config.mode === 'all') {
+        hasPermission = hasRequiredRoles && hasRequiredPermissions;
+      } else {
+        // 如果同时指定了角色和权限，需要满足其中之一
+        if (config.requiredRoles && config.requiredPermissions) {
+          hasPermission = hasRequiredRoles || hasRequiredPermissions;
+        } else {
+          hasPermission = hasRequiredRoles && hasRequiredPermissions;
+        }
+      }
+
+      if (!hasPermission) {
+        const missingRoles = permissionUtils.getMissingRoles(
+          userRoles,
+          config.requiredRoles || []
+        );
+        const missingPermissions = permissionUtils.getMissingPermissions(
+          userPermissions,
+          config.requiredPermissions || []
+        );
+
+        // 记录权限检查失败
+        logger.warn('权限检查失败', {
+          userId: user.id,
+          userRoles,
+          userPermissions,
+          requiredRoles: config.requiredRoles,
+          requiredPermissions: config.requiredPermissions,
+          missingRoles,
+          missingPermissions,
+          mode: config.mode,
+        });
+
+        // 调用权限拒绝回调
+        if (config.onPermissionDenied) {
+          config.onPermissionDenied(missingPermissions, userRoles);
+        }
+
+        if (config.hideOnDenied) {
+          return null;
+        }
+
+        const FallbackComponent =
+          config.fallbackComponent || DefaultPermissionFallback;
+        return (
+          <FallbackComponent
+            missingPermissions={missingPermissions}
+            missingRoles={missingRoles}
+            userRoles={userRoles}
+            userPermissions={userPermissions}
+            config={config}
+          />
+        );
+      }
+
+      // 记录权限检查成功
+      logger.debug('权限检查通过', {
+        userId: user.id,
+        userRoles,
+        requiredRoles: config.requiredRoles,
+        requiredPermissions: config.requiredPermissions,
+      });
+
+      return <WrappedComponent {...props} />;
+    };
+
+    // 设置显示名称
+    const wrappedComponentName =
+      WrappedComponent.displayName || WrappedComponent.name || 'Component';
+    PermissionWrapper.displayName = `withPermission(${wrappedComponentName})`;
+
+    return PermissionWrapper as ComponentType<P>;
+  };
+}
+
+/**
+ * 权限检查Hook
+ */
+export function usePermission(config: PermissionConfig) {
+  const { user, userRoles, userPermissions, isLoading } = useAuth();
+
+  const checkPermission = React.useCallback(() => {
+    if (isLoading || !user) return false;
+
+    // 超级管理员拥有所有权限
+    if (permissionUtils.isSuperAdmin(userRoles)) {
+      return true;
+    }
+
+    // 执行自定义权限检查
+    if (config.customCheck) {
+      return config.customCheck(userRoles, userPermissions);
+    }
+
+    // 检查角色和权限
+    const hasRequiredRoles = permissionUtils.hasRoles(
+      userRoles,
+      config.requiredRoles || [],
+      config.mode
+    );
+
+    const hasRequiredPermissions = permissionUtils.hasPermissions(
+      userPermissions,
+      config.requiredPermissions || [],
+      config.mode
+    );
+
+    if (config.mode === 'all') {
+      return hasRequiredRoles && hasRequiredPermissions;
+    } else {
+      if (config.requiredRoles && config.requiredPermissions) {
+        return hasRequiredRoles || hasRequiredPermissions;
+      } else {
+        return hasRequiredRoles && hasRequiredPermissions;
+      }
+    }
+  }, [user, userRoles, userPermissions, isLoading, config]);
+
+  const hasPermission = checkPermission();
+
+  const missingRoles = React.useMemo(
+    () =>
+      permissionUtils.getMissingRoles(userRoles, config.requiredRoles || []),
+    [userRoles, config.requiredRoles]
+  );
+
+  const missingPermissions = React.useMemo(
+    () =>
+      permissionUtils.getMissingPermissions(
+        userPermissions,
+        config.requiredPermissions || []
+      ),
+    [userPermissions, config.requiredPermissions]
+  );
+
+  return {
+    hasPermission,
+    isLoading,
+    missingRoles,
+    missingPermissions,
+    userRoles,
+    userPermissions,
+    checkPermission,
+  };
+}
+
+/**
+ * 条件渲染组件
+ */
+export const PermissionGate: React.FC<{
+  config: PermissionConfig;
+  children: ReactNode;
+  fallback?: ReactNode;
+}> = ({ config, children, fallback }) => {
+  const { hasPermission, isLoading } = usePermission(config);
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center p-4'>
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600'></div>
+      </div>
+    );
+  }
+
+  if (!hasPermission) {
+    if (config.hideOnDenied) {
+      return null;
+    }
+    return <>{fallback}</> || null;
+  }
+
+  return <>{children}</>;
+};

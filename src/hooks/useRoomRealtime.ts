@@ -1,13 +1,20 @@
-import { supabase  } from '@/integrations/supabase/client';
-import { useEffect, useState  } from 'react';
+import { supabase   } from '@/integrations/supabase/client';
+import { useEffect, useState   } from 'react';
 
 interface RoomRealtimeData { maxPlayers: number;
   status: string;
   judge_user_id?: string | null;
-  lastUpdate: Date;,
+  lastUpdate: Date
 }
 
-export const useRoomRealtime = (roomId: string) => { const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
+/**
+ * useRoomRealtime函数
+ * 自定义Hook
+ *
+ * @param roomId - roomId参数
+ * @returns void
+ */
+export const useRoomRealtime = (roomId: string) =>  { const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
@@ -20,7 +27,8 @@ export const useRoomRealtime = (roomId: string) => { const [roomData, setRoomDat
       { event: '*',
         schema: 'public',
         table: 'rooms',
-        filter: `id=eq.${roomId }`;,
+        filter: `id=eq.${roomId 
+}`
 },
       payload => { console.log('Room update received:', payload);
         if (payload.new && typeof payload.new === 'object') {
@@ -30,37 +38,45 @@ export const useRoomRealtime = (roomId: string) => { const [roomData, setRoomDat
               maxPlayers: newData.max_players,
               status: newData.status,
               judge_user_id: newData.judge_user_id,
-              lastUpdate: new Date(),
-});,
+              lastUpdate: new Date() 
+})
 }
-        },
-}
+        } }
     )
     .subscribe();
 
-    return () => { supabase.removeChannel(channel);,
-};,
+    return () => {
+  supabase.removeChannel(channel)
+}
+
 }, [roomId]);
 
-  const updateMaxPlayers = async (newMaxPlayers: number) => { if (!roomId) return false;
+/**
+ * updateMaxPlayers函数
+ * 更新数据
+ *
+ * @param newMaxPlayers - newMaxPlayers参数
+ * @returns Promise<void>
+ */
+const updateMaxPlayers = async (newMaxPlayers: number) =>  { if (!roomId) return false;
 
     try {
       const { error  } = await supabase;
       .from('rooms')
-      .update({ max_players: newMaxPlayers  })
+      .update({ max_players: newMaxPlayers  
+})
       .eq('id', roomId);
 
       if (error) { console.error('Error updating max players:', error);
-        return false;,
+        return false
 }
 
-      return true;,
+      return true
 } catch (error) { console.error('Error updating max players:', error);
-      return false;,
+      return false
 }
   };
 
   return { roomData,
-    updateMaxPlayers,
-};,
+    updateMaxPlayers }
 };

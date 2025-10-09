@@ -1,19 +1,19 @@
-import { Alert, AlertDescription  } from '@/components/ui/alert';
-import { Badge  } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
-import { createLogger  } from '@/lib/logger';
-import { Progress  } from '@/components/ui/progress';
-import { ScrollArea  } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
-import { Separator  } from '@/components/ui/separator';
-import { skillConfigs  } from '@/data/skillConfigs';
-import { Skull, Shield, Search, Zap, Clock, Target, Info, CheckCircle,
-import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
-import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
-import { useWitchPotionManager  } from '@/hooks/useWitchPotionManager';
+import { Alert, AlertDescription   } from '@/components/ui/alert';
+import { Badge   } from '@/components/ui/badge';
+import { Button   } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
+import { createLogger   } from '@/lib/logger';
+import { Progress   } from '@/components/ui/progress';
+import { ScrollArea   } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue   } from '@/components/ui/select';
+import { Separator   } from '@/components/ui/separator';
+import { skillConfigs   } from '@/data/skillConfigs';
+import {
+  Skull, Shield, Search, Zap, Clock, Target, Info, CheckCircle, Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
+import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
+import { useWitchPotionManager   } from '@/hooks/useWitchPotionManager';
 import React, { useState,
-import type { RoleDesign, GameState, Player  } from '@/types/game';
+import type { RoleDesign, GameState, Player   } from '@/types/game';
 
 /**
 * 文件级注释：优化的增强技能面板组件
@@ -43,15 +43,31 @@ import type { RoleDesign, GameState, Player  } from '@/types/game';
   useRef,
   memo,
   lazy,
-  Suspense,
-} from 'react';
+  Suspense  } from 'react';
   XCircle, AlertTriangle, Loader2, Settings, RefreshCw, Activity,
-  MemoryStick, Gauge, TrendingUp,
-} from 'lucide-react';
+  MemoryStick, Gauge, TrendingUp  } from 'lucide-react';
 
 // 懒加载组件
+/**
+ * SkillEffectsVirtualList组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const SkillEffectsVirtualList = lazy(() => import('./SkillEffectsVirtualList'));
+/**
+ * PerformanceMonitor组件
+ * 性能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const PerformanceMonitor = lazy(() => import('./PerformanceMonitor'));
+/**
+ * AdvancedSkillAnalytics组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const AdvancedSkillAnalytics = lazy(() => import('./AdvancedSkillAnalytics'));
 
 const logger = createLogger('optimized-enhanced-skill-panel');
@@ -59,55 +75,61 @@ const logger = createLogger('optimized-enhanced-skill-panel');
 /**
 * 接口注释：优化的技能面板属性
  */
-export interface OptimizedEnhancedSkillPanelProps { /** 房间ID  */
+export interface OptimizedEnhancedSkillPanelProps  { /** 房间ID */
   roomId: string;
-  /** 游戏状态ID  */
+  /** 游戏状态ID */
   gameStateId?: string;
-  /** 用户ID  */
+  /** 用户ID */
   userId?: string;
-  /** 角色设计配置  */
+  /** 角色设计配置 */
   roleDesign: RoleDesign;
-  /** 角色状态  */
+  /** 角色状态 */
   roleState: any;
-  /** 当前阶段  */
+  /** 当前阶段 */
   currentPhase: string;
-  /** 当前轮次  */
+  /** 当前轮次 */
   currentRound: number;
-  /** 是否为法官  */
+  /** 是否为法官 */
   isJudge?: boolean;
-  /** 可用目标列表  */
+  /** 可用目标列表 */
   availableTargets: Player[];
-  /** 游戏状态  */
+  /** 游戏状态 */
   gameState?: GameState;
-  /** 性能监控配置  */
-  performanceConfig?: {
+  /** 性能监控配置 */
+performanceConfig?:  {
     enableMonitoring: boolean;
     enableOptimization: boolean;
     renderThreshold: number;
-    memoryThreshold: number;,
-};,
+    memoryThreshold: number
+}
 }
 
 /**
-* 接口注释：组件性能状态
+ * 接口注释：组件性能状态
  */
-interface ComponentPerformanceState { renderCount: number;
+interface ComponentPerformanceState  { renderCount: number;
   lastRenderTime: number;
   averageRenderTime: number;
   memoryUsage: number;
   cacheHitRate: number;
   subscriptionCount: number;
-  isOptimized: boolean;,
+  isOptimized: boolean
 }
 
 /**
-* 接口注释：缓存策略配置
+ * 接口注释：缓存策略配置
  */
-interface CacheStrategy { skillConfig: { ttl: number; priority: 'high'  };
-  suggestion: { ttl: number; priority: 'medium'  };
-  userSkillData: { ttl: number; priority: 'high'  };
-  effects: { ttl: number; priority: 'low'  };
-  targets: { ttl: number; priority: 'medium'  };,
+interface CacheStrategy  {
+  skillConfig: { ttl: number; priority: 'high'
+}
+  suggestion: { ttl: number; priority: 'medium'   
+};
+  userSkillData: { ttl: number; priority: 'high'   
+};
+  effects: { ttl: number; priority: 'low'   
+};
+  targets: { ttl: number; priority: 'medium'  
+}
 }
 
 /**
@@ -120,7 +142,7 @@ interface CacheStrategy { skillConfig: { ttl: number; priority: 'high'  };
 * - 实时性能监控
 * - 自适应优化策略
  */
-const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ roomId,
+const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(( { roomId,
   gameStateId,
   userId,
   roleDesign,
@@ -134,7 +156,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     enableMonitoring: true,
     enableOptimization: true,
     renderThreshold: 3,
-    memoryThreshold: 50 * 1024 * 1024 // 50MB,
+    memoryThreshold: 50 * 1024 * 1024 // 50MB 
 }
 }) => { // 性能监控状态
   const [performanceState, setPerformanceState] = useState<ComponentPerformanceState>({
@@ -144,7 +166,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     memoryUsage: 0,
     cacheHitRate: 0,
     subscriptionCount: 0,
-    isOptimized: false,
+    isOptimized: false 
 });
 
   // 渲染控制
@@ -154,15 +176,20 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
   const subscriptionsRef = useRef<Set<() => void>>(new Set());
 
   // 缓存策略配置
-  const cacheStrategy: CacheStrategy = useMemo(() => ({ skillConfig: { ttl: 300000, priority: 'high'  }, // 5分钟
-    suggestion: { ttl: 30000, priority: 'medium'  },  // 30秒
-    userSkillData: { ttl: 60000, priority: 'high'  }, // 1分钟
-    effects: { ttl: 15000, priority: 'low'  },        // 15秒
-    targets: { ttl: 45000, priority: 'medium'  }      // 45秒,
-}), []);
+  const cacheStrategy: CacheStrategy = useMemo(() => ({ skillConfig: { ttl: 300000, priority: 'high'  
+}, // 5分钟
+    suggestion: { ttl: 30000, priority: 'medium'  
+},  // 30秒
+    userSkillData: { ttl: 60000, priority: 'high'  
+}, // 1分钟
+    effects: { ttl: 15000, priority: 'low'  
+},        // 15秒
+    targets: { ttl: 45000, priority: 'medium'  
+}      // 45秒 }), []);
 
   // 多层缓存系统
-  const cacheManager = useMemo(() => { const cache = new Map<string, { data: any; timestamp: number; ttl: number; priority: string  }>();
+  const cacheManager = useMemo(() => { const cache = new Map<string, { data: any; timestamp: number; ttl: number; priority: string  
+}>();
 
     return { get: <T>(key: string): T | null => {
         const item = cache.get(key);
@@ -170,41 +197,41 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
 
         if (Date.now() - item.timestamp > item.ttl) {
           cache.delete(key);
-          return null;,
+          return null
 }
 
-        return item.data as T;,
+        return item.data as T
 },
 
-      set: <T>(key: string, data: T, config: { ttl: number; priority: string  }): void => { cache.set(key, {
+      set: <T>(key: string, data: T, config: { ttl: number; priority: string  
+}): void => { cache.set(key, {
           data,
           timestamp: Date.now(),
           ttl: config.ttl,
-          priority: config.priority,
-});,
+          priority: config.priority 
+})
 },
 
       invalidate: (pattern?: string): void => { if (pattern) {
           for (const [key] of cache.entries()) {
             if (key.includes(pattern)) {
-              cache.delete(key);,
+              cache.delete(key)
 }
-          },
-} else { cache.clear();,
+          } } else { cache.clear()
 }
       },
 
       getStats: () => ({ size: cache.size,
-        hitRate: performanceState.cacheHitRate,
-}),
-};,
+        hitRate: performanceState.cacheHitRate 
+}) }
 }, [performanceState.cacheHitRate]);
 
   // 增强技能系统 Hook（优化版）
   const skillSystem = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 女巫药水管理 Hook
-  const { loading: potionLoading  } = useWitchPotionManager(gameStateId);
+  const { loading: potionLoading  
+} = useWitchPotionManager(gameStateId);
 
   // 本地状态（防抖优化）
   const [selectedTarget, setSelectedTarget] = useState('');
@@ -215,7 +242,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
   * 函数级注释：智能渲染控制
   * 防止过度渲染，实现渲染节流
    */
-  const renderController = useCallback(() => { if (isRenderingRef.current) return false;
+const renderController = useCallback(() =>  { if (isRenderingRef.current) return false;
 
     const now = Date.now();
     const recentRenders = renderTimes.current.filter(time => now - time < 1000);
@@ -223,47 +250,47 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     if (recentRenders.length >= performanceConfig.renderThreshold) {
       logger.warn('渲染频率过高，已节流', {
         recentRenders: recentRenders.length,
-        threshold: performanceConfig.renderThreshold,
+        threshold: performanceConfig.renderThreshold 
 });
-      return false;,
+      return false
 }
 
     renderTimes.current.push(now);
     renderTimes.current = renderTimes.current.slice(-10); // 保留最近10次
 
-    return true;,
+    return true
 }, [performanceConfig.renderThreshold]);
 
   /**
   * 函数级注释：缓存的技能配置
   * 使用多层缓存优化技能配置获取
    */
-  const skillConfig = useMemo(() => { const cacheKey = `skill_config_${roleDesign.skill_name }`;
+const skillConfig = useMemo(() => { const cacheKey = `skill_config_$ {roleDesign.skill_name }`;
 
     // 尝试从缓存获取
     let config = cacheManager.get<any>(cacheKey);
-    if (config) { return config;,
+    if (config) { return config
 }
 
     // 缓存未命中，计算并缓存
     config = skillConfigs[roleDesign.skill_name as keyof typeof skillConfigs];
-    if (config) { cacheManager.set(cacheKey, config, cacheStrategy.skillConfig);,
+    if (config) { cacheManager.set(cacheKey, config, cacheStrategy.skillConfig)
 }
 
-    return config;,
+    return config
 }, [roleDesign.skill_name, cacheManager, cacheStrategy.skillConfig]);
 
   /**
   * 函数级注释：缓存的技能建议
   * 智能缓存技能使用建议
    */
-  const suggestion = useMemo(() => { if (!skillConfig || !skillSystem.getSkillSuggestion) return null;
+const suggestion = useMemo(() =>  { if (!skillConfig || !skillSystem.getSkillSuggestion) return null;
 
     const cacheKey = `skill_suggestion_${gameStateId }_${ currentPhase }_${ currentRound }_${ availableTargets.length }`;
 
     // 尝试从缓存获取
     let result = cacheManager.get<any>(cacheKey);
-    if (result) { return result;,
+    if (result) { return result
 }
 
     // 缓存未命中，计算并缓存
@@ -274,10 +301,10 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       availableTargets
     );
 
-    if (result) { cacheManager.set(cacheKey, result, cacheStrategy.suggestion);,
+    if (result) { cacheManager.set(cacheKey, result, cacheStrategy.suggestion)
 }
 
-    return result;,
+    return result
 }, [skillConfig,
     skillSystem.getSkillSuggestion,
     gameStateId,
@@ -285,41 +312,40 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     currentRound,
     availableTargets.length,
     cacheManager,
-    cacheStrategy.suggestion,
-]);
+    cacheStrategy.suggestion ]);
 
   /**
   * 函数级注释：缓存的用户技能数据
   * 优化用户技能数据获取和缓存
    */
-  const userSkillData = useMemo(() => { if (!userId || !skillSystem.getUserSkillData) {
-      return { uses: [], targets: []  };,
+const userSkillData = useMemo(() => { if (!userId || !skillSystem.getUserSkillData)  {
+      return { uses: [], targets: []  
+}
 }
 
     const cacheKey = `user_skill_data_${ userId }_${ gameStateId }`;
 
     // 尝试从缓存获取
     let data = cacheManager.get<any>(cacheKey);
-    if (data) { return data;,
+    if (data) { return data
 }
 
     // 缓存未命中，计算并缓存
     data = skillSystem.getUserSkillData(userId);
     cacheManager.set(cacheKey, data, cacheStrategy.userSkillData);
 
-    return data;,
+    return data
 }, [userId,
     skillSystem.getUserSkillData,
     gameStateId,
     cacheManager,
-    cacheStrategy.userSkillData,
-]);
+    cacheStrategy.userSkillData ]);
 
   /**
   * 函数级注释：优化的技能使用处理
   * 集成防抖、错误处理和缓存清理
    */
-  const handleUseSkill = useCallback(async () => { if (!skillConfig || !skillSystem.useSkillEnhanced) return;
+const handleUseSkill = useCallback(async () =>  { if (!skillConfig || !skillSystem.useSkillEnhanced) return;
     if (!renderController()) return; // 渲染节流检查
 
     try {
@@ -343,15 +369,16 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
 
         // 触发缓存优化
         if (skillSystem.optimizeCache) {
-          skillSystem.optimizeCache();,
+          skillSystem.optimizeCache()
 }
 
         logger.info('技能使用成功', { skillName: skillConfig.englishName,
-          target: selectedTarget,
-});,
+          target: selectedTarget 
+})
 }
-    } catch (error) { logger.error('技能使用失败', { error, skillName: skillConfig.englishName  });,
-} finally { isRenderingRef.current = false;,
+    } catch (error) { logger.error('技能使用失败', { error, skillName: skillConfig.englishName  
+})
+} finally { isRenderingRef.current = false
 }
   }, [skillConfig,
     skillSystem.useSkillEnhanced,
@@ -362,35 +389,35 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     currentPhase,
     currentRound,
     renderController,
-    cacheManager,
-]);
+    cacheManager ]);
 
   /**
   * 函数级注释：优化的冲突解决处理
   * 法官专用功能，集成性能监控
    */
-  const handleResolveConflicts = useCallback(async () => { if (!isJudge || !skillSystem.resolveSkillConflicts) return;
+const handleResolveConflicts = useCallback(async () =>  { if (!isJudge || !skillSystem.resolveSkillConflicts) return;
     if (!renderController()) return;
 
     try {
       await skillSystem.resolveSkillConflicts(currentRound);
       cacheManager.invalidate(); // 清理所有缓存
 
-      logger.info('技能冲突解决完成', { round: currentRound  });,
-} catch (error) { logger.error('技能冲突解决失败', { error, round: currentRound  });,
+      logger.info('技能冲突解决完成', { round: currentRound  
+})
+} catch (error) { logger.error('技能冲突解决失败', { error, round: currentRound  
+})
 }
   }, [isJudge,
     skillSystem.resolveSkillConflicts,
     currentRound,
     renderController,
-    cacheManager,
-]);
+    cacheManager ]);
 
   /**
-  * 函数级注释：获取效果图标（缓存优化）
-   */
-  const getEffectIcon = useCallback((effectType: string) => { const cacheKey = `effect_icon_${effectType }`;
-
+ * 函数级注释：获取效果图标（缓存优化）
+ */
+const getEffectIcon = useCallback((effectType: string) => { const cacheKey = `effect_icon_$ {effectType 
+}`;
     let icon = cacheManager.get<JSX.Element>(cacheKey);
     if (icon) return icon;
 
@@ -399,36 +426,37 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       case 'investigation': icon = <Search className='w-4 h-4' />; break;
       case 'status_change': icon = <Zap className='w-4 h-4' />; break;
       case 'passive': icon = <Clock className='w-4 h-4' />; break;
-      default: icon = <Target className='w-4 h-4' />;,
+      default: icon = <Target className='w-4 h-4' />
 }
 
-    cacheManager.set(cacheKey, icon, { ttl: 300000, priority: 'low'  });
-    return icon;,
+    cacheManager.set(cacheKey, icon, { ttl: 300000, priority: 'low'  
+});
+    return icon
 }, [cacheManager]);
 
   /**
-  * 函数级注释：获取优先级颜色（缓存优化）
-   */
-  const getPriorityColor = useCallback((priority: 'high' | 'medium' | 'low') => { const cacheKey = `priority_color_${priority }`;
-
+ * 函数级注释：获取优先级颜色（缓存优化）
+ */
+const getPriorityColor = useCallback((priority: 'high' | 'medium' | 'low') => { const cacheKey = `priority_color_$ {priority 
+}`;
     let color = cacheManager.get<string>(cacheKey);
     if (color) return color;
 
     switch (priority) { case 'high': color = 'bg-red-500'; break;
       case 'medium': color = 'bg-yellow-500'; break;
       case 'low': color = 'bg-green-500'; break;
-      default: color = 'bg-gray-500';,
+      default: color = 'bg-gray-500'
 }
 
-    cacheManager.set(cacheKey, color, { ttl: 300000, priority: 'low'  });
-    return color;,
+    cacheManager.set(cacheKey, color, { ttl: 300000, priority: 'low'  
+});
+    return color
 }, [cacheManager]);
 
   /**
-  * 函数级注释：性能监控和优化
-   */
-  useEffect(() => { if (!performanceConfig.enableMonitoring) return;
-
+ * 函数级注释：性能监控和优化
+ */
+useEffect(() =>  { if (!performanceConfig.enableMonitoring) return;
     const startTime = Date.now();
 
     // 更新渲染统计
@@ -436,7 +464,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       ...prev,
       renderCount: prev.renderCount + 1,
       lastRenderTime: startTime,
-      averageRenderTime: (prev.averageRenderTime + (Date.now() - renderStartTime.current)) / 2,
+      averageRenderTime: (prev.averageRenderTime + (Date.now() - renderStartTime.current)) / 2 
 }));
 
     // 内存监控
@@ -447,7 +475,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
           ...prev,
           memoryUsage,
           subscriptionCount: subscriptionsRef.current.size,
-          cacheHitRate: cacheManager.getStats().hitRate || 0,
+          cacheHitRate: cacheManager.getStats().hitRate || 0 
 }));
 
         // 内存阈值检查
@@ -455,28 +483,34 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
           cacheManager.invalidate();
 
           // 强制垃圾回收（如果可用）
-          if (window.gc) { window.gc();,
+          if (window.gc) { window.gc()
 }
-        },
-}
+        } }
     }, 5000); // 每5秒检查一次
 
-    const cleanup = () => { clearInterval(memoryMonitor);,
+/**
+ * cleanup函数
+ * cleanup函数的功能描述
+ * @returns void
+ */
+const cleanup = () =>  {
+  clearInterval(memoryMonitor)
 };
 
     subscriptionsRef.current.add(cleanup);
-    return cleanup;,
+    return cleanup
+
 }, [performanceConfig, cacheManager]);
 
   /**
-  * 函数级注释：组件卸载清理
-   */
-  useEffect(() => { return () => {
+ * 函数级注释：组件卸载清理
+ */
+useEffect(() => { return () =>  {
       // 清理所有订阅
       subscriptionsRef.current.forEach(cleanup => {
         try {
-          cleanup();,
-} catch (error) { logger.error('订阅清理失败', error);,
+          cleanup()
+} catch (error) { logger.error('订阅清理失败', error)
 }
       });
       subscriptionsRef.current.clear();
@@ -484,8 +518,8 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       // 清理缓存
       cacheManager.invalidate();
 
-      logger.info('OptimizedEnhancedSkillPanel 已清理');,
-};,
+      logger.info('OptimizedEnhancedSkillPanel 已清理')
+}
 }, [cacheManager]);
 
   // 如果没有技能配置，显示提示
@@ -503,20 +537,21 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       </Alert>
       </CardContent>
       </Card>
-    );,
+    )
 }
 
   return (;
     <div className='space-y-4'>;
-    { /*  性能监控面板（可选）  */ }
-    { performanceConfig.enableMonitoring && showPerformanceMonitor && (
+    { /*  性能监控面板（可选）  */
+} { performanceConfig.enableMonitoring && showPerformanceMonitor && (
       <Suspense fallback={<div>加载性能监控...</div> }>;
       <PerformanceMonitor
       performanceState={ performanceState }
       cacheStats={ cacheManager.getStats() }
       onOptimize={ () => {
         cacheManager.invalidate();
-        setPerformanceState(prev => ({ ...prev, isOptimized: true  }));,
+        setPerformanceState(prev => ({ ...prev, isOptimized: true  
+}))
 }}
       />
       </Suspense>
@@ -529,7 +564,8 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     { getEffectIcon(skillConfig.effectType[0]) }
     { skillConfig.chineseName }
     <Badge variant='outline' className='ml-auto'>;
-    优先级: { skillConfig.priority }
+    优先级: { skillConfig.priority 
+}
     </Badge>
     { performanceConfig.enableMonitoring && (<Button
       variant='ghost';
@@ -553,7 +589,8 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     { skillConfig.phase }阶段
     </Badge>
     <Badge variant='secondary'>;
-    { skillConfig.usageLimit === 'unlimited' ? '无限使用' : `${skillConfig.usageLimit }次`}
+    { skillConfig.usageLimit === 'unlimited' ? '无限使用' : `${skillConfig.usageLimit 
+}次`}
     </Badge>
     { skillConfig.effectType.map((type, index) => (;
       <Badge key={index } variant='outline'>;
@@ -566,8 +603,8 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     </div>
     </div>
 
-    { /*  使用建议  */ }
-    { suggestion && (
+    { /*  使用建议  */
+} { suggestion && (
       <Alert className={`border-l-4 ${getPriorityColor(suggestion.priority) } border-l-4`}>;
       <AlertTriangle className='w-4 h-4' />;
       <AlertDescription>
@@ -575,18 +612,19 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       <div className='font-medium'>使用建议</div>;
       <div className='text-sm'>{ suggestion.suggestion }</div>;
       <div className='text-xs text-muted-foreground'>;
-      适用时机: { suggestion.timing }
+      适用时机: { suggestion.timing 
+}
       </div>
       </div>
       </AlertDescription>
       </Alert>
     )}
 
-    { /*  技能使用界面  */ }
-    { suggestion?.canUse ? (
+    { /*  技能使用界面  */
+} { suggestion?.canUse ? (
       <div className='space-y-3'>;
-      {/*  目标选择  */ }
-      { skillConfig.targetType === 'single' && (;
+      {/*  目标选择  */
+} { skillConfig.targetType === 'single' && (;
         <div>
         <label className='text-sm font-medium text-gray-300 mb-2 block'>;
         选择目标
@@ -600,9 +638,10 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
           <SelectItem key={player.userId } value={ player.userId }>;
           { player.name }
           <Badge variant='outline' className='ml-2'>;
-          状态: { player.roleStatus === 1 ? '正常' :;
-          player.roleStatus === 2 ? '濒死' :;
-          player.roleStatus === 3 ? '虚弱' : '淘汰' }
+          状态: { player.roleStatus === 1 ? '正常' : unknown;
+          player.roleStatus === 2 ? '濒死' : unknown;
+          player.roleStatus === 3 ? '虚弱' : '淘汰' 
+}
           </Badge>
           </SelectItem>
         ))}
@@ -616,7 +655,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       onClick={ handleUseSkill }
       disabled={ skillSystem.loading ||
         potionLoading ||
-        (skillConfig.targetType === 'single' && !selectedTarget);,
+        (skillConfig.targetType === 'single' && !selectedTarget)
 }
       className='w-full bg-werewolf-purple hover:bg-werewolf-purple/80';
       >
@@ -683,8 +722,8 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     </Suspense>
     </TabsContent>
 
-    { /*  法官管理面板  */ }
-    { isJudge && (
+    { /*  法官管理面板  */
+} { isJudge && (
       <TabsContent value='management'>;
       <Card className='bg-werewolf-card border-werewolf-purple/30'>;
       <CardHeader>
@@ -768,7 +807,7 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
       onClick={ () => {
         cacheManager.invalidate();
         if (skillSystem.optimizeCache) {
-          skillSystem.optimizeCache();,
+          skillSystem.optimizeCache()
 }
       }}
       variant='ghost';
@@ -784,10 +823,16 @@ const OptimizedEnhancedSkillPanel = memo<OptimizedEnhancedSkillPanelProps>(({ ro
     )}
     </Tabs>
     </div>
-  );,
+  )
 });
 
 // 设置 displayName 以便调试
 OptimizedEnhancedSkillPanel.displayName = 'OptimizedEnhancedSkillPanel';
 
+/**
+ * OptimizedEnhancedSkillPanel组件
+ * 技能相关组件
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 export default OptimizedEnhancedSkillPanel;

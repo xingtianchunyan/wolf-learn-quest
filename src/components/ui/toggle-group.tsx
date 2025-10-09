@@ -1,6 +1,6 @@
-import { cn  } from '@/lib/utils'
-import { toggleVariants  } from '@/components/ui/toggle'
-import { type VariantProps  } from 'class-variance-authority'
+import { cn   } from '@/lib/utils'
+import { toggleVariants   } from '@/components/ui/toggle'
+import { type VariantProps   } from 'class-variance-authority'
 import * as React from 'react'
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group'
 
@@ -23,9 +23,15 @@ import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group'
 const ToggleGroupContext = React.createContext<;
 VariantProps<typeof toggleVariants>
 >({ size: 'default',
-  variant: 'default',
- })
+  variant: 'default' 
+})
 
+/**
+ * ToggleGroup组件
+ * ToggleGroup组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToggleGroup = React.forwardRef<;
 React.ElementRef<typeof ToggleGroupPrimitive.Root>,
 React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
@@ -44,6 +50,12 @@ VariantProps<typeof toggleVariants>
 
 ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 
+/**
+ * ToggleGroupItem组件
+ * ToggleGroupItem组件的功能描述
+ * @param props - 组件属性
+ * @returns JSX元素
+ */
 const ToggleGroupItem = React.forwardRef<;
 React.ElementRef<typeof ToggleGroupPrimitive.Item>,
 React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
@@ -56,16 +68,15 @@ VariantProps<typeof toggleVariants>
     className={ cn(;
       toggleVariants({
         variant: context.variant || variant,
-        size: context.size || size,
-       }),
+        size: context.size || size 
+}),
       className
     )}
     { ...props }
     >
     { children }
     </ToggleGroupPrimitive.Item>
-  ),
-})
+  ) })
 
 ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
 
