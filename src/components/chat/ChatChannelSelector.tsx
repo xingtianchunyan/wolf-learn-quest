@@ -1,9 +1,12 @@
-import { Button   } from '@/components/ui/button';
-import { ChevronDown   } from 'lucide-react';
-import { DropdownMenu  } from
-import React from 'react', DropdownMenuContent,
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger  } from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import React from 'react';
 
 export type ChatChannel = 'public' | 'team' | 'judge_private' | 'system' | 'all';
 

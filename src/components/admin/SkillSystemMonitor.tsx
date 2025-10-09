@@ -1,15 +1,24 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { createLogger } from '@/lib/logger';
+import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSkillEffectProcessor } from '@/hooks/useSkillEffectProcessor';
+import { useToast } from '@/hooks/useToast';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Activity, Alert, AlertDescription   } from '@/components/ui/alert';
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle   } from '@/components/ui/card';
-import { createLogger   } from '@/lib/logger';
-import { Progress   } from '@/components/ui/progress';
-import { supabase   } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
-import { useSkillEffectProcessor   } from '@/hooks/useSkillEffectProcessor';
-import { useToast   } from '@/hooks/useToast';
-import React, { useState, useEffect, useCallback   } from 'react';
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  Settings,
+  TrendingUp,
+  Zap
+} from 'lucide-react';
 
 /**
 * 文件级注释：SkillSystemMonitor 组件
@@ -26,15 +35,6 @@ import React, { useState, useEffect, useCallback   } from 'react';
 * @category game
 * @filepath admin\SkillSystemMonitor.tsx
  */
-
-// 技能系统性能监控面板
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  RefreshCw,
-  Settings,
-  TrendingUp,
-  Zap  } from 'lucide-react';
 
 const logger = createLogger('skill-system-monitor');
 
