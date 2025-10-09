@@ -6,6 +6,46 @@
 
 ## 错误码列表
 
+### MESSAGES
+
+**值**: `{`
+
+**描述**: /
+
+**文件位置**: `src\config\errorMessages.ts`
+
+---
+
+### INTERNAL_SERVER_ERROR
+
+**值**: `{`
+
+**描述**: /
+
+**文件位置**: `src\config\errorMessages.ts`
+
+---
+
+### UNKNOWN_ERROR
+
+**值**: `{`
+
+**描述**: /
+
+**文件位置**: `src\config\errorMessages.ts`
+
+---
+
+### CONFIGURATION_ERROR
+
+**值**: `{`
+
+**描述**: 待补充描述
+
+**文件位置**: `src\config\errorMessages.ts`
+
+---
+
 ### HANDLING
 
 **值**: `errorHandling`
@@ -32,7 +72,7 @@
 
 **描述**: 待补充描述
 
-**文件位置**: `src\services\performanceMonitoringService.ts`
+**文件位置**: `src\services\PerformanceMonitoringService.ts`
 
 ---
 
@@ -42,7 +82,7 @@
 
 **描述**: 系统事件
 
-**文件位置**: `src\services\securityAuditService.ts`
+**文件位置**: `src\services\SecurityAuditService.ts`
 
 ---
 
@@ -70,7 +110,7 @@
 
 **值**: `NETWORK_ERROR`
 
-**描述**: 待补充描述
+**描述**: /
 
 **文件位置**: `src\types\skillSystem.types.ts`
 
@@ -116,26 +156,6 @@
 
 ---
 
-### CONFIGURATION_ERROR
-
-**值**: `configuration_error`
-
-**描述**: 待补充描述
-
-**文件位置**: `src\utils\automatedSecurityChecker.ts`
-
----
-
-### MESSAGES
-
-**值**: `Record<ErrorCode`
-
-**描述**: /
-
-**文件位置**: `src\utils\errorHandler.ts`
-
----
-
 ### API_ERROR
 
 **值**: `API_ERROR`
@@ -171,16 +191,6 @@
 **值**: `VOTE_ERROR`
 
 **描述**: 业务逻辑
-
-**文件位置**: `src\utils\errorHandler.ts`
-
----
-
-### UNKNOWN_ERROR
-
-**值**: `UNKNOWN_ERROR`
-
-**描述**: 系统错误
 
 **文件位置**: `src\utils\errorHandler.ts`
 
@@ -263,4 +273,4 @@ interface ErrorResponse {
 
 ## 更新日志
 
-- 2025-10-08: 自动生成错误码文档
+- 2025-10-09: 自动生成错误码文档

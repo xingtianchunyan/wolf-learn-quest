@@ -49,11 +49,11 @@ export function getRelativeTime(date: Date | number): string {
   if (seconds < 60) {
     return '刚刚';
   } else if (minutes < 60) {
-    return `${minutes}分钟前`;
+    return `${minutes  }分钟前`;
   } else if (hours < 24) {
-    return `${hours}小时前`;
+    return `${hours  }小时前`;
   } else if (days < 7) {
-    return `${days}天前`;
+    return `${days  }天前`;
   } else {
     return formatDate(target, 'YYYY-MM-DD');
   }
@@ -72,19 +72,6 @@ export function isToday(date: Date | number): boolean {
 }
 
 /**
- * 判断是否为昨天
- * @param date - 日期对象或时间戳
- * @returns 是否为昨天
- */
-export function isYesterday(date: Date | number): boolean {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const target = new Date(date);
-
-  return yesterday.toDateString() === target.toDateString();
-}
-
-/**
  * 获取日期范围
  * @param startDate - 开始日期
  * @param endDate - 结束日期
@@ -100,79 +87,4 @@ export function getDateRange(startDate: Date, endDate: Date): Date[] {
   }
 
   return dates;
-}
-
-/**
- * 获取月份的天数
- * @param year - 年份
- * @param month - 月份（0-11）
- * @returns 天数
- */
-export function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-/**
- * 获取星期几的中文名称
- * @param date - 日期对象或时间戳
- * @returns 星期几的中文名称
- */
-export function getWeekdayName(date: Date | number): string {
-  const weekdays = [
-    '星期日',
-    '星期一',
-    '星期二',
-    '星期三',
-    '星期四',
-    '星期五',
-    '星期六',
-  ];
-  const d = new Date(date);
-  return weekdays[d.getDay()];
-}
-
-/**
- * 计算两个日期之间的天数差
- * @param date1 - 第一个日期
- * @param date2 - 第二个日期
- * @returns 天数差
- */
-export function getDaysDifference(
-  date1: Date | number,
-  date2: Date | number
-): number {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  const timeDiff = Math.abs(d2.getTime() - d1.getTime());
-  return Math.ceil(timeDiff / (1000 * 3600 * 24));
-}
-
-/**
- * 添加天数到日期
- * @param date - 原始日期
- * @param days - 要添加的天数
- * @returns 新的日期
- */
-export function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-/**
- * 获取月份的开始日期
- * @param date - 日期
- * @returns 月份开始日期
- */
-export function getMonthStart(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-/**
- * 获取月份的结束日期
- * @param date - 日期
- * @returns 月份结束日期
- */
-export function getMonthEnd(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }

@@ -40,7 +40,9 @@ export function deepClone<T>(obj: T): T {
  * @returns 唯一ID字符串
  */
 export function generateId(prefix: string = 'id'): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return (
+    `${prefix  }_${  Date.now()  }_${  Math.random().toString(36).substr(2, 9)}`
+  );
 }
 
 /**
@@ -88,15 +90,13 @@ export function throttle<T extends (...args: any[]) => any>(
  * @returns 格式化后的文件大小字符串
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) {
-    return '0 Bytes';
-  }
+  if (bytes === 0) {return '0 Bytes';}
 
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
 }
 
 /**
@@ -111,57 +111,4 @@ export function safeJsonParse<T>(jsonString: string, defaultValue: T): T {
   } catch {
     return defaultValue;
   }
-}
-
-/**
- * 随机选择数组中的元素
- * @param array - 数组
- * @returns 随机选择的元素
- */
-export function randomChoice<T>(array: T[]): T | undefined {
-  if (array.length === 0) {
-    return undefined;
-  }
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-/**
- * 打乱数组顺序
- * @param array - 要打乱的数组
- * @returns 打乱后的新数组
- */
-export function shuffle<T>(array: T[]): T[] {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-}
-
-/**
- * 延迟执行
- * @param ms - 延迟时间（毫秒）
- * @returns Promise
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * 检查对象是否为空
- * @param obj - 要检查的对象
- * @returns 是否为空
- */
-export function isEmpty(obj: any): boolean {
-  if (obj == null) {
-    return true;
-  }
-  if (Array.isArray(obj) || typeof obj === 'string') {
-    return obj.length === 0;
-  }
-  if (typeof obj === 'object') {
-    return Object.keys(obj).length === 0;
-  }
-  return false;
 }

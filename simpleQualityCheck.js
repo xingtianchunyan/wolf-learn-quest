@@ -13,29 +13,29 @@ const qualityConfig = {
     enabled: true,
     autoFix: true,
     maxErrors: 0,
-    maxWarnings: 10
+    maxWarnings: 10,
   },
   prettier: {
     enabled: true,
-    autoFormat: true
+    autoFormat: true,
   },
   typescript: {
     enabled: true,
     strict: true,
-    maxErrors: 0
+    maxErrors: 0,
   },
   tests: {
     enabled: true,
     coverage: {
-      threshold: 80
-    }
+      threshold: 80,
+    },
   },
   preCommitHooks: {
     enabled: true,
     runLint: true,
     runTests: true,
-    runTypeCheck: true
-  }
+    runTypeCheck: true,
+  },
 };
 
 const configPath = path.join(process.cwd(), 'quality.config.json');
@@ -52,7 +52,7 @@ packageJson.scripts = {
   'quality:check': 'node simpleQualityCheck.js',
   'quality:fix': 'npm run lint:fix && npm run format',
   'type-check': 'tsc --noEmit',
-  'pre-commit': 'npm run quality:fix && npm run type-check'
+  'pre-commit': 'npm run quality:fix && npm run type-check',
 };
 
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
@@ -77,14 +77,14 @@ echo "✅ 代码质量检查通过"
 
   const preCommitPath = path.join(gitHooksDir, 'pre-commit');
   fs.writeFileSync(preCommitPath, preCommitHook);
-  
+
   // 在Windows上设置可执行权限
   try {
     fs.chmodSync(preCommitPath, '755');
   } catch (error) {
     console.log('⚠️  无法设置Git Hook权限，请手动设置');
   }
-  
+
   console.log('✅ Git pre-commit hook已配置');
 }
 
@@ -96,14 +96,14 @@ if (!fs.existsSync(vscodeDir)) {
 
 // VS Code设置
 const vscodeSettings = {
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+  'editor.formatOnSave': true,
+  'editor.codeActionsOnSave': {
+    'source.fixAll.eslint': true,
   },
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
-  "eslint.validate": ["typescript", "typescriptreact"],
-  "prettier.requireConfig": true
+  'typescript.preferences.importModuleSpecifier': 'relative',
+  'typescript.suggest.autoImports': true,
+  'eslint.validate': ['typescript', 'typescriptreact'],
+  'prettier.requireConfig': true,
 };
 
 fs.writeFileSync(
@@ -114,13 +114,13 @@ console.log('✅ VS Code设置已配置');
 
 // VS Code扩展推荐
 const vscodeExtensions = {
-  "recommendations": [
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
-    "ms-vscode.vscode-typescript-next",
-    "bradlc.vscode-tailwindcss",
-    "ms-vscode.vscode-json"
-  ]
+  recommendations: [
+    'esbenp.prettier-vscode',
+    'dbaeumer.vscode-eslint',
+    'ms-vscode.vscode-typescript-next',
+    'bradlc.vscode-tailwindcss',
+    'ms-vscode.vscode-json',
+  ],
 };
 
 fs.writeFileSync(

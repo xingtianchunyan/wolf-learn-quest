@@ -78,9 +78,7 @@ export interface IErrorHandler {
    * @param limit - 返回记录数限制
    * @returns 错误历史
    */
-  getErrorHistory(
-    limit?: number
-  ): Array<{
+  getErrorHistory(limit?: number): Array<{
     id: string;
     type: string;
     message: string;
