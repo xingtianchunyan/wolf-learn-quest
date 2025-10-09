@@ -1,14 +1,14 @@
-import { Button   } from '@/components/ui/button'
-import { cn   } from '@/lib/utils'
-import { Input   } from '@/components/ui/input'
-import { PanelLeft   } from 'lucide-react'
-import { Separator   } from '@/components/ui/separator'
-import { Sheet, SheetContent   } from '@/components/ui/sheet'
-import { Skeleton   } from '@/components/ui/skeleton'
-import { Slot   } from '@radix-ui/react-slot'
-import {
-  Tooltip, useIsMobile   } from '@/hooks/useMobile'
-import { VariantProps, cva   } from 'class-variance-authority'
+import { Button  } from '@/components/ui/button'
+import { cn  } from '@/lib/utils'
+import { Input  } from '@/components/ui/input'
+import { PanelLeft  } from 'lucide-react'
+import { Separator  } from '@/components/ui/separator'
+import { Sheet, SheetContent  } from '@/components/ui/sheet'
+import { Skeleton  } from '@/components/ui/skeleton'
+import { Slot  } from '@radix-ui/react-slot'
+import { Tooltip,
+import { useIsMobile  } from '@/hooks/useMobile'
+import { VariantProps, cva  } from 'class-variance-authority'
 import * as React from 'react'
 
 /**
@@ -29,7 +29,8 @@ import * as React from 'react'
 
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger  } from '@/components/ui/tooltip'
+  TooltipTrigger,
+ } from '@/components/ui/tooltip'
 
 /**
 * sidebar 组件
@@ -46,40 +47,10 @@ import * as React from 'react'
 * <sidebar />
  */
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
-/**
- * SIDEBAR组件
- * SIDEBAR组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-/**
- * SIDEBAR组件
- * SIDEBAR组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SIDEBAR_WIDTH = '16rem';
-/**
- * SIDEBAR组件
- * SIDEBAR组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SIDEBAR_WIDTH_MOBILE = '18rem';
-/**
- * SIDEBAR组件
- * SIDEBAR组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SIDEBAR_WIDTH_ICON = '3rem';
-/**
- * SIDEBAR组件
- * SIDEBAR组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 
 type SidebarContext = { state: 'expanded' | 'collapsed'
@@ -88,41 +59,24 @@ type SidebarContext = { state: 'expanded' | 'collapsed'
   openMobile: boolean
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean
-  toggleSidebar: () => void
+  toggleSidebar: () => void;,
 }
 
-/**
- * SidebarContext组件
- * SidebarContext组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarContext = React.createContext<SidebarContext | null>(null);
 
-/**
- * useSidebar函数
- * 自定义Hook
- * @returns void
- */
-function useSidebar()  { const context = React.useContext(SidebarContext);
+function useSidebar() { const context = React.useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider.')
+    throw new Error('useSidebar must be used within a SidebarProvider.');,
 }
 
-  return context
+  return context;,
 }
 
-/**
- * SidebarProvider组件
- * SidebarProvider组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarProvider = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'> & { defaultOpen?: boolean
   open?: boolean
-  onOpenChange?: (open: boolean) => void
+  onOpenChange?: (open: boolean) => void;,
 }
 >((
     { defaultOpen = true,
@@ -131,7 +85,8 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
       className,
       style,
       children,
-      ...props },
+      ...props,
+},
     ref
   ) => { const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
@@ -144,19 +99,20 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === 'function' ? value(open) : value;
         if (setOpenProp) {
-          setOpenProp(openState) } else { _setOpen(openState) }
+          setOpenProp(openState),
+} else { _setOpen(openState),
+}
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${ SIDEBAR_COOKIE_NAME }=${ openState  }; path=/; max-age=${ SIDEBAR_COOKIE_MAX_AGE }`
+        document.cookie = `${ SIDEBAR_COOKIE_NAME }=${ openState }; path=/; max-age=${ SIDEBAR_COOKIE_MAX_AGE }`;,
 },
       [setOpenProp, open]
     )
 
     // Helper to toggle the sidebar.
-    const toggleSidebar = React.useCallback(() => {
-  return isMobile;
+    const toggleSidebar = React.useCallback(() => { return isMobile;
       ? setOpenMobile(open => !open);
-      : setOpen(open => !open)
+      : setOpen(open => !open);,
 }, [isMobile, setOpen, setOpenMobile])
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -166,11 +122,12 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
           (event.metaKey || event.ctrlKey)
         ) {
           event.preventDefault()
-          toggleSidebar() }
+          toggleSidebar(),
+}
       }
 
       window.addEventListener('keydown', handleKeyDown)
-      return () => window.removeEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown);,
 }, [toggleSidebar])
 
     // We add a state so that we can do data-state='expanded' or 'collapsed'.
@@ -184,7 +141,8 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
         isMobile,
         openMobile,
         setOpenMobile,
-        toggleSidebar }),
+        toggleSidebar,
+       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
@@ -195,7 +153,9 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
       style={ {
           '--sidebar-width': SIDEBAR_WIDTH,
           '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-          ...style } as React.CSSProperties }
+          ...style,
+         } as React.CSSProperties,
+}
       className={ cn(;
         'group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar',
         className
@@ -207,21 +167,16 @@ React.ComponentProps<'div'> & { defaultOpen?: boolean
       </div>
       </TooltipProvider>
       </SidebarContext.Provider>
-    ) }
+    ),
+}
 )
 SidebarProvider.displayName = 'SidebarProvider';
 
-/**
- * Sidebar组件
- * Sidebar组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const Sidebar = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'> & { side?: 'left' | 'right'
   variant?: 'sidebar' | 'floating' | 'inset'
-  collapsible?: 'offcanvas' | 'icon' | 'none' 
+  collapsible?: 'offcanvas' | 'icon' | 'none',
 }
 >((
     { side = 'left',
@@ -229,7 +184,8 @@ React.ComponentProps<'div'> & { side?: 'left' | 'right'
       collapsible = 'offcanvas',
       className,
       children,
-      ...props },
+      ...props,
+},
     ref
   ) => { const { isMobile, state, openMobile, setOpenMobile  } = useSidebar();
 
@@ -244,7 +200,8 @@ React.ComponentProps<'div'> & { side?: 'left' | 'right'
         >
         { children }
         </div>
-      ) }
+      ),
+}
 
     if (isMobile) { return (;
         <Sheet open={openMobile } onOpenChange={ setOpenMobile } { ...props }>;
@@ -253,22 +210,23 @@ React.ComponentProps<'div'> & { side?: 'left' | 'right'
         data-mobile='true';
         className='w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden';
         style={ {
-            '--sidebar-width': SIDEBAR_WIDTH_MOBILE 
-} as React.CSSProperties }
+            '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
+           } as React.CSSProperties,
+}
         side={ side }
         >
         <div className='flex h-full w-full flex-col'>{ children }</div>;
         </SheetContent>
         </Sheet>
-      ) }
+      ),
+}
 
     return (;
       <div
       ref={ ref }
       className='group peer hidden md:block text-sidebar-foreground';
       data-state={ state }
-      data-collapsible={ state === 'collapsed' ? collapsible : '' 
-}
+      data-collapsible={ state === 'collapsed' ? collapsible : '' }
       data-variant={ variant }
       data-side={ side }
       >
@@ -305,16 +263,11 @@ React.ComponentProps<'div'> & { side?: 'left' | 'right'
       </div>
       </div>
       </div>
-    ) }
+    ),
+}
 )
 Sidebar.displayName = 'Sidebar';
 
-/**
- * SidebarTrigger组件
- * SidebarTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarTrigger = React.forwardRef<;
 React.ElementRef<typeof Button>,
 React.ComponentProps<typeof Button>
@@ -328,23 +281,18 @@ React.ComponentProps<typeof Button>
     size='icon';
     className={ cn('h-7 w-7', className) }
     onClick={ event => {
-  onClick?.(event)
-      toggleSidebar() }
-}
+      onClick?.(event)
+      toggleSidebar(),
+}}
     { ...props }
     >
     <PanelLeft />
     <span className='sr-only'>Toggle Sidebar</span>;
     </Button>
-  ) })
+  ),
+})
 SidebarTrigger.displayName = 'SidebarTrigger';
 
-/**
- * SidebarRail组件
- * SidebarRail组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarRail = React.forwardRef<;
 HTMLButtonElement,
 React.ComponentProps<'button'>
@@ -369,15 +317,10 @@ React.ComponentProps<'button'>
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarRail.displayName = 'SidebarRail';
 
-/**
- * SidebarInset组件
- * SidebarInset组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarInset = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'main'>
@@ -391,15 +334,10 @@ React.ComponentProps<'main'>
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarInset.displayName = 'SidebarInset';
 
-/**
- * SidebarInput组件
- * 输入框组件，支持验证和格式化
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarInput = React.forwardRef<;
 React.ElementRef<typeof Input>,
 React.ComponentProps<typeof Input>
@@ -413,15 +351,10 @@ React.ComponentProps<typeof Input>
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarInput.displayName = 'SidebarInput';
 
-/**
- * SidebarHeader组件
- * 页头组件，显示导航和标题
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarHeader = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -432,15 +365,10 @@ React.ComponentProps<'div'>
     className={ cn('flex flex-col gap-2 p-2', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarHeader.displayName = 'SidebarHeader';
 
-/**
- * SidebarFooter组件
- * 页脚组件，显示版权和链接
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarFooter = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -451,15 +379,10 @@ React.ComponentProps<'div'>
     className={ cn('flex flex-col gap-2 p-2', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarFooter.displayName = 'SidebarFooter';
 
-/**
- * SidebarSeparator组件
- * SidebarSeparator组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarSeparator = React.forwardRef<;
 React.ElementRef<typeof Separator>,
 React.ComponentProps<typeof Separator>
@@ -470,15 +393,10 @@ React.ComponentProps<typeof Separator>
     className={ cn('mx-2 w-auto bg-sidebar-border', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarSeparator.displayName = 'SidebarSeparator';
 
-/**
- * SidebarContent组件
- * SidebarContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarContent = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -492,15 +410,10 @@ React.ComponentProps<'div'>
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarContent.displayName = 'SidebarContent';
 
-/**
- * SidebarGroup组件
- * SidebarGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarGroup = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -511,19 +424,13 @@ React.ComponentProps<'div'>
     className={ cn('relative flex w-full min-w-0 flex-col p-2', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarGroup.displayName = 'SidebarGroup';
 
-/**
- * SidebarGroupLabel组件
- * SidebarGroupLabel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarGroupLabel = React.forwardRef<;
 HTMLDivElement,
-React.ComponentProps<'div'> & { asChild?: boolean  
-}
+React.ComponentProps<'div'> & { asChild?: boolean  }
 >(({ className, asChild = false, ...props  }, ref) => { const Comp = asChild ? Slot : 'div';
 
   return (;
@@ -537,19 +444,13 @@ React.ComponentProps<'div'> & { asChild?: boolean
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarGroupLabel.displayName = 'SidebarGroupLabel';
 
-/**
- * SidebarGroupAction组件
- * SidebarGroupAction组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarGroupAction = React.forwardRef<;
 HTMLButtonElement,
-React.ComponentProps<'button'> & { asChild?: boolean  
-}
+React.ComponentProps<'button'> & { asChild?: boolean  }
 >(({ className, asChild = false, ...props  }, ref) => { const Comp = asChild ? Slot : 'button';
 
   return (;
@@ -565,15 +466,10 @@ React.ComponentProps<'button'> & { asChild?: boolean
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarGroupAction.displayName = 'SidebarGroupAction';
 
-/**
- * SidebarGroupContent组件
- * SidebarGroupContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarGroupContent = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -587,12 +483,6 @@ React.ComponentProps<'div'>
 ))
 SidebarGroupContent.displayName = 'SidebarGroupContent';
 
-/**
- * SidebarMenu组件
- * SidebarMenu组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenu = React.forwardRef<;
 HTMLUListElement,
 React.ComponentProps<'ul'>
@@ -606,12 +496,6 @@ React.ComponentProps<'ul'>
 ))
 SidebarMenu.displayName = 'SidebarMenu';
 
-/**
- * SidebarMenuItem组件
- * SidebarMenuItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuItem = React.forwardRef<;
 HTMLLIElement,
 React.ComponentProps<'li'>
@@ -630,28 +514,25 @@ const sidebarMenuButtonVariants = cva(;
   { variants: {
       variant: {
         default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-        outline: 'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]' 
-},
+        outline:
+        'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
+       },
       size: { default: 'h-8 text-sm',
         sm: 'h-7 text-xs',
-        lg: 'h-12 text-sm group-data-[collapsible=icon]:!p-0' 
-} },
+        lg: 'h-12 text-sm group-data-[collapsible=icon]:!p-0',
+       },
+    },
     defaultVariants: { variant: 'default',
-      size: 'default' 
-} }
+      size: 'default',
+     },
+  }
 )
 
-/**
- * SidebarMenuButton组件
- * 通用按钮组件，支持多种样式和状态
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuButton = React.forwardRef<;
 HTMLButtonElement,
 React.ComponentProps<'button'> & { asChild?: boolean
   isActive?: boolean
-  tooltip?: string | React.ComponentProps<typeof TooltipContent> 
+  tooltip?: string | React.ComponentProps<typeof TooltipContent>,
 } & VariantProps<typeof sidebarMenuButtonVariants>
 >((
     { asChild = false,
@@ -660,16 +541,12 @@ React.ComponentProps<'button'> & { asChild?: boolean
       size = 'default',
       tooltip,
       className,
-      ...props },
+      ...props,
+},
     ref
   ) => { const Comp = asChild ? Slot : 'button';
     const { isMobile, state  } = useSidebar();
 
-/**
- * button函数
- * button函数的功能描述
- * @returns void
- */
     const button = (;
       <Comp
       ref={ ref }
@@ -681,12 +558,13 @@ React.ComponentProps<'button'> & { asChild?: boolean
       />
     )
 
-    if (!tooltip) { return button
+    if (!tooltip) { return button;,
 }
 
     if (typeof tooltip === 'string') { tooltip = {
-        children: tooltip 
-} }
+        children: tooltip,
+       },
+}
 
     return (;
       <Tooltip>
@@ -698,20 +576,15 @@ React.ComponentProps<'button'> & { asChild?: boolean
       { ...tooltip }
       />
       </Tooltip>
-    ) }
+    ),
+}
 )
 SidebarMenuButton.displayName = 'SidebarMenuButton';
 
-/**
- * SidebarMenuAction组件
- * SidebarMenuAction组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuAction = React.forwardRef<;
 HTMLButtonElement,
 React.ComponentProps<'button'> & { asChild?: boolean
-  showOnHover?: boolean 
+  showOnHover?: boolean,
 }
 >(({ className, asChild = false, showOnHover = false, ...props  }, ref) => { const Comp = asChild ? Slot : 'button';
 
@@ -733,15 +606,10 @@ React.ComponentProps<'button'> & { asChild?: boolean
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarMenuAction.displayName = 'SidebarMenuAction';
 
-/**
- * SidebarMenuBadge组件
- * SidebarMenuBadge组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuBadge = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'>
@@ -763,19 +631,13 @@ React.ComponentProps<'div'>
 ))
 SidebarMenuBadge.displayName = 'SidebarMenuBadge';
 
-/**
- * SidebarMenuSkeleton组件
- * SidebarMenuSkeleton组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuSkeleton = React.forwardRef<;
 HTMLDivElement,
-React.ComponentProps<'div'> & { showIcon?: boolean 
+React.ComponentProps<'div'> & { showIcon?: boolean,
 }
 >(({ className, showIcon = false, ...props  }, ref) => { // Random width between 50 to 90%.
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50 }%`
+    return `${Math.floor(Math.random() * 40) + 50 }%`;,
 }, [])
 
   return (;
@@ -795,19 +657,15 @@ React.ComponentProps<'div'> & { showIcon?: boolean
     className='h-4 flex-1 max-w-[--skeleton-width]';
     data-sidebar='menu-skeleton-text';
     style={ {
-        '--skeleton-width': width 
-} as React.CSSProperties }
+        '--skeleton-width': width,
+       } as React.CSSProperties,
+}
     />
     </div>
-  ) })
+  ),
+})
 SidebarMenuSkeleton.displayName = 'SidebarMenuSkeleton';
 
-/**
- * SidebarMenuSub组件
- * SidebarMenuSub组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuSub = React.forwardRef<;
 HTMLUListElement,
 React.ComponentProps<'ul'>
@@ -825,29 +683,17 @@ React.ComponentProps<'ul'>
 ))
 SidebarMenuSub.displayName = 'SidebarMenuSub';
 
-/**
- * SidebarMenuSubItem组件
- * SidebarMenuSubItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuSubItem = React.forwardRef<;
 HTMLLIElement,
 React.ComponentProps<'li'>
 >(({ ...props  }, ref) => <li ref={ ref } { ...props } />);
 SidebarMenuSubItem.displayName = 'SidebarMenuSubItem';
 
-/**
- * SidebarMenuSubButton组件
- * 通用按钮组件，支持多种样式和状态
- * @param props - 组件属性
- * @returns JSX元素
- */
 const SidebarMenuSubButton = React.forwardRef<;
 HTMLAnchorElement,
 React.ComponentProps<'a'> & { asChild?: boolean
   size?: 'sm' | 'md'
-  isActive?: boolean 
+  isActive?: boolean,
 }
 >(({ asChild = false, size = 'md', isActive, className, ...props  }, ref) => { const Comp = asChild ? Slot : 'a';
 
@@ -867,7 +713,8 @@ React.ComponentProps<'a'> & { asChild?: boolean
     ) }
     { ...props }
     />
-  ) })
+  ),
+})
 SidebarMenuSubButton.displayName = 'SidebarMenuSubButton';
 
 export { Sidebar,
@@ -893,4 +740,5 @@ export { Sidebar,
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar }
+  useSidebar,
+ }

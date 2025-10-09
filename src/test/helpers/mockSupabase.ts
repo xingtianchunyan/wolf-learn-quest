@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from 'vitest'
 
 /**
  * 创建可配置的 Supabase Mock 数据
@@ -8,15 +8,13 @@ export const createMockSupabaseData = (overrides: any = {}) => ({
   error: overrides.error || null,
   count: overrides.count || null,
   status: overrides.status || 200,
-  statusText: overrides.statusText || 'OK',
-});
+  statusText: overrides.statusText || 'OK'
+})
 
 /**
  * 创建完整的链式 Query Builder Mock
  */
-export const createMockQueryBuilder = (
-  mockData: any = { data: [], error: null }
-) => {
+export const createMockQueryBuilder = (mockData: any = { data: [], error: null }) => {
   const builder: any = {
     select: vi.fn().mockReturnThis(),
     insert: vi.fn().mockReturnThis(),
@@ -45,36 +43,30 @@ export const createMockQueryBuilder = (
     abortSignal: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(mockData),
     maybeSingle: vi.fn().mockResolvedValue(mockData),
-    then: vi.fn(resolve => resolve(mockData)),
+    then: vi.fn((resolve) => resolve(mockData)),
     catch: vi.fn().mockReturnThis(),
-  };
-
+  }
+  
   // 支持链式调用后返回 Promise
   Object.keys(builder).forEach(key => {
-    if (
-      typeof builder[key] === 'function' &&
-      key !== 'then' &&
-      key !== 'catch' &&
-      key !== 'single' &&
-      key !== 'maybeSingle'
-    ) {
-      const originalFn = builder[key];
+    if (typeof builder[key] === 'function' && key !== 'then' && key !== 'catch' && key !== 'single' && key !== 'maybeSingle') {
+      const originalFn = builder[key]
       builder[key] = vi.fn((...args) => {
-        originalFn(...args);
-        return builder;
-      });
+        originalFn(...args)
+        return builder
+      })
     }
-  });
-
-  return builder;
-};
+  })
+  
+  return builder
+}
 
 /**
  * 创建 Supabase RPC Mock
  */
 export const createMockRPC = (mockData: any = { data: null, error: null }) => {
-  return vi.fn().mockResolvedValue(mockData);
-};
+  return vi.fn().mockResolvedValue(mockData)
+}
 
 /**
  * 创建 Supabase Channel Mock
@@ -84,19 +76,17 @@ export const createMockChannel = () => {
     on: vi.fn().mockReturnThis(),
     subscribe: vi.fn().mockReturnThis(),
     unsubscribe: vi.fn().mockResolvedValue({ error: null }),
-  };
-  return channel;
-};
+  }
+  return channel
+}
 
 /**
  * 创建完整的 Supabase Client Mock
  */
-export const createMockSupabaseClient = (
-  config: {
-    queryData?: any;
-    rpcData?: any;
-  } = {}
-) => {
+export const createMockSupabaseClient = (config: {
+  queryData?: any
+  rpcData?: any
+} = {}) => {
   return {
     from: vi.fn(() => createMockQueryBuilder(config.queryData)),
     rpc: createMockRPC(config.rpcData),
@@ -106,9 +96,7 @@ export const createMockSupabaseClient = (
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
-      getSession: vi
-        .fn()
-        .mockResolvedValue({ data: { session: null }, error: null }),
-    },
-  };
-};
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    }
+  }
+}

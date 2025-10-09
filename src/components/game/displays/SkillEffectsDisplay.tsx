@@ -1,9 +1,9 @@
-import { Badge   } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { Clock, Zap, Users, Target, AlertCircle   } from 'lucide-react';
-import { formatVoteTime   } from '@/utils/votingSystemHelpers';
-import { Progress   } from '@/components/ui/progress';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
+import { Badge  } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { Clock, Zap, Users, Target, AlertCircle  } from 'lucide-react';
+import { formatVoteTime  } from '@/utils/votingSystemHelpers';
+import { Progress  } from '@/components/ui/progress';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
 import React from 'react';
 
 /**
@@ -21,10 +21,10 @@ import React from 'react';
 * @category game
 * @filepath game\displays\SkillEffectsDisplay.tsx
  */
-interface SkillEffectsDisplayProps  { roomId: string;
+
+interface SkillEffectsDisplayProps { roomId: string;
   gameStateId: string;
-  players: Array<{ userId: string; name: string; roleStatus: number  
-}>
+  players: Array<{ userId: string; name: string; roleStatus: number  }>;,
 }
 
 /**
@@ -41,12 +41,13 @@ interface SkillEffectsDisplayProps  { roomId: string;
 * // 使用示例
 * <SkillEffectsDisplay { ...props } />
  */
-const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ( { roomId,
+const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({ roomId,
   gameStateId,
-  players }) => { const {
+  players,
+}) => { const {
     skillEffectsQueue,
     skillTargets,
-    loading: _loading 
+    loading: _loading,
 } = useEnhancedSkillSystem(roomId, gameStateId);
 
   // 获取活跃的技能效果
@@ -62,65 +63,35 @@ const _effectsByUser = _activeEffects.reduce((acc, effect) => { const userId = e
   if (!userId) return acc;
 
   if (!acc[userId]) {
-    acc[userId] = []
+    acc[userId] = [];,
 }
   acc[userId].push(effect);
-  return acc
+  return acc;,
 }, {} as Record<string, typeof _activeEffects>);
 
-/**
- * getPlayerName函数
- * 获取数据
- *
- * @param userId - userId参数
- * @returns void
- */
-const getPlayerName = (userId: string) =>  {
-  return players.find(p => p.userId === userId)?.name || '未知玩家'
-
+const getPlayerName = (userId: string) => { return players.find(p => p.userId === userId)?.name || '未知玩家';,
 };
 
-/**
- * getEffectColor函数
- * 获取数据
- *
- * @param effectType - effectType参数
- * @returns void
- */
-const getEffectColor = (effectType: string) => { switch (effectType)  {
+const getEffectColor = (effectType: string) => { switch (effectType) {
     case 'protection': return 'bg-green-500';
     case 'elimination': return 'bg-red-500';
     case 'investigation': return 'bg-blue-500';
     case 'status_change': return 'bg-yellow-500';
-    default: return 'bg-gray-500'
+    default: return 'bg-gray-500';,
 }
 };
 
-/**
- * getStatusColor函数
- * 获取数据
- *
- * @param status - status参数
- * @returns void
- */
-const getStatusColor = (status: string) => { switch (status)  {
+const getStatusColor = (status: string) => { switch (status) {
     case 'queued': return 'bg-yellow-500';
     case 'processing': return 'bg-blue-500';
     case 'completed': return 'bg-green-500';
     case 'failed': return 'bg-red-500';
     case 'cancelled': return 'bg-gray-500';
-    default: return 'bg-gray-400'
+    default: return 'bg-gray-400';,
 }
 };
 
-/**
- * getRemainingTime函数
- * 获取数据
- *
- * @param endTime - endTime参数
- * @returns void
- */
-const getRemainingTime = (endTime: string) =>  { const now = new Date().getTime();
+const getRemainingTime = (endTime: string) => { const now = new Date().getTime();
   const end = new Date(endTime).getTime();
   const remaining = Math.max(0, end - now);
 
@@ -129,19 +100,10 @@ const getRemainingTime = (endTime: string) =>  { const now = new Date().getTime(
   const minutes = Math.floor(remaining / (1000 * 60));
   const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
 
-  return `${minutes }:${ seconds.toString().padStart(2, '0') }`
+  return `${minutes }:${ seconds.toString().padStart(2, '0') }`;,
 };
 
-/**
- * getProgressPercentage函数
- * 获取数据
- *
- * @param startTime - startTime参数
- * @param endTime? - endTime?参数
- * @returns void
- */
-const getProgressPercentage = (startTime: string, endTime?: string) =>  {
-  if (!endTime) return 100;
+const getProgressPercentage = (startTime: string, endTime?: string) => { if (!endTime) return 100;
 
   const start = new Date(startTime).getTime();
   const end = new Date(endTime).getTime();
@@ -150,8 +112,7 @@ const getProgressPercentage = (startTime: string, endTime?: string) =>  {
   const total = end - start;
   const elapsed = now - start;
 
-  return Math.max(0, Math.min(100, (elapsed / total) * 100))
-
+  return Math.max(0, Math.min(100, (elapsed / total) * 100));,
 };
 
 return (;
@@ -204,13 +165,7 @@ return (;
 
   { /*  移除当前技能效果显示 - 根据需求第4点删除  */ }
   </div>
-)
+);,
 };
 
-/**
- * SkillEffectsDisplay组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default SkillEffectsDisplay;

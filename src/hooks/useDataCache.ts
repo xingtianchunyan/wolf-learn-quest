@@ -1,36 +1,35 @@
-import { createLogger   } from '@/lib/logger';
-import { useState, useEffect, useCallback, useRef   } from 'react';
+import { createLogger  } from '@/lib/logger';
+import { useState, useEffect, useCallback, useRef  } from 'react';
 
 const logger = createLogger('data-cache');
 
 interface CacheEntry<T> { data: T;
   timestamp: number;
-  expiresAt: number
+  expiresAt: number;,
 }
 
 interface CacheOptions { ttl?: number; // Time to live in milliseconds
   maxSize?: number; // Maximum cache size
-  enablePersistence?: boolean; // Enable localStorage persistence 
+  enablePersistence?: boolean; // Enable localStorage persistence,
 }
 
 /**
- * 数据缓存 Hook
+* 数据缓存 Hook
  */
 export const useDataCache = <T>(;
   key: string,
-  options: CacheOptions = {
-}
+  options: CacheOptions = {}
 ) => { const {
     ttl = 5 * 60 * 1000, // 默认5分钟过期
     maxSize = 100, // 默认最大100个条目
-    enablePersistence = false
+    enablePersistence = false;,
 } = options;
 
   const cache = useRef(new Map<string, CacheEntry<T>>());
   const [, forceUpdate] = useState({});
 
   // 强制组件重新渲染
-  const triggerUpdate = useCallback(() => { forceUpdate({ })
+  const triggerUpdate = useCallback(() => { forceUpdate({ });,
 }, []);
 
   // 从localStorage加载缓存
@@ -39,50 +38,44 @@ export const useDataCache = <T>(;
         const stored = localStorage.getItem(`cache_${key }`);
         if (stored) { const parsed = JSON.parse(stored);
           Object.entries(parsed).forEach(([k, v]) => {
-  cache.current.set(k, v as CacheEntry<T>)
-
+            cache.current.set(k, v as CacheEntry<T>);,
 });
-          logger.debug(`从localStorage加载缓存: ${ key 
-}`, { count: cache.current.size 
-})
+          logger.debug(`从localStorage加载缓存: ${ key }`, { count: cache.current.size,
+});,
 }
-      } catch (error) { logger.warn(`从localStorage加载缓存失败: ${key 
-}`, error)
+      } catch (error) { logger.warn(`从localStorage加载缓存失败: ${key }`, error);,
 }
-    } }, [key, enablePersistence]);
+    },
+}, [key, enablePersistence]);
 
   // 保存缓存到localStorage
   const persistCache = useCallback(() => { if (!enablePersistence) return;
 
     try {
       const cacheObj = Object.fromEntries(cache.current);
-      localStorage.setItem(`cache_${key }`, JSON.stringify(cacheObj))
-} catch (error) { logger.warn(`保存缓存到localStorage失败: ${key 
-}`, error)
+      localStorage.setItem(`cache_${key }`, JSON.stringify(cacheObj));,
+} catch (error) { logger.warn(`保存缓存到localStorage失败: ${key }`, error);,
 }
   }, [key, enablePersistence]);
 
   // 检查缓存项是否过期
-  const isExpired = useCallback((entry: CacheEntry<T>): boolean => {
-  return Date.now() > entry.expiresAt
-
+  const isExpired = useCallback((entry: CacheEntry<T>): boolean => { return Date.now() > entry.expiresAt;,
 }, []);
 
   // 清理过期缓存
   const cleanupExpired = useCallback(() => { const before = cache.current.size;
     for (const [cacheKey, entry] of cache.current.entries()) {
       if (isExpired(entry)) {
-        cache.current.delete(cacheKey)
+        cache.current.delete(cacheKey);,
 }
     }
     const after = cache.current.size;
 
-    if (before !== after) { logger.debug(`清理过期缓存: ${key 
-}`, { before,
+    if (before !== after) { logger.debug(`清理过期缓存: ${key }`, { before,
         after,
-        cleaned: before - after 
+        cleaned: before - after,
 });
-      persistCache()
+      persistCache();,
 }
   }, [key, isExpired, persistCache]);
 
@@ -95,16 +88,14 @@ export const useDataCache = <T>(;
 
     const toDelete = entries.slice(0, cache.current.size - maxSize);
     toDelete.forEach(([cacheKey]) => {
-  cache.current.delete(cacheKey)
-
+      cache.current.delete(cacheKey);,
 });
 
-    logger.debug(`执行缓存大小限制: ${ key 
-}`, { deleted: toDelete.length,
-      currentSize: cache.current.size 
+    logger.debug(`执行缓存大小限制: ${ key }`, { deleted: toDelete.length,
+      currentSize: cache.current.size,
 });
 
-    persistCache()
+    persistCache();,
 }, [key, maxSize, persistCache]);
 
   // 设置缓存
@@ -112,7 +103,7 @@ export const useDataCache = <T>(;
     const entry: CacheEntry<T> = {
       data,
       timestamp: now,
-      expiresAt: now + ttl  
+      expiresAt: now + ttl,
 };
 
     cache.current.set(cacheKey, entry);
@@ -124,28 +115,25 @@ export const useDataCache = <T>(;
     persistCache();
     triggerUpdate();
 
-    logger.debug(`设置缓存: ${ key 
-}/${ cacheKey }`, { expiresAt: new Date(entry.expiresAt) 
-})
+    logger.debug(`设置缓存: ${ key }/${ cacheKey }`, { expiresAt: new Date(entry.expiresAt),
+});,
 }, [key, ttl, cleanupExpired, enforceSizeLimit, persistCache, triggerUpdate]);
 
   // 获取缓存
   const get = useCallback((cacheKey: string): T | null => { const entry = cache.current.get(cacheKey);
 
     if (!entry) {
-      return null
+      return null;,
 }
 
     if (isExpired(entry)) { cache.current.delete(cacheKey);
       persistCache();
-      logger.debug(`缓存已过期: ${key 
-}/${ cacheKey }`);
-      return null
+      logger.debug(`缓存已过期: ${key }/${ cacheKey }`);
+      return null;,
 }
 
-    logger.debug(`命中缓存: ${ key 
-}/${ cacheKey }`);
-    return entry.data
+    logger.debug(`命中缓存: ${ key }/${ cacheKey }`);
+    return entry.data;,
 }, [key, isExpired, persistCache]);
 
   // 删除缓存
@@ -153,10 +141,9 @@ export const useDataCache = <T>(;
     if (deleted) {
       persistCache();
       triggerUpdate();
-      logger.debug(`删除缓存: ${key 
-}/${ cacheKey }`)
+      logger.debug(`删除缓存: ${key }/${ cacheKey }`);,
 }
-    return deleted
+    return deleted;,
 }, [key, persistCache, triggerUpdate]);
 
   // 清空所有缓存
@@ -164,13 +151,11 @@ export const useDataCache = <T>(;
     cache.current.clear();
 
     if (enablePersistence) {
-      localStorage.removeItem(`cache_${key }`)
+      localStorage.removeItem(`cache_${key }`);,
 }
 
     triggerUpdate();
-    logger.debug(`清空缓存: ${ key 
-}`, { clearedCount: count  
-})
+    logger.debug(`清空缓存: ${ key }`, { clearedCount: count  });,
 }, [key, enablePersistence, triggerUpdate]);
 
   // 获取缓存统计信息
@@ -180,21 +165,18 @@ export const useDataCache = <T>(;
       size: cache.current.size,
       keys: Array.from(cache.current.keys()),
       totalSize: maxSize,
-      hitRate: 0 // 可以通过计数器实现命中率统计 
-}
+      hitRate: 0 // 可以通过计数器实现命中率统计,
+};,
 }, [cleanupExpired, maxSize]);
 
   // 检查是否存在
-  const has = useCallback((cacheKey: string): boolean => {
-  const entry = cache.current.get(cacheKey);
-    return entry ? !isExpired(entry) : false
+  const has = useCallback((cacheKey: string): boolean => { const entry = cache.current.get(cacheKey);
+    return entry ? !isExpired(entry) : false;,
 }, [isExpired]);
 
   // 定期清理过期缓存
-  useEffect(() => {
-  const interval = setInterval(cleanupExpired, ttl / 2);
-    return () => clearInterval(interval)
-
+  useEffect(() => { const interval = setInterval(cleanupExpired, ttl / 2);
+    return () => clearInterval(interval);,
 }, [cleanupExpired, ttl]);
 
   return { set,
@@ -202,5 +184,6 @@ export const useDataCache = <T>(;
     remove,
     clear,
     has,
-    getStats }
+    getStats,
+};,
 };

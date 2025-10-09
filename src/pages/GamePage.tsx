@@ -1,35 +1,28 @@
-import { Card, CardContent   } from '@/components/ui/card';
-import { RoleSpecificSkills   } from '@/components/game/interfaces/RoleSpecificSkills';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useAutoDyingStatusProcessor   } from '@/hooks/useAutoDyingStatusProcessor';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import { useEveningRefresh   } from '@/hooks/useEveningRefresh';
-import { useGameState   } from '@/hooks/useGameState';
-import { useLanguage   } from '@/components/layout/LanguageSwitcher';
-import { useParams   } from 'react-router-dom';
-import { usePermissions   } from '@/contexts/PermissionContext';
-import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
-import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
-import { useRoleStates   } from '@/hooks/useRoleStates';
-import { useRoomTransition   } from '@/hooks/useRoomTransition';
+import { Card, CardContent  } from '@/components/ui/card';
+import { RoleSpecificSkills  } from '@/components/game/interfaces/RoleSpecificSkills';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useAutoDyingStatusProcessor  } from '@/hooks/useAutoDyingStatusProcessor';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import { useEveningRefresh  } from '@/hooks/useEveningRefresh';
+import { useGameState  } from '@/hooks/useGameState';
+import { useLanguage  } from '@/components/layout/LanguageSwitcher';
+import { useParams  } from 'react-router-dom';
+import { usePermissions  } from '@/contexts/PermissionContext';
+import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
+import { useRoleStates  } from '@/hooks/useRoleStates';
+import { useRoomTransition  } from '@/hooks/useRoomTransition';
 import GameInfoPanel from '@/components/game/panels/GameInfoPanel';
 import GameSkillPanel from '@/components/game/panels/GameSkillPanel';
 import GameStateDisplay from '@/components/game/displays/GameStateDisplay';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
 import PageLayout from '@/components/layout/PageLayout';
-import React, { useState, useEffect   } from 'react';
+import React, { useState, useEffect  } from 'react';
 import StudentAnswerRecordPanel from '@/components/game/panels/StudentAnswerRecordPanel';
 import StudentSystemPanel from '@/components/game/panels/StudentSystemPanel';
 import VotingPanel from '@/components/voting/VotingPanel';
 
-/**
- * GamePage组件
- * 游戏相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
-const GamePage = () => { const  { id: roomId  
-} = useParams();
+const GamePage = () => { const { id: roomId  } = useParams();
   const { t  } = useLanguage();
 
   // 目标选择状态 - 必须在所有条件检查之前
@@ -38,8 +31,7 @@ const GamePage = () => { const  { id: roomId
 
   // 权限和认证检查 - 移动到最前面
   const { currentUser, requireAuth  } = useAuth();
-  const { isJudge, isRoomParticipant, loading: permissionsLoading  
-} = usePermissions(roomId);
+  const { isJudge, isRoomParticipant, loading: permissionsLoading  } = usePermissions(roomId);
 
   const { gameState  } = useGameState(roomId!);
   useEveningRefresh(gameState);
@@ -62,13 +54,14 @@ const GamePage = () => { const  { id: roomId
     loading: skillLoading,
     useSkillEnhanced,
     getUserSkillData,
-    canUseSkill } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
+    canUseSkill,
+} = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
 
   // 异步检查技能可用性
   React.useEffect(() => { const checkSkillUsage = async () => {
       if (!currentRoleDesign?.skill_name || !currentRoleState || !gameState) {
         setSkillUsageValid(false);
-        return
+        return;,
 }
 
       try { const canUse = await canUseSkill(;
@@ -79,19 +72,20 @@ const GamePage = () => { const  { id: roomId
           selectedTargetId,
           gameState.currentRound
         );
-        setSkillUsageValid(canUse)
+        setSkillUsageValid(canUse);,
 } catch (error) { console.error('检查技能可用性失败:', error);
-        setSkillUsageValid(false)
+        setSkillUsageValid(false);,
 }
     };
 
-    checkSkillUsage()
+    checkSkillUsage();,
 }, [canUseSkill,
     currentRoleDesign?.skill_name,
     currentRoleState,
     gameState?.currentPhase,
     gameState?.currentRound,
-    selectedTargetId ]);
+    selectedTargetId,
+]);
 
   // 要求用户登录
   if (!requireAuth()) { return (;
@@ -102,7 +96,7 @@ const GamePage = () => { const  { id: roomId
       </div>
       </div>
       </PageLayout>
-    )
+    );,
 }
 
   // Check current phase to determine which system to show
@@ -118,7 +112,7 @@ const GamePage = () => { const  { id: roomId
       </div>
       </div>
       </PageLayout>
-    )
+    );,
 }
 
   // 检查权限加载状态
@@ -131,7 +125,7 @@ const GamePage = () => { const  { id: roomId
       </div>
       </div>
       </PageLayout>
-    )
+    );,
 }
 
   // 检查是否是房间参与者
@@ -143,7 +137,7 @@ const GamePage = () => { const  { id: roomId
       </div>
       </div>
       </PageLayout>
-    )
+    );,
 }
 
   return (;
@@ -176,8 +170,8 @@ const GamePage = () => { const  { id: roomId
     <CardContent className='p-6 h-full overflow-y-auto'>;
     <h2 className='text-2xl font-bold text-werewolf-purple mb-4'>游戏主界面</h2>;
 
-    { /*  根据游戏阶段显示不同的系统  */
-} { isVotingPhase && gameState && (
+    { /*  根据游戏阶段显示不同的系统  */ }
+    { isVotingPhase && gameState && (
       <VotingPanel
       roomId={roomId }
       gameStateId={ gameState.id }
@@ -195,7 +189,7 @@ const GamePage = () => { const  { id: roomId
       roleAttributes={ currentRoleDesign.role_attributes as Record<string, unknown> }
       canUseSkill={ skillUsageValid }
       onUseSkill={ async (skillData: any) => {
-  await useSkillEnhanced(
+        await useSkillEnhanced(
           currentRoleDesign.skill_name || '',
           skillData.targetId,
           skillData,
@@ -204,16 +198,15 @@ const GamePage = () => { const  { id: roomId
           gameState.currentPhase,
           gameState.currentRound
         );
-        setSelectedTargetId('')
-}
-}
+        setSelectedTargetId('');,
+}}
       availableTargets={ players;
       .filter(p => p.userId !== currentUserId &&;
       roleStates.find(rs => rs.user_id === p.userId)?.role_status !== 4);
       .map(p => ({
         userId: p.userId || p.id,
         name: p.name || '未知玩家',
-        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
+        roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1;,
 }))}
       currentPhase={ gameState.currentPhase }
       userSkillUses={ skillUses }
@@ -224,8 +217,8 @@ const GamePage = () => { const  { id: roomId
       />
     )}
 
-    { /*  等待阶段或游戏未开始  */
-} { !gameState && (
+    { /*  等待阶段或游戏未开始  */ }
+    { !gameState && (
       <div className='text-center py-8'>;
       <p className='text-gray-400'>等待游戏开始...</p>;
       </div>
@@ -242,8 +235,7 @@ const GamePage = () => { const  { id: roomId
     <MultiChannelChat
     roomId={ roomId }
     currentUser={ currentUser }
-    gamePhase={ gameState?.currentPhase === 1 ? 'day' : gameState?.currentPhase === 2 ? 'evening' : gameState?.currentPhase === 3 ? 'night' : gameState?.currentPhase === 4 ? 'dawn' : 'preparation' 
-}
+    gamePhase={ gameState?.currentPhase === 1 ? 'day' : gameState?.currentPhase === 2 ? 'evening' : gameState?.currentPhase === 3 ? 'night' : gameState?.currentPhase === 4 ? 'dawn' : 'preparation' }
     gameRound={ gameState?.currentRound }
     userRole={ currentRoleDesign?.role_name }
     isGameRoom={ true }
@@ -255,13 +247,7 @@ const GamePage = () => { const  { id: roomId
     </div>
     </div>
     </PageLayout>
-  )
+  );,
 };
 
-/**
- * GamePage组件
- * 游戏相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default GamePage;

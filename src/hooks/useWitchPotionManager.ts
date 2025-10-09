@@ -1,7 +1,7 @@
-import { createLogger   } from '@/lib/logger';
-import { supabase   } from '@/integrations/supabase/client';
-import { useState, useCallback, useEffect   } from 'react';
-import { useToast   } from '@/hooks/useToast';
+import { createLogger  } from '@/lib/logger';
+import { supabase  } from '@/integrations/supabase/client';
+import { useState, useCallback, useEffect  } from 'react';
+import { useToast  } from '@/hooks/useToast';
 
 // 女巫魔药管理Hook - 专门处理女巫魔药的使用逻辑
 
@@ -11,15 +11,10 @@ export interface PotionUsageStatus { protectionUsed: boolean;
   attackUsed: boolean;
   canUseProtection: boolean;
   canUseAttack: boolean;
-  nightDeaths?: any[]
+  nightDeaths?: any[];,
 }
 
-/**
- * useWitchPotionManager函数
- * 自定义Hook
- * @returns void
- */
-export const useWitchPotionManager = (
+export const useWitchPotionManager = (;
   gameStateId: string,
   userId: string,
   currentRound: number
@@ -27,7 +22,7 @@ export const useWitchPotionManager = (
     protectionUsed: false,
     attackUsed: false,
     canUseProtection: false,
-    canUseAttack: false 
+    canUseAttack: false,
 });
 
   const [loading, setLoading] = useState(false);
@@ -48,42 +43,38 @@ export const useWitchPotionManager = (
       .eq('round_number', currentRound);
 
       if (error) { logger.error('获取魔药使用状态失败', error);
-        return
+        return;,
 }
 
       // 分析使用记录
-      const protectionUses = skillUses?.filter(use => {
-  const effects = use.skill_effects as any;
-        return effects?.potionType === 'protection'
-
+      const protectionUses = skillUses?.filter(use => { const effects = use.skill_effects as any;
+        return effects?.potionType === 'protection';,
 }) || [];
 
-      const attackUses = skillUses?.filter(use => {
-  const effects = use.skill_effects as any;
-        return effects?.potionType === 'attack'
-
+      const attackUses = skillUses?.filter(use => { const effects = use.skill_effects as any;
+        return effects?.potionType === 'attack';,
 }) || [];
 
       // 验证保护魔药可用性
       const protectionValidation = await supabase.rpc('validate_witch_potion_usage', { p_user_id: userId,
         p_game_state_id: gameStateId,
-        p_potion_type: 'protection' 
+        p_potion_type: 'protection',
 });
 
       // 验证攻击魔药可用性
       const attackValidation = await supabase.rpc('validate_witch_potion_usage', { p_user_id: userId,
         p_game_state_id: gameStateId,
-        p_potion_type: 'attack' 
+        p_potion_type: 'attack',
 });
 
       setPotionStatus({ protectionUsed: protectionUses.length > 0,
         attackUsed: attackUses.length > 0,
         canUseProtection: (protectionValidation.data as any)?.can_use || false,
         canUseAttack: (attackValidation.data as any)?.can_use || false,
-        nightDeaths: (protectionValidation.data as any)?.night_deaths || [] 
-})
-} catch (error) { logger.error('检查魔药状态失败', error)
-} finally { setLoading(false)
+        nightDeaths: (protectionValidation.data as any)?.night_deaths || [],
+});,
+} catch (error) { logger.error('检查魔药状态失败', error);,
+} finally { setLoading(false);,
 }
   }, [gameStateId, userId, currentRound]);
 
@@ -92,9 +83,9 @@ export const useWitchPotionManager = (
       toast({
         title: '无法使用保护魔药',
         description: '保护魔药不可用或已使用',
-        variant: 'destructive' 
+        variant: 'destructive',
 });
-      return false
+      return false;,
 }
 
     setLoading(true);
@@ -103,33 +94,33 @@ export const useWitchPotionManager = (
         p_target_user_id: targetUserId,
         p_skill_data: {
           potionType: 'protection',
-          effectType: 'witch_antidote' 
+          effectType: 'witch_antidote',
 }
       });
 
       if (error) { toast({
           title: '保护魔药使用失败',
           description: error.message,
-          variant: 'destructive' 
+          variant: 'destructive',
 });
-        return false
+        return false;,
 }
 
       toast({ title: '保护魔药使用成功',
-        description: '解药已使用，将拯救今夜的死者' 
+        description: '解药已使用，将拯救今夜的死者',
 });
 
       // 刷新状态
       await checkPotionStatus();
-      return true
+      return true;,
 } catch (error: any) { logger.error('使用保护魔药失败', error);
       toast({
         title: '保护魔药使用失败',
         description: error.message || '系统错误',
-        variant: 'destructive' 
+        variant: 'destructive',
 });
-      return false
-} finally { setLoading(false)
+      return false;,
+} finally { setLoading(false);,
 }
   }, [gameStateId, potionStatus.canUseProtection, toast, checkPotionStatus]);
 
@@ -138,17 +129,17 @@ export const useWitchPotionManager = (
       toast({
         title: '无法使用攻击魔药',
         description: '攻击魔药不可用或已使用',
-        variant: 'destructive' 
+        variant: 'destructive',
 });
-      return false
+      return false;,
 }
 
     if (!targetUserId) { toast({
         title: '请选择目标',
         description: '使用攻击魔药需要选择一个目标',
-        variant: 'destructive' 
+        variant: 'destructive',
 });
-      return false
+      return false;,
 }
 
     setLoading(true);
@@ -157,40 +148,38 @@ export const useWitchPotionManager = (
         p_target_user_id: targetUserId,
         p_skill_data: {
           potionType: 'attack',
-          effectType: 'witch_poison' 
+          effectType: 'witch_poison',
 }
       });
 
       if (error) { toast({
           title: '攻击魔药使用失败',
           description: error.message,
-          variant: 'destructive' 
+          variant: 'destructive',
 });
-        return false
+        return false;,
 }
 
       toast({ title: '攻击魔药使用成功',
-        description: '毒药已使用，目标将在夜晚结束时死亡' 
+        description: '毒药已使用，目标将在夜晚结束时死亡',
 });
 
       // 刷新状态
       await checkPotionStatus();
-      return true
+      return true;,
 } catch (error: any) { logger.error('使用攻击魔药失败', error);
       toast({
         title: '攻击魔药使用失败',
         description: error.message || '系统错误',
-        variant: 'destructive' 
+        variant: 'destructive',
 });
-      return false
-} finally { setLoading(false)
+      return false;,
+} finally { setLoading(false);,
 }
   }, [gameStateId, potionStatus.canUseAttack, toast, checkPotionStatus]);
 
   // 初始化时检查状态
-  useEffect(() => {
-  checkPotionStatus()
-
+  useEffect(() => { checkPotionStatus();,
 }, [checkPotionStatus]);
 
   // 订阅技能使用变化
@@ -202,25 +191,22 @@ export const useWitchPotionManager = (
       { event: '*',
         schema: 'public',
         table: 'skill_uses',
-        filter: `game_state_id=eq.${gameStateId 
-}` },
-      () => {
-  // 技能使用发生变化时重新检查状态
-        checkPotionStatus()
-
+        filter: `game_state_id=eq.${gameStateId }`,
+      },
+      () => { // 技能使用发生变化时重新检查状态
+        checkPotionStatus();,
 }
     )
     .subscribe();
 
-    return () => {
-  supabase.removeChannel(channel)
-}
-
+    return () => { supabase.removeChannel(channel);,
+};,
 }, [gameStateId, checkPotionStatus]);
 
   return { potionStatus,
     loading,
     useProtectionPotion,
     useAttackPotion,
-    checkPotionStatus }
+    checkPotionStatus,
+};,
 };

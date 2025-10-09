@@ -1,5 +1,5 @@
-import { createLogger   } from '@/lib/logger';
-import React, { useRef, useEffect, useCallback, useMemo, useState   } from 'react';
+import { createLogger  } from '@/lib/logger';
+import React, { useRef, useEffect, useCallback, useMemo, useState  } from 'react';
 
 /**
 * 文件级注释：组件渲染优化系统
@@ -10,34 +10,34 @@ import React, { useRef, useEffect, useCallback, useMemo, useState   } from 'reac
 const logger = createLogger('render-optimizer');
 
 /**
- * 渲染性能指标接口
+* 渲染性能指标接口
  */
-export interface RenderMetrics  { componentName: string;
+export interface RenderMetrics { componentName: string;
   renderCount: number;
   averageRenderTime: number;
   lastRenderTime: number;
   totalRenderTime: number;
   propsChanges: number;
   stateChanges: number;
-  timestamp: number
+  timestamp: number;,
 }
 
 /**
- * 渲染优化配置接口
+* 渲染优化配置接口
  */
-export interface RenderOptimizationConfig  { enableProfiling: boolean;
+export interface RenderOptimizationConfig { enableProfiling: boolean;
   enableMemoization: boolean;
   enableVirtualization: boolean;
   debounceDelay: number;
   throttleDelay: number;
   maxRenderTime: number;
-  warningThreshold: number
+  warningThreshold: number;,
 }
 
 /**
- * 组件渲染优化器类
+* 组件渲染优化器类
  */
-class ComponentRenderOptimizer  { private static instance: ComponentRenderOptimizer;
+class ComponentRenderOptimizer { private static instance: ComponentRenderOptimizer;
   private renderMetrics: Map<string, RenderMetrics> = new Map();
   private config: RenderOptimizationConfig = {
     enableProfiling: true,
@@ -46,31 +46,32 @@ class ComponentRenderOptimizer  { private static instance: ComponentRenderOptimi
     debounceDelay: 300,
     throttleDelay: 100,
     maxRenderTime: 16, // 60fps
-    warningThreshold: 10  
+    warningThreshold: 10,
 };
 
   private constructor() {}
 
   /**
- * 获取单例实例
- */
-public static getInstance(): ComponentRenderOptimizer { if (!ComponentRenderOptimizer.instance)  {
-      ComponentRenderOptimizer.instance = new ComponentRenderOptimizer()
+  * 获取单例实例
+   */
+  public static getInstance(): ComponentRenderOptimizer { if (!ComponentRenderOptimizer.instance) {
+      ComponentRenderOptimizer.instance = new ComponentRenderOptimizer();,
 }
-    return ComponentRenderOptimizer.instance
-}
-
-  /**
- * 记录渲染开始
- */
-public startRender(componentName: string): number  { if (!this.config.enableProfiling) return 0;
-    return performance.now()
+    return ComponentRenderOptimizer.instance;,
 }
 
   /**
- * 记录渲染结束
- */
-public endRender(componentName: string, startTime: number, propsChanged = false, stateChanged = false): void  { if (!this.config.enableProfiling || startTime === 0) return;
+  * 记录渲染开始
+   */
+  public startRender(componentName: string): number { if (!this.config.enableProfiling) return 0;
+    return performance.now();,
+}
+
+  /**
+  * 记录渲染结束
+   */
+  public endRender(componentName: string, startTime: number, propsChanged = false, stateChanged = false): void { if (!this.config.enableProfiling || startTime === 0) return;
+
     const endTime = performance.now();
     const renderTime = endTime - startTime;
 
@@ -84,9 +85,9 @@ public endRender(componentName: string, startTime: number, propsChanged = false,
         totalRenderTime: 0,
         propsChanges: 0,
         stateChanges: 0,
-        timestamp: Date.now()   
-}
-      this.renderMetrics.set(componentName, metrics)
+        timestamp: Date.now(),
+};
+      this.renderMetrics.set(componentName, metrics);,
 }
 
     metrics.renderCount++;
@@ -102,56 +103,55 @@ public endRender(componentName: string, startTime: number, propsChanged = false,
     if (renderTime > this.config.maxRenderTime) { logger.warn('组件渲染时间过长', {
         componentName,
         renderTime,
-        threshold: this.config.maxRenderTime 
-})
+        threshold: this.config.maxRenderTime,
+});,
 }
 
     if (metrics.renderCount > this.config.warningThreshold &&
     metrics.averageRenderTime > this.config.maxRenderTime) { logger.warn('组件平均渲染时间过长', {
         componentName,
         averageRenderTime: metrics.averageRenderTime,
-        renderCount: metrics.renderCount 
-})
+        renderCount: metrics.renderCount,
+});,
 }
 
     logger.debug('组件渲染完成', { componentName,
       renderTime,
       renderCount: metrics.renderCount,
-      averageRenderTime: metrics.averageRenderTime 
-})
+      averageRenderTime: metrics.averageRenderTime,
+});,
 }
 
   /**
- * 获取渲染指标
- */
-public getMetrics(componentName?: string): RenderMetrics[] { if (componentName)  {
+  * 获取渲染指标
+   */
+  public getMetrics(componentName?: string): RenderMetrics[] { if (componentName) {
       const metrics = this.renderMetrics.get(componentName);
-      return metrics ? [metrics] : []
+      return metrics ? [metrics] : [];,
 }
-    return Array.from(this.renderMetrics.values())
+    return Array.from(this.renderMetrics.values());,
 }
 
   /**
- * 清除指标
- */
-public clearMetrics(componentName?: string): void { if (componentName)  {
-      this.renderMetrics.delete(componentName)
-} else { this.renderMetrics.clear()
+  * 清除指标
+   */
+  public clearMetrics(componentName?: string): void { if (componentName) {
+      this.renderMetrics.delete(componentName);,
+} else { this.renderMetrics.clear();,
 }
   }
 
   /**
- * 更新配置
- */
-public updateConfig(newConfig: Partial<RenderOptimizationConfig>): void { this.config =  { ...this.config, ...newConfig   };
-    logger.info('渲染优化配置已更新', this.config)
+  * 更新配置
+   */
+  public updateConfig(newConfig: Partial<RenderOptimizationConfig>): void { this.config = { ...this.config, ...newConfig  };
+    logger.info('渲染优化配置已更新', this.config);,
 }
 
   /**
- * 获取配置
- */
-public getConfig(): RenderOptimizationConfig { return  { ...this.config  
-}
+  * 获取配置
+   */
+  public getConfig(): RenderOptimizationConfig { return { ...this.config  };,
 }
 }
 
@@ -159,19 +159,17 @@ public getConfig(): RenderOptimizationConfig { return  { ...this.config
 export const renderOptimizer = ComponentRenderOptimizer.getInstance();
 
 /**
- * 渲染性能监控 Hook
+* 渲染性能监控 Hook
  */
-export function useRenderProfiler(componentName: string)  { const renderStartTime = useRef<number>(0);
+export function useRenderProfiler(componentName: string) { const renderStartTime = useRef<number>(0);
   const previousProps = useRef<any>(null);
   const previousState = useRef<any>(null);
 
   const startRender = useCallback(() => {
-  renderStartTime.current = renderOptimizer.startRender(componentName)
-
+    renderStartTime.current = renderOptimizer.startRender(componentName);,
 }, [componentName]);
 
-  const endRender = useCallback((props?: any, state?: any) => {
-  const propsChanged = previousProps.current !== null &&;
+  const endRender = useCallback((props?: any, state?: any) => { const propsChanged = previousProps.current !== null &&;
     JSON.stringify(previousProps.current) !== JSON.stringify(props);
     const stateChanged = previousState.current !== null &&;
     JSON.stringify(previousState.current) !== JSON.stringify(state);
@@ -179,21 +177,18 @@ export function useRenderProfiler(componentName: string)  { const renderStartTim
     renderOptimizer.endRender(componentName, renderStartTime.current, propsChanged, stateChanged);
 
     previousProps.current = props;
-    previousState.current = state
-
+    previousState.current = state;,
 }, [componentName]);
 
   // 自动开始渲染计时
-  useEffect(() => {
-  startRender()
-
+  useEffect(() => { startRender();,
 });
 
-  return { startRender, endRender  }
+  return { startRender, endRender  };,
 }
 
 /**
- * 优化的 memo Hook
+* 优化的 memo Hook
  */
 export function useOptimizedMemo<T>(factory: () => T,
   deps: React.DependencyList | undefined,
@@ -207,18 +202,18 @@ export function useOptimizedMemo<T>(factory: () => T,
       logger.debug('Memo 计算完成', {
         componentName,
         computeTime: endTime - startTime,
-        depsLength: deps?.length || 0 
-})
+        depsLength: deps?.length || 0,
+});,
 }
 
-    return result
+    return result;,
 }, deps);
 
-  return memoizedValue
+  return memoizedValue;,
 }
 
 /**
- * 优化的 callback Hook
+* 优化的 callback Hook
  */
 export function useOptimizedCallback<T extends (...args: any[]) => any>(;
   callback: T,
@@ -233,59 +228,56 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(;
       logger.debug('Callback 执行完成', {
         componentName,
         executeTime: endTime - startTime,
-        argsLength: args.length 
-})
+        argsLength: args.length,
+});,
 }
 
-    return result
-}, deps) as T
+    return result;,
+}, deps) as T;,
 }
 
 /**
- * 防抖 Hook
+* 防抖 Hook
  */
-export function useDebounce<T>(value: T, delay: number): T  { const [debouncedValue, setDebouncedValue] = useState<T>(value);
+export function useDebounce<T>(value: T, delay: number): T { const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
   useEffect(() => {
     const handler = setTimeout(() => {
-  setDebouncedValue(value)
-
+      setDebouncedValue(value);,
 }, delay);
 
-    return () => {
-  clearTimeout(handler)
-}
+    return () => { clearTimeout(handler);,
+};,
 }, [value, delay]);
 
-  return debouncedValue
-
+  return debouncedValue;,
 }
 
 /**
- * 节流 Hook
+* 节流 Hook
  */
-export function useThrottle<T>(value: T, delay: number): T  { const [throttledValue, setThrottledValue] = useState<T>(value);
+export function useThrottle<T>(value: T, delay: number): T { const [throttledValue, setThrottledValue] = useState<T>(value);
   const lastExecuted = useRef<number>(Date.now());
 
   useEffect(() => {
     const now = Date.now();
     if (now >= lastExecuted.current + delay) {
       setThrottledValue(value);
-      lastExecuted.current = now
+      lastExecuted.current = now;,
 } else { const timer = setTimeout(() => {
-  setThrottledValue(value);
-        lastExecuted.current = Date.now()
+        setThrottledValue(value);
+        lastExecuted.current = Date.now();,
 }, delay - (now - lastExecuted.current));
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);,
 }
   }, [value, delay]);
 
-  return throttledValue
-
+  return throttledValue;,
 }
 
 /**
- * 虚拟化列表 Hook
+* 虚拟化列表 Hook
  */
 export function useVirtualization<T>(
   items: T[],
@@ -300,31 +292,30 @@ export function useVirtualization<T>(
       items.length - 1,
       Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
     );
-    return { startIndex, endIndex  }
+    return { startIndex, endIndex  };,
 }, [scrollTop, itemHeight, containerHeight, items.length, overscan]);
 
   const visibleItems = useMemo(() => { return items.slice(visibleRange.startIndex, visibleRange.endIndex + 1).map((item, index) => ({
       item,
-      index: visibleRange.startIndex + index 
-}))
+      index: visibleRange.startIndex + index,
+}));,
 }, [items, visibleRange]);
 
   const totalHeight = items.length * itemHeight;
   const offsetY = visibleRange.startIndex * itemHeight;
 
-  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
-  setScrollTop(event.currentTarget.scrollTop)
-
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => { setScrollTop(event.currentTarget.scrollTop);,
 }, []);
 
   return { visibleItems,
     totalHeight,
     offsetY,
-    handleScroll }
+    handleScroll,
+};,
 }
 
 /**
- * 懒加载 Hook
+* 懒加载 Hook
  */
 export function useLazyLoading<T>(loadFunction: () => Promise<T>,
   dependencies: React.DependencyList = [];
@@ -342,35 +333,32 @@ export function useLazyLoading<T>(loadFunction: () => Promise<T>,
       const result = await loadFunction();
 
       if (mounted.current) {
-        setData(result)
+        setData(result);,
 }
     } catch (err) { if (mounted.current) {
-        setError(err instanceof Error ? err : new Error('Unknown error'))
+        setError(err instanceof Error ? err : new Error('Unknown error'));,
 }
     } finally { if (mounted.current) {
-        setLoading(false)
+        setLoading(false);,
 }
-    } }, [loadFunction, loading]);
+    },
+}, [loadFunction, loading]);
 
-  useEffect(() => {
-  load()
-
+  useEffect(() => { load();,
 }, dependencies);
 
   useEffect(() => { return () => {
-  mounted.current = false
-}
-
+      mounted.current = false;,
+};,
 }, []);
 
-  return { data, loading, error, reload: load  
-}
+  return { data, loading, error, reload: load  };,
 }
 
 /**
- * 性能监控 Hook
+* 性能监控 Hook
  */
-export function usePerformanceMonitor(componentName: string)  { const renderCount = useRef(0);
+export function usePerformanceMonitor(componentName: string) { const renderCount = useRef(0);
   const mountTime = useRef(Date.now());
   const lastRenderTime = useRef(Date.now());
 
@@ -384,9 +372,10 @@ export function usePerformanceMonitor(componentName: string)  { const renderCoun
       componentName,
       renderCount: renderCount.current,
       timeSinceMount,
-      timeSinceLastRender });
+      timeSinceLastRender,
+});
 
-    lastRenderTime.current = now
+    lastRenderTime.current = now;,
 });
 
   const getPerformanceInfo = useCallback(() => { const now = Date.now();
@@ -395,15 +384,15 @@ export function usePerformanceMonitor(componentName: string)  { const renderCoun
       renderCount: renderCount.current,
       mountTime: mountTime.current,
       timeSinceMount: now - mountTime.current,
-      timeSinceLastRender: now - lastRenderTime.current 
-}
+      timeSinceLastRender: now - lastRenderTime.current,
+};,
 }, [componentName]);
 
-  return { getPerformanceInfo  }
+  return { getPerformanceInfo  };,
 }
 
 /**
- * 渲染优化 HOC
+* 渲染优化 HOC
  */
 export function withRenderOptimization<P extends object>(
   Component: React.ComponentType<P>,
@@ -412,48 +401,46 @@ export function withRenderOptimization<P extends object>(
     const name = componentName || Component.displayName || Component.name || 'Unknown';
     const { startRender, endRender  } = useRenderProfiler(name);
 
-    useEffect(() => {
-  endRender(props)
+    useEffect(() => { endRender(props);,
 });
 
-    return React.createElement(Component, props)
-
+    return React.createElement(Component, props);,
 });
 
   OptimizedComponent.displayName = `withRenderOptimization(${ componentName || Component.displayName || Component.name })`;
 
-  return OptimizedComponent
+  return OptimizedComponent;,
 }
 
 /**
- * 深度比较 Hook
+* 深度比较 Hook
  */
 export function useDeepCompareMemo<T>(factory: () => T,
   deps: React.DependencyList
-): T { const ref = useRef<{ deps: React.DependencyList; value: T  
-}>();
+): T { const ref = useRef<{ deps: React.DependencyList; value: T  }>();
 
   if (!ref.current || !deepEqual(deps, ref.current.deps)) { ref.current = {
       deps,
-      value: factory() 
-}
+      value: factory(),
+};,
 }
 
-  return ref.current.value
+  return ref.current.value;,
 }
 
 /**
- * 深度比较函数
+* 深度比较函数
  */
-function deepEqual(a: any, b: any): boolean  { if (a === b) return true;
+function deepEqual(a: any, b: any): boolean { if (a === b) return true;
+
   if (a == null || b == null) return false;
 
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false
+      if (!deepEqual(a[i], b[i])) return false;,
 }
-    return true
+    return true;,
 }
 
   if (typeof a === 'object' && typeof b === 'object') { const keysA = Object.keys(a);
@@ -463,18 +450,18 @@ function deepEqual(a: any, b: any): boolean  { if (a === b) return true;
 
     for (const key of keysA) {
       if (!keysB.includes(key)) return false;
-      if (!deepEqual(a[key], b[key])) return false
+      if (!deepEqual(a[key], b[key])) return false;,
 }
-    return true
+    return true;,
 }
 
-  return false
+  return false;,
 }
 
 /**
- * 批量状态更新 Hook
+* 批量状态更新 Hook
  */
-export function useBatchedState<T>(initialState: T)  { const [state, setState] = useState(initialState);
+export function useBatchedState<T>(initialState: T) { const [state, setState] = useState(initialState);
   const pendingUpdates = useRef<Array<(prevState: T) => T>>([]);
   const updateScheduled = useRef(false);
 
@@ -489,16 +476,16 @@ export function useBatchedState<T>(initialState: T)  { const [state, setState] =
         setState(prevState => {
           let newState = prevState;
           for (const update of pendingUpdates.current) {
-            newState = update(newState)
+            newState = update(newState);,
 }
-          return newState
+          return newState;,
 });
 
         pendingUpdates.current = [];
-        updateScheduled.current = false
-})
+        updateScheduled.current = false;,
+});,
 }
   }, []);
 
-  return [state, batchedSetState] as const
+  return [state, batchedSetState] as const;,
 }

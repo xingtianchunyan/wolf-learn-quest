@@ -7,7 +7,11 @@
       "cognitiveComplexity": 15,
       "halsteadComplexity": 20
     },
-    "excludePatterns": ["**/*.test.*", "**/*.spec.*", "**/node_modules/**"]
+    "excludePatterns": [
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/node_modules/**"
+    ]
   },
   "refactor": {
     "enabled": true,
@@ -34,7 +38,15 @@
       "bracketSpacing": true,
       "arrowParens": "avoid"
     },
-    "fileTypes": [".ts", ".tsx", ".js", ".jsx", ".css", ".scss", ".json"]
+    "fileTypes": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".css",
+      ".scss",
+      ".json"
+    ]
   },
   "dependency": {
     "enabled": true,
@@ -45,7 +57,11 @@
   },
   "reports": {
     "outputDir": "reports",
-    "formats": ["json", "markdown", "html"],
+    "formats": [
+      "json",
+      "markdown",
+      "html"
+    ],
     "includeTimestamp": true
   }
 }

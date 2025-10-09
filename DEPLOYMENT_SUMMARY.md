@@ -76,7 +76,6 @@ Wolf Learn Quest 是一个基于 React + TypeScript + Vite 的狼人杀学习游
 ## 🎯 支持的部署方式
 
 ### 1. Vercel 部署
-
 ```bash
 # 使用 Vercel CLI
 npm run deploy:vercel
@@ -86,7 +85,6 @@ npm run deploy:vercel
 ```
 
 ### 2. Netlify 部署
-
 ```bash
 # 使用 Netlify CLI
 npm run deploy:netlify
@@ -96,7 +94,6 @@ npm run deploy:netlify
 ```
 
 ### 3. Docker 部署
-
 ```bash
 # 使用 Docker
 npm run deploy:docker
@@ -109,7 +106,6 @@ docker-compose up -d
 ```
 
 ### 4. PM2 自托管部署
-
 ```bash
 # 使用 PM2
 npm run deploy:pm2
@@ -119,7 +115,6 @@ npm run deploy:pm2
 ```
 
 ### 5. 静态文件服务
-
 ```bash
 # 构建并启动本地服务
 npm run build
@@ -129,7 +124,6 @@ npm run serve
 ## 🔒 安全配置
 
 ### 安全头配置
-
 - X-Frame-Options: SAMEORIGIN
 - X-Content-Type-Options: nosniff
 - X-XSS-Protection: 1; mode=block
@@ -137,7 +131,6 @@ npm run serve
 - Content-Security-Policy: 完整的 CSP 配置
 
 ### 环境变量安全
-
 - 生产环境变量模板
 - 敏感信息隔离
 - 构建时环境变量注入
@@ -145,14 +138,12 @@ npm run serve
 ## 📊 性能优化
 
 ### 构建优化
-
 - Vite 生产构建
 - 代码分割和懒加载
 - 静态资源压缩
 - Tree-shaking
 
 ### 运行时优化
-
 - Nginx Gzip 压缩
 - 静态资源缓存
 - CDN 友好配置
@@ -161,14 +152,12 @@ npm run serve
 ## 🔍 监控和日志
 
 ### 健康检查
-
 - `/health` 端点
 - Docker 健康检查
 - PM2 进程监控
 - 自动重启机制
 
 ### 日志管理
-
 - 结构化日志
 - 错误日志分离
 - 访问日志记录
@@ -177,7 +166,6 @@ npm run serve
 ## 📋 部署检查清单
 
 ### 部署前检查
-
 - [ ] 环境变量配置完成
 - [ ] Supabase 配置正确
 - [ ] 所有测试通过
@@ -185,7 +173,6 @@ npm run serve
 - [ ] 类型检查通过
 
 ### 部署后验证
-
 - [ ] 应用正常启动
 - [ ] 健康检查通过
 - [ ] 功能测试完成
@@ -195,7 +182,6 @@ npm run serve
 ## 🚨 故障排除
 
 ### 常见问题
-
 1. **构建失败**
    - 检查 Node.js 版本
    - 清理 node_modules 重新安装
@@ -212,7 +198,6 @@ npm run serve
    - 验证数据库连接
 
 ### 调试命令
-
 ```bash
 # 检查构建
 npm run build

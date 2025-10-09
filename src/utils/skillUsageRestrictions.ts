@@ -1,4 +1,4 @@
-import { createLogger   } from '@/lib/logger';
+import { createLogger  } from '@/lib/logger';
 
 // 技能使用限制工具函数
 
@@ -9,13 +9,13 @@ export interface SkillUseRecord { id: string;
   skill_name: string;
   round_number: number;
   phase: string;
-  created_at: string
+  created_at: string;,
 }
 
 export interface UsageRestriction { canUse: boolean;
   reason?: string;
   remainingUses?: number;
-  nextAvailableRound?: number
+  nextAvailableRound?: number;,
 }
 
 /**
@@ -29,8 +29,7 @@ export function checkNightSkillRestriction(
   userSkillUses: SkillUseRecord[]
 ): UsageRestriction { // 非夜晚阶段不限制
   if (currentPhase !== 3) {
-    return { canUse: true  
-}
+    return { canUse: true  };,
 }
 
   const roleNameLower = roleName?.toLowerCase() || '';
@@ -39,8 +38,8 @@ export function checkNightSkillRestriction(
   // 女巫不受夜晚使用限制
   if (isWitch) { return {
       canUse: true,
-      reason: '女巫角色在夜晚可多次使用技能' 
-}
+      reason: '女巫角色在夜晚可多次使用技能',
+};,
 }
 
   // 检查其他角色是否已在当前夜晚阶段使用过技能（不区分回合，只看当前夜晚）
@@ -51,16 +50,15 @@ export function checkNightSkillRestriction(
 if (hasUsedInCurrentNight) { return {
     canUse: false,
     reason: '你在当前夜晚已经使用过技能，每个夜晚只能使用一次',
-    nextAvailableRound: currentRound + 1 
-}
+    nextAvailableRound: currentRound + 1,
+};,
 }
 
-return { canUse: true  
-}
+return { canUse: true  };,
 }
 
 /**
- * 检查技能特定的使用限制
+* 检查技能特定的使用限制
  */
 export function checkSkillSpecificRestrictions(
   skillName: string,
@@ -69,7 +67,7 @@ export function checkSkillSpecificRestrictions(
   gameContext?: { currentRound: number;
     currentPhase: number;
     totalGameRounds?: number;
-    potionType?: 'protection' | 'attack'
+    potionType?: 'protection' | 'attack';,
 }
 ): UsageRestriction { const roleNameLower = roleName?.toLowerCase() || '';
 
@@ -82,36 +80,34 @@ export function checkSkillSpecificRestrictions(
     if (potionType === 'protection') {
       const protectionUses = userSkillUses.filter(use =>;
       use.skill_name === 'magic_potion' &&;
-      (use as SkillUseRecord & { potionType?: string  
-}).potionType === 'protection';
+      (use as SkillUseRecord & { potionType?: string  }).potionType === 'protection';
     );
 
     if (protectionUses.length >= 1) { return {
         canUse: false,
         reason: '保护魔药已经使用过了',
-        remainingUses: 0 
-}
+        remainingUses: 0,
+};,
 }
   }
 
   // 检查攻击魔药使用次数
   if (potionType === 'attack') { const attackUses = userSkillUses.filter(use =>;
     use.skill_name === 'magic_potion' &&;
-    (use as SkillUseRecord & { potionType?: string  
-}).potionType === 'attack';
+    (use as SkillUseRecord & { potionType?: string  }).potionType === 'attack';
   );
 
   if (attackUses.length >= 1) { return {
       canUse: false,
       reason: '攻击魔药已经使用过了',
-      remainingUses: 0 
-}
+      remainingUses: 0,
+};,
 }
 }
 
 return { canUse: true,
-  remainingUses: 1 
-}
+  remainingUses: 1,
+};,
 }
 
 // 猎人濒死射击限制
@@ -121,12 +117,11 @@ if (skillName === 'dying_shot' && (roleNameLower.includes('hunter') || roleNameL
     return {
       canUse: false,
       reason: '濒死射击只能使用一次',
-      remainingUses: 0 
-}
+      remainingUses: 0,
+};,
 }
 
-  return { canUse: true, remainingUses: 1  
-}
+  return { canUse: true, remainingUses: 1  };,
 }
 
 // 暗夜术士巫毒限制
@@ -136,12 +131,11 @@ if (skillName === 'voodoo' && (roleNameLower.includes('warlock') || roleNameLowe
     return {
       canUse: false,
       reason: '巫毒术只能使用一次',
-      remainingUses: 0 
-}
+      remainingUses: 0,
+};,
 }
 
-  return { canUse: true, remainingUses: 1  
-}
+  return { canUse: true, remainingUses: 1  };,
 }
 
 // 白狼王自爆限制
@@ -151,21 +145,19 @@ if (skillName === 'self_destruct' && (roleNameLower.includes('white') || roleNam
     return {
       canUse: false,
       reason: '自爆技能只能使用一次',
-      remainingUses: 0 
-}
+      remainingUses: 0,
+};,
 }
 
-  return { canUse: true, remainingUses: 1  
-}
+  return { canUse: true, remainingUses: 1  };,
 }
 
 // 其他技能默认每轮可使用一次
-return { canUse: true  
-}
+return { canUse: true  };,
 }
 
 /**
- * 综合检查所有技能使用限制
+* 综合检查所有技能使用限制
  */
 export function validateSkillUsage(
   roleName: string,
@@ -182,7 +174,7 @@ export function validateSkillUsage(
   );
 
   if (!nightRestriction.canUse) {
-    return nightRestriction
+    return nightRestriction;,
 }
 
   // 检查技能特定限制
@@ -193,15 +185,14 @@ export function validateSkillUsage(
     { currentRound, currentPhase  }
   );
 
-  if (!skillSpecificRestriction.canUse) { return skillSpecificRestriction
+  if (!skillSpecificRestriction.canUse) { return skillSpecificRestriction;,
 }
 
-  return { canUse: true  
-}
+  return { canUse: true  };,
 }
 
 /**
- * 获取技能使用限制的友好提示信息
+* 获取技能使用限制的友好提示信息
  */
 export function getSkillUsageHint(
   roleName: string,
@@ -212,8 +203,8 @@ export function getSkillUsageHint(
 
   if (currentPhase === 3) { // 夜晚阶段
   if (isWitch) {
-    return '女巫可在夜晚多次使用技能，但每种药剂只能使用一次'
-} else { return '除女巫外，每个角色在夜晚只能使用一次技能'
+    return '女巫可在夜晚多次使用技能，但每种药剂只能使用一次';,
+} else { return '除女巫外，每个角色在夜晚只能使用一次技能';,
 }
 }
 
@@ -226,12 +217,13 @@ switch (skillName) { case 'dying_shot':
   return '暗夜术士的巫毒术只能使用一次';
   case 'self_destruct':
   return '白狼王的自爆技能只能使用一次';
-  default: return '每轮只能使用一次技能'
+  default:
+  return '每轮只能使用一次技能';,
 }
 }
 
 /**
- * 记录技能使用限制的统计信息
+* 记录技能使用限制的统计信息
  */
 export function logSkillUsageRestriction(
   userId: string,
@@ -245,13 +237,13 @@ export function logSkillUsageRestriction(
       skillName,
       reason: restriction.reason,
       remainingUses: restriction.remainingUses,
-      nextAvailableRound: restriction.nextAvailableRound 
-})
+      nextAvailableRound: restriction.nextAvailableRound,
+});,
 } else { logger.debug('技能使用验证通过', {
       userId,
       roleName,
       skillName,
-      remainingUses: restriction.remainingUses 
-})
+      remainingUses: restriction.remainingUses,
+});,
 }
 }

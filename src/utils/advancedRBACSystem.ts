@@ -1,7 +1,7 @@
-import { createLogger   } from '@/lib/logger';
-import { useCallback, useEffect, useState   } from 'react';
-import { MasterErrorHandler   } from './masterErrorHandler';
-import { UnifiedPermissionManager   } from './unifiedPermissionManager';
+import { createLogger  } from '@/lib/logger';
+import { useCallback, useEffect, useState  } from 'react';
+import { MasterErrorHandler  } from './masterErrorHandler';
+import { UnifiedPermissionManager  } from './unifiedPermissionManager';
 
 /**
 * 文件级注释：高级RBAC系统
@@ -31,38 +31,41 @@ const logger = createLogger('advanced-rbac-system');
 /**
 * 角色类型枚举
  */
-export enum RoleType  { SYSTEM = 'system',           // 系统角色
+export enum RoleType { SYSTEM = 'system',           // 系统角色
   BUSINESS = 'business',       // 业务角色
   FUNCTIONAL = 'functional',   // 功能角色
   TEMPORARY = 'temporary',     // 临时角色
   DELEGATED = 'delegated',     // 委托角色
-  INHERITED = 'inherited'      // 继承角色 }
+  INHERITED = 'inherited'      // 继承角色,
+}
 
 /**
 * 权限范围枚举
  */
-export enum PermissionScope  { GLOBAL = 'global',           // 全局权限
+export enum PermissionScope { GLOBAL = 'global',           // 全局权限
   ORGANIZATION = 'organization', // 组织权限
   DEPARTMENT = 'department',   // 部门权限
   TEAM = 'team',              // 团队权限
   PROJECT = 'project',        // 项目权限
   RESOURCE = 'resource',      // 资源权限
-  PERSONAL = 'personal'       // 个人权限 }
+  PERSONAL = 'personal'       // 个人权限,
+}
 
 /**
 * 权限状态枚举
  */
-export enum PermissionState  { ACTIVE = 'active',           // 激活
+export enum PermissionState { ACTIVE = 'active',           // 激活
   INACTIVE = 'inactive',       // 未激活
   SUSPENDED = 'suspended',     // 暂停
   EXPIRED = 'expired',         // 过期
   REVOKED = 'revoked',         // 撤销
-  PENDING = 'pending'          // 待审批 }
+  PENDING = 'pending'          // 待审批,
+}
 
 /**
- * 接口注释：高级角色定义
+* 接口注释：高级角色定义
  */
-export interface AdvancedRole  { id: string;
+export interface AdvancedRole { id: string;
   name: string;
   displayName: string;
   description: string;
@@ -100,13 +103,13 @@ export interface AdvancedRole  { id: string;
   createdAt: number;
   updatedAt: number;
   createdBy: string;
-  updatedBy: string
+  updatedBy: string;,
 }
 
 /**
- * 接口注释：高级权限定义
+* 接口注释：高级权限定义
  */
-export interface AdvancedPermission  { id: string;
+export interface AdvancedPermission { id: string;
   name: string;
   displayName: string;
   description: string;
@@ -149,55 +152,55 @@ export interface AdvancedPermission  { id: string;
   metadata: Record<string, any>;
   tags: string[];
   createdAt: number;
-  updatedAt: number
+  updatedAt: number;,
 }
 
 /**
- * 接口注释：角色约束
+* 接口注释：角色约束
  */
-export interface RoleConstraint  { id: string;
+export interface RoleConstraint { id: string;
   type: 'mutual_exclusion' | 'prerequisite' | 'cardinality' | 'separation_of_duty' | 'time_based' | 'location_based';
   description: string;
   parameters: Record<string, any>;
-  isActive: boolean
+  isActive: boolean;,
 }
 
 /**
- * 接口注释：角色条件
+* 接口注释：角色条件
  */
-export interface RoleCondition  { id: string;
+export interface RoleCondition { id: string;
   type: 'user_attribute' | 'context' | 'time' | 'location' | 'custom';
   field: string;
   operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
-  description?: string
+  description?: string;,
 }
 
 /**
- * 接口注释：权限约束
+* 接口注释：权限约束
  */
-export interface PermissionConstraint  { id: string;
+export interface PermissionConstraint { id: string;
   type: 'time_window' | 'usage_limit' | 'ip_restriction' | 'device_restriction' | 'approval_required' | 'custom';
   description: string;
   parameters: Record<string, any>;
-  isActive: boolean
+  isActive: boolean;,
 }
 
 /**
- * 接口注释：权限条件
+* 接口注释：权限条件
  */
-export interface PermissionCondition  { id: string;
+export interface PermissionCondition { id: string;
   type: 'context' | 'resource_state' | 'user_state' | 'environment' | 'custom';
   field: string;
   operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
-  description?: string
+  description?: string;,
 }
 
 /**
- * 接口注释：用户角色分配
+* 接口注释：用户角色分配
  */
-export interface UserRoleAssignment  { id: string;
+export interface UserRoleAssignment { id: string;
   userId: string;
   roleId: string;
 
@@ -227,34 +230,34 @@ export interface UserRoleAssignment  { id: string;
   // 元数据
   metadata: Record<string, any>;
   lastUsed?: number;
-  usageCount: number
+  usageCount: number;,
 }
 
 /**
- * 接口注释：分配约束
+* 接口注释：分配约束
  */
-export interface AssignmentConstraint  { id: string;
+export interface AssignmentConstraint { id: string;
   type: 'approval_required' | 'time_limit' | 'usage_limit' | 'location_based' | 'custom';
   description: string;
   parameters: Record<string, any>;
-  isActive: boolean
+  isActive: boolean;,
 }
 
 /**
- * 接口注释：分配条件
+* 接口注释：分配条件
  */
-export interface AssignmentCondition  { id: string;
+export interface AssignmentCondition { id: string;
   type: 'user_attribute' | 'context' | 'time' | 'location' | 'approval' | 'custom';
   field: string;
   operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
-  description?: string
+  description?: string;,
 }
 
 /**
- * 接口注释：权限评估上下文
+* 接口注释：权限评估上下文
  */
-export interface PermissionEvaluationContext  { userId: string;
+export interface PermissionEvaluationContext { userId: string;
   roleIds: string[];
   permissionName: string;
   resourceId?: string;
@@ -268,8 +271,7 @@ export interface PermissionEvaluationContext  { userId: string;
     country?: string;
     region?: string;
     city?: string;
-    coordinates?: { lat: number; lng: number  
-}
+    coordinates?: { lat: number; lng: number  };,
 };
 
   // 用户信息
@@ -285,13 +287,13 @@ export interface PermissionEvaluationContext  { userId: string;
   sessionAttributes: Record<string, any>;
 
   // 自定义上下文
-  customContext: Record<string, any>
+  customContext: Record<string, any>;,
 }
 
 /**
- * 接口注释：权限评估结果
+* 接口注释：权限评估结果
  */
-export interface PermissionEvaluationResult  { allowed: boolean;
+export interface PermissionEvaluationResult { allowed: boolean;
   reason?: string;
 
   // 详细信息
@@ -304,22 +306,22 @@ export interface PermissionEvaluationResult  { allowed: boolean;
       permissionId: string;
       permissionName: string;
       allowed: boolean;
-      reason?: string
-}>
+      reason?: string;,
+}>;,
 }>;
 
   // 约束检查
   constraintResults: Array<{ constraintId: string;
     type: string;
     passed: boolean;
-    reason?: string
+    reason?: string;,
 }>;
 
   // 条件检查
   conditionResults: Array<{ conditionId: string;
     type: string;
     passed: boolean;
-    reason?: string
+    reason?: string;,
 }>;
 
   // 性能信息
@@ -330,14 +332,14 @@ export interface PermissionEvaluationResult  { allowed: boolean;
   auditTrail: Array<{ step: string;
     result: boolean;
     reason?: string;
-    timestamp: number
-}>
+    timestamp: number;,
+}>;,
 }
 
 /**
 * 接口注释：RBAC配置
  */
-export interface RBACConfiguration  { // 基础配置
+export interface RBACConfiguration { // 基础配置
   enableInheritance: boolean;
   enableDelegation: boolean;
   enableConstraints: boolean;
@@ -364,7 +366,7 @@ export interface RBACConfiguration  { // 基础配置
   enableAutoOptimization: boolean;
   optimizationInterval: number;
   enableConflictDetection: boolean;
-  enableRedundancyDetection: boolean
+  enableRedundancyDetection: boolean;,
 }
 
 /**
@@ -377,7 +379,7 @@ export interface RBACConfiguration  { // 基础配置
 * - 高性能缓存
 * - 实时监控分析
  */
-export class AdvancedRBACSystem  { private static instance: AdvancedRBACSystem;
+export class AdvancedRBACSystem { private static instance: AdvancedRBACSystem;
 
   // 核心组件
   private permissionManager: UnifiedPermissionManager;
@@ -389,8 +391,7 @@ export class AdvancedRBACSystem  { private static instance: AdvancedRBACSystem;
   private userRoleAssignments: Map<string, UserRoleAssignment[]> = new Map();
 
   // 缓存和索引
-  private evaluationCache: Map<string, { result: PermissionEvaluationResult; timestamp: number  
-}> = new Map();
+  private evaluationCache: Map<string, { result: PermissionEvaluationResult; timestamp: number  }> = new Map();
   private roleHierarchyCache: Map<string, string[]> = new Map();
   private permissionIndex: Map<string, Set<string>> = new Map();
 
@@ -401,7 +402,7 @@ export class AdvancedRBACSystem  { private static instance: AdvancedRBACSystem;
     totalAssignments: number;
     evaluationCount: number;
     cacheHitRate: number;
-    averageEvaluationTime: number
+    averageEvaluationTime: number;,
 };
 
   // 定时器
@@ -413,7 +414,7 @@ export class AdvancedRBACSystem  { private static instance: AdvancedRBACSystem;
   * 函数级注释：构造函数
   * 初始化高级RBAC系统
    */
-private constructor(config?: Partial<RBACConfiguration>) { this.config =  {
+  private constructor(config?: Partial<RBACConfiguration>) { this.config = {
       enableInheritance: true,
       enableDelegation: true,
       enableConstraints: true,
@@ -433,7 +434,8 @@ private constructor(config?: Partial<RBACConfiguration>) { this.config =  {
       optimizationInterval: 3600000, // 1小时
       enableConflictDetection: true,
       enableRedundancyDetection: true,
-      ...config  };
+      ...config,
+};
 
     this.permissionManager = UnifiedPermissionManager.getInstance();
     this.errorHandler = MasterErrorHandler.getInstance();
@@ -442,23 +444,23 @@ private constructor(config?: Partial<RBACConfiguration>) { this.config =  {
     this.initializeDefaultRoles();
     this.initializeDefaultPermissions();
     this.startMonitoring();
-    this.startOptimization()
+    this.startOptimization();,
 }
 
   /**
- * 函数级注释：获取单例实例
- */
-public static getInstance(config?: Partial<RBACConfiguration>): AdvancedRBACSystem { if (!AdvancedRBACSystem.instance)  {
-      AdvancedRBACSystem.instance = new AdvancedRBACSystem(config)
+  * 函数级注释：获取单例实例
+   */
+  public static getInstance(config?: Partial<RBACConfiguration>): AdvancedRBACSystem { if (!AdvancedRBACSystem.instance) {
+      AdvancedRBACSystem.instance = new AdvancedRBACSystem(config);,
 }
-    return AdvancedRBACSystem.instance
+    return AdvancedRBACSystem.instance;,
 }
 
   /**
   * 函数级注释：评估权限
   * 主要的权限评估方法
    */
-public async evaluatePermission(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult>  { const startTime = performance.now();
+  public async evaluatePermission(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult> { const startTime = performance.now();
 
     try {
       // 检查缓存
@@ -467,8 +469,7 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
         const cached = this.evaluationCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < this.config.cacheTimeout) {
           this.updateStatistics('cache_hit');
-          return { ...cached.result, cacheHit: true  
-}
+          return { ...cached.result, cacheHit: true  };,
 }
       }
 
@@ -476,17 +477,15 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
       const result = await this.performPermissionEvaluation(context);
 
       // 缓存结果
-      if (this.config.enableCaching) { this.cacheEvaluationResult(context, result)
+      if (this.config.enableCaching) { this.cacheEvaluationResult(context, result);,
 }
 
       // 更新统计
       this.updateStatistics('evaluation', performance.now() - startTime);
 
-      return { ...result, evaluationTime: performance.now() - startTime, cacheHit: false  
-}
+      return { ...result, evaluationTime: performance.now() - startTime, cacheHit: false  };,
 } catch (error) { logger.error('权限评估失败', { error, context  });
-      this.errorHandler.handleError(error, { context: 'rbac_evaluation', userId: context.userId  
-});
+      this.errorHandler.handleError(error, { context: 'rbac_evaluation', userId: context.userId  });
 
       return { allowed: false,
         reason: '权限评估过程中发生错误',
@@ -499,8 +498,9 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
           step: 'evaluation_error',
           result: false,
           reason: error.message,
-          timestamp: Date.now() 
-}] }
+          timestamp: Date.now(),
+}],
+};,
 }
   }
 
@@ -517,7 +517,7 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
 
       // 检查角色名称唯一性
       if (this.isRoleNameExists(roleData.name)) {
-        throw new Error(`角色名称 '${roleData.name }' 已存在`)
+        throw new Error(`角色名称 '${roleData.name }' 已存在`);,
 }
 
       // 生成角色ID
@@ -531,11 +531,11 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy,
-        updatedBy: createdBy  
+        updatedBy: createdBy,
 };
 
       // 计算继承权限
-      if (this.config.enableInheritance && role.parentRoles.length > 0) { role.inheritedPermissions = await this.calculateInheritedPermissions(role.parentRoles)
+      if (this.config.enableInheritance && role.parentRoles.length > 0) { role.inheritedPermissions = await this.calculateInheritedPermissions(role.parentRoles);,
 }
 
       // 存储角色
@@ -552,9 +552,9 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
 
       logger.info('角色创建成功', { roleId, roleName: role.name, createdBy  });
 
-      return roleId
+      return roleId;,
 } catch (error) { logger.error('角色创建失败', { error, roleData  });
-      throw error
+      throw error;,
 }
   }
 
@@ -571,26 +571,26 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
       validTo?: number;
       constraints?: AssignmentConstraint[];
       conditions?: AssignmentCondition[];
-      metadata?: Record<string, any>
+      metadata?: Record<string, any>;,
 }
   ): Promise<string> { try {
       // 验证角色存在
       const role = this.roles.get(roleId);
       if (!role) {
-        throw new Error(`角色 '${roleId }' 不存在`)
+        throw new Error(`角色 '${roleId }' 不存在`);,
 }
 
       // 检查角色是否可分配
-      if (!role.isAssignable) { throw new Error(`角色 '${role.name }' 不可分配`)
+      if (!role.isAssignable) { throw new Error(`角色 '${role.name }' 不可分配`);,
 }
 
       // 检查分配者权限
       const canAssign = await this.checkAssignmentPermission(assignedBy, roleId);
-      if (!canAssign) { throw new Error('没有分配此角色的权限')
+      if (!canAssign) { throw new Error('没有分配此角色的权限');,
 }
 
       // 检查角色约束
-      if (this.config.enforceConstraints) { await this.validateRoleConstraints(userId, roleId, role.constraints)
+      if (this.config.enforceConstraints) { await this.validateRoleConstraints(userId, roleId, role.constraints);,
 }
 
       // 生成分配ID
@@ -610,9 +610,8 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
         isActive: true,
         isTemporary: !!options?.validTo,
         isDelegated: false,
-        metadata: options?.metadata || { 
-},
-        usageCount: 0 
+        metadata: options?.metadata || { },
+        usageCount: 0,
 };
 
       // 存储分配记录
@@ -628,13 +627,14 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
         userId,
         roleId,
         roleName: role.name,
-        assignedBy });
+        assignedBy,
+});
 
       logger.info('角色分配成功', { assignmentId, userId, roleId, assignedBy  });
 
-      return assignmentId
+      return assignmentId;,
 } catch (error) { logger.error('角色分配失败', { error, userId, roleId, assignedBy  });
-      throw error
+      throw error;,
 }
   }
 
@@ -651,14 +651,14 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
       // 检查撤销者权限
       const canRevoke = await this.checkRevocationPermission(revokedBy, roleId);
       if (!canRevoke) {
-        throw new Error('没有撤销此角色的权限')
+        throw new Error('没有撤销此角色的权限');,
 }
 
       // 查找并撤销分配
       const userAssignments = this.userRoleAssignments.get(userId) || [];
       const assignmentIndex = userAssignments.findIndex(a => a.roleId === roleId && a.isActive);
 
-      if (assignmentIndex === -1) { throw new Error('未找到有效的角色分配')
+      if (assignmentIndex === -1) { throw new Error('未找到有效的角色分配');,
 }
 
       const assignment = userAssignments[assignmentIndex];
@@ -668,7 +668,7 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
       if (role && !role.isSystem) { // 系统角色需要特殊权限才能撤销
         const canRevokeSystem = await this.checkSystemRoleRevocationPermission(revokedBy);
         if (!canRevokeSystem) {
-          throw new Error('没有撤销系统角色的权限')
+          throw new Error('没有撤销系统角色的权限');,
 }
       }
 
@@ -687,13 +687,14 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
         roleId,
         roleName: role?.name,
         revokedBy,
-        reason });
+        reason,
+});
 
       logger.info('角色撤销成功', { userId, roleId, revokedBy, reason  });
 
-      return true
+      return true;,
 } catch (error) { logger.error('角色撤销失败', { error, userId, roleId, revokedBy  });
-      throw error
+      throw error;,
 }
   }
 
@@ -701,7 +702,7 @@ public async evaluatePermission(context: PermissionEvaluationContext): Promise<P
   * 函数级注释：获取用户角色
   * 获取用户的所有有效角色
    */
-public async getUserRoles(userId: string, includeInherited: boolean = true): Promise<AdvancedRole[]> { try  {
+  public async getUserRoles(userId: string, includeInherited: boolean = true): Promise<AdvancedRole[]> { try {
       const userAssignments = this.userRoleAssignments.get(userId) || [];
       const activeAssignments = userAssignments.filter(a => this.isAssignmentActive(a));
 
@@ -713,7 +714,7 @@ public async getUserRoles(userId: string, includeInherited: boolean = true): Pro
         const role = this.roles.get(assignment.roleId);
         if (role && !roleIds.has(role.id)) {
           roles.push(role);
-          roleIds.add(role.id)
+          roleIds.add(role.id);,
 }
       }
 
@@ -724,14 +725,15 @@ public async getUserRoles(userId: string, includeInherited: boolean = true): Pro
             const role = this.roles.get(roleId);
             if (role) {
               roles.push(role);
-              roleIds.add(roleId)
+              roleIds.add(roleId);,
 }
-          } }
+          },
+}
       }
 
-      return roles
+      return roles;,
 } catch (error) { logger.error('获取用户角色失败', { error, userId  });
-      return []
+      return [];,
 }
   }
 
@@ -739,7 +741,7 @@ public async getUserRoles(userId: string, includeInherited: boolean = true): Pro
   * 函数级注释：获取用户权限
   * 获取用户的所有有效权限
    */
-public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> { try  {
+  public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> { try {
       const roles = await this.getUserRoles(userId, true);
       const permissions: AdvancedPermission[] = [];
       const permissionIds = new Set<string>();
@@ -749,27 +751,28 @@ public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> {
         for (const permission of role.permissions) {
           if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
             permissions.push(permission);
-            permissionIds.add(permission.id)
+            permissionIds.add(permission.id);,
 }
         }
 
         // 继承权限
         for (const permission of role.inheritedPermissions) { if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
             permissions.push(permission);
-            permissionIds.add(permission.id)
+            permissionIds.add(permission.id);,
 }
         }
 
         // 委托权限
         for (const permission of role.delegatedPermissions) { if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
             permissions.push(permission);
-            permissionIds.add(permission.id)
+            permissionIds.add(permission.id);,
 }
-        } }
+        },
+}
 
-      return permissions
+      return permissions;,
 } catch (error) { logger.error('获取用户权限失败', { error, userId  });
-      return []
+      return [];,
 }
   }
 
@@ -788,16 +791,12 @@ public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> {
       permissionName,
       resourceId,
       timestamp: Date.now(),
-      userAttributes: { 
-},
-      userState: {
-},
-      requestAttributes: additionalContext || {
-},
-      sessionAttributes: {
-},
-      customContext: {
-} };
+      userAttributes: { },
+      userState: {},
+      requestAttributes: additionalContext || {},
+      sessionAttributes: {},
+      customContext: {},
+};
 
     // 获取用户角色
     const roles = await this.getUserRoles(userId, true);
@@ -806,34 +805,36 @@ public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> {
     // 评估权限
     const result = await this.evaluatePermission(context);
 
-    return result.allowed
+    return result.allowed;,
 }
 
   /**
- * 函数级注释：获取统计信息
- */
-public getStatistics() { return  { ...this.statistics  }
+  * 函数级注释：获取统计信息
+   */
+  public getStatistics() { return { ...this.statistics  };,
 }
+
   /**
- * 函数级注释：更新配置
- */
-public updateConfiguration(newConfig: Partial<RBACConfiguration>): void { this.config =  { ...this.config, ...newConfig   };
+  * 函数级注释：更新配置
+   */
+  public updateConfiguration(newConfig: Partial<RBACConfiguration>): void { this.config = { ...this.config, ...newConfig  };
+
     // 重启相关服务
-    if (newConfig.enableCaching !== undefined || newConfig.cacheTimeout !== undefined) { this.restartCaching()
+    if (newConfig.enableCaching !== undefined || newConfig.cacheTimeout !== undefined) { this.restartCaching();,
 }
 
-    if (newConfig.enableAutoOptimization !== undefined || newConfig.optimizationInterval !== undefined) { this.restartOptimization()
+    if (newConfig.enableAutoOptimization !== undefined || newConfig.optimizationInterval !== undefined) { this.restartOptimization();,
 }
   }
 
   /**
- * 函数级注释：清理资源
- */
-public cleanup(): void  { this.stopMonitoring();
+  * 函数级注释：清理资源
+   */
+  public cleanup(): void { this.stopMonitoring();
     this.stopOptimization();
     this.evaluationCache.clear();
     this.roleHierarchyCache.clear();
-    this.permissionIndex.clear()
+    this.permissionIndex.clear();,
 }
 
   // 私有方法实现...
@@ -842,8 +843,7 @@ public cleanup(): void  { this.stopMonitoring();
   * 函数级注释：执行权限评估
   * 核心权限评估逻辑
    */
-private async performPermissionEvaluation(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult> { const auditTrail: Array< { step: string; result: boolean; reason?: string; timestamp: number  
-}> = [];
+  private async performPermissionEvaluation(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult> { const auditTrail: Array<{ step: string; result: boolean; reason?: string; timestamp: number  }> = [];
     const evaluatedRoles: Array<{ roleId: string;
       roleName: string;
       allowed: boolean;
@@ -852,8 +852,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         permissionId: string;
         permissionName: string;
         allowed: boolean;
-        reason?: string
-}>
+        reason?: string;,
+}>;,
 }> = [];
 
     let overallAllowed = false;
@@ -863,9 +863,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
     const roles = await this.getUserRoles(context.userId, true);
     auditTrail.push({ step: 'get_user_roles',
       result: true,
-      reason: `找到 ${roles.length 
-} 个角色`,
-      timestamp: Date.now() 
+      reason: `找到 ${roles.length } 个角色`,
+      timestamp: Date.now(),
 });
 
     // 评估每个角色
@@ -877,11 +876,11 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         auditTrail.push({
           step: 'role_evaluation',
           result: true,
-          reason: `角色 '${role.name 
-}' 允许访问`,
-          timestamp: Date.now() 
+          reason: `角色 '${role.name }' 允许访问`,
+          timestamp: Date.now(),
 });
-        break; // 任一角色允许即可 }
+        break; // 任一角色允许即可,
+}
     }
 
     if (!overallAllowed) { overallReason = '没有角色具有所需权限';
@@ -889,8 +888,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         step: 'final_evaluation',
         result: false,
         reason: overallReason,
-        timestamp: Date.now() 
-})
+        timestamp: Date.now(),
+});,
 }
 
     return { allowed: overallAllowed,
@@ -900,7 +899,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
       conditionResults: [],
       evaluationTime: 0,
       cacheHit: false,
-      auditTrail }
+      auditTrail,
+};,
 }
 
   /**
@@ -918,13 +918,13 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
       permissionId: string;
       permissionName: string;
       allowed: boolean;
-      reason?: string
-}>
+      reason?: string;,
+}>;,
 }> { const permissions: Array<{
       permissionId: string;
       permissionName: string;
       allowed: boolean;
-      reason?: string
+      reason?: string;,
 }> = [];
 
     // 检查角色是否激活
@@ -933,7 +933,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         roleName: role.name,
         allowed: false,
         reason: '角色未激活',
-        permissions }
+        permissions,
+};,
 }
 
     // 检查角色时间约束
@@ -942,28 +943,31 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         roleName: role.name,
         allowed: false,
         reason: '角色时间约束不满足',
-        permissions }
+        permissions,
+};,
 }
 
     // 检查所有权限
     const allPermissions = [;
       ...role.permissions,
       ...role.inheritedPermissions,
-      ...role.delegatedPermissions ];
+      ...role.delegatedPermissions,
+];
 
     for (const permission of allPermissions) { const permissionAllowed = await this.evaluatePermission(permission, context);
       permissions.push({
         permissionId: permission.id,
         permissionName: permission.name,
         allowed: permissionAllowed.allowed,
-        reason: permissionAllowed.reason 
+        reason: permissionAllowed.reason,
 });
 
       if (permission.name === context.permissionName && permissionAllowed.allowed) { return {
           roleId: role.id,
           roleName: role.name,
           allowed: true,
-          permissions }
+          permissions,
+};,
 }
     }
 
@@ -971,7 +975,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
       roleName: role.name,
       allowed: false,
       reason: '角色中未找到匹配的权限',
-      permissions }
+      permissions,
+};,
 }
 
   /**
@@ -981,46 +986,38 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
   private async evaluatePermission(
     permission: AdvancedPermission,
     context: PermissionEvaluationContext
-  ): Promise<{ allowed: boolean; reason?: string  
-}> { // 检查权限状态
+  ): Promise<{ allowed: boolean; reason?: string  }> { // 检查权限状态
     if (permission.state !== PermissionState.ACTIVE) {
-      return { allowed: false, reason: `权限状态为 ${permission.state 
-}` }
+      return { allowed: false, reason: `权限状态为 ${permission.state }` };,
 }
 
     // 检查权限名称匹配
-    if (permission.name !== context.permissionName) { return { allowed: false, reason: '权限名称不匹配'  
-}
+    if (permission.name !== context.permissionName) { return { allowed: false, reason: '权限名称不匹配'  };,
 }
 
     // 检查时间约束
-    if (!this.isPermissionTimeValid(permission)) { return { allowed: false, reason: '权限时间约束不满足'  
-}
+    if (!this.isPermissionTimeValid(permission)) { return { allowed: false, reason: '权限时间约束不满足'  };,
 }
 
     // 检查使用次数限制
-    if (permission.maxUsage && permission.usageCount && permission.usageCount >= permission.maxUsage) { return { allowed: false, reason: '权限使用次数已达上限'  
-}
+    if (permission.maxUsage && permission.usageCount && permission.usageCount >= permission.maxUsage) { return { allowed: false, reason: '权限使用次数已达上限'  };,
 }
 
     // 检查权限约束
     if (this.config.enforceConstraints && permission.constraints.length > 0) { const constraintResult = await this.evaluatePermissionConstraints(permission.constraints, context);
       if (!constraintResult.passed) {
-        return { allowed: false, reason: constraintResult.reason  
-}
+        return { allowed: false, reason: constraintResult.reason  };,
 }
     }
 
     // 检查权限条件
     if (permission.conditions.length > 0) { const conditionResult = await this.evaluatePermissionConditions(permission.conditions, context);
       if (!conditionResult.passed) {
-        return { allowed: false, reason: conditionResult.reason  
-}
+        return { allowed: false, reason: conditionResult.reason  };,
 }
     }
 
-    return { allowed: true  
-}
+    return { allowed: true  };,
 }
 
   // 更多辅助方法的实现...
@@ -1030,8 +1027,8 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
       totalAssignments: 0,
       evaluationCount: 0,
       cacheHitRate: 0,
-      averageEvaluationTime: 0 
-}
+      averageEvaluationTime: 0,
+};,
 }
 
   private initializeDefaultRoles(): void { // 创建默认系统角色
@@ -1052,12 +1049,12 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         isActive: true,
         isSystem: true,
         isAssignable: true,
-        metadata: { 
-},
+        metadata: { },
         tags: ['system', 'admin'],
         createdBy: 'system',
-        updatedBy: 'system' 
-} ];
+        updatedBy: 'system',
+},
+];
 
     defaultRoles.forEach(roleData => { const roleId = this.generateRoleId();
       const role: AdvancedRole = {
@@ -1066,10 +1063,10 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         inheritedPermissions: [],
         delegatedPermissions: [],
         createdAt: Date.now(),
-        updatedAt: Date.now()  
+        updatedAt: Date.now(),
 };
-      this.roles.set(roleId, role)
-})
+      this.roles.set(roleId, role);,
+});,
 }
 
   private initializeDefaultPermissions(): void { // 创建默认权限
@@ -1092,117 +1089,110 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
         isRevocable: true,
         dependencies: [],
         conflicts: [],
-        metadata: { 
+        metadata: { },
+        tags: ['system', 'admin'],
 },
-        tags: ['system', 'admin'] } ];
+];
 
     defaultPermissions.forEach(permissionData => { const permissionId = this.generatePermissionId();
       const permission: AdvancedPermission = {
         ...permissionData,
         id: permissionId,
         createdAt: Date.now(),
-        updatedAt: Date.now()  
+        updatedAt: Date.now(),
 };
-      this.permissions.set(permissionId, permission)
-})
+      this.permissions.set(permissionId, permission);,
+});,
 }
 
   private startMonitoring(): void { if (this.config.enableCaching) {
       this.cacheCleanupTimer = setInterval(() => {
-  this.cleanupExpiredCache()
-}, 300000); // 每5分钟清理一次 
+        this.cleanupExpiredCache();,
+}, 300000); // 每5分钟清理一次,
 }
 
-    this.statisticsTimer = setInterval(() => {
-  this.updateStatisticsData()
-}, 60000); // 每分钟更新统计 
+    this.statisticsTimer = setInterval(() => { this.updateStatisticsData();,
+}, 60000); // 每分钟更新统计,
 }
 
   private startOptimization(): void { if (this.config.enableAutoOptimization) {
       this.optimizationTimer = setInterval(() => {
-  this.performAutoOptimization()
-}, this.config.optimizationInterval)
+        this.performAutoOptimization();,
+}, this.config.optimizationInterval);,
 }
-  
-}
+  }
 
   private stopMonitoring(): void { if (this.cacheCleanupTimer) {
       clearInterval(this.cacheCleanupTimer);
-      this.cacheCleanupTimer = null
+      this.cacheCleanupTimer = null;,
 }
 
     if (this.statisticsTimer) { clearInterval(this.statisticsTimer);
-      this.statisticsTimer = null
+      this.statisticsTimer = null;,
 }
   }
 
   private stopOptimization(): void { if (this.optimizationTimer) {
       clearInterval(this.optimizationTimer);
-      this.optimizationTimer = null
+      this.optimizationTimer = null;,
 }
   }
 
   private restartCaching(): void { this.evaluationCache.clear();
-    // 重启缓存相关逻辑 }
+    // 重启缓存相关逻辑,
+}
 
   private restartOptimization(): void { this.stopOptimization();
-    this.startOptimization()
+    this.startOptimization();,
 }
 
   // 更多辅助方法的占位符实现...
   private validateRoleData(roleData: any): void { if (!roleData.name || !roleData.displayName) {
-      throw new Error('角色名称和显示名称不能为空')
+      throw new Error('角色名称和显示名称不能为空');,
 }
   }
 
-  private isRoleNameExists(name: string): boolean { return Array.from(this.roles.values()).some(role => role.name === name)
+  private isRoleNameExists(name: string): boolean { return Array.from(this.roles.values()).some(role => role.name === name);,
 }
 
-  private generateRoleId(): string { return `role_${Date.now() 
-}_${ Math.random().toString(36).substr(2, 9) }`
+  private generateRoleId(): string { return `role_${Date.now() }_${ Math.random().toString(36).substr(2, 9) }`;,
 }
 
-  private generatePermissionId(): string { return `perm_${Date.now() 
-}_${ Math.random().toString(36).substr(2, 9) }`
+  private generatePermissionId(): string { return `perm_${Date.now() }_${ Math.random().toString(36).substr(2, 9) }`;,
 }
 
-  private generateAssignmentId(): string { return `assign_${Date.now() 
-}_${ Math.random().toString(36).substr(2, 9) }`
+  private generateAssignmentId(): string { return `assign_${Date.now() }_${ Math.random().toString(36).substr(2, 9) }`;,
 }
 
-  private generateEvaluationCacheKey(context: PermissionEvaluationContext): string { return `${context.userId 
-}: ${ context.permissionName 
-}: ${ context.resourceId || 'global' 
-}`
+  private generateEvaluationCacheKey(context: PermissionEvaluationContext): string { return `${context.userId }:${ context.permissionName }:${ context.resourceId || 'global' }`;,
 }
 
   private async calculateInheritedPermissions(parentRoleIds: string[]): Promise<AdvancedPermission[]> { // 简化实现
-    return []
+    return [];,
 }
 
-  private invalidateHierarchyCache(): void { this.roleHierarchyCache.clear()
+  private invalidateHierarchyCache(): void { this.roleHierarchyCache.clear();,
 }
 
-  private updatePermissionIndex(role: AdvancedRole): void { // 更新权限索引 
+  private updatePermissionIndex(role: AdvancedRole): void { // 更新权限索引,
 }
 
-  private recordAuditLog(action: string, details: any): void { logger.info('RBAC审计日志', { action, details, timestamp: Date.now()  
-})
+  private recordAuditLog(action: string, details: any): void { logger.info('RBAC审计日志', { action, details, timestamp: Date.now()  });,
 }
 
   private async checkAssignmentPermission(assignedBy: string, roleId: string): Promise<boolean> { // 简化实现
-    return true
+    return true;,
 }
 
-  private async validateRoleConstraints(userId: string, roleId: string, constraints: RoleConstraint[]): Promise<void> { // 验证角色约束 
+  private async validateRoleConstraints(userId: string, roleId: string, constraints: RoleConstraint[]): Promise<void> { // 验证角色约束,
 }
 
   private async checkRevocationPermission(revokedBy: string, roleId: string): Promise<boolean> { // 简化实现
-    return true
+    return true;,
 }
 
   private async checkSystemRoleRevocationPermission(revokedBy: string): Promise<boolean> { // 简化实现
-    return true
+    return true;,
 }
 
   private isAssignmentActive(assignment: UserRoleAssignment): boolean { if (!assignment.isActive) return false;
@@ -1211,26 +1201,27 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
     if (assignment.validFrom && now < assignment.validFrom) return false;
     if (assignment.validTo && now > assignment.validTo) return false;
 
-    return true
+    return true;,
 }
 
   private async getInheritedRoles(roleIds: string[]): Promise<string[]> { // 简化实现
-    return []
+    return [];,
 }
 
-  private isPermissionActive(permission: AdvancedPermission): boolean { return permission.state === PermissionState.ACTIVE
+  private isPermissionActive(permission: AdvancedPermission): boolean { return permission.state === PermissionState.ACTIVE;,
 }
 
   private invalidateUserCache(userId: string): void { for (const [key] of this.evaluationCache.entries()) {
-      if (key.startsWith(`${userId }: `)) { this.evaluationCache.delete(key)
+      if (key.startsWith(`${userId }:`)) { this.evaluationCache.delete(key);,
 }
-    } }
+    },
+}
 
   private cacheEvaluationResult(context: PermissionEvaluationContext, result: PermissionEvaluationResult): void { const cacheKey = this.generateEvaluationCacheKey(context);
     this.evaluationCache.set(cacheKey, {
       result,
-      timestamp: Date.now() 
-})
+      timestamp: Date.now(),
+});,
 }
 
   private updateStatistics(type: string, value?: number): void { switch (type) {
@@ -1241,50 +1232,47 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
       this.statistics.evaluationCount++;
       if (value) {
         this.statistics.averageEvaluationTime =;
-        (this.statistics.averageEvaluationTime + value) / 2
+        (this.statistics.averageEvaluationTime + value) / 2;,
 }
-      break
+      break;,
 }
   }
 
   private isRoleTimeValid(role: AdvancedRole): boolean { const now = Date.now();
     if (role.validFrom && now < role.validFrom) return false;
     if (role.validTo && now > role.validTo) return false;
-    return true
+    return true;,
 }
 
   private isPermissionTimeValid(permission: AdvancedPermission): boolean { const now = Date.now();
     if (permission.validFrom && now < permission.validFrom) return false;
     if (permission.validTo && now > permission.validTo) return false;
-    return true
+    return true;,
 }
 
-  private async evaluatePermissionConstraints(constraints: PermissionConstraint[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string  
-}> { // 简化实现
-    return { passed: true  
-}
+  private async evaluatePermissionConstraints(constraints: PermissionConstraint[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string  }> { // 简化实现
+    return { passed: true  };,
 }
 
-  private async evaluatePermissionConditions(conditions: PermissionCondition[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string  
-}> { // 简化实现
-    return { passed: true  
-}
+  private async evaluatePermissionConditions(conditions: PermissionCondition[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string  }> { // 简化实现
+    return { passed: true  };,
 }
 
   private cleanupExpiredCache(): void { const now = Date.now();
     for (const [key, value] of this.evaluationCache.entries()) {
       if (now - value.timestamp > this.config.cacheTimeout) {
-        this.evaluationCache.delete(key)
+        this.evaluationCache.delete(key);,
 }
-    } }
+    },
+}
 
   private updateStatisticsData(): void { this.statistics.totalRoles = this.roles.size;
     this.statistics.totalPermissions = this.permissions.size;
     this.statistics.totalAssignments = Array.from(this.userRoleAssignments.values());
-    .reduce((total, assignments) => total + assignments.length, 0)
+    .reduce((total, assignments) => total + assignments.length, 0);,
 }
 
-  private async performAutoOptimization(): void { // 自动优化实现 
+  private async performAutoOptimization(): void { // 自动优化实现,
 }
 }
 
@@ -1292,64 +1280,46 @@ private async performPermissionEvaluation(context: PermissionEvaluationContext):
 * 函数级注释：高级RBAC系统Hook
 * React Hook，用于在组件中使用高级RBAC系统
  */
-export function useAdvancedRBACSystem(config?: Partial<RBACConfiguration>)  { const rbacSystem = AdvancedRBACSystem.getInstance(config);
+export function useAdvancedRBACSystem(config?: Partial<RBACConfiguration>) { const rbacSystem = AdvancedRBACSystem.getInstance(config);
   const [statistics, setStatistics] = useState(rbacSystem.getStatistics());
 
   useEffect(() => {
-/**
- * updateStats函数
- * 更新数据
- * @returns void
- */
-const updateStats = () =>  {
-  setStatistics(rbacSystem.getStatistics())
-
+    const updateStats = () => {
+      setStatistics(rbacSystem.getStatistics());,
 };
 
     const interval = setInterval(updateStats, 30000);
-    return () => {
-  clearInterval(interval);
-      rbacSystem.cleanup()
-}
-
+    return () => { clearInterval(interval);
+      rbacSystem.cleanup();,
+};,
 }, [rbacSystem]);
 
   const checkUserPermission = useCallback(;
-    async (userId: string, permissionName: string, resourceId?: string, context?: Record<string, any>): Promise<boolean> => {
-  return rbacSystem.checkUserPermission(userId, permissionName, resourceId, context)
-
+    async (userId: string, permissionName: string, resourceId?: string, context?: Record<string, any>): Promise<boolean> => { return rbacSystem.checkUserPermission(userId, permissionName, resourceId, context);,
 },
     [rbacSystem]
   );
 
   const getUserRoles = useCallback(;
-    async (userId: string, includeInherited?: boolean): Promise<AdvancedRole[]> => {
-  return rbacSystem.getUserRoles(userId, includeInherited)
-
+    async (userId: string, includeInherited?: boolean): Promise<AdvancedRole[]> => { return rbacSystem.getUserRoles(userId, includeInherited);,
 },
     [rbacSystem]
   );
 
   const getUserPermissions = useCallback(;
-    async (userId: string): Promise<AdvancedPermission[]> => {
-  return rbacSystem.getUserPermissions(userId)
-
+    async (userId: string): Promise<AdvancedPermission[]> => { return rbacSystem.getUserPermissions(userId);,
 },
     [rbacSystem]
   );
 
   const assignRole = useCallback(;
-    async (userId: string, roleId: string, assignedBy: string, options?: any): Promise<string> => {
-  return rbacSystem.assignRole(userId, roleId, assignedBy, options)
-
+    async (userId: string, roleId: string, assignedBy: string, options?: any): Promise<string> => { return rbacSystem.assignRole(userId, roleId, assignedBy, options);,
 },
     [rbacSystem]
   );
 
   const revokeRole = useCallback(;
-    async (userId: string, roleId: string, revokedBy: string, reason?: string): Promise<boolean> => {
-  return rbacSystem.revokeRole(userId, roleId, revokedBy, reason)
-
+    async (userId: string, roleId: string, revokedBy: string, reason?: string): Promise<boolean> => { return rbacSystem.revokeRole(userId, roleId, revokedBy, reason);,
 },
     [rbacSystem]
   );
@@ -1360,8 +1330,8 @@ const updateStats = () =>  {
     assignRole,
     revokeRole,
     statistics,
-    updateConfiguration: rbacSystem.updateConfiguration.bind(rbacSystem) 
-}
+    updateConfiguration: rbacSystem.updateConfiguration.bind(rbacSystem),
+};,
 }
 
 // 导出单例实例

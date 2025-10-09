@@ -1,7 +1,7 @@
-import React from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react'
+import { render, RenderOptions } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Create a custom render function that includes providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
@@ -11,23 +11,25 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
         retry: false,
       },
     },
-  });
+  })
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <BrowserRouter>
+        {children}
+      </BrowserRouter>
     </QueryClientProvider>
-  );
-};
+  )
+}
 
 const customRender = (
   ui: React.ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options });
+) => render(ui, { wrapper: AllTheProviders, ...options })
 
-export * from '@testing-library/react';
-export { userEvent } from '@testing-library/user-event';
-export { customRender as render };
+export * from '@testing-library/react'
+export { userEvent } from '@testing-library/user-event'
+export { customRender as render }
 
 // Mock data generators
 export const createMockGameState = (overrides = {}) => ({
@@ -39,8 +41,8 @@ export const createMockGameState = (overrides = {}) => ({
   phase_duration: 300,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides,
-});
+  ...overrides
+})
 
 export const createMockPlayer = (overrides = {}) => ({
   id: 'test-player-id',
@@ -51,8 +53,8 @@ export const createMockPlayer = (overrides = {}) => ({
   is_ai: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides,
-});
+  ...overrides
+})
 
 export const createMockSkillUse = (overrides = {}) => ({
   id: 'test-skill-id',
@@ -67,5 +69,5 @@ export const createMockSkillUse = (overrides = {}) => ({
   is_processed: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  ...overrides,
-});
+  ...overrides
+})

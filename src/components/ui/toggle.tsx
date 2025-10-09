@@ -1,5 +1,5 @@
-import { cn   } from '@/lib/utils'
-import { cva, type VariantProps   } from 'class-variance-authority'
+import { cn  } from '@/lib/utils'
+import { cva, type VariantProps  } from 'class-variance-authority'
 import * as React from 'react'
 import * as TogglePrimitive from '@radix-ui/react-toggle'
 
@@ -37,23 +37,20 @@ const toggleVariants = cva(;
   { variants: {
       variant: {
         default: 'bg-transparent',
-        outline: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground' 
-},
+        outline:
+        'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+       },
       size: { default: 'h-10 px-3',
         sm: 'h-9 px-2.5',
-        lg: 'h-11 px-5' 
-} },
+        lg: 'h-11 px-5',
+       },
+    },
     defaultVariants: { variant: 'default',
-      size: 'default' 
-} }
+      size: 'default',
+     },
+  }
 )
 
-/**
- * Toggle组件
- * Toggle组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const Toggle = React.forwardRef<;
 React.ElementRef<typeof TogglePrimitive.Root>,
 React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &

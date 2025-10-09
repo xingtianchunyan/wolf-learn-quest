@@ -1,22 +1,6 @@
-/**
- * 文件级注释：withLoading 组件
- * 
- * 该文件实现了一个提供通用功能组件，主要功能包括：
- * - 组件渲染和状态管理
- * - 用户交互处理
- * - 数据展示和更新
- * - 响应式设计支持
- * 
- * @author SOLO Coding
- * @version 1.0.0
- * @since 2024-12-19
- * @category common
- * @filepath common\hoc\withLoading.tsx
- */
-
-import { createLogger   } from '@/lib/logger';
-import { Loader2   } from 'lucide-react';
-import React, { ComponentType, ReactNode   } from 'react';
+import { createLogger  } from '@/lib/logger';
+import { Loader2  } from 'lucide-react';
+import React, { ComponentType, ReactNode  } from 'react';
 
 /**
 * 加载状态高阶组件
@@ -32,59 +16,59 @@ const logger = createLogger('loading-hoc');
 /**
 * 加载配置接口
  */
-export interface LoadingConfig  { /** 加载文本 */
+export interface LoadingConfig { /** 加载文本  */
   loadingText?: string;
-  /** 是否显示加载文本 */
+  /** 是否显示加载文本  */
   showLoadingText?: boolean;
-  /** 加载图标大小 */
+  /** 加载图标大小  */
   iconSize?: number;
-  /** 最小加载时间（毫秒） */
+  /** 最小加载时间（毫秒）  */
   minLoadingTime?: number;
-  /** 自定义加载组件 */
+  /** 自定义加载组件  */
   customLoadingComponent?: ComponentType<LoadingComponentProps>;
-  /** 加载容器样式类名 */
+  /** 加载容器样式类名  */
   containerClassName?: string;
-  /** 是否全屏加载 */
+  /** 是否全屏加载  */
   fullScreen?: boolean;
-  /** 背景遮罩透明度 */
-  overlayOpacity?: number
+  /** 背景遮罩透明度  */
+  overlayOpacity?: number;,
 }
 
 /**
 * 加载组件属性接口
  */
-export interface LoadingComponentProps  { /** 加载文本 */
+export interface LoadingComponentProps { /** 加载文本  */
   loadingText?: string;
-  /** 是否显示加载文本 */
+  /** 是否显示加载文本  */
   showLoadingText?: boolean;
-  /** 加载图标大小 */
+  /** 加载图标大小  */
   iconSize?: number;
-  /** 容器样式类名 */
+  /** 容器样式类名  */
   containerClassName?: string;
-  /** 是否全屏加载 */
+  /** 是否全屏加载  */
   fullScreen?: boolean;
-  /** 背景遮罩透明度 */
-  overlayOpacity?: number
+  /** 背景遮罩透明度  */
+  overlayOpacity?: number;,
 }
 
 /**
 * 带加载状态的组件属性接口
  */
-export interface WithLoadingProps  { /** 是否正在加载 */
+export interface WithLoadingProps { /** 是否正在加载  */
   loading?: boolean;
-  /** 加载配置 */
-  loadingConfig?: LoadingConfig
+  /** 加载配置  */
+  loadingConfig?: LoadingConfig;,
 }
 
 /**
- * 默认加载组件
+* 默认加载组件
  */
-const DefaultLoadingComponent: React.FC<LoadingComponentProps> = ( { loadingText = '加载中...',
+const DefaultLoadingComponent: React.FC<LoadingComponentProps> = ({ loadingText = '加载中...',
   showLoadingText = true,
   iconSize = 24,
   containerClassName = '',
   fullScreen = false,
-  overlayOpacity = 0.5
+  overlayOpacity = 0.5;,
 }) => { const baseClasses = fullScreen;
   ? 'fixed inset-0 z-50 flex items-center justify-center'
   : 'flex items-center justify-center min-h-[100px] w-full';
@@ -107,13 +91,13 @@ const DefaultLoadingComponent: React.FC<LoadingComponentProps> = ( { loadingText
     )}
     </div>
     </div>
-  )
+  );,
 };
 
 /**
- * 骨架屏加载组件
+* 骨架屏加载组件
  */
-const SkeletonLoadingComponent: React.FC<LoadingComponentProps> = ( { containerClassName = ''
+const SkeletonLoadingComponent: React.FC<LoadingComponentProps> = ({ containerClassName = '';,
 }) => { return (;
     <div className={`animate-pulse space-y-4 p-4 ${containerClassName }`}>;
     <div className='h-4 bg-gray-200 rounded w-3/4'></div>;
@@ -127,15 +111,15 @@ const SkeletonLoadingComponent: React.FC<LoadingComponentProps> = ( { containerC
     <div className='h-10 bg-gray-200 rounded w-20'></div>;
     </div>
     </div>
-  )
+  );,
 };
 
 /**
- * 点状加载组件
+* 点状加载组件
  */
-const DotsLoadingComponent: React.FC<LoadingComponentProps> = ( { loadingText = '加载中',
+const DotsLoadingComponent: React.FC<LoadingComponentProps> = ({ loadingText = '加载中',
   showLoadingText = true,
-  containerClassName = ''
+  containerClassName = '';,
 }) => { return (;
     <div className={`flex items-center justify-center min-h-[100px] ${containerClassName }`}>;
     <div className='flex items-center space-x-2'>;
@@ -146,24 +130,21 @@ const DotsLoadingComponent: React.FC<LoadingComponentProps> = ( { loadingText = 
     )}
     <div className='flex space-x-1'>;
     <div className='w-2 h-2 bg-blue-600 rounded-full animate-bounce'></div>;
-    <div className='w-2 h-2 bg-blue-600 rounded-full animate-bounce' style={ { animationDelay: '0.1s'  
-}}></div>;
-    <div className='w-2 h-2 bg-blue-600 rounded-full animate-bounce' style={ { animationDelay: '0.2s'  
-}}></div>;
+    <div className='w-2 h-2 bg-blue-600 rounded-full animate-bounce' style={ { animationDelay: '0.1s'  }}></div>;
+    <div className='w-2 h-2 bg-blue-600 rounded-full animate-bounce' style={ { animationDelay: '0.2s'  }}></div>;
     </div>
     </div>
     </div>
-  )
+  );,
 };
 
 /**
- * 进度条加载组件
+* 进度条加载组件
  */
-const ProgressLoadingComponent: React.FC<LoadingComponentProps & { progress?: number  
-}> = ( { loadingText = '加载中...',
+const ProgressLoadingComponent: React.FC<LoadingComponentProps & { progress?: number  }> = ({ loadingText = '加载中...',
   showLoadingText = true,
   containerClassName = '',
-  progress = 0
+  progress = 0;,
 }) => { return (;
     <div className={`flex flex-col items-center justify-center min-h-[100px] space-y-4 ${containerClassName }`}>;
     { showLoadingText && (
@@ -183,7 +164,7 @@ const ProgressLoadingComponent: React.FC<LoadingComponentProps & { progress?: nu
     </div>
     </div>
     </div>
-  )
+  );,
 };
 
 /**
@@ -193,19 +174,12 @@ const ProgressLoadingComponent: React.FC<LoadingComponentProps & { progress?: nu
 * @returns 高阶组件函数
  */
 export function withLoading<P extends object>(
-  config: LoadingConfig = {
-}
+  config: LoadingConfig = {}
 ) { return function <T extends ComponentType<P>>(;
     WrappedComponent: T
   ): ComponentType<P & WithLoadingProps> {
 
-/**
- * LoadingHOC组件
- * 加载组件，显示加载状态
- * @param props - 组件属性
- * @returns JSX元素
- */
-const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
+    const LoadingHOC: React.FC<P & WithLoadingProps> = props => {
       const { loading = false, loadingConfig, ...restProps  } = props;
 
       // 合并配置
@@ -216,7 +190,8 @@ const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
         fullScreen: false,
         overlayOpacity: 0.5,
         ...config,
-        ...loadingConfig  };
+        ...loadingConfig,
+};
 
       // 最小加载时间处理
       const [showLoading, setShowLoading] = React.useState(loading);
@@ -228,14 +203,13 @@ const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
 
           if (finalConfig.minLoadingTime && finalConfig.minLoadingTime > 0) {
             const timer = setTimeout(() => {
-  setMinTimeElapsed(true)
+              setMinTimeElapsed(true);,
 }, finalConfig.minLoadingTime);
 
-            return () => clearTimeout(timer)
-
-} else { setMinTimeElapsed(true)
+            return () => clearTimeout(timer);,
+} else { setMinTimeElapsed(true);,
 }
-        } else if (minTimeElapsed) { setShowLoading(false)
+        } else if (minTimeElapsed) { setShowLoading(false);,
 }
       }, [loading, minTimeElapsed, finalConfig.minLoadingTime]);
 
@@ -243,11 +217,11 @@ const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
       React.useEffect(() => { if (loading) {
           logger.debug('组件开始加载', {
             component: WrappedComponent.name,
-            config: finalConfig 
-})
+            config: finalConfig,
+});,
 } else { logger.debug('组件加载完成', {
-            component: WrappedComponent.name 
-})
+            component: WrappedComponent.name,
+});,
 }
       }, [loading]);
 
@@ -262,18 +236,18 @@ const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
           fullScreen={ finalConfig.fullScreen }
           overlayOpacity={ finalConfig.overlayOpacity }
           />
-        )
+        );,
 }
 
-      return <WrappedComponent { ...(restProps as P) } />
+      return <WrappedComponent { ...(restProps as P) } />;,
 };
 
     // 设置显示名称
     const wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
     LoadingHOC.displayName = `withLoading(${ wrappedComponentName })`;
 
-    return LoadingHOC
-}
+    return LoadingHOC;,
+};,
 }
 
 /**
@@ -283,10 +257,9 @@ const LoadingHOC: React.FC<P & WithLoadingProps> = props =>  {
 * @param config - 加载配置
 * @returns 装饰器函数
  */
-export function Loading(config: LoadingConfig = {
-}) { return function <T extends ComponentType<any>>(target: T): T  {
-    return withLoading(config)(target) as T
-}
+export function Loading(config: LoadingConfig = {}) { return function <T extends ComponentType<any>>(target: T): T {
+    return withLoading(config)(target) as T;,
+};,
 }
 
 /**
@@ -299,83 +272,83 @@ export function Loading(config: LoadingConfig = {
  */
 export function wrapWithLoading<P extends object>(
   component: ComponentType<P>,
-  config: LoadingConfig = {
-}
-): ComponentType<P & WithLoadingProps> { return withLoading(config)(component)
+  config: LoadingConfig = {}
+): ComponentType<P & WithLoadingProps> { return withLoading(config)(component);,
 }
 
 /**
 * 预设配置的加载组件
  */
-export const LoadingPresets =  { /**
- * 默认加载 - 旋转图标 + 文本
- */
-default:  {
+export const LoadingPresets = { /**
+  * 默认加载 - 旋转图标 + 文本
+   */
+  default: {
     loadingText: '加载中...',
     showLoadingText: true,
-    iconSize: 24 
+    iconSize: 24,
 } as LoadingConfig,
 
   /**
- * 骨架屏加载
- */
-skeleton:  { customLoadingComponent: SkeletonLoadingComponent,
-    showLoadingText: false 
+  * 骨架屏加载
+   */
+  skeleton: { customLoadingComponent: SkeletonLoadingComponent,
+    showLoadingText: false,
 } as LoadingConfig,
 
   /**
- * 点状加载
- */
-dots:  { customLoadingComponent: DotsLoadingComponent,
+  * 点状加载
+   */
+  dots: { customLoadingComponent: DotsLoadingComponent,
     loadingText: '加载中',
-    showLoadingText: true 
+    showLoadingText: true,
 } as LoadingConfig,
 
   /**
- * 全屏加载
- */
-fullScreen:  { loadingText: '正在加载，请稍候...',
+  * 全屏加载
+   */
+  fullScreen: { loadingText: '正在加载，请稍候...',
     showLoadingText: true,
     iconSize: 32,
     fullScreen: true,
-    overlayOpacity: 0.8 
+    overlayOpacity: 0.8,
 } as LoadingConfig,
 
   /**
- * 小尺寸加载
- */
-small:  { loadingText: '加载中',
+  * 小尺寸加载
+   */
+  small: { loadingText: '加载中',
     showLoadingText: false,
     iconSize: 16,
-    containerClassName: 'min-h-[50px]' 
+    containerClassName: 'min-h-[50px]',
 } as LoadingConfig,
 
   /**
- * 大尺寸加载
- */
-large:  { loadingText: '正在加载内容...',
+  * 大尺寸加载
+   */
+  large: { loadingText: '正在加载内容...',
     showLoadingText: true,
     iconSize: 40,
-    containerClassName: 'min-h-[200px]' 
+    containerClassName: 'min-h-[200px]',
 } as LoadingConfig,
 
   /**
- * 技能加载 - 针对技能相关操作
- */
-skill:  { loadingText: '技能执行中...',
+  * 技能加载 - 针对技能相关操作
+   */
+  skill: { loadingText: '技能执行中...',
     showLoadingText: true,
     iconSize: 20,
-    minLoadingTime: 500 
+    minLoadingTime: 500,
 } as LoadingConfig,
 
   /**
- * 游戏加载 - 针对游戏相关操作
- */
-game:  { loadingText: '游戏加载中...',
+  * 游戏加载 - 针对游戏相关操作
+   */
+  game: { loadingText: '游戏加载中...',
     showLoadingText: true,
     iconSize: 28,
-    minLoadingTime: 1000 
-} as LoadingConfig };
+    minLoadingTime: 1000,
+} as LoadingConfig,
+};
 
 /**
 * 自定义 Hook：使用加载状态
@@ -383,19 +356,17 @@ game:  { loadingText: '游戏加载中...',
 * @param initialLoading - 初始加载状态
 * @returns 加载状态和控制函数
  */
-export function useLoading(initialLoading: boolean = false)  { const [loading, setLoading] = React.useState(initialLoading);
+export function useLoading(initialLoading: boolean = false) { const [loading, setLoading] = React.useState(initialLoading);
   const [loadingText, setLoadingText] = React.useState<string>('加载中...');
 
   const startLoading = React.useCallback((text?: string) => {
     if (text) setLoadingText(text);
     setLoading(true);
-    logger.debug('开始加载', { text  })
+    logger.debug('开始加载', { text  });,
 }, []);
 
-  const stopLoading = React.useCallback(() => {
-  setLoading(false);
-    logger.debug('停止加载')
-
+  const stopLoading = React.useCallback(() => { setLoading(false);
+    logger.debug('停止加载');,
 }, []);
 
   const withLoadingWrapper = React.useCallback(;
@@ -405,8 +376,8 @@ export function useLoading(initialLoading: boolean = false)  { const [loading, s
     ): Promise<T> => { try {
         startLoading(text);
         const result = await asyncFn();
-        return result
-} finally { stopLoading()
+        return result;,
+} finally { stopLoading();,
 }
     },
     [startLoading, stopLoading]
@@ -416,6 +387,6 @@ export function useLoading(initialLoading: boolean = false)  { const [loading, s
     loadingText,
     startLoading,
     stopLoading,
-    withLoading: withLoadingWrapper 
-}
+    withLoading: withLoadingWrapper,
+};,
 }

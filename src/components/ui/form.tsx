@@ -1,7 +1,7 @@
-import { cn   } from '@/lib/utils'
-import {
-  Controller, Label   } from '@/components/ui/label'
-import { Slot   } from '@radix-ui/react-slot'
+import { cn  } from '@/lib/utils'
+import { Controller,
+import { Label  } from '@/components/ui/label'
+import { Slot  } from '@radix-ui/react-slot'
 import * as LabelPrimitive from '@radix-ui/react-label'
 import * as React from 'react'
 
@@ -25,7 +25,8 @@ import * as React from 'react'
   FieldPath,
   FieldValues,
   FormProvider,
-  useFormContext  } from 'react-hook-form'
+  useFormContext,
+ } from 'react-hook-form'
 
 /**
 * form 组件
@@ -46,78 +47,51 @@ const Form = FormProvider;
 type FormFieldContextValue<
 TFieldValues extends FieldValues = FieldValues,
 TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>;
-> = { name: TName 
+> = { name: TName,
 }
 
-/**
- * FormFieldContext组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
-const FormFieldContext = React.createContext<FormFieldContextValue>(; {} as FormFieldContextValue
+const FormFieldContext = React.createContext<FormFieldContextValue>(;
+  {} as FormFieldContextValue
 )
 
-/**
- * FormField组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormField = <;
 TFieldValues extends FieldValues = FieldValues,
 TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>;
->({ ...props }: ControllerProps<TFieldValues, TName>) => { return (;
-    <FormFieldContext.Provider value={{ name: props.name  
-}}>;
+>({ ...props,
+}: ControllerProps<TFieldValues, TName>) => { return (;
+    <FormFieldContext.Provider value={{ name: props.name  }}>;
     <Controller { ...props } />
     </FormFieldContext.Provider>
-  ) }
+  ),
+}
 
-/**
- * useFormField函数
- * 自定义Hook
- * @returns void
- */
-const useFormField = () =>  { const fieldContext = React.useContext(FormFieldContext);
+const useFormField = () => { const fieldContext = React.useContext(FormFieldContext);
   const itemContext = React.useContext(FormItemContext);
   const { getFieldState, formState  } = useFormContext();
 
   const fieldState = getFieldState(fieldContext.name, formState);
 
-  if (!fieldContext) { throw new Error('useFormField should be used within <FormField>')
+  if (!fieldContext) { throw new Error('useFormField should be used within <FormField>');,
 }
 
   const { id  } = itemContext;
 
   return { id,
     name: fieldContext.name,
-    formItemId: `${id 
-}-form-item`,
-    formDescriptionId: `${ id 
-}-form-item-description`,
-    formMessageId: `${ id 
-}-form-item-message`,
-    ...fieldState } }
-
-type FormItemContextValue = { id: string 
+    formItemId: `${id }-form-item`,
+    formDescriptionId: `${ id }-form-item-description`,
+    formMessageId: `${ id }-form-item-message`,
+    ...fieldState,
+  },
 }
 
-/**
- * FormItemContext组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
-const FormItemContext = React.createContext<FormItemContextValue>(; {} as FormItemContextValue
+type FormItemContextValue = { id: string,
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>(;
+  {} as FormItemContextValue
 )
 
-/**
- * FormItem组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormItem = React.forwardRef<;
 HTMLDivElement,
 React.HTMLAttributes<HTMLDivElement>
@@ -127,15 +101,10 @@ React.HTMLAttributes<HTMLDivElement>
     <FormItemContext.Provider value={{ id  }}>;
     <div ref={ ref } className={ cn('space-y-2', className) } { ...props } />;
     </FormItemContext.Provider>
-  ) })
+  ),
+})
 FormItem.displayName = 'FormItem';
 
-/**
- * FormLabel组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormLabel = React.forwardRef<;
 React.ElementRef<typeof LabelPrimitive.Root>,
 React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -148,15 +117,10 @@ React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
     htmlFor={ formItemId }
     { ...props }
     />
-  ) })
+  ),
+})
 FormLabel.displayName = 'FormLabel';
 
-/**
- * FormControl组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormControl = React.forwardRef<;
 React.ElementRef<typeof Slot>,
 React.ComponentPropsWithoutRef<typeof Slot>
@@ -168,20 +132,15 @@ React.ComponentPropsWithoutRef<typeof Slot>
     id={ formItemId }
     aria-describedby={ !error
       ? `${formDescriptionId }`
-      : `${ formDescriptionId 
-} ${ formMessageId }` }
+      : `${ formDescriptionId } ${ formMessageId }`,
+}
     aria-invalid={ !!error }
     { ...props }
     />
-  ) })
+  ),
+})
 FormControl.displayName = 'FormControl';
 
-/**
- * FormDescription组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormDescription = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLParagraphElement>
@@ -194,22 +153,17 @@ React.HTMLAttributes<HTMLParagraphElement>
     className={ cn('text-sm text-muted-foreground', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 FormDescription.displayName = 'FormDescription';
 
-/**
- * FormMessage组件
- * 表单组件，提供数据收集和验证
- * @param props - 组件属性
- * @returns JSX元素
- */
 const FormMessage = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props  }, ref) => { const { error, formMessageId  } = useFormField();
   const body = error ? String(error?.message) : children;
 
-  if (!body) { return null
+  if (!body) { return null;,
 }
 
   return (;
@@ -221,7 +175,8 @@ React.HTMLAttributes<HTMLParagraphElement>
     >
     { body }
     </p>
-  ) })
+  ),
+})
 FormMessage.displayName = 'FormMessage';
 
 export { useFormField,
@@ -231,4 +186,5 @@ export { useFormField,
   FormControl,
   FormDescription,
   FormMessage,
-  FormField }
+  FormField,
+ }

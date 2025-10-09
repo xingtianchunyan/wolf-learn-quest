@@ -1,5 +1,5 @@
-import { Check, ChevronRight, Circle   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
+import { Check, ChevronRight, Circle  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
 import * as MenubarPrimitive from '@radix-ui/react-menubar'
 import * as React from 'react'
 
@@ -34,44 +34,14 @@ import * as React from 'react'
  */
 const MenubarMenu = MenubarPrimitive.Menu;
 
-/**
- * MenubarGroup组件
- * MenubarGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarGroup = MenubarPrimitive.Group;
 
-/**
- * MenubarPortal组件
- * MenubarPortal组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarPortal = MenubarPrimitive.Portal;
 
-/**
- * MenubarSub组件
- * MenubarSub组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarSub = MenubarPrimitive.Sub;
 
-/**
- * MenubarRadioGroup组件
- * MenubarRadioGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarRadioGroup = MenubarPrimitive.RadioGroup;
 
-/**
- * Menubar组件
- * Menubar组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const Menubar = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Root>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Root>
@@ -87,12 +57,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Root>
 ))
 Menubar.displayName = MenubarPrimitive.Root.displayName;
 
-/**
- * MenubarTrigger组件
- * MenubarTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarTrigger = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Trigger>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Trigger>
@@ -108,15 +72,9 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Trigger>
 ))
 MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName;
 
-/**
- * MenubarSubTrigger组件
- * MenubarSubTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarSubTrigger = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.SubTrigger>,
-React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & { inset?: boolean,
 }
 >(({ className, inset, children, ...props  }, ref) => (;
   <MenubarPrimitive.SubTrigger
@@ -134,12 +92,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & { inset?: b
 ))
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
 
-/**
- * MenubarSubContent组件
- * MenubarSubContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarSubContent = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.SubContent>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubContent>
@@ -155,12 +107,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubContent>
 ))
 MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName;
 
-/**
- * MenubarContent组件
- * MenubarContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarContent = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Content>
@@ -185,15 +131,9 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Content>
 )
 MenubarContent.displayName = MenubarPrimitive.Content.displayName;
 
-/**
- * MenubarItem组件
- * MenubarItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarItem = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Item>,
-React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <MenubarPrimitive.Item
@@ -208,12 +148,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & { inset?: boolean
 ))
 MenubarItem.displayName = MenubarPrimitive.Item.displayName;
 
-/**
- * MenubarCheckboxItem组件
- * MenubarCheckboxItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarCheckboxItem = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.CheckboxItem>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem>
@@ -237,12 +171,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem>
 ))
 MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName;
 
-/**
- * MenubarRadioItem组件
- * MenubarRadioItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarRadioItem = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.RadioItem>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.RadioItem>
@@ -265,15 +193,9 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.RadioItem>
 ))
 MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName;
 
-/**
- * MenubarLabel组件
- * MenubarLabel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarLabel = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Label>,
-React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <MenubarPrimitive.Label
@@ -288,12 +210,6 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & { inset?: boolea
 ))
 MenubarLabel.displayName = MenubarPrimitive.Label.displayName;
 
-/**
- * MenubarSeparator组件
- * MenubarSeparator组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MenubarSeparator = React.forwardRef<;
 React.ElementRef<typeof MenubarPrimitive.Separator>,
 React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator>
@@ -306,14 +222,9 @@ React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator>
 ))
 MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
 
-/**
- * MenubarShortcut组件
- * MenubarShortcut组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const MenubarShortcut = ( { className,
-  ...props }: React.HTMLAttributes<HTMLSpanElement>) => { return (;
+const MenubarShortcut = ({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLSpanElement>) => { return (;
     <span
     className={cn(;
       'ml-auto text-xs tracking-widest text-muted-foreground',
@@ -321,7 +232,8 @@ const MenubarShortcut = ( { className,
     ) }
     { ...props }
     />
-  ) }
+  ),
+}
 MenubarShortcut.displayname = 'MenubarShortcut';
 
 export { Menubar,
@@ -339,4 +251,5 @@ export { Menubar,
   MenubarSubTrigger,
   MenubarGroup,
   MenubarSub,
-  MenubarShortcut }
+  MenubarShortcut,
+ }

@@ -1,31 +1,23 @@
 
 // 投票系统辅助函数
 
-export interface VotingSummary {
-  totalVotes: number;
+export interface VotingSummary { totalVotes: number;
   validVotes: number;
   abstentions: number;
   topCandidate?: {
     playerId: string;
     playerName: string;
     voteCount: number;
-    percentage: number
-}
+    percentage: number;,
+};
   isTied: boolean;
-  hasMajority: boolean
+  hasMajority: boolean;,
 }
 
 // 计算投票摘要信息（支持投票权重）
-/**
- * calculateVotingSummary函数
- * calculateVotingSummary函数的功能描述
- * @returns void
- */
-export const calculateVotingSummary = (
-  votes: Array<{ target_id?: string; is_valid: boolean; vote_weight?: number  
-}>,
-  players: Array<{ userId?: string; name: string  
-}>,
+export const calculateVotingSummary = (;
+  votes: Array<{ target_id?: string; is_valid: boolean; vote_weight?: number  }>,
+  players: Array<{ userId?: string; name: string  }>,
   _totalPlayers: number
 ): VotingSummary => { const validVotes = votes.filter(vote => vote.is_valid);
   const totalVoteWeight = validVotes.reduce((sum, vote) => sum + (vote.vote_weight || 1), 0);
@@ -37,7 +29,7 @@ export const calculateVotingSummary = (
   targetVotes.forEach(vote => {
     if (vote.target_id) {
       const weight = vote.vote_weight || 1;
-      voteCounts.set(vote.target_id, (voteCounts.get(vote.target_id) || 0) + weight)
+      voteCounts.set(vote.target_id, (voteCounts.get(vote.target_id) || 0) + weight);,
 }
   });
 
@@ -51,8 +43,8 @@ export const calculateVotingSummary = (
       playerId,
       playerName: player?.name || '未知玩家',
       voteCount,
-      percentage: Math.round((voteCount / totalVoteWeight) * 100) 
-}
+      percentage: Math.round((voteCount / totalVoteWeight) * 100),
+};,
 })() : undefined;
 
   return { totalVotes: votes.length,
@@ -60,93 +52,67 @@ export const calculateVotingSummary = (
     abstentions,
     topCandidate,
     isTied: topCandidates.length > 1 && maxVotes > 0,
-    hasMajority: topCandidate ? topCandidate.voteCount > totalVoteWeight / 2 : false 
-}
+    hasMajority: topCandidate ? topCandidate.voteCount > totalVoteWeight / 2 : false,
+};,
 };
 
 // 获取投票结果描述
-/**
- * getVotingResultDescription函数
- * 获取数据
- * @returns void
- */
-export const getVotingResultDescription = (
+export const getVotingResultDescription = (;
   resultType: string,
   targetName?: string
 ): string => { switch (resultType) {
-    case 'eliminated': return `${targetName || '目标玩家' 
-}被投票淘汰`;
+    case 'eliminated':
+    return `${targetName || '目标玩家' }被投票淘汰`;
     case 'tied':
     return '投票结果平票，无人被淘汰';
-    case 'saved': return `${ targetName || '目标玩家' 
-}被救下，免于淘汰`;
+    case 'saved':
+    return `${ targetName || '目标玩家' }被救下，免于淘汰`;
     case 'no_result':
     return '投票无有效结果';
-    default: return '未知投票结果'
+    default:
+    return '未知投票结果';,
 }
 };
 
 // 检查是否可以开始投票
-/**
- * canStartVoting函数
- * canStartVoting函数的功能描述
- * @returns void
- */
-export const canStartVoting = (
+export const canStartVoting = (;
   gamePhase: number,
   gameStatus: string,
   playersCount: number
-): { canStart: boolean; reason?: string   
-} => { if (gameStatus !== 'active') {
-    return { canStart: false, reason: '游戏未开始'  
-}
+): { canStart: boolean; reason?: string  } => { if (gameStatus !== 'active') {
+    return { canStart: false, reason: '游戏未开始'  };,
 }
 
-  if (playersCount < 3) { return { canStart: false, reason: '玩家人数不足'  
-}
+  if (playersCount < 3) { return { canStart: false, reason: '玩家人数不足'  };,
 }
 
   if (gamePhase === 1) { // 白天阶段
-  return { canStart: true  
-}
+  return { canStart: true  };,
 }
 
-return { canStart: false, reason: '当前阶段不允许投票'  
-}
+return { canStart: false, reason: '当前阶段不允许投票'  };,
 };
 
 // 获取投票会话类型显示名称
-/**
- * getSessionTypeDisplayName函数
- * 获取数据
- *
- * @param sessionType - sessionType参数
- * @returns void
- */
-export const getSessionTypeDisplayName = (sessionType: string): string => { switch (sessionType)  {
+export const getSessionTypeDisplayName = (sessionType: string): string => { switch (sessionType) {
     case 'day_vote':
     return '白天投票';
     case 'exile_vote':
     return '放逐投票';
     case 'emergency_vote':
     return '紧急投票';
-    default: return '投票'
+    default:
+    return '投票';,
 }
 };
 
 // 检查玩家是否有投票权限
-/**
- * hasVotingPermission函数
- * hasVotingPermission函数的功能描述
- * @returns void
- */
-export const hasVotingPermission = (
-  statusEffects: { can_vote?: boolean  
-} | null,
+export const hasVotingPermission = (;
+  statusEffects: { can_vote?: boolean  } | null,
   roleStatus: number
 ): boolean => { // 检查状态效果中的投票权限
   if (statusEffects?.can_vote === false) {
-    return false
+    return false;,
 }
 
   // 检查角色状态
@@ -158,23 +124,18 @@ export const hasVotingPermission = (
     return false;
     case 4: // 淘汰状态
     return false;
-    default: return false
+    default:
+    return false;,
 }
 };
 
 // 检查玩家是否可以被投票
-/**
- * canBeVoted函数
- * canBeVoted函数的功能描述
- * @returns void
- */
-export const canBeVoted = (
-  statusEffects: { can_be_voted?: boolean  
-} | null,
+export const canBeVoted = (;
+  statusEffects: { can_be_voted?: boolean  } | null,
   roleStatus: number
 ): boolean => { // 检查状态效果中的被投票权限
   if (statusEffects?.can_be_voted === false) {
-    return false
+    return false;,
 }
 
   // 检查角色状态
@@ -186,52 +147,40 @@ export const canBeVoted = (
     return true;
     case 4: // 淘汰状态
     return false;
-    default: return false
+    default:
+    return false;,
 }
 };
 
 // 计算投票权重（用于特殊角色）
-/**
- * calculateVoteWeight函数
- * calculateVoteWeight函数的功能描述
- * @returns void
- */
-export const calculateVoteWeight = (
-  roleEffects: { vote_weight?: number  
-} | null,
-  statusEffects: { vote_weight?: number  
-} | null
+export const calculateVoteWeight = (;
+  roleEffects: { vote_weight?: number  } | null,
+  statusEffects: { vote_weight?: number  } | null
 ): number => { // 检查角色特殊技能是否影响投票权重
   if (roleEffects?.vote_weight) {
-    return roleEffects.vote_weight
+    return roleEffects.vote_weight;,
 }
 
   // 检查状态效果是否影响投票权重
-  if (statusEffects?.vote_weight) { return statusEffects.vote_weight
+  if (statusEffects?.vote_weight) { return statusEffects.vote_weight;,
 }
 
-  return 1; // 默认权重 };
+  return 1; // 默认权重,
+};
 
 // 格式化投票时间
-/**
- * formatVoteTime函数
- * 格式化数据
- *
- * @param voteTime - voteTime参数
- * @returns void
- */
-export const formatVoteTime = (voteTime: string): string =>  { const date = new Date(voteTime);
+export const formatVoteTime = (voteTime: string): string => { const date = new Date(voteTime);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
 
   if (diffSecs < 60) {
-    return `${diffSecs }秒前`
-} else if (diffMins < 60) { return `${diffMins }分钟前`
+    return `${diffSecs }秒前`;,
+} else if (diffMins < 60) { return `${diffMins }分钟前`;,
 } else { return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
-      minute: '2-digit' 
-})
+      minute: '2-digit',
+});,
 }
 };

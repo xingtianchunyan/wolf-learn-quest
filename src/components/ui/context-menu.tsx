@@ -1,5 +1,5 @@
-import { Check, ChevronRight, Circle   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
+import { Check, ChevronRight, Circle  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu'
 import * as React from 'react'
 
@@ -21,55 +21,19 @@ import * as React from 'react'
 
 const ContextMenu = ContextMenuPrimitive.Root;
 
-/**
- * ContextMenuTrigger组件
- * ContextMenuTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
 
-/**
- * ContextMenuGroup组件
- * ContextMenuGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuGroup = ContextMenuPrimitive.Group;
 
-/**
- * ContextMenuPortal组件
- * ContextMenuPortal组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuPortal = ContextMenuPrimitive.Portal;
 
-/**
- * ContextMenuSub组件
- * ContextMenuSub组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuSub = ContextMenuPrimitive.Sub;
 
-/**
- * ContextMenuRadioGroup组件
- * ContextMenuRadioGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup;
 
-/**
- * ContextMenuSubTrigger组件
- * ContextMenuSubTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuSubTrigger = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.SubTrigger>,
-React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & { inset?: boolean,
 }
 >(({ className, inset, children, ...props  }, ref) => (;
   <ContextMenuPrimitive.SubTrigger
@@ -87,12 +51,6 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & { inset
 ))
 ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName;
 
-/**
- * ContextMenuSubContent组件
- * ContextMenuSubContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuSubContent = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.SubContent>,
 React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
@@ -108,12 +66,6 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
 ))
 ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName;
 
-/**
- * ContextMenuContent组件
- * ContextMenuContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuContent = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
@@ -131,15 +83,9 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
 ))
 ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName;
 
-/**
- * ContextMenuItem组件
- * ContextMenuItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuItem = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.Item>,
-React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <ContextMenuPrimitive.Item
@@ -154,12 +100,6 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & { inset?: boo
 ))
 ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName;
 
-/**
- * ContextMenuCheckboxItem组件
- * ContextMenuCheckboxItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuCheckboxItem = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.CheckboxItem>,
 React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem>
@@ -184,12 +124,6 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem>
 ContextMenuCheckboxItem.displayName =;
 ContextMenuPrimitive.CheckboxItem.displayName
 
-/**
- * ContextMenuRadioItem组件
- * ContextMenuRadioItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuRadioItem = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.RadioItem>,
 React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem>
@@ -212,15 +146,9 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem>
 ))
 ContextMenuRadioItem.displayName = ContextMenuPrimitive.RadioItem.displayName;
 
-/**
- * ContextMenuLabel组件
- * ContextMenuLabel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuLabel = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.Label>,
-React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <ContextMenuPrimitive.Label
@@ -235,12 +163,6 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & { inset?: bo
 ))
 ContextMenuLabel.displayName = ContextMenuPrimitive.Label.displayName;
 
-/**
- * ContextMenuSeparator组件
- * ContextMenuSeparator组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ContextMenuSeparator = React.forwardRef<;
 React.ElementRef<typeof ContextMenuPrimitive.Separator>,
 React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator>
@@ -253,14 +175,9 @@ React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator>
 ))
 ContextMenuSeparator.displayName = ContextMenuPrimitive.Separator.displayName;
 
-/**
- * ContextMenuShortcut组件
- * ContextMenuShortcut组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const ContextMenuShortcut = ( { className,
-  ...props }: React.HTMLAttributes<HTMLSpanElement>) => { return (;
+const ContextMenuShortcut = ({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLSpanElement>) => { return (;
     <span
     className={cn(;
       'ml-auto text-xs tracking-widest text-muted-foreground',
@@ -268,7 +185,8 @@ const ContextMenuShortcut = ( { className,
     ) }
     { ...props }
     />
-  ) }
+  ),
+}
 ContextMenuShortcut.displayName = 'ContextMenuShortcut';
 
 export { ContextMenu,
@@ -285,4 +203,5 @@ export { ContextMenu,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
-  ContextMenuRadioGroup }
+  ContextMenuRadioGroup,
+ }

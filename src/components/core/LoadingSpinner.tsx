@@ -1,5 +1,5 @@
-import { cn   } from '@/lib/utils';
-import { Loader2   } from 'lucide-react';
+import { cn  } from '@/lib/utils';
+import { Loader2  } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -17,9 +17,10 @@ import React from 'react';
 * @category common
 * @filepath core\LoadingSpinner.tsx
  */
-interface LoadingSpinnerProps  { size?: 'sm' | 'md' | 'lg';
+
+interface LoadingSpinnerProps { size?: 'sm' | 'md' | 'lg';
   text?: string;
-  className?: string
+  className?: string;,
 }
 
 /**
@@ -35,12 +36,13 @@ interface LoadingSpinnerProps  { size?: 'sm' | 'md' | 'lg';
 * // 使用示例
 * <LoadingSpinner { ...props } />
  */
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ( { size = 'md',
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'md',
   text,
-  className }) => { const sizeClasses = {
+  className,
+}) => { const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
-    lg: 'h-8 w-8'  
+    lg: 'h-8 w-8',
 };
 
   return (;
@@ -48,13 +50,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ( { size = 'md',
     <Loader2 className={ cn('animate-spin text-werewolf-purple', sizeClasses[size]) } />;
     { text && <span className='ml-2 text-sm text-muted-foreground'>{text }</span>}
     </div>
-  )
+  );,
 };
 
-/**
- * LoadingSpinner组件
- * 加载组件，显示加载状态
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default LoadingSpinner;

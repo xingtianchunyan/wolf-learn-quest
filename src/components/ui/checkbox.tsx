@@ -1,5 +1,5 @@
-import { Check   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
+import { Check  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import * as React from 'react'
 

@@ -1,6 +1,7 @@
-import { ErrorSeverity   } from '@/utils/unifiedErrorHandler';
-import { UserFriendlyErrorInfo, X  } from
-import React, { useState, useEffect, useCallback   } from 'react';
+import { ErrorSeverity  } from '@/utils/unifiedErrorHandler';
+import { UserFriendlyErrorInfo,
+import { X,
+import React, { useState, useEffect, useCallback  } from 'react';
 
 /**
 * 文件级注释：错误展示组件
@@ -33,33 +34,35 @@ import React, { useState, useEffect, useCallback   } from 'react';
   ChevronUp,
   Clock,
   Users,
-  Zap  } from 'lucide-react';
+  Zap,
+} from 'lucide-react';
   ErrorSolution,
   HelpLink,
   ErrorFeedback,
   ErrorDisplayConfig,
-  useEnhancedUserErrorInterface  } from '@/utils/enhancedUserErrorInterface';
+  useEnhancedUserErrorInterface,
+} from '@/utils/enhancedUserErrorInterface';
 
 /**
 * 接口注释：错误展示组件属性
 * 定义错误展示组件的属性接口
  */
-export interface ErrorDisplayProps  { /** 错误信息 */
+export interface ErrorDisplayProps { /** 错误信息  */
   errorInfo: UserFriendlyErrorInfo;
-  /** 展示配置 */
+  /** 展示配置  */
   config?: Partial<ErrorDisplayConfig>;
-  /** 关闭回调 */
+  /** 关闭回调  */
   onClose?: () => void;
-  /** 重试回调 */
+  /** 重试回调  */
   onRetry?: () => Promise<void>;
-  /** 反馈回调 */
+  /** 反馈回调  */
   onFeedback?: (feedback: ErrorFeedback) => void;
-  /** 解决方案执行回调 */
+  /** 解决方案执行回调  */
   onSolutionExecute?: (solutionId: string) => Promise<boolean>;
-  /** 是否显示 */
+  /** 是否显示  */
   visible?: boolean;
-  /** 自定义类名 */
-  className?: string
+  /** 自定义类名  */
+  className?: string;,
 }
 
 /**
@@ -71,14 +74,14 @@ export interface ErrorDisplayProps  { /** 错误信息 */
 * - 用户反馈收集
 * - 响应式设计
  */
-export const ErrorDisplayComponent: React.FC<ErrorDisplayProps> = ( { errorInfo,
+export const ErrorDisplayComponent: React.FC<ErrorDisplayProps> = ({ errorInfo,
   config,
   onClose,
   onRetry,
   onFeedback,
   onSolutionExecute,
   visible = true,
-  className = ''
+  className = '';,
 }) => { const [showDetails, setShowDetails] = useState(false);
   const [showSolutions, setShowSolutions] = useState(true);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -93,41 +96,38 @@ export const ErrorDisplayComponent: React.FC<ErrorDisplayProps> = ( { errorInfo,
   * 函数级注释：获取严重级别样式
   * 根据错误严重级别返回对应的样式类名
    */
-const getSeverityStyles = useCallback((severity: ErrorSeverity) => { switch (severity)  {
+  const getSeverityStyles = useCallback((severity: ErrorSeverity) => { switch (severity) {
       case ErrorSeverity.LOW:
       return {
-    container: 'border-blue-200 bg-blue-50',
+        container: 'border-blue-200 bg-blue-50',
         header: 'text-blue-800',
         icon: 'text-blue-600',
-        button: 'bg-blue-600 hover:bg-blue-700'  
+        button: 'bg-blue-600 hover:bg-blue-700',
 };
       case ErrorSeverity.MEDIUM:
-      return {
-    container: 'border-yellow-200 bg-yellow-50',
+      return { container: 'border-yellow-200 bg-yellow-50',
         header: 'text-yellow-800',
         icon: 'text-yellow-600',
-        button: 'bg-yellow-600 hover:bg-yellow-700'  
+        button: 'bg-yellow-600 hover:bg-yellow-700',
 };
       case ErrorSeverity.HIGH:
-      return {
-    container: 'border-red-200 bg-red-50',
+      return { container: 'border-red-200 bg-red-50',
         header: 'text-red-800',
         icon: 'text-red-600',
-        button: 'bg-red-600 hover:bg-red-700'  
+        button: 'bg-red-600 hover:bg-red-700',
 };
       case ErrorSeverity.CRITICAL:
-      return {
-    container: 'border-purple-200 bg-purple-50',
+      return { container: 'border-purple-200 bg-purple-50',
         header: 'text-purple-800',
         icon: 'text-purple-600',
-        button: 'bg-purple-600 hover:bg-purple-700'  
+        button: 'bg-purple-600 hover:bg-purple-700',
 };
       default:
       return { container: 'border-gray-200 bg-gray-50',
         header: 'text-gray-800',
         icon: 'text-gray-600',
-        button: 'bg-gray-600 hover:bg-gray-700' 
-}
+        button: 'bg-gray-600 hover:bg-gray-700',
+};,
 }
   }, []);
 
@@ -135,7 +135,7 @@ const getSeverityStyles = useCallback((severity: ErrorSeverity) => { switch (sev
   * 函数级注释：处理解决方案执行
   * 执行选定的解决方案
    */
-const handleSolutionExecute = useCallback(async (solution: ErrorSolution) =>  { if (!solution.action && !onSolutionExecute) return;
+  const handleSolutionExecute = useCallback(async (solution: ErrorSolution) => { if (!solution.action && !onSolutionExecute) return;
 
     setExecutingSolution(solution.id);
 
@@ -143,18 +143,18 @@ const handleSolutionExecute = useCallback(async (solution: ErrorSolution) =>  { 
       let success = false;
 
       if (solution.action) {
-        success = await solution.action()
-} else if (onSolutionExecute) { success = await onSolutionExecute(solution.id)
+        success = await solution.action();,
+} else if (onSolutionExecute) { success = await onSolutionExecute(solution.id);,
 }
 
       // 更新解决方案成功率
       updateSolutionSuccess(solution.id, success);
 
-      if (success && onClose) { onClose()
+      if (success && onClose) { onClose();,
 }
     } catch (error) { console.error('解决方案执行失败:', error);
-      updateSolutionSuccess(solution.id, false)
-} finally { setExecutingSolution(null)
+      updateSolutionSuccess(solution.id, false);,
+} finally { setExecutingSolution(null);,
 }
   }, [onSolutionExecute, onClose, updateSolutionSuccess]);
 
@@ -162,23 +162,23 @@ const handleSolutionExecute = useCallback(async (solution: ErrorSolution) =>  { 
   * 函数级注释：处理反馈提交
   * 提交用户反馈
    */
-const handleFeedbackSubmit = useCallback(async () =>  { if (!feedbackText.trim()) return;
+  const handleFeedbackSubmit = useCallback(async () => { if (!feedbackText.trim()) return;
 
     const feedback: Omit<ErrorFeedback, 'timestamp' | 'userAgent' | 'pageUrl'> = {
       errorId: errorInfo.id,
       type: feedbackType,
       content: feedbackText,
-      contact: '' // 可以添加联系方式输入  
+      contact: '' // 可以添加联系方式输入,
 };
 
     try { await collectFeedback(feedback);
       if (onFeedback) {
-        onFeedback(feedback as ErrorFeedback)
+        onFeedback(feedback as ErrorFeedback);,
 }
 
       setFeedbackText('');
-      setShowFeedback(false)
-} catch (error) { console.error('反馈提交失败:', error)
+      setShowFeedback(false);,
+} catch (error) { console.error('反馈提交失败:', error);,
 }
   }, [feedbackText, feedbackType, errorInfo.id, collectFeedback, onFeedback]);
 
@@ -186,27 +186,20 @@ const handleFeedbackSubmit = useCallback(async () =>  { if (!feedbackText.trim()
   * 函数级注释：复制错误信息
   * 复制错误详情到剪贴板
    */
-const handleCopyError = useCallback(async () =>  { const errorText = `;
-    错误ID: ${errorInfo.id 
-}
-    标题: ${ errorInfo.title 
-}
-    描述: ${ errorInfo.description 
-}
-    详情: ${ errorInfo.details || '无' 
-}
-    严重级别: ${ errorInfo.severity 
-}
-    分类: ${ errorInfo.classification.category 
-}
-    时间: ${ new Date().toLocaleString() 
-}
+  const handleCopyError = useCallback(async () => { const errorText = `;
+    错误ID: ${errorInfo.id }
+    标题: ${ errorInfo.title }
+    描述: ${ errorInfo.description }
+    详情: ${ errorInfo.details || '无' }
+    严重级别: ${ errorInfo.severity }
+    分类: ${ errorInfo.classification.category }
+    时间: ${ new Date().toLocaleString() }
     `.trim();
 
     try { await navigator.clipboard.writeText(errorText);
       setCopiedToClipboard(true);
-      setTimeout(() => setCopiedToClipboard(false), 2000)
-} catch (error) { console.error('复制失败:', error)
+      setTimeout(() => setCopiedToClipboard(false), 2000);,
+} catch (error) { console.error('复制失败:', error);,
 }
   }, [errorInfo]);
 
@@ -214,7 +207,7 @@ const handleCopyError = useCallback(async () =>  { const errorText = `;
   * 函数级注释：获取影响范围图标
   * 根据影响范围返回对应图标
    */
-const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
+  const getImpactIcon = useCallback((scope: string) => { switch (scope) {
       case 'user':
       return <Users className='w-4 h-4' />;
       case 'feature':
@@ -222,7 +215,8 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
       case 'system':
       case 'global':
       return <Clock className='w-4 h-4' />;
-      default: return <Clock className='w-4 h-4' />
+      default:
+      return <Clock className='w-4 h-4' />;,
 }
   }, []);
 
@@ -249,14 +243,12 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
     <div className='flex items-center space-x-4 mt-2 text-xs text-gray-500'>;
     <span className='flex items-center space-x-1'>;
     { getImpactIcon(errorInfo.impactScope) }
-    <span>影响范围: { errorInfo.impactScope 
-}</span>
+    <span>影响范围: { errorInfo.impactScope }</span>
     </span>
     { errorInfo.estimatedResolutionTime && (
       <span className='flex items-center space-x-1'>;
       <Clock className='w-4 h-4' />;
-      <span>预计解决时间: {errorInfo.estimatedResolutionTime 
-}</span>
+      <span>预计解决时间: {errorInfo.estimatedResolutionTime }</span>
       </span>
     )}
     </div>
@@ -270,14 +262,13 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
     </button>
     </div>
 
-    { /*  详细信息  */
-} { errorInfo.details && (<div className='px-6 py-4 border-b border-gray-200'>;
+    { /*  详细信息  */ }
+    { errorInfo.details && (<div className='px-6 py-4 border-b border-gray-200'>;
       <button
       onClick={() => setShowDetails(!showDetails) }
       className='flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 transition-colors';
       >
-      { showDetails ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' /> 
-}
+      { showDetails ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' /> }
       <span>详细信息</span>
       </button>
       { showDetails && (
@@ -288,14 +279,13 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
       </div>
     )}
 
-    { /*  解决方案  */
-} { errorInfo.solutions.length > 0 && (<div className='px-6 py-4 border-b border-gray-200'>;
+    { /*  解决方案  */ }
+    { errorInfo.solutions.length > 0 && (<div className='px-6 py-4 border-b border-gray-200'>;
       <button
       onClick={() => setShowSolutions(!showSolutions) }
       className='flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors';
       >
-      { showSolutions ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' /> 
-}
+      { showSolutions ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' /> }
       <span>解决方案 ({ errorInfo.solutions.length })</span>
       </button>
       { showSolutions && (<div className='mt-4 space-y-3'>;
@@ -303,7 +293,7 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
           <div
           key={solution.id }
           className={ `p-4 rounded-lg border ${
-            solution.recommended ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50' 
+            solution.recommended ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50',
 }`}
           >
           <div className='flex items-start justify-between'>;
@@ -316,14 +306,12 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
             </span>
           ) }
           <span className='text-xs text-gray-500'>;
-          成功率: { Math.round(solution.successRate * 100) 
-}%
+          成功率: { Math.round(solution.successRate * 100) }%
           </span>
           </div>
           <p className='mt-1 text-sm text-gray-600'>{ solution.description }</p>;
           <div className='mt-2 text-xs text-gray-500'>;
-          预计耗时: { solution.estimatedTime 
-}
+          预计耗时: { solution.estimatedTime }
           </div>
           { solution.steps.length > 0 && (<div className='mt-3'>;
             <p className='text-xs font-medium text-gray-700 mb-2'>操作步骤:</p>;
@@ -344,8 +332,7 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
             <button
             onClick={() => handleSolutionExecute(solution) }
             disabled={ executingSolution === solution.id }
-            className={ `ml-4 px-3 py-1 text-sm text-white rounded transition-colors ${styles.button } disabled: opacity-50`
-}
+            className={ `ml-4 px-3 py-1 text-sm text-white rounded transition-colors ${styles.button } disabled:opacity-50`}
             >
             { executingSolution === solution.id ? (;
               <RefreshCw className='w-4 h-4 animate-spin' />;
@@ -362,8 +349,8 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
       </div>
     )}
 
-    { /*  帮助链接  */
-} { errorInfo.helpLinks.length > 0 && (<div className='px-6 py-4 border-b border-gray-200'>;
+    { /*  帮助链接  */ }
+    { errorInfo.helpLinks.length > 0 && (<div className='px-6 py-4 border-b border-gray-200'>;
       <h4 className='text-sm font-medium text-gray-700 mb-3'>相关帮助</h4>;
       <div className='space-y-2'>;
       {errorInfo.helpLinks.map((link, index) => (;
@@ -393,22 +380,18 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
     </button>
     { showFeedback && (<div className='mt-4 space-y-3'>;
       <div className='flex space-x-2'>;
-      {[{ value: 'helpful', label: '有帮助', icon: ThumbsUp  
-},
-        { value: 'not_helpful', label: '没帮助', icon: ThumbsDown  
-},
-        { value: 'suggestion', label: '建议', icon: MessageSquare  
-},
-        { value: 'bug_report', label: '错误报告', icon: MessageSquare  
-} ].map(({ value, label, icon: Icon  
-}) => (;
+      {[{ value: 'helpful', label: '有帮助', icon: ThumbsUp  },
+        { value: 'not_helpful', label: '没帮助', icon: ThumbsDown  },
+        { value: 'suggestion', label: '建议', icon: MessageSquare  },
+        { value: 'bug_report', label: '错误报告', icon: MessageSquare  },
+].map(({ value, label, icon: Icon  }) => (;
         <button
         key={ value }
         onClick={ () => setFeedbackType(value as any) }
         className={ `flex items-center space-x-1 px-3 py-1 text-xs rounded transition-colors ${
           feedbackType === value;
           ? 'bg-blue-100 text-blue-800'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
 }`}
         >
         <Icon className='w-3 h-3' />;
@@ -450,8 +433,7 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
     className='flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors';
     >
     <Copy className='w-4 h-4' />;
-    <span>{ copiedToClipboard ? '已复制' : '复制错误信息' 
-}</span>
+    <span>{ copiedToClipboard ? '已复制' : '复制错误信息' }</span>
     </button>
     </div>
     <div className='flex items-center space-x-3'>;
@@ -474,13 +456,7 @@ const getImpactIcon = useCallback((scope: string) => { switch (scope)  {
     </div>
     </div>
     </div>
-  )
+  );,
 };
 
-/**
- * ErrorDisplayComponent组件
- * 错误组件，显示错误信息
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default ErrorDisplayComponent;

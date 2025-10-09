@@ -1,5 +1,5 @@
-import { HelpCircle   } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger   } from '@/components/ui/tooltip';
+import { HelpCircle  } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger  } from '@/components/ui/tooltip';
 import React from 'react';
 
 /**
@@ -31,8 +31,7 @@ import React from 'react';
 * // 使用示例
 * <QuestionBankTooltip />
  */
-const QuestionBankTooltip: React.FC = () =>  {
-  return (;
+const QuestionBankTooltip: React.FC = () => { return (;
     <TooltipProvider>
     <Tooltip>
     <TooltipTrigger asChild>
@@ -68,14 +67,7 @@ const QuestionBankTooltip: React.FC = () =>  {
     </TooltipContent>
     </Tooltip>
     </TooltipProvider>
-  )
-
+  );,
 };
 
-/**
- * QuestionBankTooltip组件
- * QuestionBankTooltip组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default QuestionBankTooltip;

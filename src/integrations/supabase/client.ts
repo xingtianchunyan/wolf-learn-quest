@@ -1,5 +1,5 @@
-import { createClient   } from '@supabase/supabase-js';
-import type { Database   } from './types';
+import { createClient  } from '@supabase/supabase-js';
+import type { Database  } from './types';
 
 /**
 * Supabase 客户端初始化
@@ -10,10 +10,10 @@ import type { Database   } from './types';
 const SUPABASE_URL = 'https:// ijpbolrqhejgruigbkdv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'REMOVED_SUPABASE_ANON_KEY';
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) { throw new Error('Supabase configuration missing')
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) { throw new Error('Supabase configuration missing');,
 }
 
-// Import the supabase client like this: // import { supabase   
-} from '@/integrations/supabase/client';
+// Import the supabase client like this:
+// import { supabase  } from '@/integrations/supabase/client';
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

@@ -1,5 +1,5 @@
-import { Permission   } from '@/utils/enhancedPermissionSystem';
-import { SecurityMiddlewareOptions   } from '@/utils/securityMiddleware';
+import { Permission  } from '@/utils/enhancedPermissionSystem';
+import { SecurityMiddlewareOptions  } from '@/utils/securityMiddleware';
 
 /**
 * 文件级注释：安全配置文件
@@ -8,38 +8,37 @@ import { SecurityMiddlewareOptions   } from '@/utils/securityMiddleware';
  */
 
 /**
- * 安全级别枚举
+* 安全级别枚举
  */
-export enum SecurityLevel  { LOW = 'low',
+export enum SecurityLevel { LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical';,
 }
 
 /**
- * API端点安全配置接口
+* API端点安全配置接口
  */
-export interface APISecurityConfig  {
-  path: string;
+export interface APISecurityConfig { path: string;
   methods: string[];
   securityLevel: SecurityLevel;
   requireAuth: boolean;
   requiredPermissions: Permission[];
   rateLimit: {
     maxRequests: number;
-    windowMs: number
-}
+    windowMs: number;,
+};
   enableCSRF: boolean;
   enableInputValidation: boolean;
   enableXSSProtection: boolean;
   enableSQLInjectionProtection: boolean;
-  customRules?: string[]
+  customRules?: string[];,
 }
 
 /**
 * 全局安全配置
  */
-export const SECURITY_CONFIG =  { // 全局安全设置
+export const SECURITY_CONFIG = { // 全局安全设置
   global: {
     enableSecurityHeaders: true,
     enableHTTPS: true,
@@ -53,18 +52,15 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     enableTwoFactor: false,
     showDetailedErrors: process.env.NODE_ENV !== 'production',
     enableSecurityLogging: true,
-    regenerateSessionOnLogin: true 
+    regenerateSessionOnLogin: true,
 },
 
   // 默认请求限制
-  defaultRateLimit: { [SecurityLevel.LOW]: { maxRequests: 1000, windowMs: 60000  
+  defaultRateLimit: { [SecurityLevel.LOW]: { maxRequests: 1000, windowMs: 60000  },
+    [SecurityLevel.MEDIUM]: { maxRequests: 100, windowMs: 60000  },
+    [SecurityLevel.HIGH]: { maxRequests: 20, windowMs: 60000  },
+    [SecurityLevel.CRITICAL]: { maxRequests: 5, windowMs: 60000  },
 },
-    [SecurityLevel.MEDIUM]: { maxRequests: 100, windowMs: 60000  
-},
-    [SecurityLevel.HIGH]: { maxRequests: 20, windowMs: 60000  
-},
-    [SecurityLevel.CRITICAL]: { maxRequests: 5, windowMs: 60000  
-} },
 
   // 输入验证规则
   inputValidation: { maxStringLength: 10000,
@@ -73,7 +69,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     allowedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt'],
     maxFileSize: 10485760, // 10MB
     enableSanitization: true,
-    strictMode: true 
+    strictMode: true,
 },
 
   // 数据保护配置
@@ -84,7 +80,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     enableDataMasking: true,
     retentionPeriod: 2592000000, // 30天
     encryptionAlgorithm: 'aes-256-gcm',
-    keyRotationInterval: 7776000000 // 90天 
+    keyRotationInterval: 7776000000 // 90天,
 },
 
   // 业务逻辑安全配置
@@ -95,7 +91,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     enforceBusinessLimits: true,
     enableTransactionIntegrity: true,
     maxConcurrentOperations: 10,
-    operationTimeout: 30000 // 30秒 
+    operationTimeout: 30000 // 30秒,
 },
 
   // 安全头配置
@@ -103,9 +99,9 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-    'Content-Security-Policy': 'default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: unknown; font-src 'self' data: unknown; connect-src 'self' https:// api.siliconflow.cn wss: https:',
+    'Content-Security-Policy': 'default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:// api.siliconflow.cn wss: https:',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()';,
 },
 
   // 监控和审计配置
@@ -118,10 +114,11 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     alertThresholds: {
       failedLogins: 5,
       suspiciousActivity: 10,
-      dataAccess: 100 
+      dataAccess: 100,
 },
     realTimeAlerts: true,
-    alertChannels: ['log', 'email'] },
+    alertChannels: ['log', 'email'],
+},
 
   // 加密配置
   encryption: { enableTransitEncryption: true,
@@ -131,7 +128,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     enableKeyRotation: true,
     keyRotationInterval: 7776000000, // 90天
     enableHSM: false,
-    enablePerfectForwardSecrecy: true 
+    enablePerfectForwardSecrecy: true,
 },
 
   // 认证配置
@@ -144,7 +141,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
       enableSameSite: true,
       cookieSecure: true,
       sessionIdLength: 32,
-      enableSessionFixationProtection: true 
+      enableSessionFixationProtection: true,
 },
     passwordPolicy: { minLength: 8,
       requireUppercase: true,
@@ -152,7 +149,7 @@ export const SECURITY_CONFIG =  { // 全局安全设置
       requireNumbers: true,
       requireSpecialChars: true,
       preventReuse: 5,
-      maxAge: 7776000000 // 90天 
+      maxAge: 7776000000 // 90天,
 }
   },
 
@@ -163,12 +160,12 @@ export const SECURITY_CONFIG =  { // 全局安全设置
     enablePermissionCaching: true,
     permissionCacheTTL: 300000, // 5分钟
     enableAuditTrail: true,
-    enablePrivilegeEscalationDetection: true 
+    enablePrivilegeEscalationDetection: true,
 }
 };
 
 /**
- * API端点安全配置
+* API端点安全配置
  */
 export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
   // 认证相关端点
@@ -177,36 +174,33 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.HIGH,
     requireAuth: false,
     requiredPermissions: [],
-    rateLimit: { maxRequests: 5, windowMs: 300000  
-}, // 5次/5分钟
+    rateLimit: { maxRequests: 5, windowMs: 300000  }, // 5次/5分钟
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
   { path: '/api/auth/register',
     methods: ['POST'],
     securityLevel: SecurityLevel.HIGH,
     requireAuth: false,
     requiredPermissions: [],
-    rateLimit: { maxRequests: 3, windowMs: 3600000  
-}, // 3次/小时
+    rateLimit: { maxRequests: 3, windowMs: 3600000  }, // 3次/小时
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
   { path: '/api/auth/logout',
     methods: ['POST'],
     securityLevel: SecurityLevel.MEDIUM,
     requireAuth: true,
     requiredPermissions: [],
-    rateLimit: { maxRequests: 10, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 10, windowMs: 60000  },
     enableCSRF: true,
     enableInputValidation: false,
     enableXSSProtection: false,
-    enableSQLInjectionProtection: false 
+    enableSQLInjectionProtection: false,
 },
 
   // 游戏相关端点
@@ -215,48 +209,44 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.MEDIUM,
     requireAuth: true,
     requiredPermissions: [Permission.CREATE_GAME],
-    rateLimit: { maxRequests: 10, windowMs: 300000  
-}, // 10次/5分钟
+    rateLimit: { maxRequests: 10, windowMs: 300000  }, // 10次/5分钟
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
   { path: '/api/game/join',
     methods: ['POST'],
     securityLevel: SecurityLevel.MEDIUM,
     requireAuth: true,
     requiredPermissions: [Permission.JOIN_GAME],
-    rateLimit: { maxRequests: 20, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 20, windowMs: 60000  },
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
   { path: '/api/game/vote',
     methods: ['POST'],
     securityLevel: SecurityLevel.HIGH,
     requireAuth: true,
     requiredPermissions: [Permission.VOTE],
-    rateLimit: { maxRequests: 10, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 10, windowMs: 60000  },
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
   { path: '/api/game/skill',
     methods: ['POST'],
     securityLevel: SecurityLevel.HIGH,
     requireAuth: true,
     requiredPermissions: [Permission.USE_SKILL],
-    rateLimit: { maxRequests: 5, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 5, windowMs: 60000  },
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
 
   // 聊天相关端点
@@ -265,12 +255,11 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.MEDIUM,
     requireAuth: true,
     requiredPermissions: [Permission.CHAT],
-    rateLimit: { maxRequests: 60, windowMs: 60000  
-}, // 60次/分钟
+    rateLimit: { maxRequests: 60, windowMs: 60000  }, // 60次/分钟
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
 
   // 管理员端点
@@ -279,12 +268,11 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.CRITICAL,
     requireAuth: true,
     requiredPermissions: [Permission.ADMIN_PANEL],
-    rateLimit: { maxRequests: 100, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 100, windowMs: 60000  },
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
 
   // 文件上传端点
@@ -293,12 +281,11 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.HIGH,
     requireAuth: true,
     requiredPermissions: [Permission.UPLOAD_FILE],
-    rateLimit: { maxRequests: 10, windowMs: 300000  
-}, // 10次/5分钟
+    rateLimit: { maxRequests: 10, windowMs: 300000  }, // 10次/5分钟
     enableCSRF: true,
     enableInputValidation: true,
     enableXSSProtection: true,
-    enableSQLInjectionProtection: true 
+    enableSQLInjectionProtection: true,
 },
 
   // 公开端点
@@ -307,25 +294,24 @@ export const API_SECURITY_CONFIGS: APISecurityConfig[] = [;
     securityLevel: SecurityLevel.LOW,
     requireAuth: false,
     requiredPermissions: [],
-    rateLimit: { maxRequests: 1000, windowMs: 60000  
-},
+    rateLimit: { maxRequests: 1000, windowMs: 60000  },
     enableCSRF: false,
     enableInputValidation: false,
     enableXSSProtection: false,
-    enableSQLInjectionProtection: false 
-} ];
+    enableSQLInjectionProtection: false,
+},
+];
 
 /**
 * 获取API端点的安全配置
  */
-export function getAPISecurityConfig(path: string, method: string): SecurityMiddlewareOptions  { // 查找匹配的配置
+export function getAPISecurityConfig(path: string, method: string): SecurityMiddlewareOptions { // 查找匹配的配置
   const config = API_SECURITY_CONFIGS.find(config => {
-  const pathMatches = config.path.endsWith('*');
+    const pathMatches = config.path.endsWith('*');
     ? path.startsWith(config.path.slice(0, -1))
     : config.path === path;
     const methodMatches = config.methods.includes(method.toUpperCase());
-    return pathMatches && methodMatches
-
+    return pathMatches && methodMatches;,
 });
 
   if (!config) { // 默认安全配置
@@ -337,8 +323,8 @@ export function getAPISecurityConfig(path: string, method: string): SecurityMidd
       enableInputValidation: true,
       enableCSRFProtection: true,
       enableXSSProtection: true,
-      enableSQLInjectionProtection: true 
-}
+      enableSQLInjectionProtection: true,
+};,
 }
 
   return { requireAuth: config.requireAuth,
@@ -348,14 +334,14 @@ export function getAPISecurityConfig(path: string, method: string): SecurityMidd
     enableInputValidation: config.enableInputValidation,
     enableCSRFProtection: config.enableCSRF,
     enableXSSProtection: config.enableXSSProtection,
-    enableSQLInjectionProtection: config.enableSQLInjectionProtection 
-}
+    enableSQLInjectionProtection: config.enableSQLInjectionProtection,
+};,
 }
 
 /**
- * 获取安全级别对应的默认配置
+* 获取安全级别对应的默认配置
  */
-export function getSecurityLevelConfig(level: SecurityLevel): SecurityMiddlewareOptions { const baseConfig =  {
+export function getSecurityLevelConfig(level: SecurityLevel): SecurityMiddlewareOptions { const baseConfig = {
     requireAuth: level !== SecurityLevel.LOW,
     requiredPermissions: [],
     enableRateLimit: true,
@@ -363,110 +349,112 @@ export function getSecurityLevelConfig(level: SecurityLevel): SecurityMiddleware
     enableInputValidation: level !== SecurityLevel.LOW,
     enableCSRFProtection: level === SecurityLevel.HIGH || level === SecurityLevel.CRITICAL,
     enableXSSProtection: level !== SecurityLevel.LOW,
-    enableSQLInjectionProtection: level !== SecurityLevel.LOW
+    enableSQLInjectionProtection: level !== SecurityLevel.LOW;,
 };
 
-  return baseConfig
+  return baseConfig;,
 }
 
 /**
- * 验证密码强度
+* 验证密码强度
  */
-export function validatePasswordStrength(password: string):  { valid: boolean;
+export function validatePasswordStrength(password: string): { valid: boolean;
   score: number;
-  feedback: string[]
+  feedback: string[];,
 } { const feedback: string[] = [];
   let score = 0;
 
   // 长度检查
   if (password.length < SECURITY_CONFIG.global.passwordMinLength) {
-    feedback.push(`密码长度至少需要${SECURITY_CONFIG.global.passwordMinLength }个字符`)
-} else { score += 1
+    feedback.push(`密码长度至少需要${SECURITY_CONFIG.global.passwordMinLength }个字符`);,
+} else { score += 1;,
 }
 
   // 包含大写字母
-  if (/[A-Z]/.test(password)) { score += 1
-} else { feedback.push('密码应包含大写字母')
+  if (/[A-Z]/.test(password)) { score += 1;,
+} else { feedback.push('密码应包含大写字母');,
 }
 
   // 包含小写字母
-  if (/[a-z]/.test(password)) { score += 1
-} else { feedback.push('密码应包含小写字母')
+  if (/[a-z]/.test(password)) { score += 1;,
+} else { feedback.push('密码应包含小写字母');,
 }
 
   // 包含数字
-  if (/\d/.test(password)) { score += 1
-} else { feedback.push('密码应包含数字')
+  if (/\d/.test(password)) { score += 1;,
+} else { feedback.push('密码应包含数字');,
 }
 
   // 包含特殊字符
-  if (SECURITY_CONFIG.global.passwordRequireSpecialChars) { if (/[!@#$%^&*()_+\-=\[\]{   }':"\\|,.<>\/?]/.test(password)) { score += 1
-} else { feedback.push('密码应包含特殊字符')
+  if (SECURITY_CONFIG.global.passwordRequireSpecialChars) { if (/[!@#$%^&*()_+\-=\[\]{ };':"\\|,.<>\/?]/.test(password)) { score += 1;,
+} else { feedback.push('密码应包含特殊字符');,
 }
   }
 
   // 避免常见密码
   const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein'];
   if (commonPasswords.includes(password.toLowerCase())) { feedback.push('请避免使用常见密码');
-    score = Math.max(0, score - 2)
+    score = Math.max(0, score - 2);,
 }
 
   return { valid: score >= 3 && feedback.length === 0,
     score,
-    feedback }
+    feedback,
+};,
 }
 
 /**
- * 生成安全的随机字符串
+* 生成安全的随机字符串
  */
-export function generateSecureRandomString(length: number = 32): string  { const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+export function generateSecureRandomString(length: number = 32): string { const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
 
   for (let i = 0; i < length; i++) {
-    result += chars[array[i] % chars.length]
+    result += chars[array[i] % chars.length];,
 }
 
-  return result
+  return result;,
 }
 
 /**
- * 检查是否为安全的URL
+* 检查是否为安全的URL
  */
-export function isSecureURL(url: string): boolean { try  {
+export function isSecureURL(url: string): boolean { try {
     const parsedURL = new URL(url);
 
     // 只允许HTTPS和HTTP协议
     if (!['https:', 'http:'].includes(parsedURL.protocol)) {
-      return false
+      return false;,
 }
 
     // 检查是否为允许的域名
     const allowedDomains = [;
       'localhost',
       '127.0.0.1',
-      'api.siliconflow.cn' ];
+      'api.siliconflow.cn',
+];
 
     const hostname = parsedURL.hostname;
     const isAllowed = allowedDomains.some(domain =>;
     hostname === domain || hostname.endsWith('.' + domain);
   );
 
-  return isAllowed
-} catch { return false
+  return isAllowed;,
+} catch { return false;,
 }
 }
 
 /**
- * 导出安全配置常量
+* 导出安全配置常量
  */
-export const SECURITY_CONSTANTS =  { MAX_LOGIN_ATTEMPTS: SECURITY_CONFIG.global.maxLoginAttempts,
+export const SECURITY_CONSTANTS = { MAX_LOGIN_ATTEMPTS: SECURITY_CONFIG.global.maxLoginAttempts,
   LOCKOUT_DURATION: SECURITY_CONFIG.global.lockoutDuration,
   SESSION_TIMEOUT: SECURITY_CONFIG.global.sessionTimeout,
   PASSWORD_MIN_LENGTH: SECURITY_CONFIG.global.passwordMinLength,
   MAX_FILE_SIZE: SECURITY_CONFIG.inputValidation.maxFileSize,
   ALLOWED_FILE_TYPES: SECURITY_CONFIG.inputValidation.allowedFileTypes,
   CORS_ORIGINS: SECURITY_CONFIG.global.corsOrigins,
-  SECURITY_HEADERS: SECURITY_CONFIG.securityHeaders 
+  SECURITY_HEADERS: SECURITY_CONFIG.securityHeaders,
 } as const;

@@ -1,11 +1,11 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { getSkillConfigByEnglish   } from '@/utils/skillMappingConfig';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull   } from 'lucide-react';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import React, { useMemo   } from 'react';
-import type { Tables   } from '@/integrations/supabase/types';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { getSkillConfigByEnglish  } from '@/utils/skillMappingConfig';
+import { Loader2, Target, Clock, Zap, Shield, Search, Skull  } from 'lucide-react';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import React, { useMemo  } from 'react';
+import type { Tables  } from '@/integrations/supabase/types';
 
 /**
 * 文件级注释：GameSkillPanel 组件
@@ -30,9 +30,9 @@ import type { Tables   } from '@/integrations/supabase/types';
  */
 
 /**
- * 组件属性接口：用于描述技能面板所需的上下文信息与回调
+* 组件属性接口：用于描述技能面板所需的上下文信息与回调
  */
-interface GameSkillPanelProps  { roomId: string;
+interface GameSkillPanelProps { roomId: string;
   gameStateId: string;
   userId: string;
   currentPhase: number;
@@ -42,11 +42,11 @@ interface GameSkillPanelProps  { roomId: string;
     userId: string;
     name: string;
     roleStatus?: number;
-    status?: string
+    status?: string;,
 }>;
   currentRound?: number;
   selectedTargetId?: string;
-  onTargetSelect?: (targetId: string) => void
+  onTargetSelect?: (targetId: string) => void;,
 }
 
 /**
@@ -55,7 +55,7 @@ interface GameSkillPanelProps  { roomId: string;
 * - 引导用户在左侧玩家列表中点击选择目标
 * - 根据 useEnhancedSkillSystem.canUseSkill 返回结果与是否选择目标控制按钮可点击状态
  */
-const GameSkillPanel: React.FC<GameSkillPanelProps> = ( { roomId,
+const GameSkillPanel: React.FC<GameSkillPanelProps> = ({ roomId,
   gameStateId,
   userId,
   currentPhase,
@@ -64,19 +64,18 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ( { roomId,
   players,
   currentRound = 1,
   selectedTargetId,
-  onTargetSelect }) => { const {
+  onTargetSelect,
+}) => { const {
     skillUses,
     loading,
     useSkillEnhanced: useSkill,
     getUserSkillData,
-    canUseSkill: canUseSkillFromHook 
+    canUseSkill: canUseSkillFromHook,
 } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 获取技能配置
-  const skillConfig = useMemo(() => {
-  if (!roleDesign?.skill_name) return null;
-    return getSkillConfigByEnglish(roleDesign.skill_name)
-
+  const skillConfig = useMemo(() => { if (!roleDesign?.skill_name) return null;
+    return getSkillConfigByEnglish(roleDesign.skill_name);,
 }, [roleDesign]);
 
   // 检查是否可以使用技能（关键：将选择的目标与轮次一起传入，避免单体技能误判不可用）
@@ -109,11 +108,12 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ( { roomId,
           // 需要获取目标玩家的角色信息来判断是否为狼人阵营
           // 这里暂时通过角色名判断，后续可以优化为通过roleStates获取
           // 由于我们没有直接访问其他玩家角色信息的权限，这个限制需要在服务端验证
-          // 前端只做基础过滤，主要的验证在后端进行 }
+          // 前端只做基础过滤，主要的验证在后端进行,
+}
       }
 
-      return true
-})
+      return true;,
+});,
 }, [players, userId, skillConfig, roleDesign]);
 
   /**
@@ -121,7 +121,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ( { roomId,
   * - 若技能配置或可用性校验不通过则直接返回
   * - 执行技能后清空已选目标
    */
-const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
+  const handleUseSkill = async () => { if (!skillConfig || !canUseSkill) return;
 
     await useSkill(
       skillConfig.englishName,
@@ -134,7 +134,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
     );
 
     // 清空选择的目标
-    onTargetSelect?.('')
+    onTargetSelect?.('');,
 };
 
   if (!skillConfig) { return (;
@@ -146,7 +146,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
       <p className='text-sm text-muted-foreground'>没有可用的技能</p>;
       </CardContent>
       </Card>
-    )
+    );,
 }
 
   return (;
@@ -156,8 +156,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
     <Target className='w-4 h-4' />;
     技能面板
     <Badge variant='outline' className='ml-auto'>;
-    优先级: { skillConfig.priority 
-}
+    优先级: { skillConfig.priority }
     </Badge>
     </CardTitle>
     </CardHeader>
@@ -182,8 +181,8 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
     </p>
     </div>
 
-    { /*  目标选择提示  */
-} { skillConfig.targetType === 'single' && availableTargets.length > 0 && (;
+    { /*  目标选择提示  */ }
+    { skillConfig.targetType === 'single' && availableTargets.length > 0 && (;
       <div className='bg-werewolf-dark/30 border border-werewolf-purple/20 rounded-lg p-3'>;
       <p className='text-sm text-gray-300 mb-1'>;
       <Target className='inline w-4 h-4 mr-1' />;
@@ -191,8 +190,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
       </p>
       {selectedTargetId && (
         <p className='text-sm text-werewolf-purple'>;
-        已选择: {availableTargets.find(p => p.userId === selectedTargetId)?.name || '未知玩家' 
-}
+        已选择: {availableTargets.find(p => p.userId === selectedTargetId)?.name || '未知玩家' }
         </p>
       )}
       </div>
@@ -203,7 +201,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
     onClick={ handleUseSkill }
     disabled={ loading ||
       !canUseSkill ||
-      (skillConfig.targetType === 'single' && !selectedTargetId)
+      (skillConfig.targetType === 'single' && !selectedTargetId);,
 }
     className='w-full bg-werewolf-purple hover:bg-werewolf-purple/80';
     >
@@ -225,10 +223,8 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
       {userSkillData.targets.map(effect => (;
         <div key={effect.id } className='flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded'>;
         <span>{ effect.target_type }</span>
-        <Badge variant={ effect.is_active ? 'default' : 'secondary' 
-} className='text-xs'>;
-        { effect.is_active ? '生效中' : '已失效' 
-}
+        <Badge variant={ effect.is_active ? 'default' : 'secondary' } className='text-xs'>;
+        { effect.is_active ? '生效中' : '已失效' }
         </Badge>
         </div>
       ))}
@@ -239,13 +235,7 @@ const handleUseSkill = async () =>  { if (!skillConfig || !canUseSkill) return;
     </div>
     </CardContent>
     </Card>
-  )
+  );,
 };
 
-/**
- * GameSkillPanel组件
- * 游戏相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default GameSkillPanel;

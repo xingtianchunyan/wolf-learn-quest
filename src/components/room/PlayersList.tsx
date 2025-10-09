@@ -1,9 +1,9 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { useLanguage   } from '@/components/layout/LanguageSwitcher';
-import { Users, Crown, Bot, Plus, Minus, UserCheck, UserX, Wifi, WifiOff   } from 'lucide-react';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { useLanguage  } from '@/components/layout/LanguageSwitcher';
+import { Users, Crown, Bot, Plus, Minus, UserCheck, UserX, Wifi, WifiOff  } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -21,13 +21,14 @@ import React from 'react';
 * @category game
 * @filepath room\PlayersList.tsx
  */
-interface Player  { id: string;
+
+interface Player { id: string;
   name: string;
   avatar: string;
   isReady: boolean;
   isHost: boolean;
   isAI: boolean;
-  userId?: string; // 添加userId字段用于在线状态检查 
+  userId?: string; // 添加userId字段用于在线状态检查,
 }
 
 interface PlayersListProps { players: Player[];
@@ -44,7 +45,7 @@ interface PlayersListProps { players: Player[];
   onlinePlayers: string[];
   allPlayersSelectedRoles: boolean;
   canSelectRoles: boolean;
-  currentPlayerHasSelectedRole?: boolean; // 新增：当前玩家是否已选择角色 
+  currentPlayerHasSelectedRole?: boolean; // 新增：当前玩家是否已选择角色,
 }
 
 /**
@@ -61,7 +62,7 @@ interface PlayersListProps { players: Player[];
 * // 使用示例
 * <PlayersList { ...props } />
  */
-const PlayersList: React.FC<PlayersListProps> = ( { players,
+const PlayersList: React.FC<PlayersListProps> = ({ players,
   maxPlayers,
   isReady,
   allReady,
@@ -75,41 +76,31 @@ const PlayersList: React.FC<PlayersListProps> = ( { players,
   onlinePlayers,
   allPlayersSelectedRoles,
   canSelectRoles,
-  currentPlayerHasSelectedRole = false
+  currentPlayerHasSelectedRole = false;,
 }) => { const { t  } = useLanguage();
 
   // 检查是否可以点击准备按钮
-/**
- * canToggleReady函数
- * canToggleReady函数的功能描述
- * @returns void
- */
-const canToggleReady = () =>  { // 必须先开放角色选择功能
+  const canToggleReady = () => { // 必须先开放角色选择功能
     if (!canSelectRoles) {
-      return false
+      return false;,
 }
     // 所有玩家都必须选择角色后才能准备
-    if (!allPlayersSelectedRoles) { return false
+    if (!allPlayersSelectedRoles) { return false;,
 }
     // 如果要进入准备状态，必须先选择角色（使用数据库状态而非本地状态）
-    if (!isReady && !currentPlayerHasSelectedRole) { return false
+    if (!isReady && !currentPlayerHasSelectedRole) { return false;,
 }
-    return true
+    return true;,
 };
 
-/**
- * getReadyButtonText函数
- * 获取数据
- * @returns void
- */
-const getReadyButtonText = () => { if (!canSelectRoles)  {
-      return `等待人数达到${maxPlayers }人`
+  const getReadyButtonText = () => { if (!canSelectRoles) {
+      return `等待人数达到${maxPlayers }人`;,
 }
-    if (!allPlayersSelectedRoles) { return '等待所有玩家选择角色'
+    if (!allPlayersSelectedRoles) { return '等待所有玩家选择角色';,
 }
-    if (!isReady && !currentPlayerHasSelectedRole) { return '请先选择角色'
+    if (!isReady && !currentPlayerHasSelectedRole) { return '请先选择角色';,
 }
-    return isReady ? t('cancel_ready') : t('ready')
+    return isReady ? t('cancel_ready') : t('ready');,
 };
 
   return (;
@@ -153,18 +144,14 @@ const getReadyButtonText = () => { if (!canSelectRoles)  {
     <div className='text-xs text-gray-400 space-y-1'>;
     <div className='flex justify-between'>;
     <span>角色选择:</span>
-    <span className={ canSelectRoles ? 'text-green-400' : 'text-yellow-400' 
-}>;
-    { canSelectRoles ? '已开放' : '等待人数' 
-}
+    <span className={ canSelectRoles ? 'text-green-400' : 'text-yellow-400' }>;
+    { canSelectRoles ? '已开放' : '等待人数' }
     </span>
     </div>
     <div className='flex justify-between'>;
     <span>准备功能:</span>
-    <span className={ allPlayersSelectedRoles ? 'text-green-400' : 'text-yellow-400' 
-}>;
-    { allPlayersSelectedRoles ? '已开放' : '等待选角' 
-}
+    <span className={ allPlayersSelectedRoles ? 'text-green-400' : 'text-yellow-400' }>;
+    { allPlayersSelectedRoles ? '已开放' : '等待选角' }
     </span>
     </div>
     </div>
@@ -183,7 +170,7 @@ const getReadyButtonText = () => { if (!canSelectRoles)  {
         <div
         key={ player.id }
         className={ `flex items-center justify-between p-2 rounded ${
-          player.isReady ? 'bg-green-900/30' : 'bg-werewolf-dark/40' 
+          player.isReady ? 'bg-green-900/30' : 'bg-werewolf-dark/40',
 }`}
         >
         <div className='flex items-center space-x-2'>;
@@ -239,8 +226,8 @@ const getReadyButtonText = () => { if (!canSelectRoles)  {
     </div>
     </ScrollArea>
 
-    { /*  添加AI玩家按钮  */
-} { players.length < maxPlayers && (
+    { /*  添加AI玩家按钮  */ }
+    { players.length < maxPlayers && (
       <Button
       onClick={onAddAIPlayer }
       variant='outline';
@@ -260,14 +247,14 @@ const getReadyButtonText = () => { if (!canSelectRoles)  {
       ? 'bg-yellow-600 hover:bg-yellow-700'
       : canToggleReady()
       ? 'bg-green-600 hover:bg-green-700'
-      : 'bg-gray-600 cursor-not-allowed' 
+      : 'bg-gray-600 cursor-not-allowed',
 }`}
     >
     { getReadyButtonText() }
     </Button>
 
-    { /*  开始游戏按钮 - 只有房主可见  */
-} { players.find(p => p.name === 'You')?.isHost && (;
+    { /*  开始游戏按钮 - 只有房主可见  */ }
+    { players.find(p => p.name === 'You')?.isHost && (;
       <Button
       onClick={onStartGame }
       disabled={ !allReady }
@@ -288,13 +275,7 @@ const getReadyButtonText = () => { if (!canSelectRoles)  {
     </div>
     </CardContent>
     </Card>
-  )
+  );,
 };
 
-/**
- * PlayersList组件
- * 玩家相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default PlayersList;

@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as HoverCardPrimitive from '@radix-ui/react-hover-card'
 import * as React from 'react'
 
@@ -20,20 +20,8 @@ import * as React from 'react'
 
 const HoverCard = HoverCardPrimitive.Root;
 
-/**
- * HoverCardTrigger组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const HoverCardTrigger = HoverCardPrimitive.Trigger;
 
-/**
- * HoverCardContent组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const HoverCardContent = React.forwardRef<;
 React.ElementRef<typeof HoverCardPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>

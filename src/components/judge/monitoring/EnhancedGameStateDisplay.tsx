@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { GamepadIcon, Clock, Play, Pause   } from 'lucide-react';
-import { supabase   } from '@/integrations/supabase/client';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useGameState   } from '@/hooks/useGameState';
-import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
-import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
-import { useRoleSelection   } from '@/hooks/useRoleSelection';
-import React, { useState, useEffect   } from 'react';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { GamepadIcon, Clock, Play, Pause  } from 'lucide-react';
+import { supabase  } from '@/integrations/supabase/client';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useGameState  } from '@/hooks/useGameState';
+import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
+import { useRoleSelection  } from '@/hooks/useRoleSelection';
+import React, { useState, useEffect  } from 'react';
 import PlayerStatusDisplay from './PlayerStatusDisplay';
 
 /**
@@ -24,7 +24,8 @@ import PlayerStatusDisplay from './PlayerStatusDisplay';
 * @category game
 * @filepath judge\monitoring\EnhancedGameStateDisplay.tsx
  */
-interface EnhancedGameStateDisplayProps  { roomId: string
+
+interface EnhancedGameStateDisplayProps { roomId: string;,
 }
 
 /**
@@ -41,10 +42,9 @@ interface EnhancedGameStateDisplayProps  { roomId: string
 * // 使用示例
 * <EnhancedGameStateDisplay { ...props } />
  */
-const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roomId 
-}) => { const  { gameState, getPhaseDisplayName, formatTime, timeRemaining  } = useGameState(roomId);
-  const { players: realPlayers  
-} = usePlayersRealtime(roomId);
+const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roomId,
+ }) => { const { gameState, getPhaseDisplayName, formatTime, timeRemaining  } = useGameState(roomId);
+  const { players: realPlayers  } = usePlayersRealtime(roomId);
   const { getRoleImageUrl  } = useRoleDesigns();
   const { currentUser  } = useAuth();
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -55,10 +55,10 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
       .select('max_players')
       .eq('id', roomId)
       .single();
-      if (data && data.max_players) { setMaxPlayers(data.max_players)
+      if (data && data.max_players) { setMaxPlayers(data.max_players);,
 }
     };
-    if (roomId) { fetchRoomData()
+    if (roomId) { fetchRoomData();,
 }
   }, [roomId]);
 
@@ -69,8 +69,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
     maxPlayers
   );
 
-  const displayPlayers = Array.from({ length: maxPlayers  
-}, (_, i) => { if (i < realPlayers.length) {
+  const displayPlayers = Array.from({ length: maxPlayers  }, (_, i) => { if (i < realPlayers.length) {
       const player = realPlayers[i];
       const selectedRole = player.userId ? getSelectedRoleByUser(player.userId) : null;
       const roleName = selectedRole?.roleName || '';
@@ -83,36 +82,31 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({ roo
         status: 'normal' as const,
         avatar: player.avatar,
         roleImageUrl,
-        userId: player.userId 
-}
+        userId: player.userId,
+       };,
 } else { return {
-        id: `placeholder-${i 
-}`,
+        id: `placeholder-${i }`,
         name: '等待玩家',
         role: '',
         status: 'waiting' as const,
         avatar: '',
         roleImageUrl: null as string | null,
-        userId: undefined as string | undefined 
-}
+        userId: undefined as string | undefined,
+      };,
 }
   });
 
-/**
- * getGameStatusDisplay函数
- * 获取数据
- * @returns void
- */
-const getGameStatusDisplay = () =>  { if (!gameState) return '准备阶段 - 等待中';
+  const getGameStatusDisplay = () => { if (!gameState) return '准备阶段 - 等待中';
 
     switch (gameState.status) {
       case 'waiting':
       return '准备阶段 - 等待开始';
-      case 'active': return `第${gameState.currentRound 
-}轮 - ${ getPhaseDisplayName(gameState.currentPhase) }阶段`;
+      case 'active':
+      return `第${gameState.currentRound }轮 - ${ getPhaseDisplayName(gameState.currentPhase) }阶段`;
       case 'ended':
       return '游戏已结束';
-      default: return '未知状态'
+      default:
+      return '未知状态';,
 }
   };
 
@@ -151,22 +145,22 @@ const getGameStatusDisplay = () =>  { if (!gameState) return '准备阶段 - 等
     { getGameStatusDisplay() }
     </h2>
 
-    { /*  显示倒计时  */
-} { showTimer && (
+    { /*  显示倒计时  */ }
+    { showTimer && (
       <div className='flex items-center justify-center text-lg font-semibold'>;
       <Clock className='h-5 w-5 mr-2 text-werewolf-purple' />;
       <span className={`${
-        timeRemaining <= 10 ? 'text-red-400' : unknown;
-        timeRemaining <= 30 ? 'text-yellow-400' : unknown;
-        'text-werewolf-purple' }`}>
-      剩余时间: { formatTime(timeRemaining) 
-}
+        timeRemaining <= 10 ? 'text-red-400' :;
+        timeRemaining <= 30 ? 'text-yellow-400' :;
+        'text-werewolf-purple',
+}`}>
+      剩余时间: { formatTime(timeRemaining) }
       </span>
       </div>
     )}
 
-    { /*  游戏状态说明  */
-} { gameState && (
+    { /*  游戏状态说明  */ }
+    { gameState && (
       <div className='text-sm text-gray-400 mt-2'>;
       {gameState.status === 'waiting' && '等待法官开始游戏' }
       { gameState.status === 'active' && gameState.currentPhase === 1 && '白天讨论阶段' }
@@ -197,13 +191,7 @@ const getGameStatusDisplay = () =>  { if (!gameState) return '准备阶段 - 等
     </div>
     </CardContent>
     </Card>
-  )
+  );,
 };
 
-/**
- * EnhancedGameStateDisplay组件
- * 游戏相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default EnhancedGameStateDisplay;

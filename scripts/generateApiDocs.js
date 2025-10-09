@@ -30,7 +30,7 @@ class ApiDocGenerator {
    */
   async run() {
     console.log('📚 开始生成API文档...\n');
-
+    
     // 确保docs目录存在
     if (!fs.existsSync(this.docsPath)) {
       fs.mkdirSync(this.docsPath, { recursive: true });
@@ -38,19 +38,19 @@ class ApiDocGenerator {
 
     // 扫描API文件
     await this.scanApiFiles();
-
+    
     // 扫描WebSocket事件
     await this.scanWebSocketEvents();
-
+    
     // 扫描错误码
     await this.scanErrorCodes();
-
+    
     // 扫描接口定义
     await this.scanInterfaces();
-
+    
     // 生成文档
     await this.generateDocumentation();
-
+    
     console.log('✨ API文档生成完成！');
   }
 
@@ -59,19 +59,19 @@ class ApiDocGenerator {
    */
   async scanApiFiles() {
     console.log('🔍 扫描API端点...');
-
+    
     if (!fs.existsSync(this.apiPath)) {
       console.log('⚠️  API目录不存在，跳过API端点扫描');
       return;
     }
 
     const files = this.getFilesRecursively(this.apiPath, ['.js', '.ts']);
-
+    
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
       this.extractApiEndpoints(content, file);
     }
-
+    
     console.log(`✅ 发现 ${this.apiEndpoints.length} 个API端点`);
   }
 
@@ -80,18 +80,14 @@ class ApiDocGenerator {
    */
   async scanWebSocketEvents() {
     console.log('🔍 扫描WebSocket事件...');
-
-    const files = this.getFilesRecursively(this.srcPath, [
-      '.js',
-      '.ts',
-      '.tsx',
-    ]);
-
+    
+    const files = this.getFilesRecursively(this.srcPath, ['.js', '.ts', '.tsx']);
+    
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
       this.extractWebSocketEvents(content, file);
     }
-
+    
     console.log(`✅ 发现 ${this.wsEvents.length} 个WebSocket事件`);
   }
 
@@ -100,18 +96,14 @@ class ApiDocGenerator {
    */
   async scanErrorCodes() {
     console.log('🔍 扫描错误码定义...');
-
-    const files = this.getFilesRecursively(this.srcPath, [
-      '.js',
-      '.ts',
-      '.tsx',
-    ]);
-
+    
+    const files = this.getFilesRecursively(this.srcPath, ['.js', '.ts', '.tsx']);
+    
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
       this.extractErrorCodes(content, file);
     }
-
+    
     console.log(`✅ 发现 ${this.errorCodes.length} 个错误码`);
   }
 
@@ -120,14 +112,14 @@ class ApiDocGenerator {
    */
   async scanInterfaces() {
     console.log('🔍 扫描接口定义...');
-
+    
     const files = this.getFilesRecursively(this.srcPath, ['.ts', '.tsx']);
-
+    
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
       this.extractInterfaces(content, file);
     }
-
+    
     console.log(`✅ 发现 ${this.interfaces.length} 个接口定义`);
   }
 
@@ -139,17 +131,17 @@ class ApiDocGenerator {
    */
   getFilesRecursively(dir, extensions) {
     const files = [];
-
+    
     if (!fs.existsSync(dir)) {
       return files;
     }
-
+    
     const items = fs.readdirSync(dir);
-
+    
     for (const item of items) {
       const fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
-
+      
       if (stat.isDirectory()) {
         if (!this.shouldSkipDirectory(item)) {
           files.push(...this.getFilesRecursively(fullPath, extensions));
@@ -158,7 +150,7 @@ class ApiDocGenerator {
         files.push(fullPath);
       }
     }
-
+    
     return files;
   }
 
@@ -168,15 +160,7 @@ class ApiDocGenerator {
    * @returns {boolean} 是否跳过
    */
   shouldSkipDirectory(dirName) {
-    const skipDirs = [
-      'node_modules',
-      '.git',
-      'dist',
-      'build',
-      '__tests__',
-      'test',
-      'tests',
-    ];
+    const skipDirs = ['node_modules', '.git', 'dist', 'build', '__tests__', 'test', 'tests'];
     return skipDirs.includes(dirName);
   }
 
@@ -190,7 +174,7 @@ class ApiDocGenerator {
     const routePatterns = [
       /app\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g,
       /router\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g,
-      /\.route\s*\(\s*['"`]([^'"`]+)['"`]\s*\)\s*\.(get|post|put|delete|patch)/g,
+      /\.route\s*\(\s*['"`]([^'"`]+)['"`]\s*\)\s*\.(get|post|put|delete|patch)/g
     ];
 
     for (const pattern of routePatterns) {
@@ -198,13 +182,13 @@ class ApiDocGenerator {
       while ((match = pattern.exec(content)) !== null) {
         const method = match[1] || match[3];
         const path = match[2] || match[1];
-
+        
         if (method && path) {
           this.apiEndpoints.push({
             method: method.toUpperCase(),
             path: path,
             file: path.relative(process.cwd(), filePath),
-            description: this.extractRouteDescription(content, match.index),
+            description: this.extractRouteDescription(content, match.index)
           });
         }
       }
@@ -220,7 +204,7 @@ class ApiDocGenerator {
   extractRouteDescription(content, index) {
     const lines = content.substring(0, index).split('\n');
     const currentLine = lines.length - 1;
-
+    
     // 查找前面的注释
     for (let i = currentLine - 1; i >= Math.max(0, currentLine - 5); i--) {
       const line = lines[i].trim();
@@ -228,7 +212,7 @@ class ApiDocGenerator {
         return line.replace(/^(\/\/|\*)\s*/, '');
       }
     }
-
+    
     return '待补充描述';
   }
 
@@ -244,20 +228,20 @@ class ApiDocGenerator {
       /socket\.on\s*\(\s*['"`]([^'"`]+)['"`]/g,
       /io\.emit\s*\(\s*['"`]([^'"`]+)['"`]/g,
       /\.emit\s*\(\s*['"`]([^'"`]+)['"`]/g,
-      /\.on\s*\(\s*['"`]([^'"`]+)['"`]/g,
+      /\.on\s*\(\s*['"`]([^'"`]+)['"`]/g
     ];
 
     for (const pattern of eventPatterns) {
       let match;
       while ((match = pattern.exec(content)) !== null) {
         const eventName = match[1];
-
+        
         if (eventName && !this.wsEvents.find(e => e.name === eventName)) {
           this.wsEvents.push({
             name: eventName,
             file: path.relative(process.cwd(), filePath),
             description: this.extractEventDescription(content, match.index),
-            type: this.getEventType(content, match[0]),
+            type: this.getEventType(content, match[0])
           });
         }
       }
@@ -288,7 +272,7 @@ class ApiDocGenerator {
   extractEventDescription(content, index) {
     const lines = content.substring(0, index).split('\n');
     const currentLine = lines.length - 1;
-
+    
     // 查找前面的注释
     for (let i = currentLine - 1; i >= Math.max(0, currentLine - 3); i--) {
       const line = lines[i].trim();
@@ -296,7 +280,7 @@ class ApiDocGenerator {
         return line.replace(/^(\/\/|\*)\s*/, '');
       }
     }
-
+    
     return '待补充描述';
   }
 
@@ -311,7 +295,7 @@ class ApiDocGenerator {
       /ERROR_(\w+)\s*[:=]\s*['"`]?([^'"`\s,}]+)['"`]?/g,
       /(\w+_ERROR)\s*[:=]\s*['"`]?([^'"`\s,}]+)['"`]?/g,
       /status\s*:\s*(\d{3})/g,
-      /statusCode\s*:\s*(\d{3})/g,
+      /statusCode\s*:\s*(\d{3})/g
     ];
 
     for (const pattern of errorPatterns) {
@@ -319,13 +303,13 @@ class ApiDocGenerator {
       while ((match = pattern.exec(content)) !== null) {
         const code = match[1] || match[2];
         const value = match[2] || match[1];
-
+        
         if (code && !this.errorCodes.find(e => e.code === code)) {
           this.errorCodes.push({
             code: code,
             value: value,
             file: path.relative(process.cwd(), filePath),
-            description: this.extractErrorDescription(content, match.index),
+            description: this.extractErrorDescription(content, match.index)
           });
         }
       }
@@ -341,7 +325,7 @@ class ApiDocGenerator {
   extractErrorDescription(content, index) {
     const lines = content.substring(0, index).split('\n');
     const currentLine = lines.length - 1;
-
+    
     // 查找前面的注释
     for (let i = currentLine - 1; i >= Math.max(0, currentLine - 3); i--) {
       const line = lines[i].trim();
@@ -349,7 +333,7 @@ class ApiDocGenerator {
         return line.replace(/^(\/\/|\*)\s*/, '');
       }
     }
-
+    
     return '待补充描述';
   }
 
@@ -361,18 +345,18 @@ class ApiDocGenerator {
   extractInterfaces(content, filePath) {
     // 匹配接口定义
     const interfacePattern = /interface\s+(\w+)\s*\{([^}]+)\}/g;
-
+    
     let match;
     while ((match = interfacePattern.exec(content)) !== null) {
       const name = match[1];
       const body = match[2];
-
+      
       if (name && !this.interfaces.find(i => i.name === name)) {
         this.interfaces.push({
           name: name,
           body: body.trim(),
           file: path.relative(process.cwd(), filePath),
-          properties: this.extractInterfaceProperties(body),
+          properties: this.extractInterfaceProperties(body)
         });
       }
     }
@@ -386,7 +370,7 @@ class ApiDocGenerator {
   extractInterfaceProperties(body) {
     const properties = [];
     const lines = body.split('\n');
-
+    
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('*')) {
@@ -395,12 +379,12 @@ class ApiDocGenerator {
           properties.push({
             name: propMatch[1],
             optional: propMatch[2] === '?',
-            type: propMatch[3].trim(),
+            type: propMatch[3].trim()
           });
         }
       }
     }
-
+    
     return properties;
   }
 
@@ -409,19 +393,19 @@ class ApiDocGenerator {
    */
   async generateDocumentation() {
     console.log('📝 生成文档文件...');
-
+    
     // 生成API端点文档
     await this.generateApiEndpointsDoc();
-
+    
     // 生成WebSocket事件文档
     await this.generateWebSocketDoc();
-
+    
     // 生成错误码文档
     await this.generateErrorCodesDoc();
-
+    
     // 生成接口文档
     await this.generateInterfacesDoc();
-
+    
     // 生成总览文档
     await this.generateOverviewDoc();
   }
@@ -437,9 +421,7 @@ class ApiDocGenerator {
 
 ## API端点列表
 
-${this.apiEndpoints
-  .map(
-    endpoint => `
+${this.apiEndpoints.map(endpoint => `
 ### ${endpoint.method} ${endpoint.path}
 
 **描述**: ${endpoint.description}
@@ -452,9 +434,7 @@ curl -X ${endpoint.method} "http://localhost:3000${endpoint.path}"
 \`\`\`
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 注意事项
 
@@ -467,11 +447,7 @@ curl -X ${endpoint.method} "http://localhost:3000${endpoint.path}"
 - ${new Date().toISOString().split('T')[0]}: 自动生成API文档
 `;
 
-    fs.writeFileSync(
-      path.join(this.docsPath, 'api-endpoints.md'),
-      content,
-      'utf8'
-    );
+    fs.writeFileSync(path.join(this.docsPath, 'api-endpoints.md'), content, 'utf8');
     console.log('✅ API端点文档已生成');
   }
 
@@ -489,9 +465,7 @@ curl -X ${endpoint.method} "http://localhost:3000${endpoint.path}"
 
 ## 发送事件 (Emit Events)
 
-${emitEvents
-  .map(
-    event => `
+${emitEvents.map(event => `
 ### ${event.name}
 
 **描述**: ${event.description}
@@ -504,15 +478,11 @@ socket.emit('${event.name}', data);
 \`\`\`
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 监听事件 (Listen Events)
 
-${listenEvents
-  .map(
-    event => `
+${listenEvents.map(event => `
 ### ${event.name}
 
 **描述**: ${event.description}
@@ -527,9 +497,7 @@ socket.on('${event.name}', (data) => {
 \`\`\`
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 事件数据格式
 
@@ -550,11 +518,7 @@ interface WebSocketMessage {
 - ${new Date().toISOString().split('T')[0]}: 自动生成WebSocket事件文档
 `;
 
-    fs.writeFileSync(
-      path.join(this.docsPath, 'websocket-events.md'),
-      content,
-      'utf8'
-    );
+    fs.writeFileSync(path.join(this.docsPath, 'websocket-events.md'), content, 'utf8');
     console.log('✅ WebSocket事件文档已生成');
   }
 
@@ -569,9 +533,7 @@ interface WebSocketMessage {
 
 ## 错误码列表
 
-${this.errorCodes
-  .map(
-    error => `
+${this.errorCodes.map(error => `
 ### ${error.code}
 
 **值**: \`${error.value}\`
@@ -581,9 +543,7 @@ ${this.errorCodes
 **文件位置**: \`${error.file}\`
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## HTTP状态码
 
@@ -615,11 +575,7 @@ interface ErrorResponse {
 - ${new Date().toISOString().split('T')[0]}: 自动生成错误码文档
 `;
 
-    fs.writeFileSync(
-      path.join(this.docsPath, 'error-codes.md'),
-      content,
-      'utf8'
-    );
+    fs.writeFileSync(path.join(this.docsPath, 'error-codes.md'), content, 'utf8');
     console.log('✅ 错误码文档已生成');
   }
 
@@ -634,21 +590,15 @@ interface ErrorResponse {
 
 ## 接口列表
 
-${this.interfaces
-  .map(
-    iface => `
+${this.interfaces.map(iface => `
 ### ${iface.name}
 
 **文件位置**: \`${iface.file}\`
 
 **属性**:
-${iface.properties
-  .map(
-    prop => `
+${iface.properties.map(prop => `
 - **${prop.name}**${prop.optional ? ' (可选)' : ''}: \`${prop.type}\`
-`
-  )
-  .join('')}
+`).join('')}
 
 **完整定义**:
 \`\`\`typescript
@@ -658,9 +608,7 @@ ${iface.body}
 \`\`\`
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 通用接口
 
@@ -703,11 +651,7 @@ interface PaginatedResponse<T> extends BaseResponse<T[]> {
 - ${new Date().toISOString().split('T')[0]}: 自动生成接口定义文档
 `;
 
-    fs.writeFileSync(
-      path.join(this.docsPath, 'interfaces.md'),
-      content,
-      'utf8'
-    );
+    fs.writeFileSync(path.join(this.docsPath, 'interfaces.md'), content, 'utf8');
     console.log('✅ 接口定义文档已生成');
   }
 
@@ -821,11 +765,8 @@ async function main() {
 }
 
 // 执行脚本
-if (
-  import.meta.url.endsWith(process.argv[1]) ||
-  process.argv[1].endsWith('generateApiDocs.js')
-) {
+if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('generateApiDocs.js')) {
   main().catch(console.error);
 }
 
-export { ApiDocGenerator };
+export { ApiDocGenerator }

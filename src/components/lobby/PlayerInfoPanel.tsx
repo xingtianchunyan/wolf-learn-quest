@@ -1,6 +1,6 @@
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { LogOut   } from 'lucide-react';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { LogOut  } from 'lucide-react';
 import PlayerInfo from '@/components/lobby/PlayerInfo';
 import React from 'react';
 
@@ -19,17 +19,17 @@ import React from 'react';
 * @category game
 * @filepath lobby\PlayerInfoPanel.tsx
  */
-interface PlayerInfoPanelProps  {
-  currentUser: any;
+
+interface PlayerInfoPanelProps { currentUser: any;
   playerRoom: {
     roomId: string | null;
     roomDbId: string | null;
-    isLoading: boolean
-}
+    isLoading: boolean;,
+};
   navigate: (path: string) => void;
   handleLeaveCurrentRoom: () => Promise<void>;
   isLeavingRoom: boolean;
-  t: (key: string) => string
+  t: (key: string) => string;,
 }
 
 /**
@@ -45,12 +45,13 @@ interface PlayerInfoPanelProps  {
 * // 使用示例
 * <PlayerInfoPanel { ...props } />
  */
-const PlayerInfoPanel: React.FC<PlayerInfoPanelProps> = ( { currentUser,
+const PlayerInfoPanel: React.FC<PlayerInfoPanelProps> = ({ currentUser,
   playerRoom,
   navigate,
   handleLeaveCurrentRoom,
   isLeavingRoom,
-  t }) => { return (;
+  t,
+ }) => { return (;
     <div className='space-y-4'>;
     {currentUser ? (
       <>
@@ -62,8 +63,7 @@ const PlayerInfoPanel: React.FC<PlayerInfoPanelProps> = ( { currentUser,
         </CardHeader>
         <CardContent>
         <p className='text-amber-200 text-sm mb-3'>;
-        { t('room_id') }: { playerRoom.roomId 
-}
+        { t('room_id') }: { playerRoom.roomId }
         </p>
         <div className='space-y-2'>;
         <Button
@@ -81,8 +81,7 @@ const PlayerInfoPanel: React.FC<PlayerInfoPanelProps> = ( { currentUser,
         disabled={ isLeavingRoom }
         >
         <LogOut className='mr-2 h-3 w-3' />;
-        { isLeavingRoom ? t('leaving') : t('leave_room') 
-}
+        { isLeavingRoom ? t('leaving') : t('leave_room') }
         </Button>
         </div>
         </CardContent>
@@ -99,14 +98,8 @@ const PlayerInfoPanel: React.FC<PlayerInfoPanelProps> = ( { currentUser,
       </Card>
     )}
     </div>
-  )
+  );,
 };
 
-/**
- * PlayerInfoPanel组件
- * 玩家相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default PlayerInfoPanel;
 

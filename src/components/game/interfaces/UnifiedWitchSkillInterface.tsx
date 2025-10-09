@@ -1,10 +1,10 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle   } from '@/components/ui/dialog';
-import { Heart, Skull, Target   } from 'lucide-react';
-import { useWitchPotionManager   } from '@/hooks/useWitchPotionManager';
-import React, { useState, useEffect   } from 'react';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle  } from '@/components/ui/dialog';
+import { Heart, Skull, Target  } from 'lucide-react';
+import { useWitchPotionManager  } from '@/hooks/useWitchPotionManager';
+import React, { useState, useEffect  } from 'react';
 
 /**
 * 文件级注释：UnifiedWitchSkillInterface 组件
@@ -21,14 +21,14 @@ import React, { useState, useEffect   } from 'react';
 * @category game
 * @filepath game\interfaces\UnifiedWitchSkillInterface.tsx
  */
-interface UnifiedWitchSkillInterfaceProps  { gameStateId: string;
+
+interface UnifiedWitchSkillInterfaceProps { gameStateId: string;
   userId: string;
   currentRound: number;
   currentPhase: number;
   canUseSkill: boolean;
   onUseSkill: (skillData: any) => void;
-  availableTargets: Array<{ userId: string; name: string; roleStatus: number  
-}>
+  availableTargets: Array<{ userId: string; name: string; roleStatus: number  }>;,
 }
 
 /**
@@ -45,48 +45,38 @@ interface UnifiedWitchSkillInterfaceProps  { gameStateId: string;
 * // 使用示例
 * <UnifiedWitchSkillInterface { ...props } />
  */
-export const UnifiedWitchSkillInterface: React.FC<UnifiedWitchSkillInterfaceProps> = ( { gameStateId,
+export const UnifiedWitchSkillInterface: React.FC<UnifiedWitchSkillInterfaceProps> = ({ gameStateId,
   userId,
   currentRound,
   currentPhase,
   canUseSkill,
   onUseSkill,
-  availableTargets }) => { const [showTargetSelection, setShowTargetSelection] = useState(false);
+  availableTargets,
+}) => { const [showTargetSelection, setShowTargetSelection] = useState(false);
   const [potionType, setPotionType] = useState<'attack' | 'protection'>('attack');
 
   const {
     potionStatus,
     loading,
     useProtectionPotion,
-    useAttackPotion } = useWitchPotionManager(gameStateId, userId, currentRound);
+    useAttackPotion,
+} = useWitchPotionManager(gameStateId, userId, currentRound);
 
   // 处理解药使用
-/**
- * handleUseAntidote函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleUseAntidote = async () =>  { if (!canUseSkill || currentPhase !== 3 || potionStatus.protectionUsed) return;
+  const handleUseAntidote = async () => { if (!canUseSkill || currentPhase !== 3 || potionStatus.protectionUsed) return;
 
     const success = await useProtectionPotion();
     if (success) {
       onUseSkill({
         skillType: 'protection',
         potionType: 'protection',
-        effectType: 'witch_antidote' 
-})
+        effectType: 'witch_antidote',
+});,
 }
   };
 
   // 处理毒药使用
-/**
- * handleUsePoison函数
- * 处理事件
- *
- * @param targetUserId? - targetUserId?参数
- * @returns void
- */
-const handleUsePoison = (targetUserId?: string) =>  { if (!canUseSkill || currentPhase !== 3 || potionStatus.attackUsed) return;
+  const handleUsePoison = (targetUserId?: string) => { if (!canUseSkill || currentPhase !== 3 || potionStatus.attackUsed) return;
 
     if (targetUserId) {
       // 直接使用毒药
@@ -96,14 +86,14 @@ const handleUsePoison = (targetUserId?: string) =>  { if (!canUseSkill || curren
             skillType: 'elimination',
             targetId: targetUserId,
             potionType: 'attack',
-            effectType: 'witch_poison' 
+            effectType: 'witch_poison',
 });
-          setShowTargetSelection(false)
+          setShowTargetSelection(false);,
 }
-      })
+      });,
 } else { // 显示目标选择对话框
       setPotionType('attack');
-      setShowTargetSelection(true)
+      setShowTargetSelection(true);,
 }
   };
 
@@ -132,7 +122,7 @@ const handleUsePoison = (targetUserId?: string) =>  { if (!canUseSkill || curren
     <Button
     variant='outline';
     className={ `justify-start w-full border-green-500/30 hover:bg-green-500/20 ${
-      potionStatus.protectionUsed ? 'opacity-50' : '' 
+      potionStatus.protectionUsed ? 'opacity-50' : '',
 }`}
     onClick={ handleUseAntidote }
     disabled={ !canUseSkill || currentPhase !== 3 || potionStatus.protectionUsed || loading }
@@ -150,7 +140,7 @@ const handleUsePoison = (targetUserId?: string) =>  { if (!canUseSkill || curren
     <Button
     variant='outline';
     className={ `justify-start w-full border-red-500/30 hover:bg-red-500/20 ${
-      potionStatus.attackUsed ? 'opacity-50' : '' 
+      potionStatus.attackUsed ? 'opacity-50' : '',
 }`}
     onClick={ () => handleUsePoison() }
     disabled={ !canUseSkill || currentPhase !== 3 || potionStatus.attackUsed || loading || availableTargets.length === 0 }
@@ -196,13 +186,7 @@ const handleUsePoison = (targetUserId?: string) =>  { if (!canUseSkill || curren
     </DialogContent>
     </Dialog>
     </>
-  )
+  );,
 };
 
-/**
- * UnifiedWitchSkillInterface组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default UnifiedWitchSkillInterface;

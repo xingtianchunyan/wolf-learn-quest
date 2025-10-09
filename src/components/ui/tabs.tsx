@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 
@@ -33,12 +33,6 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
  */
 const Tabs = TabsPrimitive.Root;
 
-/**
- * TabsList组件
- * TabsList组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TabsList = React.forwardRef<;
 React.ElementRef<typeof TabsPrimitive.List>,
 React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
@@ -54,12 +48,6 @@ React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 ))
 TabsList.displayName = TabsPrimitive.List.displayName;
 
-/**
- * TabsTrigger组件
- * TabsTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TabsTrigger = React.forwardRef<;
 React.ElementRef<typeof TabsPrimitive.Trigger>,
 React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
@@ -75,12 +63,6 @@ React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 ))
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
-/**
- * TabsContent组件
- * TabsContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TabsContent = React.forwardRef<;
 React.ElementRef<typeof TabsPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>

@@ -1,24 +1,15 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { createLogger } from '@/lib/logger';
-import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSkillEffectProcessor } from '@/hooks/useSkillEffectProcessor';
-import { useToast } from '@/hooks/useToast';
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  RefreshCw,
-  Settings,
-  TrendingUp,
-  Zap
-} from 'lucide-react';
+import { Activity,
+import { Alert, AlertDescription  } from '@/components/ui/alert';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card';
+import { createLogger  } from '@/lib/logger';
+import { Progress  } from '@/components/ui/progress';
+import { supabase  } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
+import { useSkillEffectProcessor  } from '@/hooks/useSkillEffectProcessor';
+import { useToast  } from '@/hooks/useToast';
+import React, { useState, useEffect, useCallback  } from 'react';
 
 /**
 * 文件级注释：SkillSystemMonitor 组件
@@ -36,17 +27,27 @@ import {
 * @filepath admin\SkillSystemMonitor.tsx
  */
 
+// 技能系统性能监控面板
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  Settings,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
+
 const logger = createLogger('skill-system-monitor');
 
 interface SkillSystemMonitorProps { gameStateId?: string;
   roomId?: string;
-  isJudge?: boolean
+  isJudge?: boolean;,
 }
 
 interface SystemHealth { overall: 'healthy' | 'warning' | 'critical';
   database: 'healthy' | 'warning' | 'critical';
   processing: 'healthy' | 'warning' | 'critical';
-  queue: 'healthy' | 'warning' | 'critical'
+  queue: 'healthy' | 'warning' | 'critical';,
 }
 
 interface PerformanceMetrics { totalSkillUses: number;
@@ -56,7 +57,7 @@ interface PerformanceMetrics { totalSkillUses: number;
   completedEffects: number;
   failedEffects: number;
   averageProcessingTime: number;
-  errorRate: number
+  errorRate: number;,
 }
 
 /**
@@ -73,9 +74,9 @@ interface PerformanceMetrics { totalSkillUses: number;
 * // 使用示例
 * <SkillSystemMonitor { ...props } />
  */
-export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ( { gameStateId,
+export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ({ gameStateId,
   roomId: _roomId,
-  isJudge = false
+  isJudge = false;,
 }) => { const [metrics, setMetrics] = useState<PerformanceMetrics>({
     totalSkillUses: 0,
     activeEffects: 0,
@@ -84,13 +85,13 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ( { gameSta
     completedEffects: 0,
     failedEffects: 0,
     averageProcessingTime: 0,
-    errorRate: 0 
+    errorRate: 0,
 });
 
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({ overall: 'healthy',
     database: 'healthy',
     processing: 'healthy',
-    queue: 'healthy' 
+    queue: 'healthy',
 });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +100,7 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ( { gameSta
   // 使用技能效果处理器
   const processor = useSkillEffectProcessor(gameStateId, { autoProcess: isJudge, // 只有法官才自动处理
     intervalMs: 3000,
-    enableLogging: true 
+    enableLogging: true,
 });
 
   // 获取系统状态
@@ -108,11 +109,9 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ( { gameSta
     setIsLoading(true);
     try {
       // 获取技能系统状态
-      const { data: statusData, error: statusError  
-} = await supabase.rpc(;
+      const { data: statusData, error: statusError  } = await supabase.rpc(;
         'get_skill_system_status',
-        { p_game_state_id: gameStateId  
-}
+        { p_game_state_id: gameStateId  }
       );
 
       if (statusError) throw statusError;
@@ -128,140 +127,109 @@ export const SkillSystemMonitor: React.FC<SkillSystemMonitorProps> = ( { gameSta
           averageProcessingTime: processor.stats.averageProcessTime,
           errorRate: processor.stats.totalProcessed > 0
           ? (processor.stats.failureCount / processor.stats.totalProcessed) * 100
-          : 0 
-})
+          : 0,
+});,
 }
 
       // 评估系统健康状况
       const health = evaluateSystemHealth(metrics, processor.stats);
-      setSystemHealth(health)
+      setSystemHealth(health);,
 } catch (error: unknown) { const errorMessage = error instanceof Error ? error.message : '未知错误';
       logger.error('获取系统指标失败', error);
       toast({
         title: '监控数据获取失败',
         description: errorMessage,
-        variant: 'destructive' 
-})
-} finally { setIsLoading(false)
+        variant: 'destructive',
+});,
+} finally { setIsLoading(false);,
 }
   }, [gameStateId, processor.stats, metrics, toast]);
 
   // 评估系统健康状况
-/**
- * evaluateSystemHealth函数
- * evaluateSystemHealth函数的功能描述
- * @returns void
- */
   const evaluateSystemHealth = (;
     metrics: PerformanceMetrics,
     processorStats: { totalProcessed: number;
       successCount: number;
       failureCount: number;
-      averageProcessTime: number
+      averageProcessTime: number;,
 }
   ): SystemHealth => { const health: SystemHealth = {
       overall: 'healthy',
       database: 'healthy',
       processing: 'healthy',
-      queue: 'healthy'  
+      queue: 'healthy',
 };
 
     // 数据库健康检查
-    if (metrics.totalSkillUses > 1000) { health.database = 'warning'
+    if (metrics.totalSkillUses > 1000) { health.database = 'warning';,
 }
 
     // 处理器健康检查
-    if (processorStats.failureCount > 10 || metrics.errorRate > 20) { health.processing = 'critical'
-} else if (processorStats.failureCount > 5 || metrics.errorRate > 10) { health.processing = 'warning'
+    if (processorStats.failureCount > 10 || metrics.errorRate > 20) { health.processing = 'critical';,
+} else if (processorStats.failureCount > 5 || metrics.errorRate > 10) { health.processing = 'warning';,
 }
 
     // 队列健康检查
-    if (metrics.queuedEffects > 50) { health.queue = 'critical'
-} else if (metrics.queuedEffects > 20) { health.queue = 'warning'
+    if (metrics.queuedEffects > 50) { health.queue = 'critical';,
+} else if (metrics.queuedEffects > 20) { health.queue = 'warning';,
 }
 
     // 总体健康评估
     const components = [health.database, health.processing, health.queue];
-    if (components.includes('critical')) { health.overall = 'critical'
-} else if (components.includes('warning')) { health.overall = 'warning'
+    if (components.includes('critical')) { health.overall = 'critical';,
+} else if (components.includes('warning')) { health.overall = 'warning';,
 }
 
-    return health
+    return health;,
 };
 
   // 手动清理过期效果
-/**
- * handleCleanupExpired函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleCleanupExpired = async () => { try  {
+  const handleCleanupExpired = async () => { try {
       await processor.cleanupExpiredEffects();
       await fetchSystemMetrics();
       toast({
         title: '清理完成',
-        description: '已清理所有过期的技能效果' 
-})
+        description: '已清理所有过期的技能效果',
+});,
 } catch (error: unknown) { const errorMessage = error instanceof Error ? error.message : '未知错误';
       toast({
         title: '清理失败',
         description: errorMessage,
-        variant: 'destructive' 
-})
+        variant: 'destructive',
+});,
 }
   };
 
   // 重置处理器统计
-/**
- * handleResetStats函数
- * 设置数据
- * @returns void
- */
-const handleResetStats = () =>  { processor.resetStats();
+  const handleResetStats = () => { processor.resetStats();
     toast({
       title: '统计已重置',
-      description: '处理器统计数据已清零' 
-})
+      description: '处理器统计数据已清零',
+});,
 };
 
   // 获取健康状态颜色
-/**
- * getHealthColor函数
- * 获取数据
- *
- * @param status - status参数
- * @returns void
- */
-const getHealthColor = (status: 'healthy' | 'warning' | 'critical') => { switch (status)  {
+  const getHealthColor = (status: 'healthy' | 'warning' | 'critical') => { switch (status) {
       case 'healthy': return 'text-green-600';
       case 'warning': return 'text-yellow-600';
       case 'critical': return 'text-red-600';
-      default: return 'text-gray-600'
+      default: return 'text-gray-600';,
 }
   };
 
   // 获取健康状态图标
-/**
- * getHealthIcon函数
- * 获取数据
- *
- * @param status - status参数
- * @returns void
- */
-const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (status)  {
+  const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (status) {
       case 'healthy': return <CheckCircle className='h-4 w-4' />;
       case 'warning': return <AlertTriangle className='h-4 w-4' />;
       case 'critical': return <AlertTriangle className='h-4 w-4' />;
-      default: return <Activity className='h-4 w-4' />
+      default: return <Activity className='h-4 w-4' />;,
 }
   };
 
   // 定期刷新数据
-  useEffect(() => {
-  fetchSystemMetrics();
+  useEffect(() => { fetchSystemMetrics();
     const interval = setInterval(fetchSystemMetrics, 10000); // 10秒刷新
-    return () => clearInterval(interval)
-
+    return () => clearInterval(interval);,
 }, [gameStateId, fetchSystemMetrics]);
 
   if (!gameStateId) { return (;
@@ -272,7 +240,7 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
       </div>
       </CardContent>
       </Card>
-    )
+    );,
 }
 
   return (;
@@ -295,11 +263,9 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     { getHealthIcon(systemHealth.overall) }
     </span>
     <span className='text-sm font-medium'>总体状况</span>;
-    <Badge variant={ systemHealth.overall === 'healthy' ? 'default' : 'destructive' 
-}>;
-    { systemHealth.overall === 'healthy' ? '正常' : unknown;
-    systemHealth.overall === 'warning' ? '警告' : '严重' 
-}
+    <Badge variant={ systemHealth.overall === 'healthy' ? 'default' : 'destructive' }>;
+    { systemHealth.overall === 'healthy' ? '正常' :;
+    systemHealth.overall === 'warning' ? '警告' : '严重' }
     </Badge>
     </div>
 
@@ -379,8 +345,8 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     </Card>
     </div>
 
-    { /*  处理进度  */
-} { metrics.queuedEffects > 0 && (
+    { /*  处理进度  */ }
+    { metrics.queuedEffects > 0 && (
       <Card>
       <CardHeader>
       <CardTitle className='text-lg'>效果处理进度</CardTitle>;
@@ -392,8 +358,7 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
       <span>{metrics.completedEffects } / { metrics.totalSkillUses }</span>
       </div>
       <Progress
-      value={ metrics.totalSkillUses > 0 ? (metrics.completedEffects / metrics.totalSkillUses) * 100 : 0 
-}
+      value={ metrics.totalSkillUses > 0 ? (metrics.completedEffects / metrics.totalSkillUses) * 100 : 0 }
       className='h-2';
       />
       </div>
@@ -407,18 +372,15 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     <Card>
     <CardHeader>
     <CardTitle className='flex items-center gap-2'>;
-    <RefreshCw className={ `h-5 w-5 ${processor.isRunning ? 'animate-spin' : '' 
-}`} />;
+    <RefreshCw className={ `h-5 w-5 ${processor.isRunning ? 'animate-spin' : '' }`} />;
     自动处理器状态
     </CardTitle>
     </CardHeader>
     <CardContent className='space-y-4'>;
     <div className='flex items-center justify-between'>;
     <span>运行状态</span>
-    <Badge variant={ processor.isRunning ? 'default' : 'secondary' 
-}>;
-    { processor.isRunning ? '运行中' : '已停止' 
-}
+    <Badge variant={ processor.isRunning ? 'default' : 'secondary' }>;
+    { processor.isRunning ? '运行中' : '已停止' }
     </Badge>
     </div>
 
@@ -432,8 +394,7 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     <div className='text-xl font-semibold text-green-600'>;
     { processor.stats.totalProcessed > 0
     ? ((processor.stats.successCount / processor.stats.totalProcessed) * 100).toFixed(1)
-    : 0 
-}%
+    : 0 }%
     </div>
     </div>
     </div>
@@ -462,8 +423,8 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     </CardContent>
     </Card>
 
-    { /*  处理状态警告  */
-} { processor.stats.failureCount > 5 && (
+    { /*  处理状态警告  */ }
+    { processor.stats.failureCount > 5 && (
       <Alert>
       <AlertTriangle className='h-4 w-4' />;
       <AlertDescription>
@@ -505,8 +466,7 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     variant='outline';
     disabled={ isLoading }
     >
-    { isLoading ? '刷新中...' : '刷新监控数据' 
-}
+    { isLoading ? '刷新中...' : '刷新监控数据' }
     </Button>
 
     <Button
@@ -531,5 +491,5 @@ const getHealthIcon = (status: 'healthy' | 'warning' | 'critical') => { switch (
     </TabsContent>
     </Tabs>
     </div>
-  )
+  );,
 };

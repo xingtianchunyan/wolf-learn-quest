@@ -1,23 +1,7 @@
-/**
- * 文件级注释：withPermission 组件
- * 
- * 该文件实现了一个提供通用功能组件，主要功能包括：
- * - 组件渲染和状态管理
- * - 用户交互处理
- * - 数据展示和更新
- * - 响应式设计支持
- * 
- * @author SOLO Coding
- * @version 1.0.0
- * @since 2024-12-19
- * @category common
- * @filepath common\hoc\withPermission.tsx
- */
-
-import { createLogger   } from '@/lib/logger';
-import { RoleType, GamePhase, RoleStatus   } from '@/types/skillSystem.types';
-import { Shield, Lock, AlertTriangle   } from 'lucide-react';
-import React, { ComponentType, ReactNode   } from 'react';
+import { createLogger  } from '@/lib/logger';
+import { RoleType, GamePhase, RoleStatus  } from '@/types/skillSystem.types';
+import { Shield, Lock, AlertTriangle  } from 'lucide-react';
+import React, { ComponentType, ReactNode  } from 'react';
 
 /**
 * 权限控制高阶组件
@@ -33,128 +17,117 @@ const logger = createLogger('permission-hoc');
 /**
 * 权限类型枚举
  */
-export enum PermissionType  { /** 角色权限 */
+export enum PermissionType { /** 角色权限  */
   ROLE = 'role',
-  /** 游戏阶段权限 */
+  /** 游戏阶段权限  */
   PHASE = 'phase',
-  /** 状态权限 */
+  /** 状态权限  */
   STATUS = 'status',
-  /** 自定义权限 */
-  CUSTOM = 'custom'
+  /** 自定义权限  */
+  CUSTOM = 'custom';,
 }
 
 /**
 * 权限规则接口
  */
-export interface PermissionRule  { /** 权限类型 */
+export interface PermissionRule { /** 权限类型  */
   type: PermissionType;
-  /** 允许的值列表 */
+  /** 允许的值列表  */
   allowed?: any[];
-  /** 禁止的值列表 */
+  /** 禁止的值列表  */
   denied?: any[];
-  /** 自定义验证函数 */
+  /** 自定义验证函数  */
   validator?: (context: PermissionContext) => boolean | Promise<boolean>;
-  /** 权限描述 */
-  description?: string
+  /** 权限描述  */
+  description?: string;,
 }
 
 /**
 * 权限上下文接口
  */
-export interface PermissionContext  { /** 用户ID */
+export interface PermissionContext { /** 用户ID  */
   userId?: string;
-  /** 用户角色 */
+  /** 用户角色  */
   userRole?: RoleType;
-  /** 角色状态 */
+  /** 角色状态  */
   roleStatus?: RoleStatus;
-  /** 当前游戏阶段 */
+  /** 当前游戏阶段  */
   gamePhase?: GamePhase;
-  /** 游戏ID */
+  /** 游戏ID  */
   gameId?: string;
-  /** 是否为游戏管理员 */
+  /** 是否为游戏管理员  */
   isGameAdmin?: boolean;
-  /** 自定义权限数据 */
-  customData?: Record<string, any>
+  /** 自定义权限数据  */
+  customData?: Record<string, any>;,
 }
 
 /**
 * 权限配置接口
  */
-export interface PermissionConfig  { /** 权限规则列表 */
+export interface PermissionConfig { /** 权限规则列表  */
   rules: PermissionRule[];
-  /** 权限验证模式：'all' 表示所有规则都必须通过，'any' 表示任一规则通过即可 */
+  /** 权限验证模式：'all' 表示所有规则都必须通过，'any' 表示任一规则通过即可  */
   mode?: 'all' | 'any';
-  /** 是否显示无权限提示 */
+  /** 是否显示无权限提示  */
   showNoPermissionMessage?: boolean;
-  /** 自定义无权限组件 */
+  /** 自定义无权限组件  */
   noPermissionComponent?: ComponentType<NoPermissionProps>;
-  /** 权限检查失败回调 */
+  /** 权限检查失败回调  */
   onPermissionDenied?: (context: PermissionContext, failedRules: PermissionRule[]) => void;
-  /** 是否在开发环境跳过权限检查 */
-  skipInDevelopment?: boolean
+  /** 是否在开发环境跳过权限检查  */
+  skipInDevelopment?: boolean;,
 }
 
 /**
 * 无权限组件属性接口
  */
-export interface NoPermissionProps  { /** 权限上下文 */
+export interface NoPermissionProps { /** 权限上下文  */
   context: PermissionContext;
-  /** 失败的权限规则 */
+  /** 失败的权限规则  */
   failedRules: PermissionRule[];
-  /** 权限配置 */
-  config: PermissionConfig
+  /** 权限配置  */
+  config: PermissionConfig;,
 }
 
 /**
 * 带权限控制的组件属性接口
  */
-export interface WithPermissionProps  { /** 权限上下文 */
+export interface WithPermissionProps { /** 权限上下文  */
   permissionContext?: PermissionContext;
-  /** 权限配置覆盖 */
-  permissionConfig?: Partial<PermissionConfig>
+  /** 权限配置覆盖  */
+  permissionConfig?: Partial<PermissionConfig>;,
 }
 
 /**
- * 默认无权限组件
+* 默认无权限组件
  */
-const DefaultNoPermissionComponent: React.FC<NoPermissionProps> = ( { context,
+const DefaultNoPermissionComponent: React.FC<NoPermissionProps> = ({ context,
   failedRules,
-  config }) => { const getPermissionIcon = () => {
+  config,
+}) => { const getPermissionIcon = () => {
     if (failedRules.some(rule => rule.type === PermissionType.ROLE)) {
-      return <Shield className='h-12 w-12 text-red-400' />
+      return <Shield className='h-12 w-12 text-red-400' />;,
 }
-    if (failedRules.some(rule => rule.type === PermissionType.STATUS)) { return <AlertTriangle className='h-12 w-12 text-yellow-400' />
+    if (failedRules.some(rule => rule.type === PermissionType.STATUS)) { return <AlertTriangle className='h-12 w-12 text-yellow-400' />;,
 }
-    return <Lock className='h-12 w-12 text-gray-400' />
+    return <Lock className='h-12 w-12 text-gray-400' />;,
 };
 
-/**
- * getPermissionMessage函数
- * 获取数据
- * @returns void
- */
-const getPermissionMessage = () =>  { const roleRule = failedRules.find(rule => rule.type === PermissionType.ROLE);
+  const getPermissionMessage = () => { const roleRule = failedRules.find(rule => rule.type === PermissionType.ROLE);
     const phaseRule = failedRules.find(rule => rule.type === PermissionType.PHASE);
     const statusRule = failedRules.find(rule => rule.type === PermissionType.STATUS);
 
     if (roleRule) {
-      return '您的角色无权访问此功能'
+      return '您的角色无权访问此功能';,
 }
-    if (phaseRule) { return '当前游戏阶段无法使用此功能'
+    if (phaseRule) { return '当前游戏阶段无法使用此功能';,
 }
-    if (statusRule) { return '您当前的状态无法使用此功能'
+    if (statusRule) { return '您当前的状态无法使用此功能';,
 }
-    return '您没有权限访问此功能'
+    return '您没有权限访问此功能';,
 };
 
-/**
- * getPermissionDetails函数
- * 获取数据
- * @returns void
- */
-const getPermissionDetails = () =>  {
-  return failedRules.map(rule => rule.description).filter(Boolean).join('；')
-
+  const getPermissionDetails = () => { return failedRules.map(rule => rule.description).filter(Boolean).join('；');,
 };
 
   return (;
@@ -186,7 +159,7 @@ const getPermissionDetails = () =>  {
     </div>
     </div>
     </div>
-  )
+  );,
 };
 
 /**
@@ -201,8 +174,7 @@ async function validatePermissions(
   rules: PermissionRule[],
   context: PermissionContext,
   mode: 'all' | 'any' = 'all';
-): Promise<{ hasPermission: boolean; failedRules: PermissionRule[]  
-}> { const failedRules: PermissionRule[] = [];
+): Promise<{ hasPermission: boolean; failedRules: PermissionRule[]  }> { const failedRules: PermissionRule[] = [];
 
   for (const rule of rules) {
     let ruleResult = false;
@@ -211,46 +183,48 @@ async function validatePermissions(
       switch (rule.type) {
         case PermissionType.ROLE:
         if (rule.allowed && context.userRole) {
-          ruleResult = rule.allowed.includes(context.userRole)
+          ruleResult = rule.allowed.includes(context.userRole);,
 }
-        if (rule.denied && context.userRole) { ruleResult = !rule.denied.includes(context.userRole)
-}
-        break;
-
-        case PermissionType.PHASE: if (rule.allowed && context.gamePhase) { ruleResult = rule.allowed.includes(context.gamePhase)
-}
-        if (rule.denied && context.gamePhase) { ruleResult = !rule.denied.includes(context.gamePhase)
+        if (rule.denied && context.userRole) { ruleResult = !rule.denied.includes(context.userRole);,
 }
         break;
 
-        case PermissionType.STATUS: if (rule.allowed && context.roleStatus) { ruleResult = rule.allowed.includes(context.roleStatus)
+        case PermissionType.PHASE:
+        if (rule.allowed && context.gamePhase) { ruleResult = rule.allowed.includes(context.gamePhase);,
 }
-        if (rule.denied && context.roleStatus) { ruleResult = !rule.denied.includes(context.roleStatus)
+        if (rule.denied && context.gamePhase) { ruleResult = !rule.denied.includes(context.gamePhase);,
 }
         break;
 
-        case PermissionType.CUSTOM: if (rule.validator) { ruleResult = await rule.validator(context)
+        case PermissionType.STATUS:
+        if (rule.allowed && context.roleStatus) { ruleResult = rule.allowed.includes(context.roleStatus);,
+}
+        if (rule.denied && context.roleStatus) { ruleResult = !rule.denied.includes(context.roleStatus);,
+}
+        break;
+
+        case PermissionType.CUSTOM:
+        if (rule.validator) { ruleResult = await rule.validator(context);,
 }
         break;
 
         default:
-        logger.warn('未知的权限类型', { type: rule.type  
-});
-        ruleResult = false
+        logger.warn('未知的权限类型', { type: rule.type  });
+        ruleResult = false;,
 }
     } catch (error) { logger.error('权限验证过程中发生错误', {
         rule,
         context,
-        error });
-      ruleResult = false
+        error,
+});
+      ruleResult = false;,
 }
 
-    if (!ruleResult) { failedRules.push(rule)
+    if (!ruleResult) { failedRules.push(rule);,
 }
 
     // 如果是 'any' 模式且有一个规则通过，则立即返回成功
-    if (mode === 'any' && ruleResult) { return { hasPermission: true, failedRules: []  
-}
+    if (mode === 'any' && ruleResult) { return { hasPermission: true, failedRules: []  };,
 }
   }
 
@@ -258,7 +232,7 @@ async function validatePermissions(
   // 'any' 模式：如果到这里说明没有规则通过
   const hasPermission = mode === 'all' ? failedRules.length === 0 : false;
 
-  return { hasPermission, failedRules  }
+  return { hasPermission, failedRules  };,
 }
 
 /**
@@ -273,13 +247,7 @@ export function withPermission<P extends object>(
     WrappedComponent: T
   ): ComponentType<P & WithPermissionProps> {
 
-/**
- * PermissionHOC组件
- * PermissionHOC组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
+    const PermissionHOC: React.FC<P & WithPermissionProps> = props => {
       const { permissionContext, permissionConfig, ...restProps  } = props;
 
       // 合并配置
@@ -288,7 +256,8 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
         skipInDevelopment: false,
         ...config,
         ...permissionConfig,
-        rules: [...config.rules, ...(permissionConfig?.rules || [])]  };
+        rules: [...config.rules, ...(permissionConfig?.rules || [])],
+};
 
       const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
       const [failedRules, setFailedRules] = React.useState<PermissionRule[]>([]);
@@ -299,18 +268,18 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
           if (finalConfig.skipInDevelopment && process.env.NODE_ENV === 'development') {
             logger.debug('开发环境跳过权限检查');
             setHasPermission(true);
-            return
+            return;,
 }
 
           if (!permissionContext) { logger.warn('缺少权限上下文');
             setHasPermission(false);
             setFailedRules(finalConfig.rules);
-            return
+            return;,
 }
 
           logger.debug('开始权限验证', { context: permissionContext,
             rules: finalConfig.rules,
-            mode: finalConfig.mode 
+            mode: finalConfig.mode,
 });
 
           const result = await validatePermissions(;
@@ -324,16 +293,16 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
 
           if (!result.hasPermission) { logger.warn('权限验证失败', {
               context: permissionContext,
-              failedRules: result.failedRules 
+              failedRules: result.failedRules,
 });
 
-            if (finalConfig.onPermissionDenied) { finalConfig.onPermissionDenied(permissionContext, result.failedRules)
+            if (finalConfig.onPermissionDenied) { finalConfig.onPermissionDenied(permissionContext, result.failedRules);,
 }
-          } else { logger.debug('权限验证通过')
+          } else { logger.debug('权限验证通过');,
 }
         }
 
-        checkPermissions()
+        checkPermissions();,
 }, [permissionContext, finalConfig]);
 
       // 加载状态
@@ -342,20 +311,14 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
           <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600'></div>;
           <span className='ml-2 text-sm text-gray-600'>验证权限中...</span>;
           </div>
-        )
+        );,
 }
 
       // 无权限状态
       if (!hasPermission) { if (!finalConfig.showNoPermissionMessage) {
-          return null
+          return null;,
 }
 
-/**
- * NoPermissionComponent组件
- * NoPermissionComponent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
         const NoPermissionComponent = finalConfig.noPermissionComponent || DefaultNoPermissionComponent;
 
         return (;
@@ -364,18 +327,18 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
           failedRules={ failedRules }
           config={ finalConfig }
           />
-        )
+        );,
 }
 
-      return <WrappedComponent { ...(restProps as P) } />
+      return <WrappedComponent { ...(restProps as P) } />;,
 };
 
     // 设置显示名称
     const wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
     PermissionHOC.displayName = `withPermission(${ wrappedComponentName })`;
 
-    return PermissionHOC
-}
+    return PermissionHOC;,
+};,
 }
 
 /**
@@ -385,9 +348,9 @@ const PermissionHOC: React.FC<P & WithPermissionProps> = props =>  {
 * @param config - 权限配置
 * @returns 装饰器函数
  */
-export function Permission(config: PermissionConfig) { return function <T extends ComponentType<any>>(target: T): T  {
-    return withPermission(config)(target) as T
-}
+export function Permission(config: PermissionConfig) { return function <T extends ComponentType<any>>(target: T): T {
+    return withPermission(config)(target) as T;,
+};,
 }
 
 /**
@@ -401,105 +364,111 @@ export function Permission(config: PermissionConfig) { return function <T extend
 export function wrapWithPermission<P extends object>(
   component: ComponentType<P>,
   config: PermissionConfig
-): ComponentType<P & WithPermissionProps> { return withPermission(config)(component)
+): ComponentType<P & WithPermissionProps> { return withPermission(config)(component);,
 }
 
 /**
 * 预设权限规则
  */
-export const PermissionRules =  { /**
- * 仅狼人可访问
- */
-werewolfOnly:  {
+export const PermissionRules = { /**
+  * 仅狼人可访问
+   */
+  werewolfOnly: {
     type: PermissionType.ROLE,
     allowed: [RoleType.WEREWOLF],
-    description: '仅狼人角色可以访问' 
+    description: '仅狼人角色可以访问',
 } as PermissionRule,
 
   /**
- * 仅村民可访问
- */
-villagerOnly:  { type: PermissionType.ROLE,
+  * 仅村民可访问
+   */
+  villagerOnly: { type: PermissionType.ROLE,
     allowed: [RoleType.VILLAGER, RoleType.SEER, RoleType.WITCH, RoleType.GUARD, RoleType.HUNTER],
-    description: '仅村民阵营可以访问' 
+    description: '仅村民阵营可以访问',
 } as PermissionRule,
 
   /**
- * 仅夜晚阶段可访问
- */
-nightOnly:  { type: PermissionType.PHASE,
+  * 仅夜晚阶段可访问
+   */
+  nightOnly: { type: PermissionType.PHASE,
     allowed: ['night'],
-    description: '仅在夜晚阶段可以访问' 
+    description: '仅在夜晚阶段可以访问',
 } as PermissionRule,
 
   /**
- * 仅白天阶段可访问
- */
-dayOnly:  { type: PermissionType.PHASE,
+  * 仅白天阶段可访问
+   */
+  dayOnly: { type: PermissionType.PHASE,
     allowed: ['day'],
-    description: '仅在白天阶段可以访问' 
+    description: '仅在白天阶段可以访问',
 } as PermissionRule,
 
   /**
- * 仅存活状态可访问
- */
-aliveOnly:  { type: PermissionType.STATUS,
+  * 仅存活状态可访问
+   */
+  aliveOnly: { type: PermissionType.STATUS,
     allowed: [RoleStatus.NORMAL, RoleStatus.WEAK],
-    description: '仅存活状态可以访问' 
+    description: '仅存活状态可以访问',
 } as PermissionRule,
 
   /**
- * 排除已淘汰状态
- */
-notEliminated:  { type: PermissionType.STATUS,
+  * 排除已淘汰状态
+   */
+  notEliminated: { type: PermissionType.STATUS,
     denied: [RoleStatus.ELIMINATED],
-    description: '已淘汰玩家无法访问' 
-} as PermissionRule };
+    description: '已淘汰玩家无法访问',
+} as PermissionRule,
+};
 
 /**
 * 预设权限配置
  */
-export const PermissionPresets =  { /**
- * 狼人夜晚技能权限
- */
-werewolfNightSkill:  {
+export const PermissionPresets = { /**
+  * 狼人夜晚技能权限
+   */
+  werewolfNightSkill: {
     rules: [PermissionRules.werewolfOnly,
       PermissionRules.nightOnly,
-      PermissionRules.aliveOnly ],
-    mode: 'all' 
+      PermissionRules.aliveOnly,
+],
+    mode: 'all',
 } as PermissionConfig,
 
   /**
- * 村民白天投票权限
- */
-villagerDayVote:  { rules: [PermissionRules.dayOnly,
-      PermissionRules.aliveOnly ],
-    mode: 'all' 
+  * 村民白天投票权限
+   */
+  villagerDayVote: { rules: [PermissionRules.dayOnly,
+      PermissionRules.aliveOnly,
+],
+    mode: 'all',
 } as PermissionConfig,
 
   /**
- * 特殊角色夜晚技能权限
- */
-specialRoleNightSkill: { rules: [ {
+  * 特殊角色夜晚技能权限
+   */
+  specialRoleNightSkill: { rules: [{
         type: PermissionType.ROLE,
         allowed: [RoleType.SEER, RoleType.WITCH, RoleType.GUARD],
-        description: '仅特殊角色可以使用夜晚技能' 
+        description: '仅特殊角色可以使用夜晚技能',
 },
       PermissionRules.nightOnly,
-      PermissionRules.aliveOnly ],
-    mode: 'all' 
+      PermissionRules.aliveOnly,
+],
+    mode: 'all',
 } as PermissionConfig,
 
   /**
- * 游戏管理员权限
- */
-gameAdmin: { rules: [ {
+  * 游戏管理员权限
+   */
+  gameAdmin: { rules: [{
         type: PermissionType.CUSTOM,
         validator: context => !!context.isGameAdmin,
-        description: '仅游戏管理员可以访问' 
-} ],
-    mode: 'all' 
-} as PermissionConfig };
+        description: '仅游戏管理员可以访问',
+},
+],
+    mode: 'all',
+} as PermissionConfig,
+};
 
 /**
 * 自定义 Hook：使用权限检查
@@ -522,22 +491,20 @@ export function usePermission(
     try {
       const result = await validatePermissions(rules, context, mode);
       setHasPermission(result.hasPermission);
-      setFailedRules(result.failedRules)
+      setFailedRules(result.failedRules);,
 } catch (error) { logger.error('权限检查失败', { error  });
       setHasPermission(false);
-      setFailedRules(rules)
-} finally { setIsChecking(false)
+      setFailedRules(rules);,
+} finally { setIsChecking(false);,
 }
   }, [rules, context, mode]);
 
-  React.useEffect(() => {
-  checkPermission()
-
+  React.useEffect(() => { checkPermission();,
 }, [checkPermission]);
 
   return { hasPermission,
     failedRules,
     isChecking,
-    recheckPermission: checkPermission 
-}
+    recheckPermission: checkPermission,
+};,
 }

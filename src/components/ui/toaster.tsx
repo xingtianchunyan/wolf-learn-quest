@@ -1,5 +1,5 @@
-import {
-  Toast, useToast   } from '@/hooks/useToast'
+import { Toast,
+import { useToast  } from '@/hooks/useToast'
 
 /**
 * 文件级注释：toaster 组件
@@ -21,7 +21,8 @@ import {
   ToastDescription,
   ToastProvider,
   ToastTitle,
-  ToastViewport  } from '@/components/ui/toast'
+  ToastViewport,
+ } from '@/components/ui/toast'
 
 /**
 * toaster 组件
@@ -37,7 +38,7 @@ import {
 * // 使用示例
 * <toaster />
  */
-export function Toaster() { const  { toasts  } = useToast();
+export function Toaster() { const { toasts  } = useToast();
 
   return (;
     <ToastProvider>
@@ -52,7 +53,9 @@ export function Toaster() { const  { toasts  } = useToast();
         { action }
         <ToastClose />
         </Toast>
-      ) })}
+      ),
+})}
     <ToastViewport />
     </ToastProvider>
-  ) }
+  ),
+}

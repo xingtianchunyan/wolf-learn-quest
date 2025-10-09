@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 
 /**
@@ -45,12 +45,6 @@ React.HTMLAttributes<HTMLDivElement>
 ))
 Card.displayName = 'Card';
 
-/**
- * CardHeader组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const CardHeader = React.forwardRef<;
 HTMLDivElement,
 React.HTMLAttributes<HTMLDivElement>
@@ -63,12 +57,6 @@ React.HTMLAttributes<HTMLDivElement>
 ))
 CardHeader.displayName = 'CardHeader';
 
-/**
- * CardTitle组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const CardTitle = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLHeadingElement>
@@ -84,12 +72,6 @@ React.HTMLAttributes<HTMLHeadingElement>
 ))
 CardTitle.displayName = 'CardTitle';
 
-/**
- * CardDescription组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const CardDescription = React.forwardRef<;
 HTMLParagraphElement,
 React.HTMLAttributes<HTMLParagraphElement>
@@ -102,12 +84,6 @@ React.HTMLAttributes<HTMLParagraphElement>
 ))
 CardDescription.displayName = 'CardDescription';
 
-/**
- * CardContent组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const CardContent = React.forwardRef<;
 HTMLDivElement,
 React.HTMLAttributes<HTMLDivElement>
@@ -116,12 +92,6 @@ React.HTMLAttributes<HTMLDivElement>
 ))
 CardContent.displayName = 'CardContent';
 
-/**
- * CardFooter组件
- * 卡片组件，用于内容分组展示
- * @param props - 组件属性
- * @returns JSX元素
- */
 const CardFooter = React.forwardRef<;
 HTMLDivElement,
 React.HTMLAttributes<HTMLDivElement>

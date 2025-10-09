@@ -1,15 +1,15 @@
-import {
-  Activity, Alert, AlertDescription   } from '@/components/ui/alert';
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle   } from '@/components/ui/card';
-import { SkillProgressIndicator, SKILL_EXECUTION_STEPS   } from '@/components/ui/skill-progress-indicator';
-import { SkillSystemMonitor   } from '@/components/admin/SkillSystemMonitor';
-import { Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import { useSkillSystemCache   } from '@/utils/skillSystemCache';
-import { useToast   } from '@/hooks/useToast';
-import React, { useState   } from 'react';
+import { Activity,
+import { Alert, AlertDescription  } from '@/components/ui/alert';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card';
+import { SkillProgressIndicator, SKILL_EXECUTION_STEPS  } from '@/components/ui/skill-progress-indicator';
+import { SkillSystemMonitor  } from '@/components/admin/SkillSystemMonitor';
+import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import { useSkillSystemCache  } from '@/utils/skillSystemCache';
+import { useToast  } from '@/hooks/useToast';
+import React, { useState  } from 'react';
 
 /**
 * 文件级注释：SkillSystemDashboard 组件
@@ -35,12 +35,13 @@ import React, { useState   } from 'react';
   AlertTriangle,
   CheckCircle,
   TrendingUp,
-  Zap  } from 'lucide-react';
+  Zap,
+} from 'lucide-react';
 
 interface SkillSystemDashboardProps { gameStateId?: string;
   roomId?: string;
   isJudge?: boolean;
-  userId?: string
+  userId?: string;,
 }
 
 /**
@@ -57,15 +58,15 @@ interface SkillSystemDashboardProps { gameStateId?: string;
 * // 使用示例
 * <SkillSystemDashboard { ...props } />
  */
-export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ( { gameStateId,
+export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({ gameStateId,
   roomId,
   isJudge = false,
-  userId }) => { const [activeTab, setActiveTab] = useState('overview');
+  userId,
+}) => { const [activeTab, setActiveTab] = useState('overview');
   const { toast  } = useToast();
 
   // 缓存系统
-  const { cache, stats: cacheStats, clear: clearCache, cleanup: cleanupCache  
-} = useSkillSystemCache();
+  const { cache, stats: cacheStats, clear: clearCache, cleanup: cleanupCache  } = useSkillSystemCache();
 
   // 技能系统数据
   const { skillUses: _skillUses,
@@ -74,69 +75,51 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ( { gam
     loading: _loading,
     stats,
     useSkillEnhanced: _useSkillEnhanced,
-    fetchAllSkillData } = useEnhancedSkillSystem(roomId || '', gameStateId, userId);
+    fetchAllSkillData,
+} = useEnhancedSkillSystem(roomId || '', gameStateId, userId);
 
   // 模拟技能执行进度（用于演示）
   const [skillProgress, setSkillProgress] = useState({ werewolf_attack: SKILL_EXECUTION_STEPS.werewolf_attack.map(step => ({
       ...step,
-      status: 'completed' as const 
+      status: 'completed' as const,
 })),
     guard_vigil: SKILL_EXECUTION_STEPS.guard_vigil.map((step, index) => ({ ...step,
-      status: index < 2 ? 'completed' as const : 'pending' as const 
-})) });
+      status: index < 2 ? 'completed' as const : 'pending' as const,
+})),
+});
 
   // 手动刷新数据
-/**
- * handleRefreshData函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleRefreshData = async () => { try  {
+  const handleRefreshData = async () => { try {
       await fetchAllSkillData();
       cleanupCache();
       toast({
         title: '数据刷新成功',
-        description: '已获取最新的技能系统数据' 
-})
+        description: '已获取最新的技能系统数据',
+});,
 } catch (error: any) { toast({
         title: '数据刷新失败',
         description: error.message,
-        variant: 'destructive' 
-})
+        variant: 'destructive',
+});,
 }
   };
 
   // 清理缓存
-/**
- * handleClearCache函数
- * 处理事件
- * @returns void
- */
-const handleClearCache = () =>  { clearCache();
+  const handleClearCache = () => { clearCache();
     toast({
       title: '缓存已清理',
-      description: '所有缓存数据已被清除' 
-})
+      description: '所有缓存数据已被清除',
+});,
 };
 
   // 获取系统状态
-/**
- * getSystemStatus函数
- * 获取数据
- * @returns void
- */
-const getSystemStatus = () => { if (_loading) return {
-    status: 'loading', message: '加载中...'   
-};
+  const getSystemStatus = () => { if (_loading) return { status: 'loading', message: '加载中...'  };
 
     const errorRate = stats.totalUses > 0 ? ((stats.totalUses - stats.activeEffects) / stats.totalUses) * 100 : 0;
 
-    if (errorRate > 20) { return { status: 'error', message: '系统异常，错误率过高'  
-}
-} else if (stats.queuedEffects > 20) { return { status: 'warning', message: '队列积压，需要处理'  
-}
-} else { return { status: 'healthy', message: '系统运行正常'  
-}
+    if (errorRate > 20) { return { status: 'error', message: '系统异常，错误率过高'  };,
+} else if (stats.queuedEffects > 20) { return { status: 'warning', message: '队列积压，需要处理'  };,
+} else { return { status: 'healthy', message: '系统运行正常'  };,
 }
   };
 
@@ -149,7 +132,7 @@ const getSystemStatus = () => { if (_loading) return {
       请选择游戏状态以使用技能系统管理面板
       </AlertDescription>
       </Alert>
-    )
+    );,
 }
 
   return (;
@@ -161,9 +144,10 @@ const getSystemStatus = () => { if (_loading) return {
     <Activity className='h-5 w-5' />;
     技能系统管理面板
     <Badge
-    variant={ systemStatus.status === 'healthy' ? 'default' : unknown;
-      systemStatus.status === 'warning' ? 'secondary' : unknown;
-      'destructive' }
+    variant={ systemStatus.status === 'healthy' ? 'default' :;
+      systemStatus.status === 'warning' ? 'secondary' :;
+      'destructive',
+}
     >
     { systemStatus.message }
     </Badge>
@@ -241,9 +225,10 @@ const getSystemStatus = () => { if (_loading) return {
         第{ skill.round_number }轮 - { skill.phase }
         </span>
         </div>
-        <Badge variant={ skill.execution_status === 'completed' ? 'default' : unknown;
-          skill.execution_status === 'pending' ? 'secondary' : unknown;
-          'destructive' }>
+        <Badge variant={ skill.execution_status === 'completed' ? 'default' :;
+          skill.execution_status === 'pending' ? 'secondary' :;
+          'destructive',
+}>
         { skill.execution_status }
         </Badge>
         </div>
@@ -331,9 +316,10 @@ const getSystemStatus = () => { if (_loading) return {
       <SkillProgressIndicator
       key={skillName }
       skillName={ skillName }
-      skillChineseName={ skillName === 'werewolf_attack' ? '狼人夜袭' : unknown;
-        skillName === 'guard_vigil' ? '守卫守夜' : unknown;
-        skillName }
+      skillChineseName={ skillName === 'werewolf_attack' ? '狼人夜袭' :;
+        skillName === 'guard_vigil' ? '守卫守夜' :;
+        skillName,
+}
       steps={ steps }
       showProgress={ true }
       showStepDetails={ true }
@@ -368,10 +354,8 @@ const getSystemStatus = () => { if (_loading) return {
     className='w-full';
     disabled={ _loading }
     >
-    <RefreshCw className={ `h-4 w-4 mr-2 ${_loading ? 'animate-spin' : '' 
-}`} />;
-    { _loading ? '刷新中...' : '刷新数据' 
-}
+    <RefreshCw className={ `h-4 w-4 mr-2 ${_loading ? 'animate-spin' : '' }`} />;
+    { _loading ? '刷新中...' : '刷新数据' }
     </Button>
 
     <Button
@@ -424,8 +408,8 @@ const getSystemStatus = () => { if (_loading) return {
     </Card>
     </div>
 
-    { /*  权限提示  */
-} { !isJudge && (
+    { /*  权限提示  */ }
+    { !isJudge && (
       <Alert>
       <AlertTriangle className='h-4 w-4' />;
       <AlertDescription>
@@ -436,13 +420,7 @@ const getSystemStatus = () => { if (_loading) return {
     </TabsContent>
     </Tabs>
     </div>
-  )
+  );,
 };
 
-/**
- * SkillSystemDashboard组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default SkillSystemDashboard;

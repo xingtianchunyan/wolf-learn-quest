@@ -1,7 +1,6 @@
 # Wolf Learn Quest 使用指南
 
 ## 目录
-
 1. [快速开始](#快速开始)
 2. [核心功能使用](#核心功能使用)
 3. [错误处理系统](#错误处理系统)
@@ -13,13 +12,11 @@
 ## 快速开始
 
 ### 环境要求
-
-- Node.js 18+
+- Node.js 18+ 
 - npm 或 yarn
 - 现代浏览器 (Chrome 90+, Firefox 88+, Safari 14+)
 
 ### 安装和启动
-
 ```bash
 # 克隆项目
 git clone <YOUR_GIT_URL>
@@ -43,7 +40,6 @@ npm run build
 ### 统一错误处理系统
 
 #### 基本使用
-
 ```typescript
 import { UnifiedErrorHandler } from '@/utils/unifiedErrorHandler';
 
@@ -51,7 +47,7 @@ import { UnifiedErrorHandler } from '@/utils/unifiedErrorHandler';
 const errorHandler = new UnifiedErrorHandler({
   enableLogging: true,
   enableUserNotification: true,
-  enablePerformanceMonitoring: true,
+  enablePerformanceMonitoring: true
 });
 
 // 处理错误
@@ -62,13 +58,12 @@ try {
   await errorHandler.handleError(error, {
     context: 'user-action',
     userId: 'user123',
-    additionalInfo: { action: 'submit-form' },
+    additionalInfo: { action: 'submit-form' }
   });
 }
 ```
 
 #### React组件中使用
-
 ```typescript
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -84,7 +79,6 @@ function App() {
 ### 安全审计系统
 
 #### 启用安全监控
-
 ```typescript
 import { ComprehensiveSecurityAudit } from '@/utils/comprehensiveSecurityAudit';
 
@@ -92,7 +86,7 @@ import { ComprehensiveSecurityAudit } from '@/utils/comprehensiveSecurityAudit';
 const securityAudit = new ComprehensiveSecurityAudit({
   enableRealTimeMonitoring: true,
   enableThreatDetection: true,
-  enableAutoResponse: true,
+  enableAutoResponse: true
 });
 
 // 启动安全监控
@@ -104,7 +98,6 @@ console.log('安全审计结果:', auditResult);
 ```
 
 #### 安全策略配置
-
 ```typescript
 // 配置安全策略
 const securityConfig = {
@@ -112,7 +105,7 @@ const securityConfig = {
   sessionTimeout: 30 * 60 * 1000, // 30分钟
   enableCSRFProtection: true,
   enableXSSProtection: true,
-  enableSQLInjectionProtection: true,
+  enableSQLInjectionProtection: true
 };
 
 await securityAudit.updateSecurityPolicies(securityConfig);
@@ -121,7 +114,6 @@ await securityAudit.updateSecurityPolicies(securityConfig);
 ### 性能优化系统
 
 #### 智能缓存使用
-
 ```typescript
 import { SmartCacheManager } from '@/utils/performanceOptimization';
 
@@ -129,7 +121,7 @@ import { SmartCacheManager } from '@/utils/performanceOptimization';
 const cacheManager = new SmartCacheManager({
   ttl: 300000, // 5分钟
   maxSize: 1000,
-  compressionEnabled: true,
+  compressionEnabled: true
 });
 
 // 缓存数据
@@ -140,7 +132,6 @@ const cachedData = await cacheManager.get('user-data');
 ```
 
 #### 性能监控
-
 ```typescript
 import { PerformanceMonitor } from '@/utils/performanceOptimization';
 
@@ -161,7 +152,6 @@ const report = monitor.getPerformanceReport();
 ### 代码规范
 
 #### TypeScript类型定义
-
 ```typescript
 /**
  * 用户数据接口
@@ -180,7 +170,6 @@ interface UserData {
 ```
 
 #### 函数注释规范
-
 ```typescript
 /**
  * 处理用户登录
@@ -200,7 +189,6 @@ async function handleUserLogin(
 ### 测试指南
 
 #### 单元测试
-
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import { UnifiedErrorHandler } from '@/utils/unifiedErrorHandler';
@@ -215,7 +203,7 @@ describe('UnifiedErrorHandler', () => {
   it('应该正确处理网络错误', async () => {
     const networkError = new Error('Network failed');
     const result = await errorHandler.handleError(networkError);
-
+    
     expect(result.handled).toBe(true);
     expect(result.errorType).toBe('network');
   });
@@ -223,7 +211,6 @@ describe('UnifiedErrorHandler', () => {
 ```
 
 #### 集成测试
-
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -242,19 +229,15 @@ describe('App Integration', () => {
 ### 常见问题
 
 #### 1. 性能测试失败
-
 **问题**: 部分性能测试在某些环境下失败
-**解决方案**:
-
+**解决方案**: 
 - 检查浏览器兼容性
 - 确保测试环境稳定
 - 使用降级处理策略
 
 #### 2. 缓存问题
-
 **问题**: 缓存数据不一致
 **解决方案**:
-
 ```typescript
 // 清除特定缓存
 await cacheManager.delete('problematic-key');
@@ -267,10 +250,8 @@ await cacheManager.initialize();
 ```
 
 #### 3. 错误处理不生效
-
 **问题**: 错误没有被正确捕获
 **解决方案**:
-
 ```typescript
 // 确保错误处理器正确初始化
 const errorHandler = new UnifiedErrorHandler({
@@ -287,7 +268,6 @@ const errorHandler = new UnifiedErrorHandler({
 ### 调试技巧
 
 #### 1. 启用详细日志
-
 ```typescript
 // 在开发环境启用详细日志
 if (process.env.NODE_ENV === 'development') {
@@ -298,7 +278,6 @@ if (process.env.NODE_ENV === 'development') {
 ```
 
 #### 2. 性能分析
-
 ```typescript
 // 使用性能分析工具
 const performanceData = monitor.getDetailedMetrics();
@@ -306,7 +285,6 @@ console.table(performanceData);
 ```
 
 #### 3. 安全审计调试
-
 ```typescript
 // 获取详细的安全审计日志
 const auditLogs = await securityAudit.getAuditLogs();
@@ -316,25 +294,21 @@ console.log('Security audit logs:', auditLogs);
 ## 最佳实践
 
 ### 1. 错误处理
-
 - 始终使用统一错误处理器
 - 为用户提供友好的错误信息
 - 记录详细的错误日志用于调试
 
 ### 2. 性能优化
-
 - 合理使用缓存策略
 - 监控关键性能指标
 - 定期清理无用的缓存数据
 
 ### 3. 安全性
-
 - 定期运行安全审计
 - 及时更新安全策略
 - 监控异常的用户行为
 
 ### 4. 代码质量
-
 - 编写完整的测试用例
 - 添加详细的代码注释
 - 遵循TypeScript最佳实践

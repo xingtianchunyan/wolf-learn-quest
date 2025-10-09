@@ -1,6 +1,6 @@
-import { RealtimePostgresChangesPayload   } from '@supabase/supabase-js';
-import { supabase   } from '@/integrations/supabase/client';
-import { useState, useEffect   } from 'react';
+import { RealtimePostgresChangesPayload  } from '@supabase/supabase-js';
+import { supabase  } from '@/integrations/supabase/client';
+import { useState, useEffect  } from 'react';
 
 export interface RoomAnswerRecord { id: string;
   room_id: string | null;
@@ -11,41 +11,29 @@ export interface RoomAnswerRecord { id: string;
   selected_option: number | null;
   is_correct: boolean | null;
   response_time: number | null;
-  created_at: string | null
+  created_at: string | null;,
 }
 
-/**
- * useRoomAnswers函数
- * 自定义Hook
- *
- * @param roomId - roomId参数
- * @returns void
- */
-export const useRoomAnswers = (roomId: string | null | undefined) =>  { const [roomAnswers, setRoomAnswers] = useState<RoomAnswerRecord[]>([]);
+export const useRoomAnswers = (roomId: string | null | undefined) => { const [roomAnswers, setRoomAnswers] = useState<RoomAnswerRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!roomId) {
       setRoomAnswers([]);
       setLoading(false);
-      return
+      return;,
 }
 
-/**
- * fetchAnswers函数
- * 获取远程数据
- * @returns Promise<void>
- */
-const fetchAnswers = async () =>  { setLoading(true);
+    const fetchAnswers = async () => { setLoading(true);
       const { data, error  } = await supabase;
       .from('room_answers')
       .select('*')
       .eq('room_id', roomId);
 
-      if (error) { console.error('Error fetching room answers:', error)
-} else if (data) { setRoomAnswers(data as RoomAnswerRecord[])
+      if (error) { console.error('Error fetching room answers:', error);,
+} else if (data) { setRoomAnswers(data as RoomAnswerRecord[]);,
 }
-      setLoading(false)
+      setLoading(false);,
 };
 
     fetchAnswers();
@@ -56,32 +44,31 @@ const fetchAnswers = async () =>  { setLoading(true);
       { event: '*',
         schema: 'public',
         table: 'room_answers',
-        filter: `room_id=eq.${roomId 
-}` },
+        filter: `room_id=eq.${roomId }`,
+      },
       (payload: RealtimePostgresChangesPayload<RoomAnswerRecord>) => { if (payload.new && typeof payload.new === 'object') {
           const newAnswer = payload.new as RoomAnswerRecord;
           if (payload.eventType === 'INSERT') {
             setRoomAnswers(currentAnswers => {
               if (currentAnswers.some(a => a.id === newAnswer.id)) {
-                return currentAnswers
+                return currentAnswers;,
 }
-              return [...currentAnswers, newAnswer]
-})
+              return [...currentAnswers, newAnswer];,
+});,
 } else if (payload.eventType === 'UPDATE') { setRoomAnswers(currentAnswers =>;
             currentAnswers.map(ans =>;
             ans.id === newAnswer.id ? newAnswer : ans;
           )
-        )
+        );,
 }
-    } }
+    },
+}
 )
 .subscribe();
 
-return () => {
-  supabase.removeChannel(channel)
-}
-
+return () => { supabase.removeChannel(channel);,
+};,
 }, [roomId]);
 
-return { roomAnswers, loading  }
+return { roomAnswers, loading  };,
 };

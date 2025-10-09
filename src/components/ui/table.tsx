@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 
 /**
@@ -44,12 +44,6 @@ React.HTMLAttributes<HTMLTableElement>
 ))
 Table.displayName = 'Table';
 
-/**
- * TableHeader组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableHeader = React.forwardRef<;
 HTMLTableSectionElement,
 React.HTMLAttributes<HTMLTableSectionElement>
@@ -58,12 +52,6 @@ React.HTMLAttributes<HTMLTableSectionElement>
 ))
 TableHeader.displayName = 'TableHeader';
 
-/**
- * TableBody组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableBody = React.forwardRef<;
 HTMLTableSectionElement,
 React.HTMLAttributes<HTMLTableSectionElement>
@@ -76,12 +64,6 @@ React.HTMLAttributes<HTMLTableSectionElement>
 ))
 TableBody.displayName = 'TableBody';
 
-/**
- * TableFooter组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableFooter = React.forwardRef<;
 HTMLTableSectionElement,
 React.HTMLAttributes<HTMLTableSectionElement>
@@ -97,12 +79,6 @@ React.HTMLAttributes<HTMLTableSectionElement>
 ))
 TableFooter.displayName = 'TableFooter';
 
-/**
- * TableRow组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableRow = React.forwardRef<;
 HTMLTableRowElement,
 React.HTMLAttributes<HTMLTableRowElement>
@@ -118,12 +94,6 @@ React.HTMLAttributes<HTMLTableRowElement>
 ))
 TableRow.displayName = 'TableRow';
 
-/**
- * TableHead组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableHead = React.forwardRef<;
 HTMLTableCellElement,
 React.ThHTMLAttributes<HTMLTableCellElement>
@@ -139,12 +109,6 @@ React.ThHTMLAttributes<HTMLTableCellElement>
 ))
 TableHead.displayName = 'TableHead';
 
-/**
- * TableCell组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableCell = React.forwardRef<;
 HTMLTableCellElement,
 React.TdHTMLAttributes<HTMLTableCellElement>
@@ -157,12 +121,6 @@ React.TdHTMLAttributes<HTMLTableCellElement>
 ))
 TableCell.displayName = 'TableCell';
 
-/**
- * TableCaption组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TableCaption = React.forwardRef<;
 HTMLTableCaptionElement,
 React.HTMLAttributes<HTMLTableCaptionElement>
@@ -182,4 +140,5 @@ export { Table,
   TableHead,
   TableRow,
   TableCell,
-  TableCaption }
+  TableCaption,
+ }

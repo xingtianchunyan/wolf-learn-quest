@@ -1,15 +1,16 @@
 /**
  * 文件级注释：基础功能测试
- *
+ * 
  * 该文件实现了基础功能的测试，旨在：
  * - 验证测试环境配置正确
  * - 测试基本的错误处理功能
  * - 验证安全工具类功能
  * - 测试性能监控基础功能
- *
+ * 
  * @author SOLO Coding
  * @version 1.0.0
  */
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
@@ -24,7 +25,7 @@ interface TestError {
 
 /**
  * 类级注释：基础错误处理器类
- *
+ * 
  * 提供基础的错误处理功能用于测试
  */
 class BasicErrorHandler {
@@ -73,7 +74,7 @@ class BasicErrorHandler {
 
 /**
  * 类级注释：基础安全验证器类
- *
+ * 
  * 提供基础的安全验证功能用于测试
  */
 class BasicSecurityValidator {
@@ -96,7 +97,7 @@ class BasicSecurityValidator {
 
     return {
       isValid: errors.length === 0,
-      errors,
+      errors
     };
   }
 
@@ -108,7 +109,7 @@ class BasicSecurityValidator {
     const xssPatterns = [
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
       /javascript:/gi,
-      /on\w+\s*=/gi,
+      /on\w+\s*=/gi
     ];
 
     return xssPatterns.some(pattern => pattern.test(input));
@@ -123,7 +124,7 @@ class BasicSecurityValidator {
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)/gi,
       /(';|--;|\/\*|\*\/)/gi,
       /(\bOR\b.*=.*\bOR\b)|(\bAND\b.*=.*\bAND\b)/gi,
-      /('.*OR.*'.*=.*')/gi,
+      /('.*OR.*'.*=.*')/gi
     ];
 
     return sqlPatterns.some(pattern => pattern.test(input));
@@ -132,24 +133,17 @@ class BasicSecurityValidator {
 
 /**
  * 类级注释：基础性能监控器类
- *
+ * 
  * 提供基础的性能监控功能用于测试
  */
 class BasicPerformanceMonitor {
-  private metrics: Array<{
-    name: string;
-    duration: number;
-    timestamp: number;
-  }> = [];
+  private metrics: Array<{ name: string; duration: number; timestamp: number }> = [];
 
   /**
    * 函数级注释：测量执行时间
    * 测量函数执行时间
    */
-  async measureTime<T>(
-    name: string,
-    fn: () => T | Promise<T>
-  ): Promise<{ result: T; duration: number }> {
+  async measureTime<T>(name: string, fn: () => T | Promise<T>): Promise<{ result: T; duration: number }> {
     const startTime = performance.now();
     const result = await fn();
     const endTime = performance.now();
@@ -158,7 +152,7 @@ class BasicPerformanceMonitor {
     this.metrics.push({
       name,
       duration,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     });
 
     return { result, duration };
@@ -178,9 +172,7 @@ class BasicPerformanceMonitor {
    */
   getAverageTime(name: string): number {
     const relevantMetrics = this.metrics.filter(m => m.name === name);
-    if (relevantMetrics.length === 0) {
-      return 0;
-    }
+    if (relevantMetrics.length === 0) {return 0;}
 
     const totalTime = relevantMetrics.reduce((sum, m) => sum + m.duration, 0);
     return totalTime / relevantMetrics.length;
@@ -197,7 +189,7 @@ class BasicPerformanceMonitor {
 
 /**
  * 类级注释：基础功能测试套件
- *
+ * 
  * 测试基础功能的各个方面
  */
 describe('基础功能测试', () => {
@@ -236,7 +228,7 @@ describe('基础功能测试', () => {
       const testError: TestError = {
         message: '测试错误',
         code: 'TEST_ERROR',
-        severity: 'medium',
+        severity: 'medium'
       };
 
       errorHandler.handleError(testError);
@@ -256,7 +248,7 @@ describe('基础功能测试', () => {
 
       const testError: TestError = {
         message: '回调测试错误',
-        severity: 'high',
+        severity: 'high'
       };
 
       errorHandler.handleError(testError);
@@ -273,7 +265,7 @@ describe('基础功能测试', () => {
       const errors: TestError[] = [
         { message: '错误1', severity: 'low' },
         { message: '错误2', severity: 'medium' },
-        { message: '错误3', severity: 'high' },
+        { message: '错误3', severity: 'high' }
       ];
 
       errors.forEach(error => errorHandler.handleError(error));
@@ -297,7 +289,7 @@ describe('基础功能测试', () => {
         'Hello World',
         '用户名123',
         'test@example.com',
-        '这是一段正常的文本内容',
+        '这是一段正常的文本内容'
       ];
 
       normalInputs.forEach(input => {
@@ -315,7 +307,7 @@ describe('基础功能测试', () => {
       const xssInputs = [
         '<script>alert("XSS")</script>',
         'javascript:alert("XSS")',
-        '<img src="x" onerror="alert(\'XSS\')">',
+        '<img src="x" onerror="alert(\'XSS\')">'
       ];
 
       xssInputs.forEach(input => {
@@ -333,15 +325,13 @@ describe('基础功能测试', () => {
       const sqlInputs = [
         "'; DROP TABLE users; --",
         "1' OR '1'='1",
-        'UNION SELECT * FROM users',
+        "UNION SELECT * FROM users"
       ];
 
       sqlInputs.forEach(input => {
         const result = securityValidator.validateInput(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors.some(error => error.includes('SQL注入'))).toBe(
-          true
-        );
+        expect(result.errors.some(error => error.includes('SQL注入'))).toBe(true);
       });
     });
   });
@@ -364,10 +354,7 @@ describe('基础功能测试', () => {
         return sum;
       };
 
-      const { result, duration } = await performanceMonitor.measureTime(
-        'test-function',
-        testFunction
-      );
+      const { result, duration } = await performanceMonitor.measureTime('test-function', testFunction);
 
       expect(result).toBe(499500); // 0+1+2+...+999的和
       expect(duration).toBeGreaterThan(0);
@@ -389,10 +376,7 @@ describe('基础功能测试', () => {
         return 'async result';
       };
 
-      const { result, duration } = await performanceMonitor.measureTime(
-        'async-function',
-        asyncFunction
-      );
+      const { result, duration } = await performanceMonitor.measureTime('async-function', asyncFunction);
 
       expect(result).toBe('async result');
       expect(duration).toBeGreaterThanOrEqual(45); // 至少50ms，允许一些误差
@@ -411,8 +395,7 @@ describe('基础功能测试', () => {
         await performanceMonitor.measureTime('repeated-function', testFunction);
       }
 
-      const averageTime =
-        performanceMonitor.getAverageTime('repeated-function');
+      const averageTime = performanceMonitor.getAverageTime('repeated-function');
       const metrics = performanceMonitor.getMetrics();
 
       expect(metrics).toHaveLength(5);
@@ -430,17 +413,12 @@ describe('基础功能测试', () => {
      */
     it('性能监控不应该影响函数执行结果', async () => {
       const complexFunction = (n: number) => {
-        if (n <= 1) {
-          return n;
-        }
+        if (n <= 1) {return n;}
         return complexFunction(n - 1) + complexFunction(n - 2);
       };
 
       const directResult = complexFunction(10);
-      const { result: monitoredResult } = await performanceMonitor.measureTime(
-        'fibonacci',
-        () => complexFunction(10)
-      );
+      const { result: monitoredResult } = await performanceMonitor.measureTime('fibonacci', () => complexFunction(10));
 
       expect(monitoredResult).toBe(directResult);
     });
@@ -465,7 +443,7 @@ describe('基础功能测试', () => {
         const securityError: TestError = {
           message: `安全验证失败: ${validationResult.errors.join(', ')}`,
           code: 'SECURITY_VALIDATION_FAILED',
-          severity: 'high',
+          severity: 'high'
         };
         errorHandler.handleError(securityError);
       }
@@ -473,7 +451,7 @@ describe('基础功能测试', () => {
       expect(securityErrorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           code: 'SECURITY_VALIDATION_FAILED',
-          severity: 'high',
+          severity: 'high'
         })
       );
     });
@@ -491,17 +469,14 @@ describe('基础功能测试', () => {
         return 'slow result';
       };
 
-      const { duration } = await performanceMonitor.measureTime(
-        'slow-function',
-        slowFunction
-      );
+      const { duration } = await performanceMonitor.measureTime('slow-function', slowFunction);
 
       // 如果执行时间超过阈值，记录性能警告
       if (duration > 80) {
         const performanceError: TestError = {
           message: `函数执行时间过长: ${duration.toFixed(2)}ms`,
           code: 'PERFORMANCE_WARNING',
-          severity: 'medium',
+          severity: 'medium'
         };
         errorHandler.handleError(performanceError);
       }
@@ -509,7 +484,7 @@ describe('基础功能测试', () => {
       expect(performanceErrorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           code: 'PERFORMANCE_WARNING',
-          severity: 'medium',
+          severity: 'medium'
         })
       );
     });
@@ -526,21 +501,18 @@ describe('基础功能测试', () => {
         operations.push(
           performanceMonitor.measureTime(`operation-${i}`, async () => {
             // 模拟一些工作
-            const input =
-              i % 2 === 0 ? `正常输入${i}` : `<script>alert(${i})</script>`;
+            const input = i % 2 === 0 ? `正常输入${i}` : `<script>alert(${i})</script>`;
             const validationResult = securityValidator.validateInput(input);
-
+            
             if (!validationResult.isValid) {
               errorHandler.handleError({
                 message: `验证失败: ${input}`,
                 code: 'VALIDATION_FAILED',
-                severity: 'low',
+                severity: 'low'
               });
             }
 
-            await new Promise(resolve =>
-              setTimeout(resolve, Math.random() * 10)
-            );
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 10));
             return `result-${i}`;
           })
         );

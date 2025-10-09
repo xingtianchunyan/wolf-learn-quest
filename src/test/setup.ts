@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // 创建完整的链式 Query Builder Mock
 const createQueryBuilder = () => {
@@ -38,7 +38,7 @@ const createQueryBuilder = () => {
     abortSignal: vi.fn(() => builder),
     single: vi.fn(() => Promise.resolve({ data: null, error: null })),
     maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
-    then: vi.fn(resolve => resolve({ data: [], error: null })),
+    then: vi.fn((resolve) => resolve({ data: [], error: null })),
     catch: vi.fn(() => builder),
   };
   return builder;
@@ -50,39 +50,33 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn(() => createQueryBuilder()),
     rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
     channel: vi.fn(() => ({
-      on: vi.fn(function (this: any) {
-        return this;
-      }),
-      subscribe: vi.fn(),
+      on: vi.fn(function(this: any) { return this; }),
+      subscribe: vi.fn()
     })),
     removeChannel: vi.fn(),
     auth: {
-      getUser: vi.fn(() =>
-        Promise.resolve({ data: { user: null }, error: null })
-      ),
-      signInWithPassword: vi.fn(() =>
-        Promise.resolve({ data: {}, error: null })
-      ),
+      getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      signInWithPassword: vi.fn(() => Promise.resolve({ data: {}, error: null })),
       signOut: vi.fn(() => Promise.resolve({ error: null })),
-    },
-  },
-}));
+    }
+  }
+}))
 
 // Mock toast notifications - 修复返回对象结构
 vi.mock('@/hooks/useToast', () => ({
   useToast: vi.fn(() => ({
-    toast: vi.fn(),
-  })),
-}));
+    toast: vi.fn()
+  }))
+}))
 
 // Mock useAuth hook
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
     user: null,
     loading: false,
-    requireAuth: vi.fn(() => Promise.resolve(true)),
-  })),
-}));
+    requireAuth: vi.fn(() => Promise.resolve(true))
+  }))
+}))
 
 // Mock logger
 vi.mock('@/lib/logger', () => ({
@@ -90,9 +84,9 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-    debug: vi.fn(),
-  })),
-}));
+    debug: vi.fn()
+  }))
+}))
 
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
@@ -100,4 +94,4 @@ vi.mock('react-router-dom', () => ({
   useParams: () => ({}),
   useLocation: () => ({ pathname: '/' }),
   Link: ({ children }: { children: React.ReactNode }) => children,
-}));
+}))

@@ -378,15 +378,9 @@ fi
    * 备份现有钩子
    */
   async backupExistingHooks() {
-    const hooks = [
-      'pre-commit',
-      'pre-push',
-      'commit-msg',
-      'post-commit',
-      'prepare-commit-msg',
-    ];
+    const hooks = ['pre-commit', 'pre-push', 'commit-msg', 'post-commit', 'prepare-commit-msg'];
     const backupDir = path.join(this.hooksDir, 'backup');
-
+    
     let hasBackups = false;
 
     for (const hook of hooks) {
@@ -398,12 +392,10 @@ fi
           await fs.mkdir(backupDir, { recursive: true });
           hasBackups = true;
         }
-
+        
         const backupPath = path.join(backupDir, `${hook}.backup.${Date.now()}`);
         await fs.copyFile(hookPath, backupPath);
-        console.log(
-          `📦 已备份现有钩子: ${hook} -> ${path.basename(backupPath)}`
-        );
+        console.log(`📦 已备份现有钩子: ${hook} -> ${path.basename(backupPath)}`);
       } catch {
         // 钩子不存在，跳过
       }
@@ -459,14 +451,8 @@ fi
   async uninstallHooks() {
     console.log('🗑️  开始卸载Git钩子...');
 
-    const hooks = [
-      'pre-commit',
-      'pre-push',
-      'commit-msg',
-      'post-commit',
-      'prepare-commit-msg',
-    ];
-
+    const hooks = ['pre-commit', 'pre-push', 'commit-msg', 'post-commit', 'prepare-commit-msg'];
+    
     for (const hook of hooks) {
       const hookPath = path.join(this.hooksDir, hook);
       try {
@@ -491,25 +477,21 @@ fi
       { name: 'pre-push', description: '推送前检查' },
       { name: 'commit-msg', description: '提交信息检查' },
       { name: 'post-commit', description: '提交后任务' },
-      { name: 'prepare-commit-msg', description: '提交信息准备' },
+      { name: 'prepare-commit-msg', description: '提交信息准备' }
     ];
 
     console.log('');
     console.log('📋 钩子状态：');
-
+    
     for (const hook of hooks) {
       const hookPath = path.join(this.hooksDir, hook.name);
       try {
         const stats = await fs.stat(hookPath);
         const status = stats.isFile() ? '✅ 已安装' : '❌ 未安装';
         const size = `(${stats.size} bytes)`;
-        console.log(
-          `  ${hook.name.padEnd(20)} ${status.padEnd(10)} ${size.padEnd(15)} - ${hook.description}`
-        );
+        console.log(`  ${hook.name.padEnd(20)} ${status.padEnd(10)} ${size.padEnd(15)} - ${hook.description}`);
       } catch {
-        console.log(
-          `  ${hook.name.padEnd(20)} ❌ 未安装${' '.repeat(25)} - ${hook.description}`
-        );
+        console.log(`  ${hook.name.padEnd(20)} ❌ 未安装${' '.repeat(25)} - ${hook.description}`);
       }
     }
   }
@@ -588,8 +570,7 @@ async function main() {
 }
 
 // 如果直接运行此脚本
-const isMainModule =
-  process.argv[1] && process.argv[1].endsWith('setupGitHooks.js');
+const isMainModule = process.argv[1] && process.argv[1].endsWith('setupGitHooks.js');
 if (isMainModule) {
   main();
 }

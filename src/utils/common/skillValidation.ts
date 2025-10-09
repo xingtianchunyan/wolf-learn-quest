@@ -1,52 +1,66 @@
-import { createLogger   } from '@/lib/logger';
-import { SkillType, ValidationResult,, RoleStatus  } from
+import { createLogger  } from '@/lib/logger';
+import { SkillType,
+import { ValidationResult,
+
+/**
+* 技能验证公共工具函数
+* 统一项目中的技能验证逻辑，消除重复代码
+*
+* @author SOLO Coding
+* @version 1.0.0
+* @since 2024-12-19
+ */
+
+  RoleStatus,
   GamePhase,
   SkillUsageLimit,
   SkillValidationResult,
-  SkillExecutionContext  } from '@/types/skillSystem.types';
+  SkillExecutionContext,
+} from '@/types/skillSystem.types';
   validateRoleStatus,
   validateGamePhase,
   validateSkillTarget,
   validateRequired,
-  validateNumberRange  } from './dataValidation';
+  validateNumberRange,
+} from './dataValidation';
 
 const logger = createLogger('skill-validation');
 
 /**
 * 技能使用限制检查结果接口
  */
-export interface SkillUsageLimitResult  { /** 是否允许使用 */
+export interface SkillUsageLimitResult { /** 是否允许使用  */
   allowed: boolean;
-  /** 剩余使用次数 */
+  /** 剩余使用次数  */
   remainingUses?: number;
-  /** 限制原因 */
+  /** 限制原因  */
   reason?: string;
-  /** 重置时间（如果有） */
-  resetTime?: Date
+  /** 重置时间（如果有）  */
+  resetTime?: Date;,
 }
 
 /**
 * 技能冲突检查结果接口
  */
-export interface SkillConflictResult  { /** 是否存在冲突 */
+export interface SkillConflictResult { /** 是否存在冲突  */
   hasConflict: boolean;
-  /** 冲突的技能列表 */
+  /** 冲突的技能列表  */
   conflictingSkills?: SkillType[];
-  /** 冲突原因 */
-  reason?: string
+  /** 冲突原因  */
+  reason?: string;,
 }
 
 /**
 * 技能链验证结果接口
  */
-export interface SkillChainValidationResult  { /** 验证是否通过 */
+export interface SkillChainValidationResult { /** 验证是否通过  */
   valid: boolean;
-  /** 执行顺序 */
+  /** 执行顺序  */
   executionOrder?: SkillType[];
-  /** 验证失败原因 */
+  /** 验证失败原因  */
   reason?: string;
-  /** 冲突详情 */
-  conflicts?: SkillConflictResult[]
+  /** 冲突详情  */
+  conflicts?: SkillConflictResult[];,
 }
 
 /**
@@ -66,38 +80,38 @@ export function validateSkillData(
 
   // 1. 基础数据验证
   const requiredValidation = validateRequired(skillType, '技能类型');
-  if (!requiredValidation.valid) { errors.push(requiredValidation.reason!)
+  if (!requiredValidation.valid) { errors.push(requiredValidation.reason!);,
 }
 
   const contextValidation = validateRequired(context, '技能上下文');
-  if (!contextValidation.valid) { errors.push(contextValidation.reason!)
+  if (!contextValidation.valid) { errors.push(contextValidation.reason!);,
 }
 
   // 2. 用户ID验证
   if (context.userId) { const userIdValidation = validateRequired(context.userId, '用户ID');
     if (!userIdValidation.valid) {
-      errors.push(userIdValidation.reason!)
+      errors.push(userIdValidation.reason!);,
 }
   }
 
   // 3. 游戏ID验证
   if (context.gameId) { const gameIdValidation = validateRequired(context.gameId, '游戏ID');
     if (!gameIdValidation.valid) {
-      errors.push(gameIdValidation.reason!)
+      errors.push(gameIdValidation.reason!);,
 }
   }
 
   // 4. 角色状态验证
   if (context.roleStatus) { const roleStatusValidation = validateRoleStatus(context.roleStatus);
     if (!roleStatusValidation.valid) {
-      errors.push(roleStatusValidation.reason!)
+      errors.push(roleStatusValidation.reason!);,
 }
   }
 
   // 5. 游戏阶段验证
   if (context.gamePhase) { const phaseValidation = validateGamePhase(context.gamePhase);
     if (!phaseValidation.valid) {
-      errors.push(phaseValidation.reason!)
+      errors.push(phaseValidation.reason!);,
 }
   }
 
@@ -109,14 +123,15 @@ export function validateSkillData(
       context.targetUserIds
     );
     if (!targetValidation.valid) {
-      errors.push(targetValidation.reason!)
+      errors.push(targetValidation.reason!);,
 }
   }
 
   return { valid: errors.length === 0,
     errors: errors.length > 0 ? errors : undefined,
     skillType,
-    context }
+    context,
+};,
 }
 
 /**
@@ -133,13 +148,13 @@ export function validateSkillUseLimits(
   skillType: SkillType,
   userId: string,
   usageLimit: SkillUsageLimit,
-  currentUsage: { count: number; lastUsed?: Date  
-}
+  currentUsage: { count: number; lastUsed?: Date  }
 ): SkillUsageLimitResult { logger.debug('验证技能使用限制', {
     skillType,
     userId,
     usageLimit,
-    currentUsage });
+    currentUsage,
+});
 
   // 检查每日使用限制
   if (usageLimit.dailyLimit !== undefined) { const today = new Date();
@@ -155,18 +170,17 @@ export function validateSkillUseLimits(
       return {
         allowed: false,
         remainingUses: 0,
-        reason: `今日使用次数已达上限（${usageLimit.dailyLimit 
-}次）`,
-        resetTime: tomorrow 
-}
+        reason: `今日使用次数已达上限（${usageLimit.dailyLimit }次）`,
+        resetTime: tomorrow,
+};,
 }
 
     const remainingDaily = usageLimit.dailyLimit - (isToday ? currentUsage.count : 0);
 
     return { allowed: true,
       remainingUses: remainingDaily,
-      resetTime: new Date(today.getTime() + 24 * 60 * 60 * 1000) 
-}
+      resetTime: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+};,
 }
 
   // 检查总使用限制
@@ -174,13 +188,13 @@ export function validateSkillUseLimits(
       return {
         allowed: false,
         remainingUses: 0,
-        reason: `总使用次数已达上限（${usageLimit.totalLimit 
-}次）` }
+        reason: `总使用次数已达上限（${usageLimit.totalLimit }次）`,
+};,
 }
 
     return { allowed: true,
-      remainingUses: usageLimit.totalLimit - currentUsage.count 
-}
+      remainingUses: usageLimit.totalLimit - currentUsage.count,
+};,
 }
 
   // 检查冷却时间
@@ -193,15 +207,15 @@ export function validateSkillUseLimits(
 
       return {
         allowed: false,
-        reason: `技能冷却中，剩余 ${Math.ceil(remainingMs / 1000) 
-} 秒`,
-        resetTime }
+        reason: `技能冷却中，剩余 ${Math.ceil(remainingMs / 1000) } 秒`,
+        resetTime,
+};,
 }
   }
 
   return { allowed: true,
-    remainingUses: usageLimit.dailyLimit || usageLimit.totalLimit 
-}
+    remainingUses: usageLimit.dailyLimit || usageLimit.totalLimit,
+};,
 }
 
 /**
@@ -226,14 +240,14 @@ export function validateSkillPhase(
     [SkillType.HUNTER_REVENGE]: ['day', 'night'], // 猎人可在濒死时使用
     [SkillType.VILLAGER_VOTE]: ['day'],
     [SkillType.MAYOR_REVEAL]: ['day'],
-    [SkillType.CUPID_LINK]: ['night'] // 仅第一夜  
+    [SkillType.CUPID_LINK]: ['night'] // 仅第一夜,
 };
 
   const allowedPhases = skillPhaseMap[skillType];
   if (!allowedPhases) { return {
       valid: false,
-      reason: `未知的技能类型：${skillType 
-}` }
+      reason: `未知的技能类型：${skillType }`,
+};,
 }
 
   const phaseValidation = validateGamePhase(currentPhase, allowedPhases);
@@ -241,17 +255,16 @@ export function validateSkillPhase(
       'day': '白天',
       'evening': '黄昏',
       'night': '夜晚',
-      'dawn': '黎明'   
-}
+      'dawn': '黎明',
+};
 
     const allowedNames = allowedPhases.map(p => phaseNames[p]).join('、');
     return { valid: false,
-      reason: `技能'${skillType 
-}'只能在${ allowedNames }阶段使用` }
+      reason: `技能'${skillType }'只能在${ allowedNames }阶段使用`,
+};,
 }
 
-  return { valid: true  
-}
+  return { valid: true  };,
 }
 
 /**
@@ -276,7 +289,7 @@ export function detectSkillConflicts(
     [SkillType.HUNTER_REVENGE]: [],
     [SkillType.VILLAGER_VOTE]: [],
     [SkillType.MAYOR_REVEAL]: [],
-    [SkillType.CUPID_LINK]: []  
+    [SkillType.CUPID_LINK]: [],
 };
 
   const conflicts: SkillType[] = [];
@@ -288,19 +301,20 @@ export function detectSkillConflicts(
       const skill2 = skills[j];
 
       if (conflictingSkills.includes(skill2)) {
-        conflicts.push(skill1, skill2)
+        conflicts.push(skill1, skill2);,
 }
-    } }
+    },
+}
 
   if (conflicts.length > 0) { return {
       hasConflict: true,
       conflictingSkills: [...new Set(conflicts)],
-      reason: '检测到技能冲突，无法同时执行' 
-}
+      reason: '检测到技能冲突，无法同时执行',
+};,
 }
 
-  return { hasConflict: false 
-}
+  return { hasConflict: false,
+};,
 }
 
 /**
@@ -323,7 +337,7 @@ export function validateSkillExecutionOrder(
     [SkillType.SEER_INSPECT]: 6,      // 预言家查验
     [SkillType.HUNTER_REVENGE]: 7,    // 猎人复仇
     [SkillType.VILLAGER_VOTE]: 8,     // 村民投票
-    [SkillType.MAYOR_REVEAL]: 9       // 村长身份公开  
+    [SkillType.MAYOR_REVEAL]: 9       // 村长身份公开,
 };
 
   // 检查顺序是否正确
@@ -336,20 +350,18 @@ export function validateSkillExecutionOrder(
     if (currentPriority === undefined || nextPriority === undefined) {
       return {
         valid: false,
-        reason: `未知的技能类型：${currentPriority === undefined ? currentSkill : nextSkill 
-}`
-}
+        reason: `未知的技能类型：${currentPriority === undefined ? currentSkill : nextSkill }`;,
+};,
 }
 
     if (currentPriority > nextPriority) { return {
         valid: false,
-        reason: `技能执行顺序错误：${nextSkill 
-} 应该在 ${ currentSkill } 之前执行` }
+        reason: `技能执行顺序错误：${nextSkill } 应该在 ${ currentSkill } 之前执行`,
+};,
 }
   }
 
-  return { valid: true  
-}
+  return { valid: true  };,
 }
 
 /**
@@ -370,16 +382,16 @@ export function validateSkillChain(
   if (conflictResult.hasConflict) { return {
       valid: false,
       reason: conflictResult.reason,
-      conflicts: [conflictResult] 
-}
+      conflicts: [conflictResult],
+};,
 }
 
   // 2. 验证执行顺序
   const orderValidation = validateSkillExecutionOrder(skills);
   if (!orderValidation.valid) { return {
       valid: false,
-      reason: orderValidation.reason 
-}
+      reason: orderValidation.reason,
+};,
 }
 
   // 3. 验证每个技能的阶段要求
@@ -388,10 +400,11 @@ export function validateSkillChain(
       if (!phaseValidation.valid) {
         return {
           valid: false,
-          reason: phaseValidation.reason 
+          reason: phaseValidation.reason,
+};,
 }
+    },
 }
-    } }
 
   // 4. 生成正确的执行顺序
   const skillPriority: Record<SkillType, number> = { [SkillType.CUPID_LINK]: 1,
@@ -402,16 +415,15 @@ export function validateSkillChain(
     [SkillType.SEER_INSPECT]: 6,
     [SkillType.HUNTER_REVENGE]: 7,
     [SkillType.VILLAGER_VOTE]: 8,
-    [SkillType.MAYOR_REVEAL]: 9  
+    [SkillType.MAYOR_REVEAL]: 9,
 };
 
-  const executionOrder = [...skills].sort((a, b) => {
-  return skillPriority[a] - skillPriority[b]
-
+  const executionOrder = [...skills].sort((a, b) => { return skillPriority[a] - skillPriority[b];,
 });
 
   return { valid: true,
-    executionOrder }
+    executionOrder,
+};,
 }
 
 /**
@@ -428,19 +440,19 @@ export function validateSkillUnified(
   skillType: SkillType,
   context: SkillExecutionContext,
   usageLimit?: SkillUsageLimit,
-  currentUsage?: { count: number; lastUsed?: Date  
-}
+  currentUsage?: { count: number; lastUsed?: Date  }
 ): SkillValidationResult & { usageLimitResult?: SkillUsageLimitResult;
-  phaseValidation?: ValidationResult
+  phaseValidation?: ValidationResult;,
 } { logger.info('开始统一技能验证', {
     skillType,
     context,
     usageLimit,
-    currentUsage });
+    currentUsage,
+});
 
   // 1. 基础数据验证
   const dataValidation = validateSkillData(skillType, context);
-  if (!dataValidation.valid) { return dataValidation
+  if (!dataValidation.valid) { return dataValidation;,
 }
 
   // 2. 阶段验证
@@ -451,7 +463,8 @@ export function validateSkillUnified(
         ...dataValidation,
         valid: false,
         errors: [phaseValidation.reason!],
-        phaseValidation }
+        phaseValidation,
+};,
 }
   }
 
@@ -470,7 +483,8 @@ export function validateSkillUnified(
         valid: false,
         errors: [usageLimitResult.reason!],
         usageLimitResult,
-        phaseValidation }
+        phaseValidation,
+};,
 }
   }
 
@@ -479,5 +493,6 @@ export function validateSkillUnified(
   return { ...dataValidation,
     valid: true,
     usageLimitResult,
-    phaseValidation }
+    phaseValidation,
+};,
 }

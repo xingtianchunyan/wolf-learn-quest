@@ -15,7 +15,8 @@ import React from 'react';
 * @category chat
 * @filepath chat\ChatMessage.tsx
  */
-export interface ChatMessage  { id: string;
+
+export interface ChatMessage { id: string;
   sender_id: string;
   message: string;
   created_at: string;
@@ -26,14 +27,14 @@ export interface ChatMessage  { id: string;
   metadata?: {
     visibility?: any;
     data?: any;
-    announcement_type?: string
-}
+    announcement_type?: string;,
+};,
 }
 
 interface ChatMessageProps { message: ChatMessage;
   currentUserId?: string;
   gamePhase?: string;
-  gameRound?: number
+  gameRound?: number;,
 }
 
 /**
@@ -49,71 +50,53 @@ interface ChatMessageProps { message: ChatMessage;
 * // 使用示例
 * <ChatMessage { ...props } />
  */
-const ChatMessageComponent: React.FC<ChatMessageProps> = ( { message,
+const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message,
   currentUserId,
   gamePhase,
-  gameRound }) => { const isOwnMessage = message.sender_id === currentUserId;
+  gameRound,
+}) => { const isOwnMessage = message.sender_id === currentUserId;
 
   // 关键词屏蔽列表
   const bannedKeywords = [;
     '狼人', 'werewolf', '预言家', 'seer', '女巫', 'witch',
     '守卫', 'guard', '猎人', 'hunter', '白狼王', 'whitewolf',
-    '村民', 'villager', '平民', 'citizen' ];
+    '村民', 'villager', '平民', 'citizen',
+];
 
-/**
- * containsBannedKeyword函数
- * containsBannedKeyword函数的功能描述
- *
- * @param text - text参数
- * @returns void
- */
-const containsBannedKeyword = (text: string) =>  {
-  return bannedKeywords.some(keyword =>;
+  const containsBannedKeyword = (text: string) => {
+    return bannedKeywords.some(keyword =>;
     text.toLowerCase().includes(keyword.toLowerCase())
-  )
-
+  );,
 };
 
 const shouldCensorMessage = message.chat_type === 'public' && containsBannedKeyword(message.message);
 const displayMessage = shouldCensorMessage ? '[消息已屏蔽 - 包含敏感词汇]' : message.message;
 
 // 格式化消息显示
-/**
- * formatMessage函数
- * 格式化数据
- * @returns void
- */
-const formatMessage = () =>  { const playerName = isOwnMessage ? 'You' : (message.sender_name || 'Unknown');
+const formatMessage = () => { const playerName = isOwnMessage ? 'You' : (message.sender_name || 'Unknown');
   const timestamp = new Date(message.created_at).toLocaleTimeString();
 
   let roundPhaseInfo = '';
   if (message.game_round && message.game_phase) {
-    roundPhaseInfo = `第${message.game_round }轮-${ message.game_phase }期`
-} else if (gameRound && gamePhase) { roundPhaseInfo = `第${gameRound }轮-${ gamePhase }期`
+    roundPhaseInfo = `第${message.game_round }轮-${ message.game_phase }期`;,
+} else if (gameRound && gamePhase) { roundPhaseInfo = `第${gameRound }轮-${ gamePhase }期`;,
 }
 
   const header = roundPhaseInfo;
   ? `【${ playerName }，${ roundPhaseInfo }，${ timestamp }】`
-  : `【${ playerName 
-}，${ timestamp }】`;
+  : `【${ playerName }，${ timestamp }】`;
 
-  return { header, content: displayMessage  
-}
+  return { header, content: displayMessage  };,
 };
 
 const { header, content  } = formatMessage();
 
-/**
- * getChannelColor函数
- * 获取数据
- * @returns void
- */
-const getChannelColor = () => { switch (message.chat_type)  {
+const getChannelColor = () => { switch (message.chat_type) {
     case 'public': return 'text-blue-400';
     case 'team': return 'text-red-400';
     case 'judge_private': return 'text-yellow-400';
     case 'system': return 'text-green-400';
-    default: return 'text-gray-400'
+    default: return 'text-gray-400';,
 }
 };
 
@@ -126,13 +109,7 @@ return (;
   { content }
   </p>
   </div>
-)
+);,
 };
 
-/**
- * ChatMessageComponent组件
- * 聊天相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default ChatMessageComponent;

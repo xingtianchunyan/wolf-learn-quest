@@ -1,50 +1,10 @@
 # 错误码文档
 
 ## 概述
-
 本文档描述了系统中所有的错误码定义和说明。
 
 ## 错误码列表
 
-### MESSAGES
-
-**值**: `{`
-
-**描述**: /
-
-**文件位置**: `src\config\errorMessages.ts`
-
----
-
-### INTERNAL_SERVER_ERROR
-
-**值**: `{`
-
-**描述**: /
-
-**文件位置**: `src\config\errorMessages.ts`
-
----
-
-### UNKNOWN_ERROR
-
-**值**: `{`
-
-**描述**: /
-
-**文件位置**: `src\config\errorMessages.ts`
-
----
-
-### CONFIGURATION_ERROR
-
-**值**: `{`
-
-**描述**: 待补充描述
-
-**文件位置**: `src\config\errorMessages.ts`
-
----
 
 ### HANDLING
 
@@ -72,7 +32,7 @@
 
 **描述**: 待补充描述
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 ---
 
@@ -82,7 +42,7 @@
 
 **描述**: 系统事件
 
-**文件位置**: `src\services\SecurityAuditService.ts`
+**文件位置**: `src\services\securityAuditService.ts`
 
 ---
 
@@ -110,7 +70,7 @@
 
 **值**: `NETWORK_ERROR`
 
-**描述**: /
+**描述**: 待补充描述
 
 **文件位置**: `src\types\skillSystem.types.ts`
 
@@ -156,6 +116,26 @@
 
 ---
 
+### CONFIGURATION_ERROR
+
+**值**: `configuration_error`
+
+**描述**: 待补充描述
+
+**文件位置**: `src\utils\automatedSecurityChecker.ts`
+
+---
+
+### MESSAGES
+
+**值**: `Record<ErrorCode`
+
+**描述**: /
+
+**文件位置**: `src\utils\errorHandler.ts`
+
+---
+
 ### API_ERROR
 
 **值**: `API_ERROR`
@@ -191,6 +171,16 @@
 **值**: `VOTE_ERROR`
 
 **描述**: 业务逻辑
+
+**文件位置**: `src\utils\errorHandler.ts`
+
+---
+
+### UNKNOWN_ERROR
+
+**值**: `UNKNOWN_ERROR`
+
+**描述**: 系统错误
 
 **文件位置**: `src\utils\errorHandler.ts`
 
@@ -246,16 +236,17 @@
 
 ---
 
+
 ## HTTP状态码
 
-| 状态码 | 说明       | 使用场景             |
-| ------ | ---------- | -------------------- |
-| 200    | 成功       | 请求成功处理         |
-| 400    | 请求错误   | 参数错误或格式不正确 |
-| 401    | 未授权     | 需要登录或token无效  |
-| 403    | 禁止访问   | 权限不足             |
-| 404    | 未找到     | 资源不存在           |
-| 500    | 服务器错误 | 内部服务器错误       |
+| 状态码 | 说明 | 使用场景 |
+|--------|------|----------|
+| 200 | 成功 | 请求成功处理 |
+| 400 | 请求错误 | 参数错误或格式不正确 |
+| 401 | 未授权 | 需要登录或token无效 |
+| 403 | 禁止访问 | 权限不足 |
+| 404 | 未找到 | 资源不存在 |
+| 500 | 服务器错误 | 内部服务器错误 |
 
 ## 错误响应格式
 
@@ -273,4 +264,4 @@ interface ErrorResponse {
 
 ## 更新日志
 
-- 2025-10-09: 自动生成错误码文档
+- 2025-10-08: 自动生成错误码文档

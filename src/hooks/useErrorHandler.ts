@@ -1,75 +1,54 @@
-import { logError   } from '@/utils/errorHandler';
-import { recordOperation   } from '@/services/errorMonitoringService';
-import { useToast   } from '@/hooks/useToast';
-import { useEnhancedErrorHandler   } from './useEnhancedErrorHandler';
+import { logError  } from '@/utils/errorHandler';
+import { recordOperation  } from '@/services/errorMonitoringService';
+import { useToast  } from '@/hooks/useToast';
+import { useEnhancedErrorHandler  } from './useEnhancedErrorHandler';
 
 /**
 * 兼容性错误处理 Hook
 * 保持原有接口的同时，内部使用增强的错误处理系统
 * @deprecated 建议使用 useEnhancedErrorHandler 获得更好的功能
  */
-export const useErrorHandler = () => { const  { toast  } = useToast();
+export const useErrorHandler = () => { const { toast  } = useToast();
   const enhancedHandler = useEnhancedErrorHandler();
 
-/**
- * handleError函数
- * 处理事件
- *
- * @param error - error参数
- * @param context? - context?参数
- * @returns void
- */
-const handleError = (error: any, context?: string) =>  { // 记录操作（用于错误率计算）
+  const handleError = (error: any, context?: string) => { // 记录操作（用于错误率计算）
     recordOperation();
 
     // 使用增强的错误处理系统
     enhancedHandler.handleError(error, {
       category: context || 'legacy',
       customMessage: undefined, // 让系统自动生成消息
-      silent: false 
+      silent: false,
 });
 
     // 保持原有的日志记录（向后兼容）
-    logError(error, context)
+    logError(error, context);,
 };
 
-/**
- * handleAsyncError函数
- * 处理事件
- *
- * @param asyncFn - asyncFn参数
- * @returns Promise<void>
- */
-const handleAsyncError = async (asyncFn: () => Promise<any>, context?: string) =>  { // 记录操作
+  const handleAsyncError = async (asyncFn: () => Promise<any>, context?: string) => { // 记录操作
     recordOperation();
 
     return enhancedHandler.handleAsyncError(asyncFn, {
-      category: context || 'legacy-async' 
-})
+      category: context || 'legacy-async',
+});,
 };
 
   const withErrorHandling = <T extends any[], R>(;
     fn: (...args: T) => Promise<R>,
     context?: string
   ) => { return enhancedHandler.withErrorHandling(fn, {
-      category: context || 'legacy-wrapper' 
-})
+      category: context || 'legacy-wrapper',
+});,
 };
 
   return { handleError,
     handleAsyncError,
-    withErrorHandling }
+    withErrorHandling,
+   };,
 };
 
 // 将技术错误信息转换为用户友好的消息
-/**
- * getUserFriendlyMessage函数
- * 获取数据
- *
- * @param errorMessage - errorMessage参数
- * @returns void
- */
-function getUserFriendlyMessage(errorMessage: string): string { const errorMappings: Record<string, string> =  {
+function getUserFriendlyMessage(errorMessage: string): string { const errorMappings: Record<string, string> = {
     'Network Error': '网络连接失败，请检查网络设置',
     'Unauthorized': '权限不足，请重新登录',
     'Forbidden': '没有权限执行此操作',
@@ -80,31 +59,24 @@ function getUserFriendlyMessage(errorMessage: string): string { const errorMappi
     'PGRST116': '数据不存在或已被删除',
     'PGRST301': '权限不足，无法访问数据',
     'Authentication required': '请先登录',
-    'Invalid credentials': '用户名或密码错误'  
+    'Invalid credentials': '用户名或密码错误',
 };
 
   // 检查是否有匹配的友好消息
   for (const [key, friendlyMessage] of Object.entries(errorMappings)) { if (errorMessage.includes(key)) {
-      return friendlyMessage
+      return friendlyMessage;,
 }
   }
 
   // 如果没有匹配的映射，返回通用错误消息
-  if (errorMessage.length > 100) { return '操作失败，请稍后重试'
+  if (errorMessage.length > 100) { return '操作失败，请稍后重试';,
 }
 
-  return errorMessage || '未知错误，请联系技术支持'
+  return errorMessage || '未知错误，请联系技术支持';,
 }
 
 // 将技术错误信息转换为用户友好的消息
-/**
- * getUserFriendlyMessage函数
- * 获取数据
- *
- * @param errorMessage - errorMessage参数
- * @returns void
- */
-function getUserFriendlyMessage(errorMessage: string): string { const errorMappings: Record<string, string> =  {
+function getUserFriendlyMessage(errorMessage: string): string { const errorMappings: Record<string, string> = {
     'Network Error': '网络连接失败，请检查网络设置',
     'Unauthorized': '权限不足，请重新登录',
     'Forbidden': '没有权限执行此操作',
@@ -115,18 +87,18 @@ function getUserFriendlyMessage(errorMessage: string): string { const errorMappi
     'PGRST116': '数据不存在或已被删除',
     'PGRST301': '权限不足，无法访问数据',
     'Authentication required': '请先登录',
-    'Invalid credentials': '用户名或密码错误'  
+    'Invalid credentials': '用户名或密码错误',
 };
 
   // 检查是否有匹配的友好消息
   for (const [key, friendlyMessage] of Object.entries(errorMappings)) { if (errorMessage.includes(key)) {
-      return friendlyMessage
+      return friendlyMessage;,
 }
   }
 
   // 如果没有匹配的映射，返回通用错误消息
-  if (errorMessage.length > 100) { return '操作失败，请稍后重试'
+  if (errorMessage.length > 100) { return '操作失败，请稍后重试';,
 }
 
-  return errorMessage || '未知错误，请联系技术支持'
+  return errorMessage || '未知错误，请联系技术支持';,
 }

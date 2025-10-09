@@ -24,9 +24,9 @@ class DevToolsManager {
       quality: new CodeQualityAnalyzer(),
       refactor: new AutoRefactor(),
       format: new CodeFormatter(),
-      dependency: new DependencyAnalyzer(),
+      dependency: new DependencyAnalyzer()
     };
-
+    
     this.config = this.loadConfig();
   }
 
@@ -36,7 +36,7 @@ class DevToolsManager {
    */
   loadConfig() {
     const configPath = path.join(process.cwd(), '.devtools.json');
-
+    
     if (fs.existsSync(configPath)) {
       try {
         return JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -44,7 +44,7 @@ class DevToolsManager {
         console.warn('⚠️  配置文件格式错误，使用默认配置');
       }
     }
-
+    
     // 默认配置
     const defaultConfig = {
       quality: {
@@ -53,9 +53,9 @@ class DevToolsManager {
           maintainabilityIndex: 50,
           cyclomaticComplexity: 10,
           cognitiveComplexity: 15,
-          halsteadComplexity: 20,
+          halsteadComplexity: 20
         },
-        excludePatterns: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**'],
+        excludePatterns: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**']
       },
       refactor: {
         enabled: true,
@@ -66,9 +66,9 @@ class DevToolsManager {
           'removeDeadCode',
           'optimizeLoops',
           'extractFunctions',
-          'addTypeAnnotations',
+          'addTypeAnnotations'
         ],
-        autoApply: false,
+        autoApply: false
       },
       format: {
         enabled: true,
@@ -80,24 +80,24 @@ class DevToolsManager {
           semicolons: true,
           singleQuotes: true,
           bracketSpacing: true,
-          arrowParens: 'avoid',
+          arrowParens: 'avoid'
         },
-        fileTypes: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss', '.json'],
+        fileTypes: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss', '.json']
       },
       dependency: {
         enabled: true,
         checkCircular: true,
         checkUnused: true,
         checkMissing: true,
-        generateGraph: true,
+        generateGraph: true
       },
       reports: {
         outputDir: 'reports',
         formats: ['json', 'markdown', 'html'],
-        includeTimestamp: true,
-      },
+        includeTimestamp: true
+      }
     };
-
+    
     // 保存默认配置
     this.saveConfig(defaultConfig);
     return defaultConfig;
@@ -118,47 +118,45 @@ class DevToolsManager {
    */
   async runAll(options = {}) {
     console.log('🚀 开始运行所有开发工具...\n');
-
+    
     const results = {};
     const startTime = Date.now();
-
+    
     try {
       // 1. 代码质量分析
       if (this.config.quality.enabled) {
         console.log('📊 运行代码质量分析...');
         results.quality = await this.runQualityAnalysis(options);
       }
-
+      
       // 2. 依赖分析
       if (this.config.dependency.enabled) {
         console.log('\n🔍 运行依赖分析...');
         results.dependency = await this.runDependencyAnalysis(options);
       }
-
+      
       // 3. 代码重构（如果启用自动应用）
-      if (
-        this.config.refactor.enabled &&
-        (this.config.refactor.autoApply || options.refactor)
-      ) {
+      if (this.config.refactor.enabled && (this.config.refactor.autoApply || options.refactor)) {
         console.log('\n🔧 运行自动重构...');
         results.refactor = await this.runAutoRefactor(options);
       }
-
+      
       // 4. 代码格式化
       if (this.config.format.enabled && (options.format || options.all)) {
         console.log('\n🎨 运行代码格式化...');
         results.format = await this.runCodeFormat(options);
       }
-
+      
       // 5. 生成综合报告
       await this.generateComprehensiveReport(results, Date.now() - startTime);
-
+      
       console.log('\n✨ 所有工具运行完成！');
+      
     } catch (error) {
       console.error('❌ 工具运行失败:', error.message);
       throw error;
     }
-
+    
     return results;
   }
 
@@ -170,10 +168,10 @@ class DevToolsManager {
   async runQualityAnalysis(options) {
     const analyzer = this.tools.quality;
     await analyzer.run();
-
+    
     return {
       completed: true,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -185,10 +183,10 @@ class DevToolsManager {
   async runDependencyAnalysis(options) {
     const analyzer = this.tools.dependency;
     await analyzer.run();
-
+    
     return {
       completed: true,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -201,13 +199,13 @@ class DevToolsManager {
     const refactor = this.tools.refactor;
     await refactor.run({
       dryRun: options.dryRun !== false,
-      rules: this.config.refactor.rules,
+      rules: this.config.refactor.rules
     });
-
+    
     return {
       completed: true,
       dryRun: options.dryRun !== false,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -220,13 +218,13 @@ class DevToolsManager {
     const formatter = this.tools.format;
     await formatter.run({
       dryRun: options.dryRun !== false,
-      fileTypes: this.config.format.fileTypes,
+      fileTypes: this.config.format.fileTypes
     });
-
+    
     return {
       completed: true,
       dryRun: options.dryRun !== false,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -237,20 +235,20 @@ class DevToolsManager {
    */
   async generateComprehensiveReport(results, totalTime) {
     console.log('\n📊 生成综合报告...');
-
+    
     const reportsPath = path.join(process.cwd(), this.config.reports.outputDir);
     if (!fs.existsSync(reportsPath)) {
       fs.mkdirSync(reportsPath, { recursive: true });
     }
-
+    
     const report = {
       timestamp: new Date().toISOString(),
       totalTime: totalTime,
       config: this.config,
       results: results,
-      summary: this.generateSummary(results),
+      summary: this.generateSummary(results)
     };
-
+    
     // 生成JSON报告
     if (this.config.reports.formats.includes('json')) {
       fs.writeFileSync(
@@ -259,7 +257,7 @@ class DevToolsManager {
         'utf8'
       );
     }
-
+    
     // 生成Markdown报告
     if (this.config.reports.formats.includes('markdown')) {
       const markdownReport = this.generateMarkdownReport(report);
@@ -269,7 +267,7 @@ class DevToolsManager {
         'utf8'
       );
     }
-
+    
     // 生成HTML报告
     if (this.config.reports.formats.includes('html')) {
       const htmlReport = this.generateHtmlReport(report);
@@ -279,7 +277,7 @@ class DevToolsManager {
         'utf8'
       );
     }
-
+    
     console.log('✅ 综合报告已生成');
   }
 
@@ -293,63 +291,47 @@ class DevToolsManager {
       toolsRun: Object.keys(results).length,
       allCompleted: Object.values(results).every(result => result.completed),
       hasIssues: false,
-      recommendations: [],
+      recommendations: []
     };
-
+    
     // 检查是否有问题需要关注
     try {
       // 检查质量报告
-      const qualityReportPath = path.join(
-        process.cwd(),
-        'reports',
-        'quality-report.json'
-      );
+      const qualityReportPath = path.join(process.cwd(), 'reports', 'quality-report.json');
       if (fs.existsSync(qualityReportPath)) {
-        const qualityReport = JSON.parse(
-          fs.readFileSync(qualityReportPath, 'utf8')
-        );
-
-        if (
-          qualityReport.summary.maintainabilityIndex <
-          this.config.quality.thresholds.maintainabilityIndex
-        ) {
+        const qualityReport = JSON.parse(fs.readFileSync(qualityReportPath, 'utf8'));
+        
+        if (qualityReport.summary.maintainabilityIndex < this.config.quality.thresholds.maintainabilityIndex) {
           summary.hasIssues = true;
           summary.recommendations.push('代码可维护性指数较低，建议进行重构');
         }
-
+        
         if (qualityReport.summary.codeSmells > 100) {
           summary.hasIssues = true;
           summary.recommendations.push('发现大量代码异味，建议优化代码结构');
         }
       }
-
+      
       // 检查依赖报告
-      const dependencyReportPath = path.join(
-        process.cwd(),
-        'reports',
-        'dependency-analysis.json'
-      );
+      const dependencyReportPath = path.join(process.cwd(), 'reports', 'dependency-analysis.json');
       if (fs.existsSync(dependencyReportPath)) {
-        const dependencyReport = JSON.parse(
-          fs.readFileSync(dependencyReportPath, 'utf8')
-        );
-
+        const dependencyReport = JSON.parse(fs.readFileSync(dependencyReportPath, 'utf8'));
+        
         if (dependencyReport.summary.circularDependencies > 0) {
           summary.hasIssues = true;
           summary.recommendations.push('发现循环依赖，建议重构代码结构');
         }
-
+        
         if (dependencyReport.summary.unusedDependencies > 10) {
           summary.hasIssues = true;
-          summary.recommendations.push(
-            '存在大量未使用的依赖，建议清理package.json'
-          );
+          summary.recommendations.push('存在大量未使用的依赖，建议清理package.json');
         }
       }
+      
     } catch (error) {
       console.warn('⚠️  生成摘要时出错:', error.message);
     }
-
+    
     return summary;
   }
 
@@ -371,23 +353,18 @@ class DevToolsManager {
 
 ## 工具运行状态
 
-${Object.entries(report.results)
-  .map(
-    ([tool, result]) => `
+${Object.entries(report.results).map(([tool, result]) => `
 ### ${tool}
 - **状态**: ${result.completed ? '✅ 完成' : '❌ 失败'}
 - **时间**: ${new Date(result.timestamp).toLocaleString()}
 ${result.dryRun !== undefined ? `- **模式**: ${result.dryRun ? '试运行' : '实际执行'}` : ''}
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 建议和推荐
 
-${
-  report.summary.recommendations.length > 0
-    ? report.summary.recommendations.map(rec => `- ${rec}`).join('\n')
-    : '✅ 代码质量良好，无特殊建议'
+${report.summary.recommendations.length > 0 ? 
+  report.summary.recommendations.map(rec => `- ${rec}`).join('\n') :
+  '✅ 代码质量良好，无特殊建议'
 }
 
 ## 配置信息
@@ -535,35 +512,27 @@ ${
         
         <h2>📊 工具运行状态</h2>
         <div class="status-grid">
-            ${Object.entries(report.results)
-              .map(
-                ([tool, result]) => `
+            ${Object.entries(report.results).map(([tool, result]) => `
                 <div class="status-card ${result.completed ? 'status-success' : 'status-error'}">
                     <h3>${tool}</h3>
                     <p><strong>状态:</strong> ${result.completed ? '✅ 完成' : '❌ 失败'}</p>
                     <p><strong>时间:</strong> ${new Date(result.timestamp).toLocaleString()}</p>
                     ${result.dryRun !== undefined ? `<p><strong>模式:</strong> ${result.dryRun ? '试运行' : '实际执行'}</p>` : ''}
                 </div>
-            `
-              )
-              .join('')}
+            `).join('')}
         </div>
         
-        ${
-          report.summary.recommendations.length > 0
-            ? `
+        ${report.summary.recommendations.length > 0 ? `
         <h2>💡 建议和推荐</h2>
         <div class="recommendations">
             <ul>
                 ${report.summary.recommendations.map(rec => `<li>${rec}</li>`).join('')}
             </ul>
         </div>
-        `
-            : `
+        ` : `
         <h2>✅ 代码质量良好</h2>
         <p>未发现需要特别关注的问题。</p>
-        `
-        }
+        `}
         
         <h2>⚙️ 配置信息</h2>
         
@@ -679,13 +648,13 @@ ${
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || 'help';
-
+  
   const options = {
     dryRun: args.includes('--dry-run'),
     force: args.includes('--force'),
     refactor: args.includes('--refactor') || command === 'refactor',
     format: args.includes('--format') || command === 'format',
-    all: command === 'all',
+    all: command === 'all'
   };
 
   const manager = new DevToolsManager();
@@ -695,27 +664,27 @@ async function main() {
       case 'all':
         await manager.runAll(options);
         break;
-
+      
       case 'quality':
         await manager.runQualityAnalysis(options);
         break;
-
+      
       case 'refactor':
         await manager.runAutoRefactor(options);
         break;
-
+      
       case 'format':
         await manager.runCodeFormat(options);
         break;
-
+      
       case 'dependency':
         await manager.runDependencyAnalysis(options);
         break;
-
+      
       case 'config':
         manager.showConfig();
         break;
-
+      
       case 'help':
       default:
         manager.showHelp();
@@ -728,10 +697,7 @@ async function main() {
 }
 
 // 执行脚本
-if (
-  import.meta.url.endsWith(process.argv[1]) ||
-  process.argv[1].endsWith('devTools.js')
-) {
+if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('devTools.js')) {
   main().catch(console.error);
 }
 

@@ -1,7 +1,7 @@
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle   } from '@/components/ui/card';
-import {
-  Table, User, Gavel   } from 'lucide-react';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from '@/components/ui/card';
+import { Table,
+import { User, Gavel  } from 'lucide-react';
 import React from 'react';
 
 /**
@@ -24,7 +24,8 @@ import React from 'react';
   TableCell,
   TableHead,
   TableHeader,
-  TableRow  } from '@/components/ui/table';
+  TableRow,
+} from '@/components/ui/table';
 
 interface GameRoom { id: string;
   roomId: string;
@@ -36,17 +37,15 @@ interface GameRoom { id: string;
   isPrivate: boolean;
   status: string;
   judgeUserId?: string;
-  judgeName?: string
+  judgeName?: string;,
 }
 
-interface RoomListTableProps {
-  gameRooms: GameRoom[];
-  playerRoom: { roomDbId: string | null
-}
+interface RoomListTableProps { gameRooms: GameRoom[];
+  playerRoom: { roomDbId: string | null  };
   t: (key: string) => string;
   joinRoom: (roomId: string) => Promise<void>;
   playAsJudge: (roomId: string) => Promise<void>;
-  currentUser: any
+  currentUser: any;,
 }
 
 /**
@@ -62,19 +61,20 @@ interface RoomListTableProps {
 * // 使用示例
 * <RoomListTable { ...props } />
  */
-const RoomListTable: React.FC<RoomListTableProps> = ( { gameRooms,
+const RoomListTable: React.FC<RoomListTableProps> = ({ gameRooms,
   playerRoom,
   t,
   joinRoom,
   playAsJudge,
-  currentUser }) => (;
+  currentUser,
+ }) => (;
   <Card className='bg-werewolf-card border-werewolf-purple/30'>;
   <CardHeader>
   <CardTitle>{ t('game_rooms') }</CardTitle>
   <CardDescription>
   { playerRoom.roomDbId
   ? t('leave_first')
-  : t('join_existing') 
+  : t('join_existing'),
 }
 </CardDescription>
 </CardHeader>
@@ -111,10 +111,9 @@ const RoomListTable: React.FC<RoomListTableProps> = ( { gameRooms,
     <span className={ `px-2 py-1 rounded text-xs ${
       room.status === 'waiting';
       ? 'bg-green-900/40 text-green-300'
-      : 'bg-amber-900/40 text-amber-300' 
+      : 'bg-amber-900/40 text-amber-300',
 }`}>
-    { room.status === 'waiting' ? t('waiting') : t('started') 
-}
+    { room.status === 'waiting' ? t('waiting') : t('started') }
     </span>
     </TableCell>
     <TableCell className='text-center'>;
@@ -138,8 +137,8 @@ const RoomListTable: React.FC<RoomListTableProps> = ( { gameRooms,
     )}
     </TableCell>
     <TableCell className='text-center'>;
-    { /*  检查房间是否已满 - 玩家数 >= 最大玩家数  */
-} { room.players >= room.maxPlayers ? (;
+    { /*  检查房间是否已满 - 玩家数 >= 最大玩家数  */ }
+    { room.players >= room.maxPlayers ? (;
       <span className='text-amber-400'>{t('full') }</span>;
     ) : room.status !== 'waiting' ? (;
       <span className='text-gray-400'>{ t('started') }</span>;
@@ -165,11 +164,5 @@ const RoomListTable: React.FC<RoomListTableProps> = ( { gameRooms,
 </Card>
 );
 
-/**
- * RoomListTable组件
- * 表格组件，用于数据展示和操作
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default RoomListTable;
 

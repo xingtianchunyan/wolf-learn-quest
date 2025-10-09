@@ -1,10 +1,10 @@
-import { Button   } from '@/components/ui/button';
-import {
-  Dialog, ScrollArea   } from '@/components/ui/scroll-area';
-import {
-  Table, Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
+import { Button  } from '@/components/ui/button';
+import { Dialog,
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { Table,
+import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
 import React from 'react';
-import { useLanguage   } from '../layout/LanguageSwitcher';
+import { useLanguage  } from '../layout/LanguageSwitcher';
 
 /**
 * 文件级注释：GameRulesDialog 组件
@@ -26,12 +26,14 @@ import { useLanguage   } from '../layout/LanguageSwitcher';
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger  } from '@/components/ui/dialog';
+  DialogTrigger,
+ } from '@/components/ui/dialog';
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow  } from '@/components/ui/table';
+  TableRow,
+ } from '@/components/ui/table';
 
 /**
 * GameRulesDialog 组件
@@ -47,72 +49,48 @@ import { useLanguage   } from '../layout/LanguageSwitcher';
 * // 使用示例
 * <GameRulesDialog />
  */
-const GameRulesDialog: React.FC<{ trigger?: React.ReactNode  
-}> = ({ trigger  }) => { const  { t  } = useLanguage();
+const GameRulesDialog: React.FC<{ trigger?: React.ReactNode  }> = ({ trigger  }) => { const { t  } = useLanguage();
 
   const characterSkills = [;
-    { role: t('villager'), skill: t('skill_sleep'), usages: t('usage_unlimited'), type: t('type_none'), effect: t('effect_none')  
-},
-    { role: t('hunter'), skill: t('skill_dying_shot'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_dying_shot')  
-},
-    { role: t('witch'), skill: t('skill_magic_potion'), usages: t('usage_2'), type: t('type_protect_or_attack'), effect: t('effect_magic_potion')  
-},
-    { role: t('seer'), skill: t('skill_prophecy'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_prophecy')  
-},
-    { role: t('guard'), skill: t('skill_vigil'), usages: t('usage_unlimited'), type: t('type_protect'), effect: t('effect_vigil')  
-},
-    { role: t('werewolf'), skill: t('skill_night_attack'), usages: t('usage_unlimited'), type: t('type_attack'), effect: t('effect_night_attack')  
-},
-    { role: t('white_wolf'), skill: t('skill_self_destruct'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_self_destruct')  
-},
-    { role: t('warlock'), skill: t('skill_voodoo'), usages: t('usage_1'), type: t('type_protect'), effect: t('effect_voodoo')  
-},
-    { role: t('demon'), skill: t('skill_demon_eye'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_demon_eye')  
-} ];
+    { role: t('villager'), skill: t('skill_sleep'), usages: t('usage_unlimited'), type: t('type_none'), effect: t('effect_none')  },
+    { role: t('hunter'), skill: t('skill_dying_shot'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_dying_shot')  },
+    { role: t('witch'), skill: t('skill_magic_potion'), usages: t('usage_2'), type: t('type_protect_or_attack'), effect: t('effect_magic_potion')  },
+    { role: t('seer'), skill: t('skill_prophecy'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_prophecy')  },
+    { role: t('guard'), skill: t('skill_vigil'), usages: t('usage_unlimited'), type: t('type_protect'), effect: t('effect_vigil')  },
+    { role: t('werewolf'), skill: t('skill_night_attack'), usages: t('usage_unlimited'), type: t('type_attack'), effect: t('effect_night_attack')  },
+    { role: t('white_wolf'), skill: t('skill_self_destruct'), usages: t('usage_1'), type: t('type_attack'), effect: t('effect_self_destruct')  },
+    { role: t('warlock'), skill: t('skill_voodoo'), usages: t('usage_1'), type: t('type_protect'), effect: t('effect_voodoo')  },
+    { role: t('demon'), skill: t('skill_demon_eye'), usages: t('usage_unlimited'), type: t('type_view'), effect: t('effect_demon_eye')  },
+  ];
 
   const informationDisclosure = [;
-    { role: t('villager'), phases: t('info_phases_villager'), scope: t('info_scope_villager')  
-},
-    { role: t('hunter'), phases: t('info_phases_all'), scope: t('info_scope_hunter')  
-},
-    { role: t('witch'), phases: t('info_phases_all'), scope: t('info_scope_witch')  
-},
-    { role: t('seer'), phases: t('info_phases_all'), scope: t('info_scope_seer')  
-},
-    { role: t('guard'), phases: t('info_phases_villager'), scope: t('info_scope_villager')  
-},
-    { role: t('werewolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf')  
-},
-    { role: t('white_wolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf')  
-},
-    { role: t('warlock'), phases: t('info_phases_all'), scope: t('info_scope_warlock')  
-},
-    { role: t('demon'), phases: t('info_phases_all'), scope: t('info_scope_demon')  
-} ];
+    { role: t('villager'), phases: t('info_phases_villager'), scope: t('info_scope_villager')  },
+    { role: t('hunter'), phases: t('info_phases_all'), scope: t('info_scope_hunter')  },
+    { role: t('witch'), phases: t('info_phases_all'), scope: t('info_scope_witch')  },
+    { role: t('seer'), phases: t('info_phases_all'), scope: t('info_scope_seer')  },
+    { role: t('guard'), phases: t('info_phases_villager'), scope: t('info_scope_villager')  },
+    { role: t('werewolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf')  },
+    { role: t('white_wolf'), phases: t('info_phases_all'), scope: t('info_scope_werewolf')  },
+    { role: t('warlock'), phases: t('info_phases_all'), scope: t('info_scope_warlock')  },
+    { role: t('demon'), phases: t('info_phases_all'), scope: t('info_scope_demon')  },
+  ];
 
   const playerConfigurations = [;
-    { players: 6, config: t('player_config_6')  
-},
-    { players: 7, config: t('player_config_7')  
-},
-    { players: 8, config: t('player_config_8')  
-},
-    { players: 9, config: t('player_config_9')  
-},
-    { players: 10, config: t('player_config_10')  
-},
-    { players: 11, config: t('player_config_11')  
-},
-    { players: 12, config: t('player_config_12')  
-} ];
+    { players: 6, config: t('player_config_6')  },
+    { players: 7, config: t('player_config_7')  },
+    { players: 8, config: t('player_config_8')  },
+    { players: 9, config: t('player_config_9')  },
+    { players: 10, config: t('player_config_10')  },
+    { players: 11, config: t('player_config_11')  },
+    { players: 12, config: t('player_config_12')  },
+  ];
 
   return (;
     <Dialog>
     <DialogTrigger asChild>
     { trigger ? trigger : (
       <Button variant='ghost' className='nav-link flex items-center'>;
-      <span className='hidden sm: inline'>{t('game_rules') 
-}</span>;
+      <span className='hidden sm:inline'>{t('game_rules') }</span>;
       </Button>
     )}
     </DialogTrigger>
@@ -248,8 +226,7 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode
     <TableBody>
     { characterSkills.map((character, index) => (;
       <TableRow key={index } className='hover:bg-werewolf-dark/20'>;
-      <TableCell className={ `font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(character.role) ? 'text-red-400' : 'text-green-400' 
-}`}>;
+      <TableCell className={ `font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(character.role) ? 'text-red-400' : 'text-green-400' }`}>;
       { character.role }
       </TableCell>
       <TableCell>{ character.skill }</TableCell>
@@ -341,8 +318,7 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode
     <TableBody>
     { informationDisclosure.map((info, index) => (;
       <TableRow key={index } className='hover:bg-werewolf-dark/20'>;
-      <TableCell className={ `font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(info.role) ? 'text-red-400' : 'text-green-400' 
-}`}>;
+      <TableCell className={ `font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(info.role) ? 'text-red-400' : 'text-green-400' }`}>;
       { info.role }
       </TableCell>
       <TableCell className='text-sm'>{ info.phases }</TableCell>;
@@ -358,13 +334,7 @@ const GameRulesDialog: React.FC<{ trigger?: React.ReactNode
     </Tabs>
     </DialogContent>
     </Dialog>
-  )
+  );,
 };
 
-/**
- * GameRulesDialog组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default GameRulesDialog;

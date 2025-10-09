@@ -1,12 +1,12 @@
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { ClipboardList, ChevronLeft, ChevronRight   } from 'lucide-react';
-import { createLogger   } from '@/lib/logger';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { supabase   } from '@/integrations/supabase/client';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useGameState   } from '@/hooks/useGameState';
-import React, { useState, useMemo   } from 'react';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { ClipboardList, ChevronLeft, ChevronRight  } from 'lucide-react';
+import { createLogger  } from '@/lib/logger';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { supabase  } from '@/integrations/supabase/client';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useGameState  } from '@/hooks/useGameState';
+import React, { useState, useMemo  } from 'react';
 
 /**
 * 文件级注释：StudentAnswerRecordPanel 组件
@@ -23,27 +23,28 @@ import React, { useState, useMemo   } from 'react';
 * @category judge
 * @filepath game\panels\StudentAnswerRecordPanel.tsx
  */
-interface Question  { id: string;
+
+interface Question { id: string;
   question: string;
   option_a: string;
   option_b: string;
   option_c: string;
   option_d: string;
-  correct_option: number
+  correct_option: number;,
 }
 
-interface StudentAnswerRecordPanelProps { roomId: string
+interface StudentAnswerRecordPanelProps { roomId: string;,
 }
 
 interface PlayerAnswer { selectedOption: number | null;
   responseTime: number | null;
-  isCorrect: boolean | null
+  isCorrect: boolean | null;,
 }
 
 interface AnswerRecord { round: number;
   phase: string;
   questionText: string;
-  answer: PlayerAnswer
+  answer: PlayerAnswer;,
 }
 
 /**
@@ -60,8 +61,7 @@ interface AnswerRecord { round: number;
 * // 使用示例
 * <StudentAnswerRecordPanel { ...props } />
  */
-const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roomId  
-}) =>  { const [currentPage, setCurrentPage] = useState(0);
+const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roomId  }) => { const [currentPage, setCurrentPage] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [userAnswers, setUserAnswers] = useState<any[]>([]);
   const { currentUser  } = useAuth();
@@ -74,8 +74,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
 
       try {
         // 获取房间题目
-        const { data: roomQuestions, error: questionsError  
-} = await supabase;
+        const { data: roomQuestions, error: questionsError  } = await supabase;
         .from('room_questions')
         .select(`
         question_order,
@@ -93,15 +92,14 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
         .order('question_order');
 
         if (questionsError) { logger.error('Error fetching questions:', questionsError);
-          return
+          return;,
 }
 
-        if (roomQuestions) { setQuestions(roomQuestions.map(rq => rq.questions as Question))
+        if (roomQuestions) { setQuestions(roomQuestions.map(rq => rq.questions as Question));,
 }
 
         // 获取当前用户的答题记录
-        const { data: answers, error: answersError  
-} = await supabase;
+        const { data: answers, error: answersError  } = await supabase;
         .from('room_answers')
         .select('*')
         .eq('room_id', roomId)
@@ -109,15 +107,15 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
         .order('question_order');
 
         if (answersError) { logger.error('Error fetching user answers:', answersError);
-          return
+          return;,
 }
 
-        setUserAnswers(answers || [])
-} catch (error) { logger.error('Error in fetchData:', error)
+        setUserAnswers(answers || []);,
+} catch (error) { logger.error('Error in fetchData:', error);,
 }
     };
 
-    fetchData()
+    fetchData();,
 }, [roomId, currentUser]);
 
   const answerRecords: AnswerRecord[] = useMemo(() => { if (questions.length === 0) return [];
@@ -133,81 +131,45 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({ roo
       const answer: PlayerAnswer = userAnswerData ? {
         selectedOption: userAnswerData.selected_option,
         responseTime: userAnswerData.response_time,
-        isCorrect: userAnswerData.is_correct 
-} : { selectedOption: null,
+        isCorrect: userAnswerData.is_correct,
+       } : { selectedOption: null,
         responseTime: null,
-        isCorrect: null  
-};
+        isCorrect: null,
+       };
 
       return { round,
         phase,
         questionText: question.question,
-        answer }
-})
+        answer,
+       };,
+});,
 }, [questions, userAnswers]);
 
   const totalPages = Math.max(1, answerRecords.length);
   const currentRecord = answerRecords[currentPage];
 
-/**
- * handlePrevPage函数
- * 处理事件
- * @returns void
- */
-const handlePrevPage = () =>  {
-  setCurrentPage(prev => Math.max(0, prev - 1))
-
+  const handlePrevPage = () => { setCurrentPage(prev => Math.max(0, prev - 1));,
 };
 
-/**
- * handleNextPage函数
- * 处理事件
- * @returns void
- */
-const handleNextPage = () =>  {
-  setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))
-
+  const handleNextPage = () => { setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));,
 };
 
-/**
- * getOptionLabel函数
- * 获取数据
- *
- * @param index - index参数
- * @returns void
- */
-const getOptionLabel = (index: number) =>  {
-  return ['A', 'B', 'C', 'D'][index - 1]
-
+  const getOptionLabel = (index: number) => { return ['A', 'B', 'C', 'D'][index - 1];,
 };
 
-/**
- * formatTime函数
- * 格式化数据
- *
- * @param seconds - seconds参数
- * @returns void
- */
-const formatTime = (seconds: number) => { if (typeof seconds !== 'number' || seconds < 0)  {
-      return '00: 00'
+  const formatTime = (seconds: number) => { if (typeof seconds !== 'number' || seconds < 0) {
+      return '00:00';,
 }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${ mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`
+    return `${ mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`;,
 };
 
-/**
- * getStatusMessage函数
- * 获取数据
- * @returns void
- */
-const getStatusMessage = () =>  {
-  if (!gameState) return '游戏尚未开始';
+  const getStatusMessage = () => { if (!gameState) return '游戏尚未开始';
     if (gameState.status === 'waiting') return '游戏尚未开始';
     if (questions.length === 0) return '暂无题目记录';
     if (answerRecords.length === 0) return '暂无答题记录';
-    return null
-
+    return null;,
 };
 
   const statusMessage = getStatusMessage();
@@ -234,8 +196,7 @@ const getStatusMessage = () =>  {
     <ChevronLeft className='h-4 w-4' />;
     </Button>
     <span className='text-sm text-gray-400'>;
-    { answerRecords.length > 0 ? currentPage + 1 : 0 
-} / { totalPages }
+    { answerRecords.length > 0 ? currentPage + 1 : 0 } / { totalPages }
     </span>
     <Button
     variant='outline';
@@ -279,7 +240,7 @@ const getStatusMessage = () =>  {
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           currentRecord.answer.isCorrect
           ? 'bg-green-500/20 text-green-400'
-          : 'bg-red-500/20 text-red-400' 
+          : 'bg-red-500/20 text-red-400',
 }`}>
         { getOptionLabel(currentRecord.answer.selectedOption) }
         </span>
@@ -289,8 +250,7 @@ const getStatusMessage = () =>  {
       { currentRecord.answer.isCorrect !== null ? (;
         <>
         <span className='text-sm text-gray-400'>;
-        用时: {formatTime(currentRecord.answer.responseTime!) 
-}
+        用时: {formatTime(currentRecord.answer.responseTime!) }
         </span>
         { currentRecord.answer.isCorrect ? (
           <span className='text-green-400'>✓ 正确</span>;
@@ -310,7 +270,7 @@ const getStatusMessage = () =>  {
 
           return gameState?.status === 'active' && !isQuestionExpired;
           ? '等待答题...'
-          : '超时未答'
+          : '超时未答';,
 })()}
         </span>
       )}
@@ -328,13 +288,7 @@ const getStatusMessage = () =>  {
     )}
     </CardContent>
     </Card>
-  )
+  );,
 };
 
-/**
- * StudentAnswerRecordPanel组件
- * StudentAnswerRecordPanel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default StudentAnswerRecordPanel;

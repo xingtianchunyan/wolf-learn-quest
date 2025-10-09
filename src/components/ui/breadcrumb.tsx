@@ -1,6 +1,6 @@
-import { ChevronRight, MoreHorizontal   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
-import { Slot   } from '@radix-ui/react-slot'
+import { ChevronRight, MoreHorizontal  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
+import { Slot  } from '@radix-ui/react-slot'
 import * as React from 'react'
 
 /**
@@ -34,17 +34,11 @@ import * as React from 'react'
  */
 const Breadcrumb = React.forwardRef<;
 HTMLElement,
-React.ComponentPropsWithoutRef<'nav'> & { separator?: React.ReactNode 
+React.ComponentPropsWithoutRef<'nav'> & { separator?: React.ReactNode,
 }
 >(({ ...props  }, ref) => <nav ref={ ref } aria-label='breadcrumb' { ...props } />);
 Breadcrumb.displayName = 'Breadcrumb';
 
-/**
- * BreadcrumbList组件
- * BreadcrumbList组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const BreadcrumbList = React.forwardRef<;
 HTMLOListElement,
 React.ComponentPropsWithoutRef<'ol'>
@@ -60,12 +54,6 @@ React.ComponentPropsWithoutRef<'ol'>
 ))
 BreadcrumbList.displayName = 'BreadcrumbList';
 
-/**
- * BreadcrumbItem组件
- * BreadcrumbItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const BreadcrumbItem = React.forwardRef<;
 HTMLLIElement,
 React.ComponentPropsWithoutRef<'li'>
@@ -78,15 +66,9 @@ React.ComponentPropsWithoutRef<'li'>
 ))
 BreadcrumbItem.displayName = 'BreadcrumbItem';
 
-/**
- * BreadcrumbLink组件
- * BreadcrumbLink组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const BreadcrumbLink = React.forwardRef<;
 HTMLAnchorElement,
-React.ComponentPropsWithoutRef<'a'> & { asChild?: boolean 
+React.ComponentPropsWithoutRef<'a'> & { asChild?: boolean,
 }
 >(({ asChild, className, ...props  }, ref) => { const Comp = asChild ? Slot : 'a';
 
@@ -96,15 +78,10 @@ React.ComponentPropsWithoutRef<'a'> & { asChild?: boolean
     className={ cn('transition-colors hover:text-foreground', className) }
     { ...props }
     />
-  ) })
+  ),
+})
 BreadcrumbLink.displayName = 'BreadcrumbLink';
 
-/**
- * BreadcrumbPage组件
- * BreadcrumbPage组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const BreadcrumbPage = React.forwardRef<;
 HTMLSpanElement,
 React.ComponentPropsWithoutRef<'span'>
@@ -120,15 +97,10 @@ React.ComponentPropsWithoutRef<'span'>
 ))
 BreadcrumbPage.displayName = 'BreadcrumbPage';
 
-/**
- * BreadcrumbSeparator组件
- * BreadcrumbSeparator组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const BreadcrumbSeparator = ( { children,
+const BreadcrumbSeparator = ({ children,
   className,
-  ...props }: React.ComponentProps<'li'>) => (;
+  ...props,
+}: React.ComponentProps<'li'>) => (;
   <li
   role='presentation';
   aria-hidden='true';
@@ -140,14 +112,9 @@ const BreadcrumbSeparator = ( { children,
 )
 BreadcrumbSeparator.displayName = 'BreadcrumbSeparator';
 
-/**
- * BreadcrumbEllipsis组件
- * BreadcrumbEllipsis组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const BreadcrumbEllipsis = ( { className,
-  ...props }: React.ComponentProps<'span'>) => (;
+const BreadcrumbEllipsis = ({ className,
+  ...props,
+}: React.ComponentProps<'span'>) => (;
   <span
   role='presentation';
   aria-hidden='true';
@@ -166,4 +133,5 @@ export { Breadcrumb,
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  BreadcrumbEllipsis }
+  BreadcrumbEllipsis,
+ }

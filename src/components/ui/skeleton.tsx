@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 
 /**
 * 文件级注释：skeleton 组件
@@ -29,12 +29,14 @@ import { cn   } from '@/lib/utils'
 * // 使用示例
 * <skeleton />
  */
-function Skeleton( { className,
-  ...props }: React.HTMLAttributes<HTMLDivElement>) { return (;
+function Skeleton({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLDivElement>) { return (;
     <div
     className={cn('animate-pulse rounded-md bg-muted', className) }
     { ...props }
     />
-  ) }
+  ),
+}
 
 export { Skeleton  }

@@ -11,7 +11,6 @@
 #### 用户和认证
 
 ##### profiles 表
-
 用户配置信息表，扩展Supabase Auth用户数据。
 
 ```sql
@@ -29,7 +28,6 @@ CREATE TABLE public.profiles (
 #### 游戏系统
 
 ##### rooms 表
-
 游戏房间信息。
 
 ```sql
@@ -47,7 +45,6 @@ CREATE TABLE public.rooms (
 ```
 
 ##### game_states 表
-
 游戏状态管理。
 
 ```sql
@@ -68,7 +65,6 @@ CREATE TABLE public.game_states (
 ```
 
 ##### players 表
-
 房间玩家信息。
 
 ```sql
@@ -89,7 +85,6 @@ CREATE TABLE public.players (
 #### 角色系统
 
 ##### role_designs 表
-
 角色设计配置。
 
 ```sql
@@ -107,7 +102,6 @@ CREATE TABLE public.role_designs (
 ```
 
 ##### role_states 表
-
 玩家角色状态。
 
 ```sql
@@ -128,7 +122,6 @@ CREATE TABLE public.role_states (
 #### 技能系统
 
 ##### skill_uses 表
-
 技能使用记录。
 
 ```sql
@@ -148,7 +141,6 @@ CREATE TABLE public.skill_uses (
 ```
 
 ##### skill_effects 表
-
 技能效果状态。
 
 ```sql
@@ -169,7 +161,6 @@ CREATE TABLE public.skill_effects (
 #### 题目系统
 
 ##### questions 表
-
 题目库。
 
 ```sql
@@ -189,7 +180,6 @@ CREATE TABLE public.questions (
 ```
 
 ##### room_questions 表
-
 房间题目分配。
 
 ```sql
@@ -205,7 +195,6 @@ CREATE TABLE public.room_questions (
 ```
 
 ##### room_answers 表
-
 玩家答题记录。
 
 ```sql
@@ -225,7 +214,6 @@ CREATE TABLE public.room_answers (
 #### 投票系统
 
 ##### voting_sessions 表
-
 投票会话。
 
 ```sql
@@ -242,7 +230,6 @@ CREATE TABLE public.voting_sessions (
 ```
 
 ##### votes 表
-
 投票记录。
 
 ```sql
@@ -257,7 +244,6 @@ CREATE TABLE public.votes (
 ```
 
 ##### voting_results 表
-
 投票结果。
 
 ```sql
@@ -275,7 +261,6 @@ CREATE TABLE public.voting_results (
 #### 聊天系统
 
 ##### chat_messages 表
-
 聊天消息。
 
 ```sql
@@ -306,7 +291,6 @@ CREATE INDEX idx_room_answers_room_user ON room_answers(room_id, user_id);
 ### 触发器
 
 #### 自动更新时间戳
-
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -346,34 +330,31 @@ CREATE TRIGGER update_role_states_updated_at
 ### 示例策略
 
 #### profiles 表
-
 ```sql
 -- 所有人可以查看profiles
-CREATE POLICY "Profiles are viewable by everyone"
+CREATE POLICY "Profiles are viewable by everyone" 
 ON profiles FOR SELECT USING (true);
 
 -- 用户只能更新自己的profile
-CREATE POLICY "Users can update their own profile"
+CREATE POLICY "Users can update their own profile" 
 ON profiles FOR UPDATE USING (auth.uid() = user_id);
 ```
 
 #### rooms 表
-
 ```sql
 -- 任何人都可以查看房间列表
-CREATE POLICY "Anyone can view rooms"
+CREATE POLICY "Anyone can view rooms" 
 ON rooms FOR SELECT USING (true);
 
 -- 只有创建者可以更新房间
-CREATE POLICY "Only creator can update room"
+CREATE POLICY "Only creator can update room" 
 ON rooms FOR UPDATE USING (auth.uid() = creator_id);
 ```
 
 #### players 表
-
 ```sql
 -- 房间参与者可以查看玩家列表
-CREATE POLICY "Room participants can view players"
+CREATE POLICY "Room participants can view players" 
 ON players FOR SELECT USING (
     room_id IN (
         SELECT room_id FROM players WHERE user_id = auth.uid()
@@ -386,7 +367,6 @@ ON players FOR SELECT USING (
 ### 游戏控制函数
 
 #### start_game(p_room_id UUID)
-
 开始游戏，初始化游戏状态。
 
 ```sql
@@ -403,26 +383,25 @@ BEGIN
     SELECT COUNT(*) INTO v_player_count
     FROM players
     WHERE room_id = p_room_id AND is_ready = true;
-
+    
     IF v_player_count < 3 THEN
         RAISE EXCEPTION '玩家数量不足，至少需要3名玩家';
     END IF;
-
+    
     -- 创建游戏状态
     INSERT INTO game_states (room_id, status, current_phase, current_round)
     VALUES (p_room_id, 'active', 1, 1)
     RETURNING id INTO v_game_state_id;
-
+    
     -- 更新房间状态
     UPDATE rooms SET status = 'active' WHERE id = p_room_id;
-
+    
     RETURN v_game_state_id::TEXT;
 END;
 $$;
 ```
 
 #### advance_game_phase(p_room_id UUID)
-
 推进游戏阶段。
 
 ```sql
@@ -443,7 +422,7 @@ BEGIN
     INTO v_current_phase, v_current_round
     FROM game_states
     WHERE room_id = p_room_id;
-
+    
     -- 计算下一阶段
     IF v_current_phase = 4 THEN
         v_new_phase := 1;
@@ -452,7 +431,7 @@ BEGIN
         v_new_phase := v_current_phase + 1;
         v_new_round := v_current_round;
     END IF;
-
+    
     -- 更新游戏状态
     UPDATE game_states
     SET current_phase = v_new_phase,
@@ -460,7 +439,7 @@ BEGIN
         phase_end_time = now() + (v_phase_duration || ' seconds')::INTERVAL,
         updated_at = now()
     WHERE room_id = p_room_id;
-
+    
     RETURN QUERY SELECT v_new_phase, v_new_round, (now() + (v_phase_duration || ' seconds')::INTERVAL);
 END;
 $$;
@@ -469,7 +448,6 @@ $$;
 ### 技能系统函数
 
 #### use_skill_enhanced(...)
-
 增强版技能使用函数。
 
 ```sql
@@ -490,7 +468,7 @@ DECLARE
     v_current_phase TEXT;
 BEGIN
     -- 获取当前游戏状态
-    SELECT current_round,
+    SELECT current_round, 
            CASE current_phase
                WHEN 1 THEN 'day'
                WHEN 2 THEN 'evening'
@@ -500,7 +478,7 @@ BEGIN
     INTO v_current_round, v_current_phase
     FROM game_states
     WHERE id = p_game_state_id;
-
+    
     -- 记录技能使用
     INSERT INTO skill_uses (
         game_state_id,
@@ -521,7 +499,7 @@ BEGIN
         p_skill_data,
         COALESCE((p_skill_data->>'priority')::INTEGER, 0)
     ) RETURNING id INTO v_skill_use_id;
-
+    
     RETURN v_skill_use_id::TEXT;
 END;
 $$;
@@ -555,31 +533,23 @@ ALTER PUBLICATION supabase_realtime ADD TABLE votes;
 // 监听游戏状态变化
 const gameStateChannel = supabase
   .channel('game_state_changes')
-  .on(
-    'postgres_changes',
-    {
-      event: '*',
-      schema: 'public',
-      table: 'game_states',
-      filter: `room_id=eq.${roomId}`,
-    },
-    handleGameStateChange
-  )
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'game_states',
+    filter: `room_id=eq.${roomId}`
+  }, handleGameStateChange)
   .subscribe();
 
 // 监听聊天消息
 const chatChannel = supabase
   .channel('chat_changes')
-  .on(
-    'postgres_changes',
-    {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'chat_messages',
-      filter: `room_id=eq.${roomId}`,
-    },
-    handleNewMessage
-  )
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'chat_messages',
+    filter: `room_id=eq.${roomId}`
+  }, handleNewMessage)
   .subscribe();
 ```
 

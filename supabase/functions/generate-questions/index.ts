@@ -1,5 +1,6 @@
-import 'https://deno.land/x/xhr@0.1.0/mod.ts';
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SILICONFLOW_API_KEY = Deno.env.get('SILICONFLOW_API_KEY');
@@ -7,22 +8,21 @@ const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-serve(async req => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('开始处理生成题目请求');
-
+    
     if (!SILICONFLOW_API_KEY) {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
@@ -51,25 +51,22 @@ serve(async req => {
 
     if (existingQuestions) {
       console.log('题目已生成过，返回现有结果');
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: '题目已生成完成',
-          question_set_id: existingQuestions.id,
-          questions: existingQuestions.questions,
-          question_count: existingQuestions.question_count,
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return new Response(JSON.stringify({
+        success: true,
+        message: '题目已生成完成',
+        question_set_id: existingQuestions.id,
+        questions: existingQuestions.questions,
+        question_count: existingQuestions.question_count
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('调用硅基流动API生成题目...');
     const response = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${SILICONFLOW_API_KEY}`,
+        'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -99,15 +96,15 @@ serve(async req => {
       "explanation": "答案解释"
     }
   ]
-}`,
+}`
           },
           {
             role: 'user',
-            content: `请基于以下学习材料生成${questionCount}道选择题：\n\n${preprocessedData.preprocessed_content}`,
-          },
+            content: `请基于以下学习材料生成${questionCount}道选择题：\n\n${preprocessedData.preprocessed_content}`
+          }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 4000
       }),
     });
 
@@ -120,17 +117,14 @@ serve(async req => {
     }
 
     const result = await response.json();
-
+    
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
       throw new Error('API返回数据格式错误');
     }
 
     const generatedContent = result.choices[0].message.content;
-    console.log(
-      'AI生成的原始内容:',
-      generatedContent.substring(0, 500) + '...'
-    );
+    console.log('AI生成的原始内容:', generatedContent.substring(0, 500) + '...');
 
     // 解析JSON格式的题目
     let questionsData;
@@ -162,7 +156,7 @@ serve(async req => {
         model_used: 'Qwen/Qwen2.5-72B-Instruct',
         question_count: questionsData.questions.length,
         questions: questionsData.questions,
-        uploaded_file_id: preprocessedData.uploaded_file_id,
+        uploaded_file_id: preprocessedData.uploaded_file_id
       })
       .select()
       .single();
@@ -173,27 +167,18 @@ serve(async req => {
     }
 
     // 将每道题目单独保存到questions表 - 修复：使用正确的correct_option映射 (0-3)
-    const individualQuestions = questionsData.questions.map(
-      (q: any, index: number) => ({
-        question: q.question,
-        option_a: q.option_a,
-        option_b: q.option_b,
-        option_c: q.option_c,
-        option_d: q.option_d,
-        correct_option:
-          q.correct_answer === 'A'
-            ? 0
-            : q.correct_answer === 'B'
-              ? 1
-              : q.correct_answer === 'C'
-                ? 2
-                : 3,
-        explanation: q.explanation,
-        generated_questions_id: savedQuestionSet.id,
-        difficulty: Math.floor(index / 6) + 1, // 分为3个难度等级
-        category: '综合题目',
-      })
-    );
+    const individualQuestions = questionsData.questions.map((q: any, index: number) => ({
+      question: q.question,
+      option_a: q.option_a,
+      option_b: q.option_b,
+      option_c: q.option_c,
+      option_d: q.option_d,
+      correct_option: q.correct_answer === 'A' ? 0 : q.correct_answer === 'B' ? 1 : q.correct_answer === 'C' ? 2 : 3,
+      explanation: q.explanation,
+      generated_questions_id: savedQuestionSet.id,
+      difficulty: Math.floor(index / 6) + 1, // 分为3个难度等级
+      category: '综合题目'
+    }));
 
     const { error: questionsError } = await supabase
       .from('questions')
@@ -206,29 +191,24 @@ serve(async req => {
 
     console.log('题目生成完成，ID:', savedQuestionSet.id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: '题目生成完成',
-        question_set_id: savedQuestionSet.id,
-        questions: questionsData.questions,
-        question_count: questionsData.questions.length,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({
+      success: true,
+      message: '题目生成完成',
+      question_set_id: savedQuestionSet.id,
+      questions: questionsData.questions,
+      question_count: questionsData.questions.length
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   } catch (error) {
     console.error('生成题目过程中发生错误:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : '未知错误',
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : '未知错误'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

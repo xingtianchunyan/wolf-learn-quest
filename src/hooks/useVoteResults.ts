@@ -1,61 +1,45 @@
-import { supabase   } from '@/integrations/supabase/client';
-import { useState, useEffect, useCallback   } from 'react';
-import { useGameState   } from './useGameState';
+import { supabase  } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback  } from 'react';
+import { useGameState  } from './useGameState';
 
 export interface VoteRecord { votedPlayerId: string;
   votedPlayerName: string;
   voteCount: number;
-  voters: string[]
+  voters: string[];,
 }
 
 // 帮助函数：通过用户ID获取玩家名称
-/**
- * getPlayerNames函数
- * 获取数据
- *
- * @param userIds - userIds参数
- * @returns Promise<void>
- */
-const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> => { if (userIds.length === 0)  {
-    return new Map()
+const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> => { if (userIds.length === 0) {
+    return new Map();,
 }
   const { data, error  } = await supabase;
-  .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds  
-});
+  .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds  });
 
   if (error) { console.error('获取玩家名称失败:', error);
-    return new Map()
+    return new Map();,
 }
 
   const nameMap = new Map<string, string>();
   data.forEach(user => { if (user.user_id && user.player_name) {
-      nameMap.set(user.user_id, user.player_name)
+      nameMap.set(user.user_id, user.player_name);,
 }
   });
-  return nameMap
+  return nameMap;,
 };
 
-/**
- * useVoteResults函数
- * 自定义Hook
- *
- * @param roomId - roomId参数
- * @returns void
- */
-export const useVoteResults = (roomId: string) =>  { const [voteRecords, setVoteRecords] = useState<VoteRecord[]>([]);
+export const useVoteResults = (roomId: string) => { const [voteRecords, setVoteRecords] = useState<VoteRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const { gameState  } = useGameState(roomId);
 
   const fetchVoteResults = useCallback(async () => { if (!roomId || !gameState || gameState.status === 'waiting' || gameState.status === 'ended') {
       setVoteRecords([]);
       setLoading(false);
-      return
+      return;,
 }
     setLoading(true);
 
     try { // 获取当前活跃的投票会话
-      const { data: votingSessions, error: sessionError  
-} = await supabase;
+      const { data: votingSessions, error: sessionError  } = await supabase;
       .from('voting_sessions')
       .select('id')
       .eq('room_id', roomId)
@@ -63,26 +47,24 @@ export const useVoteResults = (roomId: string) =>  { const [voteRecords, setVote
       .eq('round_number', gameState.currentRound)
       .eq('phase', gameState.currentPhase)
       .eq('status', 'active')
-      .order('created_at', { ascending: false  
-})
+      .order('created_at', { ascending: false  })
       .limit(1);
 
       if (sessionError) { console.error('获取投票会话失败:', sessionError);
         setVoteRecords([]);
         setLoading(false);
-        return
+        return;,
 }
 
       if (!votingSessions || votingSessions.length === 0) { setVoteRecords([]);
         setLoading(false);
-        return
+        return;,
 }
 
       const currentSessionId = votingSessions[0].id;
 
       // 获取投票记录
-      const { data: votes, error: votesError  
-} = await supabase;
+      const { data: votes, error: votesError  } = await supabase;
       .from('votes')
       .select('voter_id, target_id')
       .eq('voting_session_id', currentSessionId)
@@ -91,27 +73,25 @@ export const useVoteResults = (roomId: string) =>  { const [voteRecords, setVote
       if (votesError) { console.error('获取投票记录失败:', votesError);
         setVoteRecords([]);
         setLoading(false);
-        return
+        return;,
 }
 
       if (!votes || votes.length === 0) { setVoteRecords([]);
         setLoading(false);
-        return
+        return;,
 }
 
       // 聚合投票结果并收集所有玩家ID
       const allPlayerIds = new Set<string>();
-      const voteCounts: Record<string, { voters: string[] 
-}> = {};
+      const voteCounts: Record<string, { voters: string[] }> = {};
 
       votes.forEach(vote => { if (vote.target_id && vote.voter_id) {
           if (!voteCounts[vote.target_id]) {
-            voteCounts[vote.target_id] = { voters: []  
-}
+            voteCounts[vote.target_id] = { voters: []  };,
 }
           voteCounts[vote.target_id].voters.push(vote.voter_id);
           allPlayerIds.add(vote.target_id);
-          allPlayerIds.add(vote.voter_id)
+          allPlayerIds.add(vote.voter_id);,
 }
       });
 
@@ -123,22 +103,20 @@ export const useVoteResults = (roomId: string) =>  { const [voteRecords, setVote
           votedPlayerId,
           votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
           voteCount: voters.length,
-          voters: voters.map(voterId => playerNamesMap.get(voterId) || '未知玩家') 
-}
+          voters: voters.map(voterId => playerNamesMap.get(voterId) || '未知玩家'),
+         };,
 });
 
       // 按票数降序排序
       formattedRecords.sort((a, b) => b.voteCount - a.voteCount);
 
-      setVoteRecords(formattedRecords)
-} catch (error) { console.error('处理投票结果时出错:', error)
-} finally { setLoading(false)
+      setVoteRecords(formattedRecords);,
+} catch (error) { console.error('处理投票结果时出错:', error);,
+} finally { setLoading(false);,
 }
   }, [roomId, gameState]);
 
-  useEffect(() => {
-  fetchVoteResults()
-
+  useEffect(() => { fetchVoteResults();,
 }, [fetchVoteResults]);
 
   // 设置实时订阅
@@ -147,30 +125,24 @@ export const useVoteResults = (roomId: string) =>  { const [voteRecords, setVote
     .on('postgres_changes',
       { event: 'INSERT',
         schema: 'public',
-        table: 'votes' 
-},
-      () => {
-  fetchVoteResults()
-
+        table: 'votes',
+       },
+      () => { fetchVoteResults();,
 }
     )
     .on('postgres_changes',
       { event: 'UPDATE',
         schema: 'public',
-        table: 'votes' 
-},
-      () => {
-  fetchVoteResults()
-
+        table: 'votes',
+       },
+      () => { fetchVoteResults();,
 }
     )
     .subscribe();
 
-    return () => {
-  supabase.removeChannel(channel)
-}
-
+    return () => { supabase.removeChannel(channel);,
+};,
 }, [roomId, fetchVoteResults]);
 
-  return { voteRecords, loading  }
+  return { voteRecords, loading  };,
 };

@@ -1,20 +1,20 @@
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { createLogger   } from '@/lib/logger';
-import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, RefreshCw   } from 'lucide-react';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { supabase   } from '@/integrations/supabase/client';
-import { Switch   } from '@/components/ui/switch';
-import {
-  Table, useAuth   } from '@/providers/AuthProvider';
-import { useGameState   } from '@/hooks/useGameState';
-import { useJudgePage   } from '@/contexts/JudgePageContext';
-import { useNavigate   } from 'react-router-dom';
-import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
-import { useToast   } from '@/hooks/useToast';
-import { useVotingSystem   } from '@/hooks/useVotingSystem';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { createLogger  } from '@/lib/logger';
+import { Gavel, Play, Pause, SkipForward, Square, Calculator, Settings, RefreshCw  } from 'lucide-react';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { supabase  } from '@/integrations/supabase/client';
+import { Switch  } from '@/components/ui/switch';
+import { Table,
+import { useAuth  } from '@/providers/AuthProvider';
+import { useGameState  } from '@/hooks/useGameState';
+import { useJudgePage  } from '@/contexts/JudgePageContext';
+import { useNavigate  } from 'react-router-dom';
+import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { useToast  } from '@/hooks/useToast';
+import { useVotingSystem  } from '@/hooks/useVotingSystem';
 import EnhancedVotingManager from '@/components/voting/EnhancedVotingManager';
-import React, { useState   } from 'react';
+import React, { useState  } from 'react';
 import PreparationPhaseDialog from './PreparationPhaseDialog';
 
 /**
@@ -37,11 +37,12 @@ import PreparationPhaseDialog from './PreparationPhaseDialog';
   TableCell,
   TableHead,
   TableHeader,
-  TableRow  } from '@/components/ui/table';
+  TableRow,
+} from '@/components/ui/table';
 
 const logger = createLogger('judge-action-panel');
 
-interface JudgeActionPanelProps { roomId: string
+interface JudgeActionPanelProps { roomId: string;,
 }
 
 /**
@@ -58,8 +59,7 @@ interface JudgeActionPanelProps { roomId: string
 * // 使用示例
 * <JudgeActionPanel { ...props } />
  */
-const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId  
-}) =>  { const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
+const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId  }) => { const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
 
@@ -76,118 +76,79 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId
   const navigate = useNavigate();
   const { currentUser  } = useAuth();
 
-/**
- * handleNextPhase函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleNextPhase = async () =>  {
-  setIsAdvancing(true);
+  const handleNextPhase = async () => { setIsAdvancing(true);
     await advancePhase();
-    setIsAdvancing(false)
-
+    setIsAdvancing(false);,
 };
 
-/**
- * handlePauseGame函数
- * 处理事件
- * @returns Promise<void>
- */
-const handlePauseGame = async () =>  {
-  setIsPausing(true);
+  const handlePauseGame = async () => { setIsPausing(true);
     await togglePause();
-    setIsPausing(false)
-
+    setIsPausing(false);,
 };
 
-/**
- * handleEndGame函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleEndGame = async () =>  {
-  setIsEnding(true);
+  const handleEndGame = async () => { setIsEnding(true);
     await endGame();
-    setIsEnding(false)
-
+    setIsEnding(false);,
 };
 
-/**
- * handleGameSettlement函数
- * 设置数据
- * @returns void
- */
-const handleGameSettlement = () =>  {
-  logger.debug('游戏结算')
-
+  const handleGameSettlement = () => { logger.debug('游戏结算');,
 };
 
   // 更新题目功能
-/**
- * handleUpdateQuestions函数
- * 更新数据
- * @returns Promise<void>
- */
-const handleUpdateQuestions = async () =>  { setIsUpdatingQuestions(true);
+  const handleUpdateQuestions = async () => { setIsUpdatingQuestions(true);
     try {
       // 刷新题目数据
       await refreshLinkedQuestions();
 
       toast({
         title: '题目更新成功',
-        description: '已重新加载题目信息' 
-})
+        description: '已重新加载题目信息',
+       });,
 } catch (error) { logger.error('更新题目失败:', error);
       toast({
         title: '题目更新失败',
         description: '请稍后重试',
-        variant: 'destructive' 
-})
-} finally { setIsUpdatingQuestions(false)
+        variant: 'destructive',
+       });,
+} finally { setIsUpdatingQuestions(false);,
 }
   };
 
-/**
- * handleQuitJudge函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
+  const handleQuitJudge = async () => { if (!roomId || !currentUser) return;
 
     // 如果游戏正在进行中，提示用户
     if (gameState?.status === 'active') {
       toast({
         title: '无法退出',
         description: '游戏进行中无法停止扮演法官，请先结束游戏',
-        variant: 'destructive' 
-});
-      return
+        variant: 'destructive',
+       });
+      return;,
 }
 
     setIsLeavingJudge(true);
     try { // 将所有等待中的房间里的 judge_user_id 清空，避免回到大厅后再次被认定为法官
       const { error  } = await supabase;
       .from('rooms')
-      .update({ judge_user_id: null  
-})
+      .update({ judge_user_id: null  })
       .eq('judge_user_id', currentUser.id)
       .eq('status', 'waiting');
 
       if (error) { toast({
           title: '退出法官失败',
           description: error.message,
-          variant: 'destructive' 
-});
+          variant: 'destructive',
+         });
         setIsLeavingJudge(false);
-        return
+        return;,
 }
       // 返回大厅
-      navigate('/lobby')
+      navigate('/lobby');,
 } catch (err) { toast({
         title: '退出法官时发生错误',
-        variant: 'destructive' 
-})
-} finally { setIsLeavingJudge(false)
+        variant: 'destructive',
+       });,
+} finally { setIsLeavingJudge(false);,
 }
   };
 
@@ -204,8 +165,8 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
     法官行动
     </CardTitle>
     <div className='flex space-x-2'>;
-    { /*  根据游戏状态显示不同按钮  */
-} { isGameActive ? (
+    { /*  根据游戏状态显示不同按钮  */ }
+    { isGameActive ? (
       <Button
       variant='outline';
       size='sm';
@@ -215,8 +176,7 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
       disabled={ isUpdatingQuestions }
       >
       <RefreshCw className='h-4 w-4 mr-2' />;
-      { isUpdatingQuestions ? '更新中...' : '更新题目' 
-}
+      { isUpdatingQuestions ? '更新中...' : '更新题目' }
       </Button>
     ) : (<Button
       variant='outline';
@@ -237,8 +197,7 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
     disabled={ !canQuitJudge || isLeavingJudge }
     >
     <Square className='h-4 w-4 mr-2' />;
-    { isLeavingJudge ? '正在退出...' : '停止扮演法官' 
-}
+    { isLeavingJudge ? '正在退出...' : '停止扮演法官' }
     </Button>
     </div>
     </div>
@@ -273,10 +232,8 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
     loading={ isPausing }
     disabled={ !isGameActive || isPausing }
     >
-    { gameState?.isPaused ? <Play className='h-4 w-4 mr-2' /> : <Pause className='h-4 w-4 mr-2' /> 
-}
-    { gameState?.isPaused ? '恢复游戏' : '暂停游戏' 
-}
+    { gameState?.isPaused ? <Play className='h-4 w-4 mr-2' /> : <Pause className='h-4 w-4 mr-2' /> }
+    { gameState?.isPaused ? '恢复游戏' : '暂停游戏' }
     </Button>
 
     <Button
@@ -301,8 +258,8 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
     </Button>
     </div>
 
-    { /*  游戏进行中的提示信息  */
-} { gameState?.status === 'active' && (;
+    { /*  游戏进行中的提示信息  */ }
+    { gameState?.status === 'active' && (;
       <div className='text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md flex-shrink-0'>;
       游戏进行中，部分功能已禁用
       </div>
@@ -316,13 +273,7 @@ const handleQuitJudge = async () =>  { if (!roomId || !currentUser) return;
     roomId={ roomId }
     />
     </>
-  )
+  );,
 };
 
-/**
- * JudgeActionPanel组件
- * JudgeActionPanel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default JudgeActionPanel;

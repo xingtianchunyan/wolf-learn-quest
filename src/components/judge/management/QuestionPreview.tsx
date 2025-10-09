@@ -1,9 +1,9 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight   } from 'lucide-react';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { ChevronLeft, ChevronRight  } from 'lucide-react';
 import React from 'react';
-import { Question   } from '../types/questionBank';
+import { Question  } from '../types/questionBank';
 
 /**
 * 文件级注释：QuestionPreview 组件
@@ -20,12 +20,13 @@ import { Question   } from '../types/questionBank';
 * @category common
 * @filepath judge\management\QuestionPreview.tsx
  */
-interface QuestionPreviewProps  { questions: Question[];
+
+interface QuestionPreviewProps { questions: Question[];
   selectedQuestions: Question[];
   currentIndex: number;
   loading: boolean;
   onIndexChange: (index: number) => void;
-  onToggleSelection: (question: Question) => void
+  onToggleSelection: (question: Question) => void;,
 }
 
 /**
@@ -41,49 +42,36 @@ interface QuestionPreviewProps  { questions: Question[];
 * // 使用示例
 * <QuestionPreview { ...props } />
  */
-const QuestionPreview: React.FC<QuestionPreviewProps> = ( { questions,
+const QuestionPreview: React.FC<QuestionPreviewProps> = ({ questions,
   selectedQuestions,
   currentIndex,
   loading,
   onIndexChange,
-  onToggleSelection }) => { const getDifficultyColor = (difficulty: number) => {
+  onToggleSelection,
+}) => { const getDifficultyColor = (difficulty: number) => {
     switch (difficulty) {
       case 1: return 'bg-green-500';
       case 2: return 'bg-yellow-500';
       case 3: return 'bg-orange-500';
       case 4: return 'bg-red-500';
       case 5: return 'bg-purple-500';
-      default: return 'bg-gray-500'
+      default: return 'bg-gray-500';,
 }
   };
 
-/**
- * getDifficultyLabel函数
- * 获取数据
- *
- * @param difficulty - difficulty参数
- * @returns void
- */
-const getDifficultyLabel = (difficulty: number) => { switch (difficulty)  {
+  const getDifficultyLabel = (difficulty: number) => { switch (difficulty) {
       case 1: return '简单';
       case 2: return '容易';
       case 3: return '中等';
       case 4: return '困难';
       case 5: return '极难';
-      default: return '未知'
+      default: return '未知';,
 }
   };
 
-/**
- * getPhaseLabel函数
- * 获取数据
- *
- * @param index - index参数
- * @returns void
- */
-const getPhaseLabel = (index: number) =>  { const round = Math.floor(index / 2) + 1;
+  const getPhaseLabel = (index: number) => { const round = Math.floor(index / 2) + 1;
     const phase = index % 2 === 0 ? '傍晚' : '黎明';
-    return `第${round }轮 ${ phase }阶段`
+    return `第${round }轮 ${ phase }阶段`;,
 };
 
   const currentQuestion = questions[currentIndex];
@@ -114,7 +102,7 @@ const getPhaseLabel = (index: number) =>  { const round = Math.floor(index / 2) 
       className={`h-full cursor-pointer transition-all duration-200 ${
         selectedQuestions.some(q => q.id === currentQuestion?.id);
         ? 'bg-werewolf-purple/20 border-werewolf-purple'
-        : 'bg-werewolf-dark/60 border-werewolf-purple/30 hover:bg-werewolf-dark/80' 
+        : 'bg-werewolf-dark/60 border-werewolf-purple/30 hover:bg-werewolf-dark/80',
 }`}
       onClick={ () => currentQuestion && onToggleSelection(currentQuestion) }
       >
@@ -152,23 +140,19 @@ const getPhaseLabel = (index: number) =>  { const round = Math.floor(index / 2) 
         <div className='space-y-2'>;
         <h4 className='text-white font-medium'>选项：</h4>;
         <div className='space-y-1 text-sm'>;
-        <p className={ `text-gray-300 ${currentQuestion.correct_option === 1 ? 'text-green-400 font-medium' : '' 
-}`}>;
+        <p className={ `text-gray-300 ${currentQuestion.correct_option === 1 ? 'text-green-400 font-medium' : '' }`}>;
         A. { currentQuestion.option_a }
         </p>
-        <p className={ `text-gray-300 ${currentQuestion.correct_option === 2 ? 'text-green-400 font-medium' : '' 
-}`}>;
+        <p className={ `text-gray-300 ${currentQuestion.correct_option === 2 ? 'text-green-400 font-medium' : '' }`}>;
         B. { currentQuestion.option_b }
         </p>
         { currentQuestion.option_c && (
-          <p className={`text-gray-300 ${currentQuestion.correct_option === 3 ? 'text-green-400 font-medium' : '' 
-}`}>;
+          <p className={`text-gray-300 ${currentQuestion.correct_option === 3 ? 'text-green-400 font-medium' : '' }`}>;
           C. { currentQuestion.option_c }
           </p>
         )}
         { currentQuestion.option_d && (
-          <p className={`text-gray-300 ${currentQuestion.correct_option === 4 ? 'text-green-400 font-medium' : '' 
-}`}>;
+          <p className={`text-gray-300 ${currentQuestion.correct_option === 4 ? 'text-green-400 font-medium' : '' }`}>;
           D. { currentQuestion.option_d }
           </p>
         )}
@@ -225,13 +209,7 @@ const getPhaseLabel = (index: number) =>  { const round = Math.floor(index / 2) 
     )}
     </CardContent>
     </Card>
-  )
+  );,
 };
 
-/**
- * QuestionPreview组件
- * QuestionPreview组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default QuestionPreview;

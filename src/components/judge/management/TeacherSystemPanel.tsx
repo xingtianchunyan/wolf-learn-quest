@@ -1,10 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { GraduationCap, Clock   } from 'lucide-react';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { useGameState   } from '@/hooks/useGameState';
-import { useJudgePage   } from '@/contexts/JudgePageContext';
-import React, { useState, useEffect   } from 'react';
-import { Question   } from '../types/questionBank';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { GraduationCap, Clock  } from 'lucide-react';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { useGameState  } from '@/hooks/useGameState';
+import { useJudgePage  } from '@/contexts/JudgePageContext';
+import React, { useState, useEffect  } from 'react';
+import { Question  } from '../types/questionBank';
 
 /**
 * 文件级注释：TeacherSystemPanel 组件
@@ -21,7 +21,8 @@ import { Question   } from '../types/questionBank';
 * @category judge
 * @filepath judge\management\TeacherSystemPanel.tsx
  */
-interface TeacherSystemPanelProps  { roomId: string
+
+interface TeacherSystemPanelProps { roomId: string;,
 }
 
 /**
@@ -38,33 +39,16 @@ interface TeacherSystemPanelProps  { roomId: string
 * // 使用示例
 * <TeacherSystemPanel { ...props } />
  */
-const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId  
-}) => { const  { linkedQuestions, isSystemLinked  } = useJudgePage();
+const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId  }) => { const { linkedQuestions, isSystemLinked  } = useJudgePage();
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName  } = useGameState(roomId);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
 
   // 计算当前轮次和阶段对应的题目序号（与学生端保持一致）
-/**
- * calculateQuestionOrder函数
- * calculateQuestionOrder函数的功能描述
- *
- * @param round - round参数
- * @param phase - phase参数
- * @returns void
- */
-const calculateQuestionOrder = (round: number, phase: number): number =>  {
-  const phaseIndex = phase === 2 ? 0 : phase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
+  const calculateQuestionOrder = (round: number, phase: number): number => { const phaseIndex = phase === 2 ? 0 : phase === 4 ? 1 : -1; // 2=傍晚, 4=黎明
     if (phaseIndex === -1) return -1;
 
-/**
- * questionIndex函数
- * questionIndex函数的功能描述
- *
- * @param round - round参数
- * @returns void
- */
     const questionIndex = (round - 1) * 2 + phaseIndex;
-    return questionIndex + 1; // 转换为1基的question_order  
+    return questionIndex + 1; // 转换为1基的question_order,
 };
 
   useEffect(() => { if (isSystemLinked && gameState && gameState.status === 'active') {
@@ -74,42 +58,26 @@ const calculateQuestionOrder = (round: number, phase: number): number =>  {
       if (targetQuestionOrder > 0 && linkedQuestions) { // 使用question_order精确查找，而不是数组下标
         const foundQuestion = linkedQuestions.find(lq => lq.question_order === targetQuestionOrder);
         if (foundQuestion) {
-          setCurrentQuestion(foundQuestion.question)
+          setCurrentQuestion(foundQuestion.question);,
 } else { console.warn('TeacherSystemPanel: 未找到题目，question_order:', targetQuestionOrder);
-          setCurrentQuestion(null)
+          setCurrentQuestion(null);,
 }
-      } else { setCurrentQuestion(null)
+      } else { setCurrentQuestion(null);,
 }
-    } else { setCurrentQuestion(null)
+    } else { setCurrentQuestion(null);,
 }
   }, [isSystemLinked, linkedQuestions, gameState]);
 
-/**
- * getOptionLabel函数
- * 获取数据
- *
- * @param index - index参数
- * @returns void
- */
-const getOptionLabel = (index: number) =>  {
-  return ['A', 'B', 'C', 'D'][index]
-
+  const getOptionLabel = (index: number) => { return ['A', 'B', 'C', 'D'][index];,
 };
 
-/**
- * getOptionText函数
- * 获取数据
- *
- * @param option - option参数
- * @returns void
- */
-const getOptionText = (option: number) =>  { if (!currentQuestion) return '';
+  const getOptionText = (option: number) => { if (!currentQuestion) return '';
     switch (option) {
       case 1: return currentQuestion.option_a;
       case 2: return currentQuestion.option_b;
       case 3: return currentQuestion.option_c;
       case 4: return currentQuestion.option_d;
-      default: return ''
+      default: return '';,
 }
   };
 
@@ -120,16 +88,11 @@ const getOptionText = (option: number) =>  { if (!currentQuestion) return '';
   const showTimer = isSystemLinked && gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
 
   // 显示游戏状态信息
-/**
- * getGameStatusInfo函数
- * 获取数据
- * @returns void
- */
-const getGameStatusInfo = () =>  { if (!gameState) return '游戏准备中';
+  const getGameStatusInfo = () => { if (!gameState) return '游戏准备中';
     if (gameState.status === 'waiting') return '游戏准备中';
     if (gameState.status === 'active') return `游戏进行中 - 第${roundNumber }轮 ${ phaseName }阶段`;
     if (gameState.status === 'ended') return '游戏已结束';
-    return '未知状态'
+    return '未知状态';,
 };
 
   return (;
@@ -144,13 +107,12 @@ const getGameStatusInfo = () =>  { if (!gameState) return '游戏准备中';
     <CardContent className='flex-1 p-4 pt-0 overflow-hidden'>;
     <ScrollArea className='h-full'>;
     <div className='space-y-4 pr-4'>;
-    { /*  剩余答题时间  */
-} { showTimer && (
+    { /*  剩余答题时间  */ }
+    { showTimer && (
       <div className='flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md'>;
       <Clock className='mr-2 h-5 w-5 text-werewolf-purple' />;
       <span className='text-lg font-bold text-werewolf-purple'>;
-      剩余时间: {formatTime(timeRemaining) 
-}
+      剩余时间: {formatTime(timeRemaining) }
       </span>
       </div>
     )}
@@ -177,7 +139,7 @@ const getGameStatusInfo = () =>  { if (!gameState) return '游戏准备中';
         className={ `p-3 rounded-md border ${
           optionNum === currentQuestion.correct_option;
           ? 'bg-green-500/20 border-green-500 text-green-300'
-          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300' 
+          : 'bg-werewolf-dark/40 border-gray-600 text-gray-300',
 }`}
         >
         <span className='font-semibold mr-2'>;
@@ -207,7 +169,7 @@ const getGameStatusInfo = () =>  { if (!gameState) return '游戏准备中';
       ? '游戏已结束'
       : !isAnsweringPhase
       ? '当前非答题阶段'
-      : '当前阶段的题目未找到，请检查题库与题目顺序设置' 
+      : '当前阶段的题目未找到，请检查题库与题目顺序设置',
 }
     </div>
   )}
@@ -215,13 +177,7 @@ const getGameStatusInfo = () =>  { if (!gameState) return '游戏准备中';
   </ScrollArea>
   </CardContent>
   </Card>
-)
+);,
 };
 
-/**
- * TeacherSystemPanel组件
- * TeacherSystemPanel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default TeacherSystemPanel;

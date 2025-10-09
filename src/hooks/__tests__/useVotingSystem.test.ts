@@ -21,56 +21,48 @@ vi.mock('@/integrations/supabase/client', () => ({
           order: vi.fn(() => ({
             limit: vi.fn(() => ({
               data: [],
-              error: null,
-            })),
-          })),
-        })),
-      })),
+              error: null
+            }))
+          }))
+        }))
+      }))
     })),
     channel: vi.fn(() => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(() => mockChannel),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
       return mockChannel;
     }),
     removeChannel: vi.fn(),
     auth: {
-      getUser: vi.fn(() =>
-        Promise.resolve({
-          data: { user: { id: 'test-user-id' } },
-          error: null,
-        })
-      ),
-    },
-  },
+      getUser: vi.fn(() => Promise.resolve({
+        data: { user: { id: 'test-user-id' } },
+        error: null
+      }))
+    }
+  }
 }));
 
 // Create mock AuthContext
-/**
- * MockAuthContext组件
- * MockAuthContext组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const MockAuthContext = React.createContext({
   currentUser: null,
   isLoggedIn: false,
   initializing: false,
   isLoginOpen: false,
   setIsLoginOpen: vi.fn(),
-  requireAuth: vi.fn(() => true),
+  requireAuth: vi.fn(() => true)
 });
 
 vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({
-    toast: mockToast,
-  }),
+    toast: mockToast
+  })
 }));
 
 vi.mock('@/providers/AuthProvider', () => ({
-  useAuth: () => React.useContext(MockAuthContext),
+  useAuth: () => React.useContext(MockAuthContext)
 }));
 
 // 模拟 VotingService
@@ -78,8 +70,8 @@ vi.mock('@/services/votingService', () => ({
   VotingService: {
     createVotingSession: vi.fn(),
     castVote: vi.fn(),
-    calculateVotingResults: vi.fn(),
-  },
+    calculateVotingResults: vi.fn()
+  }
 }));
 
 // Mock logger
@@ -88,27 +80,19 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-    debug: vi.fn(),
-  }),
+    debug: vi.fn()
+  })
 }));
 
 // Mock AuthProvider
-/**
- * MockAuthProvider组件
- * MockAuthProvider组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const MockAuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+const MockAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const mockAuthValue = {
     currentUser: null,
     isLoggedIn: false,
     initializing: false,
     isLoginOpen: false,
     setIsLoginOpen: vi.fn(),
-    requireAuth: vi.fn(() => true),
+    requireAuth: vi.fn(() => true)
   };
 
   return React.createElement(
@@ -119,12 +103,6 @@ const MockAuthProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 // Test wrapper component
-/**
- * TestWrapper组件
- * TestWrapper组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return React.createElement(MockAuthProvider, {}, children);
 };
@@ -133,7 +111,7 @@ describe('useVotingSystem', () => {
   beforeEach(() => {
     // 重置所有模拟
     vi.clearAllMocks();
-
+    
     // 重置模拟的 toast 函数
     mockToast.mockClear();
   });
@@ -157,7 +135,7 @@ describe('useVotingSystem', () => {
         status: 'active',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
-        created_at: '2024-01-01T00:00:00Z',
+        created_at: '2024-01-01T00:00:00Z'
       };
 
       vi.mocked(supabase.from).mockReturnValue({
@@ -165,15 +143,15 @@ describe('useVotingSystem', () => {
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
               data: [mockVotingSession],
-              error: null,
-            })),
-          })),
-        })),
+              error: null
+            }))
+          }))
+        }))
       });
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待数据加载
@@ -192,7 +170,7 @@ describe('useVotingSystem', () => {
     it('应该正确处理空游戏状态ID', () => {
       // 渲染Hook，传入空的游戏状态ID
       const { result } = renderHook(() => useVotingSystem(''), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 验证结果
@@ -213,15 +191,15 @@ describe('useVotingSystem', () => {
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
               data: null,
-              error: mockError,
-            })),
-          })),
-        })),
+              error: mockError
+            }))
+          }))
+        }))
       });
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待错误处理
@@ -234,7 +212,7 @@ describe('useVotingSystem', () => {
       expect(mockToast).toHaveBeenCalledWith({
         title: '错误',
         description: '获取投票会话失败: 数据库连接失败',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     });
   });
@@ -254,7 +232,7 @@ describe('useVotingSystem', () => {
         status: 'completed',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
-        created_at: '2024-01-01T00:00:00Z',
+        created_at: '2024-01-01T00:00:00Z'
       };
 
       // 模拟数据库查询返回
@@ -262,29 +240,24 @@ describe('useVotingSystem', () => {
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
-              limit: vi.fn(() =>
-                Promise.resolve({
-                  data: [mockSpecificSession],
-                  error: null,
-                })
-              ),
-            })),
-          })),
-        })),
+              limit: vi.fn(() => Promise.resolve({
+                data: [mockSpecificSession],
+                error: null
+              }))
+            }))
+          }))
+        }))
       });
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待初始化完成
-      await waitFor(
-        () => {
-          expect(result.current.loading).toBe(false);
-        },
-        { timeout: 10000 }
-      );
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      }, { timeout: 10000 });
 
       // 调用获取特定会话的方法
       const specificSession = await result.current.getVotingSession(2, 2);
@@ -303,25 +276,20 @@ describe('useVotingSystem', () => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(() => Promise.resolve()),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待订阅设置
-      await waitFor(
-        () => {
-          expect(supabase.channel).toHaveBeenCalledWith(
-            'voting_system_test-game-id'
-          );
-        },
-        { timeout: 10000 }
-      );
+      await waitFor(() => {
+        expect(supabase.channel).toHaveBeenCalledWith('voting_system_test-game-id');
+      }, { timeout: 10000 });
 
       // 验证订阅设置
       expect(mockChannel.on).toHaveBeenCalled();
@@ -336,23 +304,20 @@ describe('useVotingSystem', () => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(() => Promise.resolve()),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
 
       // 渲染Hook
       renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待订阅设置
-      await waitFor(
-        () => {
-          expect(mockChannel.on).toHaveBeenCalled();
-        },
-        { timeout: 10000 }
-      );
+      await waitFor(() => {
+        expect(mockChannel.on).toHaveBeenCalled();
+      }, { timeout: 10000 });
 
       // 验证投票记录订阅
       expect(mockChannel.on).toHaveBeenCalledWith(
@@ -360,7 +325,7 @@ describe('useVotingSystem', () => {
         expect.objectContaining({
           event: '*',
           schema: 'public',
-          table: 'votes',
+          table: 'votes'
         }),
         expect.any(Function)
       );
@@ -374,23 +339,20 @@ describe('useVotingSystem', () => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(() => Promise.resolve()),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
 
       // 渲染Hook
       renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待订阅设置
-      await waitFor(
-        () => {
-          expect(mockChannel.on).toHaveBeenCalled();
-        },
-        { timeout: 10000 }
-      );
+      await waitFor(() => {
+        expect(mockChannel.on).toHaveBeenCalled();
+      }, { timeout: 10000 });
 
       // 验证投票会话订阅
       expect(mockChannel.on).toHaveBeenCalledWith(
@@ -399,7 +361,7 @@ describe('useVotingSystem', () => {
           event: '*',
           schema: 'public',
           table: 'voting_sessions',
-          filter: 'game_state_id=eq.test-game-id',
+          filter: 'game_state_id=eq.test-game-id'
         }),
         expect.any(Function)
       );
@@ -421,13 +383,11 @@ describe('useVotingSystem', () => {
         status: 'active',
         start_time: '2024-01-01T00:00:00Z',
         end_time: '2024-01-01T01:00:00Z',
-        created_at: '2024-01-01T00:00:00Z',
+        created_at: '2024-01-01T00:00:00Z'
       };
 
       // 模拟 VotingService.createVotingSession 返回会话ID
-      vi.mocked(VotingService.createVotingSession).mockResolvedValue(
-        'new-session-id'
-      );
+      vi.mocked(VotingService.createVotingSession).mockResolvedValue('new-session-id');
 
       // 重置并设置新的模拟
       vi.mocked(supabase.from).mockImplementation(() => ({
@@ -436,40 +396,33 @@ describe('useVotingSystem', () => {
             order: vi.fn(() => ({
               limit: vi.fn(() => ({
                 data: [],
-                error: null,
-              })),
-            })),
-          })),
+                error: null
+              }))
+            }))
+          }))
         })),
         insert: vi.fn(() => ({
           select: vi.fn(() => ({
             single: vi.fn(() => ({
               data: mockNewSession,
-              error: null,
-            })),
-          })),
-        })),
+              error: null
+            }))
+          }))
+        }))
       }));
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待初始化完成
-      await waitFor(
-        () => {
-          expect(result.current.loading).toBe(false);
-        },
-        { timeout: 10000 }
-      );
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      }, { timeout: 10000 });
 
       // 创建投票会话
-      const newSession = await result.current.createVotingSession(
-        1,
-        2,
-        'elimination'
-      );
+      const newSession = await result.current.createVotingSession(1, 2, 'elimination');
 
       // 验证结果 - createVotingSession 返回的是 sessionId，不是完整对象
       expect(newSession).toBe('new-session-id');
@@ -481,10 +434,10 @@ describe('useVotingSystem', () => {
     it('应该正确处理投票会话创建错误', async () => {
       // 为这个测试使用真实定时器
       vi.useRealTimers();
-
+      
       // 模拟插入错误
       const mockError = new Error('创建投票会话失败');
-
+      
       // 模拟 VotingService.createVotingSession 抛出错误
       vi.mocked(VotingService.createVotingSession).mockRejectedValue(mockError);
 
@@ -494,24 +447,24 @@ describe('useVotingSystem', () => {
             order: vi.fn(() => ({
               limit: vi.fn(() => ({
                 data: [],
-                error: null,
-              })),
-            })),
-          })),
+                error: null
+              }))
+            }))
+          }))
         })),
         insert: vi.fn(() => ({
           select: vi.fn(() => ({
             single: vi.fn(() => ({
               data: null,
-              error: mockError,
-            })),
-          })),
-        })),
+              error: mockError
+            }))
+          }))
+        }))
       }));
 
       // 渲染Hook
       const { result } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
 
       // 等待初始化完成
@@ -520,20 +473,16 @@ describe('useVotingSystem', () => {
       });
 
       // 尝试创建投票会话
-      const newSession = await result.current.createVotingSession(
-        1,
-        2,
-        'elimination'
-      );
+      const newSession = await result.current.createVotingSession(1, 2, 'elimination');
 
       // 验证错误处理
       expect(newSession).toBeNull();
       expect(mockToast).toHaveBeenCalledWith({
         title: '创建投票会话失败',
         description: '请重试',
-        variant: 'destructive',
+        variant: 'destructive'
       });
-
+      
       // 恢复假定时器
       vi.useFakeTimers();
     });
@@ -548,14 +497,14 @@ describe('useVotingSystem', () => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
 
       // 渲染并卸载Hook
       const { unmount } = renderHook(() => useVotingSystem('test-game-id'), {
-        wrapper: TestWrapper,
+        wrapper: TestWrapper
       });
       unmount();
 
@@ -571,7 +520,7 @@ describe('useVotingSystem', () => {
       const mockChannel = {
         on: vi.fn(() => mockChannel),
         subscribe: vi.fn(),
-        unsubscribe: vi.fn(),
+        unsubscribe: vi.fn()
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
@@ -579,9 +528,9 @@ describe('useVotingSystem', () => {
       // 渲染Hook并更改游戏状态ID
       const { rerender } = renderHook(
         ({ gameStateId }) => useVotingSystem(gameStateId),
-        {
+        { 
           initialProps: { gameStateId: 'test-game-id-1' },
-          wrapper: TestWrapper,
+          wrapper: TestWrapper
         }
       );
 
@@ -590,9 +539,7 @@ describe('useVotingSystem', () => {
 
       // 验证清理和重新订阅
       expect(supabase.removeChannel).toHaveBeenCalled();
-      expect(supabase.channel).toHaveBeenCalledWith(
-        'voting_sessions_test-game-id-2'
-      );
+      expect(supabase.channel).toHaveBeenCalledWith('voting_sessions_test-game-id-2');
     });
   });
 });

@@ -1,6 +1,6 @@
 /**
  * 技能冲突检测和投票结果处理集成测试
- *
+ * 
  * 本文件包含技能冲突检测、投票结果处理以及两者结合的集成测试
  * 测试覆盖以下场景：
  * 1. 技能冲突检测的完整流程
@@ -8,85 +8,81 @@
  * 3. 技能冲突与投票结果的交互场景
  * 4. 边界情况和错误处理
  */
-import  { describe, it, expect, vi, beforeEach, afterEach  } from 'vitest';
-import { supabase  } from '@/integrations/supabase/client';
-import { EnhancedSkillService  } from '@/services/enhancedSkillService';
-import { useVotingSystem  } from '@/hooks/useVotingSystem';
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { supabase } from '@/integrations/supabase/client';
+import { EnhancedSkillService } from '@/services/enhancedSkillService';
+import { useVotingSystem } from '@/hooks/useVotingSystem';
 import { checkSkillConflicts, resolveSkillConflicts } from '@/utils/skillMappingConfig';
 import { validateSkillExecutionOrder } from '@/utils/skillSystemValidation';
 import { checkEffectConflicts, resolveSkillEffects } from '@/utils/skillEffectsManager';
-import { renderHook, act, waitFor  } from '@testing-library/react';
-import { toast  } from '@/hooks/useToast';
-import type {
-  SkillConfig,
-  SkillQueueItem,
-  SkillEffectConfig  } from '@/types/skillSystem.types';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { toast } from '@/hooks/useToast';
+import type { SkillConfig, SkillQueueItem, SkillEffectConfig } from '@/types/skillSystem.types';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client');
 vi.mock('@/hooks/useToast', () => ({
   toast: vi.fn(),
   useToast: () => ({
-    toast: vi.fn() 
-}) }));
+    toast: vi.fn()
+  })
+}));
 vi.mock('@/providers/AuthProvider', () => ({
   useAuth: () => ({
-    user: { id: 'test-user-id' 
-},
+    user: { id: 'test-user-id' },
     isAuthenticated: true,
-    requireAuth: vi.fn(() => true) 
-}) }));
+    requireAuth: vi.fn(() => true)
+  })
+}));
 vi.mock('@/services/votingService', () => ({
   VotingService: {
     castVote: vi.fn(),
     calculateVotingResults: vi.fn(),
     processVotingResult: vi.fn(),
-    createVotingSession: vi.fn() 
-} }));
+    createVotingSession: vi.fn()
+  }
+}));
 
 describe('技能冲突检测和投票结果处理集成测试', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
+    
     // Mock supabase auth
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'test-user-id' 
-} },
-      error: null 
-});
-
+      data: { user: { id: 'test-user-id' } },
+      error: null
+    });
+    
     // Mock supabase rpc with default success response
     vi.mocked(supabase.rpc).mockResolvedValue({
-      data: { conflicts_detected: 0, conflict_details: [] 
-},
-      error: null 
-});
-
+      data: { conflicts_detected: 0, conflict_details: [] },
+      error: null
+    });
+    
     // Mock supabase channel for real-time subscriptions
-    const mockChannel = { on: vi.fn().mockReturnThis(),
+    const mockChannel = {
+      on: vi.fn().mockReturnThis(),
       subscribe: vi.fn().mockReturnThis(),
-      unsubscribe: vi.fn().mockReturnThis()  
-};
-
+      unsubscribe: vi.fn().mockReturnThis()
+    };
+    
     vi.mocked(supabase.channel).mockReturnValue(mockChannel);
     vi.mocked(supabase.removeChannel).mockImplementation(() => {});
-
+    
     // Mock toast
-    vi.mocked(toast).mockImplementation(() => {
-  })
-
-});
+    vi.mocked(toast).mockImplementation(() => {});
+  });
 
   afterEach(() => {
-  vi.restoreAllMocks()
-
-});
+    vi.restoreAllMocks();
+  });
 
   describe('技能冲突检测集成测试', () => {
     /**
- * 测试基本技能冲突检测功能
- */
-it('应该正确检测基本技能冲突', () =>  {
+     * 测试基本技能冲突检测功能
+     */
+    it('应该正确检测基本技能冲突', () => {
       const activeSkills: SkillConfig[] = [
         {
           id: 'vigil',
@@ -95,11 +91,10 @@ it('应该正确检测基本技能冲突', () =>  {
           priority: 2,
           conflictsWith: ['night_attack'],
           phaseRestrictions: [3],
-          usageLimit: { type: 'per_game', count: 1 
-},
+          usageLimit: { type: 'per_game', count: 1 },
           targetRequired: true,
-          description: '守卫技能' 
-},
+          description: '守卫技能'
+        },
         {
           id: 'night_attack',
           englishName: 'night_attack',
@@ -107,23 +102,23 @@ it('应该正确检测基本技能冲突', () =>  {
           priority: 1,
           conflictsWith: ['vigil'],
           phaseRestrictions: [3],
-          usageLimit: { type: 'per_round', count: 1 
-},
+          usageLimit: { type: 'per_round', count: 1 },
           targetRequired: true,
-          description: '夜袭技能' 
-} ];
+          description: '夜袭技能'
+        }
+      ];
 
       const result = checkSkillConflicts(activeSkills);
 
       expect(result.conflicts).toBe(true);
       expect(result.conflictPairs).toHaveLength(1);
-      expect(result.conflictPairs[0]).toEqual(['vigil', 'night_attack'])
-});
+      expect(result.conflictPairs[0]).toEqual(['vigil', 'night_attack']);
+    });
 
     /**
- * 测试技能冲突解决机制
- */
-it('应该根据优先级正确解决技能冲突', () =>  {
+     * 测试技能冲突解决机制
+     */
+    it('应该根据优先级正确解决技能冲突', () => {
       const conflictingSkills: SkillConfig[] = [
         {
           id: 'vigil',
@@ -132,11 +127,10 @@ it('应该根据优先级正确解决技能冲突', () =>  {
           priority: 2, // 优先级较低
           conflictsWith: ['night_attack'],
           phaseRestrictions: [3],
-          usageLimit: { type: 'per_game', count: 1 
-},
+          usageLimit: { type: 'per_game', count: 1 },
           targetRequired: true,
-          description: '守卫技能' 
-},
+          description: '守卫技能'
+        },
         {
           id: 'night_attack',
           englishName: 'night_attack',
@@ -144,11 +138,11 @@ it('应该根据优先级正确解决技能冲突', () =>  {
           priority: 1, // 优先级较高
           conflictsWith: ['vigil'],
           phaseRestrictions: [3],
-          usageLimit: { type: 'per_round', count: 1 
-},
+          usageLimit: { type: 'per_round', count: 1 },
           targetRequired: true,
-          description: '夜袭技能' 
-} ];
+          description: '夜袭技能'
+        }
+      ];
 
       const resolved = resolveSkillConflicts(conflictingSkills);
 
@@ -157,47 +151,44 @@ it('应该根据优先级正确解决技能冲突', () =>  {
     });
 
     /**
- * 测试复杂技能冲突场景
- */
-it('应该正确处理多技能复杂冲突场景', () =>  {
+     * 测试复杂技能冲突场景
+     */
+    it('应该正确处理多技能复杂冲突场景', () => {
       const skillQueue: SkillQueueItem[] = [
         {
           skillName: 'vigil',
           userId: 'guard-user',
           targetUserId: 'target-1',
           priority: 2,
-          phase: 3 
-},
+          phase: 3
+        },
         {
           skillName: 'night_attack',
           userId: 'wolf-user',
           targetUserId: 'target-1',
           priority: 1,
-          phase: 3 
-},
+          phase: 3
+        },
         {
           skillName: 'magic_potion',
           userId: 'witch-user',
           targetUserId: 'target-1',
           priority: 3,
-          phase: 3 
-} ];
+          phase: 3
+        }
+      ];
 
       const result = validateSkillExecutionOrder(skillQueue);
 
       expect(result.validOrder).toBe(false);
-      expect(result.conflicts).toContain(
-        '目标 target-1: 守卫保护与狼人攻击冲突'
-      );
-      expect(result.conflicts).toContain(
-        '目标 target-1: 女巫解药与狼人攻击冲突'
-      )
-});
+      expect(result.conflicts).toContain('目标 target-1: 守卫保护与狼人攻击冲突');
+      expect(result.conflicts).toContain('目标 target-1: 女巫解药与狼人攻击冲突');
+    });
 
     /**
- * 测试技能效果冲突检测
- */
-it('应该正确检测技能效果冲突', () =>  {
+     * 测试技能效果冲突检测
+     */
+    it('应该正确检测技能效果冲突', () => {
       const effects: SkillEffectConfig[] = [
         {
           id: 'protection-effect',
@@ -205,8 +196,9 @@ it('应该正确检测技能效果冲突', () =>  {
           priority: 2,
           data: {
             target_user_id: 'target-1',
-            effect_type: 'protection' 
-} },
+            effect_type: 'protection'
+          }
+        },
         {
           id: 'elimination-effect',
           type: 'elimination',
@@ -214,21 +206,23 @@ it('应该正确检测技能效果冲突', () =>  {
           data: {
             target_user_id: 'target-1',
             effect_type: 'elimination',
-            can_be_protected: true 
-} } ];
+            can_be_protected: true
+          }
+        }
+      ];
 
       const result = checkEffectConflicts(effects);
 
       expect(result.conflicts).toBe(true);
       expect(result.resolution).toHaveLength(1);
       expect(result.resolution[0].type).toBe('protection_vs_elimination');
-      expect(result.resolution[0].resolution).toBe('protection_wins')
-});
+      expect(result.resolution[0].resolution).toBe('protection_wins');
+    });
 
     /**
- * 测试技能效果解决方案应用
- */
-it('应该正确应用技能效果解决方案', () =>  {
+     * 测试技能效果解决方案应用
+     */
+    it('应该正确应用技能效果解决方案', () => {
       const effects: SkillEffectConfig[] = [
         {
           id: 'protection-effect',
@@ -236,8 +230,9 @@ it('应该正确应用技能效果解决方案', () =>  {
           priority: 2,
           data: {
             target_user_id: 'target-1',
-            effect_type: 'protection' 
-} },
+            effect_type: 'protection'
+          }
+        },
         {
           id: 'elimination-effect',
           type: 'elimination',
@@ -245,8 +240,10 @@ it('应该正确应用技能效果解决方案', () =>  {
           data: {
             target_user_id: 'target-1',
             effect_type: 'elimination',
-            can_be_protected: true 
-} } ];
+            can_be_protected: true
+          }
+        }
+      ];
 
       const resolved = resolveSkillEffects(effects);
 
@@ -255,22 +252,24 @@ it('应该正确应用技能效果解决方案', () =>  {
     });
 
     /**
- * 测试数据库技能冲突检测
- */
-it('应该正确调用数据库技能冲突检测', async () =>  {
+     * 测试数据库技能冲突检测
+     */
+    it('应该正确调用数据库技能冲突检测', async () => {
       const mockConflictData = {
         conflicts_detected: 2,
         conflict_details: [
           {
             skill1: 'vigil',
             skill2: 'night_attack',
-            target: 'target-1' 
-} ] };
+            target: 'target-1'
+          }
+        ]
+      };
 
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockConflictData,
-        error: null 
-});
+        error: null
+      });
 
       const result = await EnhancedSkillService.detectSkillConflicts(
         'test-game-id',
@@ -281,32 +280,33 @@ it('应该正确调用数据库技能冲突检测', async () =>  {
       expect(supabase.rpc).toHaveBeenCalledWith('detect_skill_conflicts', {
         p_game_state_id: 'test-game-id',
         p_round_number: 1,
-        p_phase: 'night' 
-});
+        p_phase: 'night'
+      });
 
       expect(result.conflicts).toBe(2);
-      expect(result.details).toEqual(mockConflictData)
-});
+      expect(result.details).toEqual(mockConflictData);
+    });
 
     /**
- * 测试技能冲突检测错误处理
- */
-it('应该正确处理技能冲突检测错误', async () =>  {
+     * 测试技能冲突检测错误处理
+     */
+    it('应该正确处理技能冲突检测错误', async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: '数据库连接失败', code: 'CONNECTION_ERROR' 
-} });
+        error: { message: '数据库连接失败', code: 'CONNECTION_ERROR' }
+      });
 
       await expect(
         EnhancedSkillService.detectSkillConflicts('test-game-id', 1, 'night')
-      ).rejects.toThrow('冲突检测失败: 数据库连接失败')
-})
-});
+      ).rejects.toThrow('冲突检测失败: 数据库连接失败');
+    });
+  });
 
-  describe('投票结果处理集成测试', () => { /**
- * 测试投票会话创建
- */
-it('应该成功创建投票会话', async () =>  {
+  describe('投票结果处理集成测试', () => {
+    /**
+     * 测试投票会话创建
+     */
+    it('应该成功创建投票会话', async () => {
       const mockSession = {
         id: 'session-id',
         game_state_id: 'game-id',
@@ -315,44 +315,47 @@ it('应该成功创建投票会话', async () =>  {
         phase: 1,
         session_type: 'day_vote',
         status: 'active',
-        start_time: '2024-01-01T12:00:00Z'  
-};
+        start_time: '2024-01-01T12:00:00Z'
+      };
 
       vi.mocked(supabase.from).mockReturnValue({
         insert: vi.fn(() => ({
           select: vi.fn(() => ({
             single: vi.fn().mockResolvedValue({
               data: mockSession,
-              error: null 
-}) })) })) } as any);
+              error: null
+            })
+          }))
+        }))
+      } as any);
 
       const { result } = renderHook(() => useVotingSystem());
 
       await act(async () => {
-  const success = await result.current.createVotingSession(
+        const success = await result.current.createVotingSession(
           'game-id',
           'room-id',
           1,
           1,
           'day_vote'
         );
-        expect(success).toBe(true)
-})
-
-});
+        expect(success).toBe(true);
+      });
+    });
 
     /**
- * 测试投票功能
- */
-it('应该成功进行投票', async () => { const mockVote =  {
+     * 测试投票功能
+     */
+    it('应该成功进行投票', async () => {
+      const mockVote = {
         id: 'vote-id',
         voting_session_id: 'session-id',
         voter_id: 'voter-id',
         target_id: 'target-id',
         vote_time: '2024-01-01T12:00:00Z',
         is_valid: true,
-        vote_weight: 1  
-};
+        vote_weight: 1
+      };
 
       // 重新导入并设置 VotingService mock
       const { VotingService } = await import('@/services/votingService');
@@ -364,103 +367,101 @@ it('应该成功进行投票', async () => { const mockVote =  {
       act(() => {
         (result.current as any).currentSession = {
           id: 'session-id',
-          status: 'active' 
-}
-});
+          status: 'active'
+        };
+      });
 
       await act(async () => {
-  const success = await result.current.castVote('voter-id', 'target-id');
-        expect(success).toBe(true)
-})
-
-});
+        const success = await result.current.castVote('voter-id', 'target-id');
+        expect(success).toBe(true);
+      });
+    });
 
     /**
- * 测试投票结果计算
- */
-it('应该正确计算投票结果', async () =>  {
+     * 测试投票结果计算
+     */
+    it('应该正确计算投票结果', async () => {
       // 模拟数据库查询返回
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             order: vi.fn(() => ({
-              limit: vi.fn(() =>
-                Promise.resolve({
-                  data: [
-                    {
-                      id: 'session-id',
-                      game_state_id: 'test-game-id',
-                      status: 'active' 
-} ],
-                  error: null 
-})
-              ) })) })) })) } as any);
+              limit: vi.fn(() => Promise.resolve({
+                data: [{
+                  id: 'session-id',
+                  game_state_id: 'test-game-id',
+                  status: 'active'
+                }],
+                error: null
+              }))
+            }))
+          }))
+        }))
+      } as any);
 
       const { result } = renderHook(() => useVotingSystem('test-game-id'));
 
       // 等待初始化完成
-      await waitFor(
-        () => {
-  expect(result.current.loading).toBe(false)
-
-},
-        { timeout: 10000 
-}
-      );
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      }, { timeout: 10000 });
 
       // 直接测试计算结果功能
       const success = await result.current.calculateResults('session-id');
-
+      
       // 由于我们没有完整的投票数据，这里主要测试函数调用不会抛出错误
-      expect(typeof success).toBe('boolean')
-});
+      expect(typeof success).toBe('boolean');
+    });
 
     /**
- * 测试投票结果处理
- */
-it('应该正确处理投票结果', async () =>  {
+     * 测试投票结果处理
+     */
+    it('应该正确处理投票结果', async () => {
       const mockResults = [
         {
           id: 'result-1',
           result_type: 'eliminated',
           target_id: 'target-1',
-          processing_status: 'pending' 
-} ];
+          processing_status: 'pending'
+        }
+      ];
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
               data: mockResults,
-              error: null 
-}) })) })) } as any);
+              error: null
+            })
+          }))
+        }))
+      } as any);
 
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: null 
-});
+        error: null
+      });
 
       const { result } = renderHook(() => useVotingSystem());
 
       await act(async () => {
-  const success = await result.current.processEnhancedVotingResult(
+        const success = await result.current.processEnhancedVotingResult(
           'session-id',
           'room-id',
           'game-id'
         );
-        expect(success).toBe(true)
-
-});
+        expect(success).toBe(true);
+      });
 
       expect(supabase.rpc).toHaveBeenCalledWith('process_voting_result', {
-        p_voting_result_id: 'result-1' 
-})
-});
+        p_voting_result_id: 'result-1'
+      });
+    });
 
     /**
- * 测试投票统计功能 - 使用单独的测试函数
- */
-it('应该正确计算投票统计信息', () =>  {
+     * 测试投票统计功能 - 使用单独的测试函数
+     */
+    it('应该正确计算投票统计信息', () => {
       // 直接测试投票统计逻辑，而不依赖 hook 的内部状态
       const mockVotes = [
         {
@@ -471,8 +472,8 @@ it('应该正确计算投票统计信息', () =>  {
           vote_time: new Date().toISOString(),
           is_valid: true,
           vote_weight: 1,
-          created_at: new Date().toISOString() 
-},
+          created_at: new Date().toISOString()
+        },
         {
           id: 'vote-2',
           voting_session_id: 'test-session-id',
@@ -481,8 +482,8 @@ it('应该正确计算投票统计信息', () =>  {
           vote_time: new Date().toISOString(),
           is_valid: true,
           vote_weight: 1,
-          created_at: new Date().toISOString() 
-},
+          created_at: new Date().toISOString()
+        },
         {
           id: 'vote-3',
           voting_session_id: 'test-session-id',
@@ -491,49 +492,44 @@ it('应该正确计算投票统计信息', () =>  {
           vote_time: new Date().toISOString(),
           is_valid: true,
           vote_weight: 1,
-          created_at: new Date().toISOString() 
-} ];
+          created_at: new Date().toISOString()
+        }
+      ];
 
       // 直接测试投票统计逻辑
       const validVotes = mockVotes.filter(v => v.is_valid);
-      const abstentions = mockVotes.filter(
-        v => v.is_valid && !v.target_id
-      ).length;
-
+      const abstentions = mockVotes.filter(v => v.is_valid && !v.target_id).length;
+      
       // 按目标分组统计投票
-      const votesByTarget = validVotes.reduce(
-        (acc, vote) => {
-          if (vote.target_id) {
-            acc[vote.target_id] = (acc[vote.target_id] || 0) + vote.vote_weight
-}
-          return acc
-},
-        {} as Record<string, number>
-      );
+      const votesByTarget = validVotes.reduce((acc, vote) => {
+        if (vote.target_id) {
+          acc[vote.target_id] = (acc[vote.target_id] || 0) + vote.vote_weight;
+        }
+        return acc;
+      }, {} as Record<string, number>);
 
-      const summary = { totalVotes: validVotes.length,
+      const summary = {
+        totalVotes: validVotes.length,
         abstentions,
         votesByTarget,
-        hasVotes: validVotes.length > 0  
-};
+        hasVotes: validVotes.length > 0
+      };
 
       expect(summary.totalVotes).toBe(3);
       expect(summary.abstentions).toBe(1);
       expect(summary.votesByTarget['target-1']).toBe(2);
-      expect(summary.hasVotes).toBe(true)
-});
+      expect(summary.hasVotes).toBe(true);
+    });
 
     /**
- * 测试投票错误处理
- */
-it.skip('应该正确处理投票错误', async () =>  {
+     * 测试投票错误处理
+     */
+    it.skip('应该正确处理投票错误', async () => {
       // 导入 VotingService 模块
       const { VotingService } = await import('@/services/votingService');
-
+      
       // Mock VotingService.castVote 抛出错误
-      vi.mocked(VotingService.castVote).mockRejectedValue(
-        new Error('投票失败')
-      );
+      vi.mocked(VotingService.castVote).mockRejectedValue(new Error('投票失败'));
 
       const { result } = renderHook(() => useVotingSystem());
 
@@ -541,35 +537,35 @@ it.skip('应该正确处理投票错误', async () =>  {
       act(() => {
         (result.current as any).currentSession = {
           id: 'session-id',
-          status: 'active' 
-}
-});
+          status: 'active'
+        };
+      });
 
       await act(async () => {
-  const success = await result.current.castVote('voter-id', 'target-id');
-        expect(success).toBe(false)
-
-});
+        const success = await result.current.castVote('voter-id', 'target-id');
+        expect(success).toBe(false);
+      });
 
       expect(toast).toHaveBeenCalledWith({
         title: '投票失败',
         description: '请重试',
-        variant: 'destructive' 
-})
-})
-});
+        variant: 'destructive'
+      });
+    });
+  });
 
-  describe('技能冲突与投票结果交互测试', () => { /**
- * 测试投票淘汰后的技能冲突处理
- */
-it('应该在投票淘汰后正确处理技能冲突', async () =>  {
+  describe('技能冲突与投票结果交互测试', () => {
+    /**
+     * 测试投票淘汰后的技能冲突处理
+     */
+    it('应该在投票淘汰后正确处理技能冲突', async () => {
       // 模拟投票结果：某玩家被淘汰
       const mockVotingResult = {
         id: 'result-1',
         target_id: 'eliminated-player',
         result_type: 'eliminated',
-        processing_status: 'completed'  
-};
+        processing_status: 'completed'
+      };
 
       // 模拟技能冲突：被淘汰玩家的技能与其他技能冲突
       const mockConflictData = {
@@ -579,42 +575,43 @@ it('应该在投票淘汰后正确处理技能冲突', async () =>  {
             skill1: 'vigil',
             skill2: 'night_attack',
             target: 'eliminated-player',
-            affected_by_elimination: true 
-} ] };
+            affected_by_elimination: true
+          }
+        ]
+      };
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
               data: [mockVotingResult],
-              error: null 
-}) })) })) } as any);
+              error: null
+            })
+          }))
+        }))
+      } as any);
 
-      vi.mocked(supabase.rpc).mockImplementation(functionName => {
+      vi.mocked(supabase.rpc).mockImplementation((functionName) => {
         if (functionName === 'process_voting_result') {
-          return Promise.resolve({ data: null, error: null 
-})
-}
+          return Promise.resolve({ data: null, error: null });
+        }
         if (functionName === 'detect_skill_conflicts') {
-          return Promise.resolve({ data: mockConflictData, error: null 
-})
-}
-        return Promise.resolve({ data: null, error: null 
-})
-});
+          return Promise.resolve({ data: mockConflictData, error: null });
+        }
+        return Promise.resolve({ data: null, error: null });
+      });
 
       // 1. 处理投票结果
-      const { result: votingResult 
-} = renderHook(() => useVotingSystem());
-
+      const { result: votingResult } = renderHook(() => useVotingSystem());
+      
       await act(async () => {
-  const success = await votingResult.current.processEnhancedVotingResult(
+        const success = await votingResult.current.processEnhancedVotingResult(
           'session-id',
           'room-id',
           'game-id'
         );
-        expect(success).toBe(true)
-});
+        expect(success).toBe(true);
+      });
 
       // 2. 检测技能冲突
       const conflictResult = await EnhancedSkillService.detectSkillConflicts(
@@ -624,16 +621,13 @@ it('应该在投票淘汰后正确处理技能冲突', async () =>  {
       );
 
       expect(conflictResult.conflicts).toBe(1);
-      expect(
-        conflictResult.details.conflict_details[0].affected_by_elimination
-      ).toBe(true)
-
-});
+      expect(conflictResult.details.conflict_details[0].affected_by_elimination).toBe(true);
+    });
 
     /**
- * 测试技能冲突影响投票结果的场景
- */
-it('应该正确处理技能冲突影响投票结果的场景', async () =>  {
+     * 测试技能冲突影响投票结果的场景
+     */
+    it('应该正确处理技能冲突影响投票结果的场景', async () => {
       // 模拟场景：女巫使用解药救了被投票淘汰的玩家
       const mockSkillEffects: SkillEffectConfig[] = [
         {
@@ -642,37 +636,39 @@ it('应该正确处理技能冲突影响投票结果的场景', async () =>  {
           priority: 1,
           data: {
             target_user_id: 'voted-target',
-            effect_type: 'save_from_elimination' 
-} } ];
+            effect_type: 'save_from_elimination'
+          }
+        }
+      ];
 
-      const mockVotingResult = { id: 'result-1',
+      const mockVotingResult = {
+        id: 'result-1',
         target_id: 'voted-target',
         result_type: 'eliminated',
-        processing_status: 'pending'  
-};
+        processing_status: 'pending'
+      };
 
       // 检查技能效果是否能阻止投票淘汰
       const hasProtection = mockSkillEffects.some(
-        effect =>
-          effect.type === 'protection' &&
-          effect.data.target_user_id === 'voted-target' &&
-          effect.data.effect_type === 'save_from_elimination'
+        effect => effect.type === 'protection' && 
+        effect.data.target_user_id === 'voted-target' &&
+        effect.data.effect_type === 'save_from_elimination'
       );
 
       expect(hasProtection).toBe(true);
 
       // 如果有保护效果，投票结果应该被修改
       if (hasProtection) {
-        mockVotingResult.result_type = 'saved'
-}
+        mockVotingResult.result_type = 'saved';
+      }
 
-      expect(mockVotingResult.result_type).toBe('saved')
-});
+      expect(mockVotingResult.result_type).toBe('saved');
+    });
 
     /**
- * 测试并发技能冲突和投票处理
- */
-it.skip('应该正确处理并发的技能冲突和投票处理', async () =>  {
+     * 测试并发技能冲突和投票处理
+     */
+    it.skip('应该正确处理并发的技能冲突和投票处理', async () => {
       const promises = [];
 
       // 并发执行技能冲突检测
@@ -683,70 +679,58 @@ it.skip('应该正确处理并发的技能冲突和投票处理', async () =>  {
       // 并发执行投票结果处理
       const { result } = renderHook(() => useVotingSystem());
       promises.push(
-        result.current.processEnhancedVotingResult(
-          'session-id',
-          'room-id',
-          'game-id'
-        )
+        result.current.processEnhancedVotingResult('session-id', 'room-id', 'game-id')
       );
 
       // Mock 并发响应
-      vi.mocked(supabase.rpc).mockImplementation(functionName => {
+      vi.mocked(supabase.rpc).mockImplementation((functionName) => {
         if (functionName === 'detect_skill_conflicts') {
           return Promise.resolve({
-            data: { conflicts_detected: 0 
-},
-            error: null 
-})
-}
-        if (
-          functionName === 'calculate_voting_results' ||
-          functionName === 'process_voting_result'
-        ) {
+            data: { conflicts_detected: 0 },
+            error: null
+          });
+        }
+        if (functionName === 'calculate_voting_results' || functionName === 'process_voting_result') {
           return Promise.resolve({
-            data: { success: true 
-},
-            error: null 
-})
-}
-        return Promise.resolve({ data: null, error: null 
-})
-});
+            data: { success: true },
+            error: null
+          });
+        }
+        return Promise.resolve({ data: null, error: null });
+      });
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
-              data: [{ id: 'session-id', status: 'active' 
-}],
-              error: null 
-}) })) })) } as any);
+              data: [{ id: 'session-id', status: 'active' }],
+              error: null
+            })
+          }))
+        }))
+      } as any);
 
       const results = await Promise.all(promises);
 
-      expect(results[0]).toEqual({
-        conflicts: 0,
-        details: { conflicts_detected: 0 
-} });
-      expect(results[1]).toBe(true)
-})
-});
+      expect(results[0]).toEqual({ conflicts: 0, details: { conflicts_detected: 0 } });
+      expect(results[1]).toBe(true);
+    });
+  });
 
   describe('边界情况和错误处理测试', () => {
     /**
- * 测试空数据处理
- */
-it('应该正确处理空技能列表', () =>  {
-  const result = checkSkillConflicts([]);
+     * 测试空数据处理
+     */
+    it('应该正确处理空技能列表', () => {
+      const result = checkSkillConflicts([]);
       expect(result.conflicts).toBe(false);
-      expect(result.conflictPairs).toHaveLength(0)
-
-});
+      expect(result.conflictPairs).toHaveLength(0);
+    });
 
     /**
- * 测试单个技能处理
- */
-it('应该正确处理单个技能', () =>  {
+     * 测试单个技能处理
+     */
+    it('应该正确处理单个技能', () => {
       const singleSkill: SkillConfig[] = [
         {
           id: 'vigil',
@@ -755,54 +739,55 @@ it('应该正确处理单个技能', () =>  {
           priority: 2,
           conflictsWith: [],
           phaseRestrictions: [3],
-          usageLimit: { type: 'per_game', count: 1 
-},
+          usageLimit: { type: 'per_game', count: 1 },
           targetRequired: true,
-          description: '守卫技能' 
-} ];
+          description: '守卫技能'
+        }
+      ];
 
       const result = checkSkillConflicts(singleSkill);
-      expect(result.conflicts).toBe(false)
-});
+      expect(result.conflicts).toBe(false);
+    });
 
     /**
- * 测试网络错误处理
- */
-it('应该正确处理网络错误', async () =>  {
-  const networkError = new Error('Network error');
+     * 测试网络错误处理
+     */
+    it('应该正确处理网络错误', async () => {
+      const networkError = new Error('Network error');
       networkError.name = 'NetworkError';
-
+      
       vi.mocked(supabase.rpc).mockRejectedValue(networkError);
 
       await expect(
         EnhancedSkillService.detectSkillConflicts('game-id', 1, 'night')
-      ).rejects.toThrow('Network error')
-
-});
+      ).rejects.toThrow('Network error');
+    });
 
     /**
- * 测试数据格式错误处理
- */
-it('应该正确处理数据格式错误', async () =>  {
+     * 测试数据格式错误处理
+     */
+    it('应该正确处理数据格式错误', async () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
               data: 'invalid-data', // 错误的数据格式
-              error: null 
-}) })) })) } as any);
+              error: null
+            })
+          }))
+        }))
+      } as any);
 
       const { result } = renderHook(() => useVotingSystem());
 
       await act(async () => {
-  const success = await result.current.processEnhancedVotingResult(
+        const success = await result.current.processEnhancedVotingResult(
           'session-id',
           'room-id',
           'game-id'
         );
         expect(success).toBe(true); // 应该优雅处理错误数据
-      })
-})
-})
-
+      });
+    });
+  });
 });

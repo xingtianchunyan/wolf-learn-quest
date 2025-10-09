@@ -1,14 +1,14 @@
-import { AlertTriangle, Zap, Shield, Target, Clock   } from 'lucide-react';
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { createLogger   } from '@/lib/logger';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { Separator   } from '@/components/ui/separator';
-import { supabase   } from '@/integrations/supabase/client';
-import { toPhaseName   } from '@/utils/phaseUtils';
-import React, { useState, useEffect   } from 'react';
-import type { SkillConflictData, ConflictingSkill   } from '@/types/skill.types';
+import { AlertTriangle, Zap, Shield, Target, Clock  } from 'lucide-react';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { createLogger  } from '@/lib/logger';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { Separator  } from '@/components/ui/separator';
+import { supabase  } from '@/integrations/supabase/client';
+import { toPhaseName  } from '@/utils/phaseUtils';
+import React, { useState, useEffect  } from 'react';
+import type { SkillConflictData, ConflictingSkill  } from '@/types/skill.types';
 
 /**
 * 文件级注释：SkillConflictResolver 组件
@@ -35,7 +35,7 @@ interface SkillConflictResolverProps { gameStateId: string;
   currentRound: number;
   currentPhase: number;
   isJudge: boolean;
-  onConflictResolved?: (conflictId: string) => void
+  onConflictResolved?: (conflictId: string) => void;,
 }
 
 /**
@@ -52,35 +52,30 @@ interface SkillConflictResolverProps { gameStateId: string;
 * // 使用示例
 * <SkillConflictResolver { ...props } />
  */
-export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ( { gameStateId,
+export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({ gameStateId,
   currentRound,
   currentPhase,
   isJudge,
-  onConflictResolved }) => { const [conflicts, setConflicts] = useState<SkillConflict[]>([]);
+  onConflictResolved,
+}) => { const [conflicts, setConflicts] = useState<SkillConflict[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingConflictId, setProcessingConflictId] = useState<string | null>(null);
 
   // 获取技能冲突记录
   useEffect(() => {
-/**
- * fetchConflicts函数
- * 获取远程数据
- * @returns Promise<void>
- */
-const fetchConflicts = async () =>  {
+    const fetchConflicts = async () => {
       const { data, error  } = await supabase;
       .from('skill_conflicts')
       .select('*')
       .eq('game_state_id', gameStateId)
-      .order('created_at', { ascending: false  
-});
+      .order('created_at', { ascending: false  });
 
-      if (error) { logger.error('Error fetching skill conflicts:', error)
-} else if (data) { setConflicts(data as unknown as SkillConflict[])
+      if (error) { logger.error('Error fetching skill conflicts:', error);,
+} else if (data) { setConflicts(data as unknown as SkillConflict[]);,
 }
     };
 
-    fetchConflicts()
+    fetchConflicts();,
 }, [gameStateId]);
 
   // 实时监听冲突变化
@@ -91,104 +86,75 @@ const fetchConflicts = async () =>  {
       { event: '*',
         schema: 'public',
         table: 'skill_conflicts',
-        filter: `game_state_id=eq.${gameStateId 
-}` },
+        filter: `game_state_id=eq.${gameStateId }`,
+      },
       payload => { if (payload.new && typeof payload.new === 'object') {
           const newConflict = payload.new as SkillConflict;
           if (payload.eventType === 'INSERT') {
-            setConflicts(current => [newConflict, ...current])
+            setConflicts(current => [newConflict, ...current]);,
 } else if (payload.eventType === 'UPDATE') { setConflicts(current =>;
             current.map(c => c.id === newConflict.id ? newConflict : c);
-          )
+          );,
 }
-      } }
+      },
+}
   )
   .subscribe();
 
-  return () => {
-  supabase.removeChannel(channel)
-}
-
+  return () => { supabase.removeChannel(channel);,
+};,
 }, [gameStateId]);
 
 // 检测技能冲突
-/**
- * detectConflicts函数
- * detectConflicts函数的功能描述
- * @returns Promise<void>
- */
-const detectConflicts = async () =>  { setLoading(true);
+const detectConflicts = async () => { setLoading(true);
   try {
     const { data, error  } = await supabase.rpc('detect_skill_conflicts', { p_game_state_id: gameStateId,
       p_round_number: currentRound,
-      p_phase: toPhaseName(currentPhase as 1 | 2 | 3 | 4) 
+      p_phase: toPhaseName(currentPhase as 1 | 2 | 3 | 4),
 });
 
-    if (error) { logger.error('Error detecting conflicts:', error)
-} else if (data) { logger.debug('Conflicts detected:', data)
+    if (error) { logger.error('Error detecting conflicts:', error);,
+} else if (data) { logger.debug('Conflicts detected:', data);,
 }
-  } catch (error) { logger.error('Error detecting conflicts:', error)
-} finally { setLoading(false)
+  } catch (error) { logger.error('Error detecting conflicts:', error);,
+} finally { setLoading(false);,
 }
 };
 
 // 手动解决冲突
-/**
- * resolveConflict函数
- * resolveConflict函数的功能描述
- *
- * @param conflictId - conflictId参数
- * @param resolvedSkillId - resolvedSkillId参数
- * @returns Promise<void>
- */
-const resolveConflict = async (conflictId: string, resolvedSkillId: string) =>  { setProcessingConflictId(conflictId);
+const resolveConflict = async (conflictId: string, resolvedSkillId: string) => { setProcessingConflictId(conflictId);
   try {
     const { error  } = await supabase;
     .from('skill_conflicts')
     .update({ resolved_skill_id: resolvedSkillId,
-      resolution_rule: 'manual' 
+      resolution_rule: 'manual',
 })
     .eq('id', conflictId);
 
-    if (error) { logger.error('Error resolving conflict:', error)
-} else { onConflictResolved?.(conflictId)
+    if (error) { logger.error('Error resolving conflict:', error);,
+} else { onConflictResolved?.(conflictId);,
 }
-  } catch (error) { logger.error('Error resolving conflict:', error)
-} finally { setProcessingConflictId(null)
+  } catch (error) { logger.error('Error resolving conflict:', error);,
+} finally { setProcessingConflictId(null);,
 }
 };
 
 // 获取技能优先级颜色
-/**
- * getPriorityColor函数
- * 获取数据
- *
- * @param priority - priority参数
- * @returns void
- */
-const getPriorityColor = (priority: number) =>  {
-  if (priority <= 50) return 'text-red-400';
+const getPriorityColor = (priority: number) => { if (priority <= 50) return 'text-red-400';
   if (priority <= 100) return 'text-yellow-400';
-  return 'text-green-400'
-
+  return 'text-green-400';,
 };
 
 // 获取解决规则文本
-/**
- * getResolutionRuleText函数
- * 获取数据
- *
- * @param rule - rule参数
- * @returns void
- */
-const getResolutionRuleText = (rule: string) => { switch (rule)  {
+const getResolutionRuleText = (rule: string) => { switch (rule) {
     case 'priority':
     return '按优先级解决';
     case 'manual':
     return '手动解决';
     case 'random':
     return '随机解决';
-    default: return '未知规则'
+    default:
+    return '未知规则';,
 }
 };
 
@@ -228,8 +194,8 @@ return (;
   </CardTitle>
   </CardHeader>
   <CardContent className='space-y-4'>;
-  { /*  当前回合冲突  */
-} { currentPhaseConflicts.length > 0 ? (
+  { /*  当前回合冲突  */ }
+  { currentPhaseConflicts.length > 0 ? (
     <div className='space-y-3'>;
     <h4 className='text-sm font-medium text-yellow-400 flex items-center gap-2'>;
     <AlertTriangle className='w-4 h-4' />;
@@ -259,7 +225,7 @@ return (;
         className={ `p-2 rounded border transition-all ${
           skill.skill_use_id === conflict.resolved_skill_id;
           ? 'bg-green-500/20 border-green-500/50'
-          : 'bg-werewolf-dark/50 border-werewolf-purple/30' 
+          : 'bg-werewolf-dark/50 border-werewolf-purple/30',
 }`}
         >
         <div className='flex items-center justify-between'>;
@@ -271,8 +237,7 @@ return (;
         </div>
         <div className='flex items-center gap-2'>;
         <span className={ `text-xs ${getPriorityColor(skill.priority) }`}>;
-        优先级: { skill.priority 
-}
+        优先级: { skill.priority }
         </span>
         { skill.skill_use_id === conflict.resolved_skill_id && (;
           <Badge variant='default' className='text-xs'>;
@@ -289,8 +254,7 @@ return (;
           variant='outline';
           className='mt-2 w-full text-xs';
           >
-          { processingConflictId === conflict.id ? '处理中...' : '选择此技能' 
-}
+          { processingConflictId === conflict.id ? '处理中...' : '选择此技能' }
           </Button>
         )}
         </div>
@@ -334,16 +298,13 @@ return (;
       </span>
       <div className='flex items-center gap-2'>;
       <Badge variant='outline' className='text-xs'>;
-      { (Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills.length : 0) 
-} 个冲突
+      { (Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills.length : 0) } 个冲突
       </Badge>
       <Badge
-      variant={ conflict.resolved_skill_id ? 'default' : 'secondary' 
-}
+      variant={ conflict.resolved_skill_id ? 'default' : 'secondary' }
       className='text-xs';
       >
-      { conflict.resolved_skill_id ? '已解决' : '未解决' 
-}
+      { conflict.resolved_skill_id ? '已解决' : '未解决' }
       </Badge>
       </div>
       </div>
@@ -366,13 +327,7 @@ return (;
   </div>
   </CardContent>
   </Card>
-)
+);,
 };
 
-/**
- * SkillConflictResolver组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default SkillConflictResolver;

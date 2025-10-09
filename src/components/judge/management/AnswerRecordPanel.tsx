@@ -1,12 +1,12 @@
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { ClipboardList, ChevronLeft, ChevronRight   } from 'lucide-react';
-import { ScrollArea   } from '@/components/ui/scroll-area';
-import { useGameState   } from '@/hooks/useGameState';
-import { useJudgePage   } from '@/contexts/JudgePageContext';
-import { usePlayersRealtime   } from '@/hooks/usePlayersRealtime';
-import { useRoomAnswers   } from '@/hooks/useRoomAnswers';
-import React, { useState, useMemo   } from 'react';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { ClipboardList, ChevronLeft, ChevronRight  } from 'lucide-react';
+import { ScrollArea  } from '@/components/ui/scroll-area';
+import { useGameState  } from '@/hooks/useGameState';
+import { useJudgePage  } from '@/contexts/JudgePageContext';
+import { usePlayersRealtime  } from '@/hooks/usePlayersRealtime';
+import { useRoomAnswers  } from '@/hooks/useRoomAnswers';
+import React, { useState, useMemo  } from 'react';
 
 /**
 * 文件级注释：AnswerRecordPanel 组件
@@ -23,21 +23,22 @@ import React, { useState, useMemo   } from 'react';
 * @category judge
 * @filepath judge\management\AnswerRecordPanel.tsx
  */
-interface AnswerRecordPanelProps  { roomId: string
+
+interface AnswerRecordPanelProps { roomId: string;,
 }
 
 interface PlayerAnswer { playerId: string;
   playerName: string;
   selectedOption: number | null;
   responseTime: number | null;
-  isCorrect: boolean | null
+  isCorrect: boolean | null;,
 }
 
 interface AnswerRecord { round: number;
   phase: string;
   questionText: string;
   correctOption: number;
-  answers: PlayerAnswer[]
+  answers: PlayerAnswer[];,
 }
 
 /**
@@ -54,15 +55,14 @@ interface AnswerRecord { round: number;
 * // 使用示例
 * <AnswerRecordPanel { ...props } />
  */
-const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId  
-}) =>  { const [currentPage, setCurrentPage] = useState(0);
+const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId  }) => { const [currentPage, setCurrentPage] = useState(0);
   const { linkedQuestions  } = useJudgePage();
   const { players  } = usePlayersRealtime(roomId);
   const { gameState  } = useGameState(roomId);
   const { roomAnswers  } = useRoomAnswers(roomId);
 
   const answerRecords: AnswerRecord[] = useMemo(() => { if (!linkedQuestions || linkedQuestions.length === 0) {
-      return []
+      return [];,
 }
 
     return linkedQuestions.map((linkedQuestion, index) => { const { question_order, question  } = linkedQuestion;
@@ -80,15 +80,15 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId
             playerName: player.name,
             selectedOption: playerAnswerData.selected_option,
             responseTime: playerAnswerData.response_time,
-            isCorrect: playerAnswerData.is_correct 
-}
+            isCorrect: playerAnswerData.is_correct,
+           };,
 } else { return {
             playerId: player.id,
             playerName: player.name,
             selectedOption: null,
             responseTime: null,
-            isCorrect: null 
-}
+            isCorrect: null,
+           };,
 }
       });
 
@@ -96,73 +96,36 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId
         phase,
         questionText: question.question,
         correctOption: question.correct_option,
-        answers: answersForQuestion 
-}
-})
+        answers: answersForQuestion,
+       };,
+});,
 }, [linkedQuestions, players, roomAnswers]);
 
   const totalPages = Math.max(1, answerRecords.length);
   const currentRecord = answerRecords[currentPage];
 
-/**
- * handlePrevPage函数
- * 处理事件
- * @returns void
- */
-const handlePrevPage = () =>  {
-  setCurrentPage(prev => Math.max(0, prev - 1))
-
+  const handlePrevPage = () => { setCurrentPage(prev => Math.max(0, prev - 1));,
 };
 
-/**
- * handleNextPage函数
- * 处理事件
- * @returns void
- */
-const handleNextPage = () =>  {
-  setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))
-
+  const handleNextPage = () => { setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));,
 };
 
-/**
- * getOptionLabel函数
- * 获取数据
- *
- * @param index - index参数
- * @returns void
- */
-const getOptionLabel = (index: number) =>  {
-  return ['A', 'B', 'C', 'D'][index - 1]
-
+  const getOptionLabel = (index: number) => { return ['A', 'B', 'C', 'D'][index - 1];,
 };
 
-/**
- * formatTime函数
- * 格式化数据
- *
- * @param seconds - seconds参数
- * @returns void
- */
-const formatTime = (seconds: number) => { if (typeof seconds !== 'number' || seconds < 0)  {
-      return '00: 00'
+  const formatTime = (seconds: number) => { if (typeof seconds !== 'number' || seconds < 0) {
+      return '00:00';,
 }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${ mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`
+    return `${ mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`;,
 };
 
-/**
- * getStatusMessage函数
- * 获取数据
- * @returns void
- */
-const getStatusMessage = () =>  {
-  if (!gameState) return '游戏尚未开始';
+  const getStatusMessage = () => { if (!gameState) return '游戏尚未开始';
     if (gameState.status === 'waiting') return '游戏尚未开始';
     if (!linkedQuestions || linkedQuestions.length === 0) return '请先在准备阶段链接题目';
     if (answerRecords.length === 0) return '暂无答题记录';
-    return null
-
+    return null;,
 };
 
   const statusMessage = getStatusMessage();
@@ -189,8 +152,7 @@ const getStatusMessage = () =>  {
     <ChevronLeft className='h-4 w-4' />;
     </Button>
     <span className='text-sm text-gray-400'>;
-    { answerRecords.length > 0 ? currentPage + 1 : 0 
-} / { totalPages }
+    { answerRecords.length > 0 ? currentPage + 1 : 0 } / { totalPages }
     </span>
     <Button
     variant='outline';
@@ -219,8 +181,7 @@ const getStatusMessage = () =>  {
       第{ currentRecord.round }轮 - { currentRecord.phase }阶段
       </h3>
       <span className='text-sm text-gray-400'>;
-      正确答案: { getOptionLabel(currentRecord.correctOption) 
-}
+      正确答案: { getOptionLabel(currentRecord.correctOption) }
       </span>
       </div>
       <p className='text-sm text-gray-300'>{ currentRecord.questionText }</p>;
@@ -244,7 +205,7 @@ const getStatusMessage = () =>  {
           <span className={`px-2 py-1 rounded text-xs font-semibold ${
             answer.isCorrect
             ? 'bg-green-500/20 text-green-400'
-            : 'bg-red-500/20 text-red-400' 
+            : 'bg-red-500/20 text-red-400',
 }`}>
           { getOptionLabel(answer.selectedOption) }
           </span>
@@ -254,8 +215,7 @@ const getStatusMessage = () =>  {
         { answer.isCorrect !== null ? (;
           <>
           <span className='text-sm text-gray-400'>;
-          用时: {formatTime(answer.responseTime!) 
-}
+          用时: {formatTime(answer.responseTime!) }
           </span>
           { answer.isCorrect ? (
             <span className='text-green-400'>✓</span>;
@@ -265,7 +225,7 @@ const getStatusMessage = () =>  {
           </>
         ) : (<span className='text-sm'>;
           { (() => {
-  const questionRound = currentRecord.round;
+            const questionRound = currentRecord.round;
             const questionPhaseNum = currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
             const cr = gameState?.currentRound ?? 1;
             const cp = gameState?.currentPhase ?? 1;
@@ -275,7 +235,7 @@ const getStatusMessage = () =>  {
               <span className='text-red-500'>超时未答</span>;
             ) : (
               <span className='text-gray-500'>等待答题...</span>;
-            )
+            );,
 })()}
           </span>
         )}
@@ -294,14 +254,7 @@ const getStatusMessage = () =>  {
     )}
     </CardContent>
     </Card>
-  )
-
+  );,
 };
 
-/**
- * AnswerRecordPanel组件
- * AnswerRecordPanel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default AnswerRecordPanel;

@@ -11,6 +11,7 @@
 
 ## 循环依赖
 
+
 ### 循环 1
 
 ```
@@ -22,6 +23,7 @@ integrations\supabase\client.ts → integrations\supabase\client.ts → integrat
 ```
 services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → services\errorMonitoringService.ts → services\errorMonitoringService.ts
 ```
+
 
 ## 未使用的依赖
 
@@ -61,55 +63,69 @@ services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → ser
 
 ## 缺失的依赖
 
+
 - **文件**: components\common\hoc\withErrorBoundary.tsx
 - **导入**: @/types/skillSystem.types
 - **解析路径**: 无法解析
+
 
 - **文件**: components\common\hoc\withPermission.tsx
 - **导入**: @/types/skillSystem.types
 - **解析路径**: 无法解析
 
+
 - **文件**: components\game\optimized\OptimizedEnhancedSkillPanel.tsx
 - **导入**: @/data/skillConfigs
 - **解析路径**: 无法解析
+
 
 - **文件**: components\game\panels\EnhancedSkillPanel.tsx
 - **导入**: @/data/skillConfigs
 - **解析路径**: 无法解析
 
+
 - **文件**: services\automatedSecurityService.ts
 - **导入**: @/config/security.config
 - **解析路径**: 无法解析
+
 
 - **文件**: services\enhancedSkillService.ts
 - **导入**: ./skillSystemValidation
 - **解析路径**: 无法解析
 
+
 - **文件**: services\enhancedSkillService.ts
 - **导入**: ../types/skillSystem.types
 - **解析路径**: 无法解析
+
 
 - **文件**: utils\common\dataValidation.ts
 - **导入**: @/types/skillSystem.types
 - **解析路径**: 无法解析
 
+
 - **文件**: utils\common\errorHandling.ts
 - **导入**: @/types/skillSystem.types
 - **解析路径**: 无法解析
+
 
 - **文件**: utils\common\skillValidation.ts
 - **导入**: @/types/skillSystem.types
 - **解析路径**: 无法解析
 
+
 - **文件**: utils\comprehensiveSecurityAudit.ts
 - **导入**: @/config/security.config
 - **解析路径**: 无法解析
+
 
 - **文件**: utils\skillSystemValidation.ts
 - **导入**: ../types/skillSystem.types
 - **解析路径**: 无法解析
 
+
 ## 依赖最多的文件
+
 
 1. **pages\GamePage.tsx** (21 个依赖)
 
@@ -131,7 +147,9 @@ services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → ser
 
 10. **components\game\panels\StudentSystemPanel.tsx** (11 个依赖)
 
+
 ## 被使用最多的文件
+
 
 1. **lib\logger.ts** (被 97 个文件使用)
 
@@ -153,7 +171,9 @@ services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → ser
 
 10. **utils\masterErrorHandler.ts** (被 17 个文件使用)
 
+
 ## 文件复杂度分析
+
 
 1. **lib\logger.ts**
    - 类型: typescript
@@ -237,114 +257,104 @@ services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → ser
    - 复杂度: 83.49
 
 10. **hooks\useGameState.ts**
-
-- 类型: typescript
-- 大小: 16.65 KB
-- 本地导入: 3
-- 外部导入: 1
-- 依赖数: 3
-- 被依赖数: 17
-- 复杂度: 74.05
+   - 类型: typescript
+   - 大小: 16.65 KB
+   - 本地导入: 3
+   - 外部导入: 1
+   - 依赖数: 3
+   - 被依赖数: 17
+   - 复杂度: 74.05
 
 11. **providers\AuthProvider.tsx**
-
-- 类型: react-component
-- 大小: 4.76 KB
-- 本地导入: 2
-- 外部导入: 2
-- 依赖数: 2
-- 被依赖数: 21
-- 复杂度: 71.87
+   - 类型: react-component
+   - 大小: 4.76 KB
+   - 本地导入: 2
+   - 外部导入: 2
+   - 依赖数: 2
+   - 被依赖数: 21
+   - 复杂度: 71.87
 
 12. **utils\unifiedErrorHandler.ts**
-
-- 类型: typescript
-- 大小: 22.78 KB
-- 本地导入: 3
-- 外部导入: 0
-- 依赖数: 3
-- 被依赖数: 13
-- 复杂度: 68.33
+   - 类型: typescript
+   - 大小: 22.78 KB
+   - 本地导入: 3
+   - 外部导入: 0
+   - 依赖数: 3
+   - 被依赖数: 13
+   - 复杂度: 68.33
 
 13. **utils\enhancedInputValidation.ts**
-
-- 类型: typescript
-- 大小: 44.19 KB
-- 本地导入: 2
-- 外部导入: 2
-- 依赖数: 2
-- 被依赖数: 6
-- 复杂度: 67.25
+   - 类型: typescript
+   - 大小: 44.19 KB
+   - 本地导入: 2
+   - 外部导入: 2
+   - 依赖数: 2
+   - 被依赖数: 6
+   - 复杂度: 67.25
 
 14. **components\ui\scroll-area.tsx**
-
-- 类型: react-component
-- 大小: 2.00 KB
-- 本地导入: 1
-- 外部导入: 2
-- 依赖数: 1
-- 被依赖数: 20
-- 复杂度: 64.05
+   - 类型: react-component
+   - 大小: 2.00 KB
+   - 本地导入: 1
+   - 外部导入: 2
+   - 依赖数: 1
+   - 被依赖数: 20
+   - 复杂度: 64.05
 
 15. **pages\GameRoom.tsx**
-
-- 类型: react-component
-- 大小: 23.17 KB
-- 本地导入: 17
-- 外部导入: 2
-- 依赖数: 17
-- 被依赖数: 1
-- 复杂度: 60.73
+   - 类型: react-component
+   - 大小: 23.17 KB
+   - 本地导入: 17
+   - 外部导入: 2
+   - 依赖数: 17
+   - 被依赖数: 1
+   - 复杂度: 60.73
 
 16. **components\game\optimized\OptimizedEnhancedSkillPanel.tsx**
-
-- 类型: react-component
-- 大小: 27.15 KB
-- 本地导入: 15
-- 外部导入: 2
-- 依赖数: 15
-- 被依赖数: 0
-- 复杂度: 57.80
+   - 类型: react-component
+   - 大小: 27.15 KB
+   - 本地导入: 15
+   - 外部导入: 2
+   - 依赖数: 15
+   - 被依赖数: 0
+   - 复杂度: 57.80
 
 17. **utils\enhancedPermissionSystem.ts**
-
-- 类型: typescript
-- 大小: 31.86 KB
-- 本地导入: 2
-- 外部导入: 0
-- 依赖数: 2
-- 被依赖数: 7
-- 复杂度: 57.62
+   - 类型: typescript
+   - 大小: 31.86 KB
+   - 本地导入: 2
+   - 外部导入: 0
+   - 依赖数: 2
+   - 被依赖数: 7
+   - 复杂度: 57.62
 
 18. **utils\comprehensiveSecurityAudit.ts**
-
-- 类型: typescript
-- 大小: 41.05 KB
-- 本地导入: 4
-- 外部导入: 0
-- 依赖数: 4
-- 被依赖数: 2
-- 复杂度: 56.03
+   - 类型: typescript
+   - 大小: 41.05 KB
+   - 本地导入: 4
+   - 外部导入: 0
+   - 依赖数: 4
+   - 被依赖数: 2
+   - 复杂度: 56.03
 
 19. **pages\GamePage.tsx**
-
-- 类型: react-component
-- 大小: 10.74 KB
-- 本地导入: 21
-- 外部导入: 2
-- 依赖数: 21
-- 被依赖数: 1
-- 复杂度: 55.99
+   - 类型: react-component
+   - 大小: 10.74 KB
+   - 本地导入: 21
+   - 外部导入: 2
+   - 依赖数: 21
+   - 被依赖数: 1
+   - 复杂度: 55.99
 
 20. **utils\automatedSecurityChecker.ts**
+   - 类型: typescript
+   - 大小: 41.63 KB
+   - 本地导入: 5
+   - 外部导入: 0
+   - 依赖数: 5
+   - 被依赖数: 1
+   - 复杂度: 55.63
 
-- 类型: typescript
-- 大小: 41.63 KB
-- 本地导入: 5
-- 外部导入: 0
-- 依赖数: 5
-- 被依赖数: 1
-- 复杂度: 55.63
 
 ## 建议
 
@@ -354,17 +364,18 @@ services\errorMonitoringService.ts → utils\automatedSecurityChecker.ts → ser
 - 考虑提取公共模块
 - 使用依赖注入模式
 
+
 ### 依赖优化
 
 - 移除未使用的依赖包
 - 定期清理package.json
 
-### 架构改进
 
+### 架构改进
 - 考虑将高复杂度文件拆分
 - 减少文件间的耦合度
 - 建立清晰的模块边界
 
 ---
 
-_报告由依赖分析工具生成_
+*报告由依赖分析工具生成*

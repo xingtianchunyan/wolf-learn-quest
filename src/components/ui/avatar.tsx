@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as AvatarPrimitive from '@radix-ui/react-avatar'
 import * as React from 'react'
 
@@ -46,12 +46,6 @@ React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
-/**
- * AvatarImage组件
- * AvatarImage组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const AvatarImage = React.forwardRef<;
 React.ElementRef<typeof AvatarPrimitive.Image>,
 React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
@@ -64,12 +58,6 @@ React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 ))
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
-/**
- * AvatarFallback组件
- * AvatarFallback组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const AvatarFallback = React.forwardRef<;
 React.ElementRef<typeof AvatarPrimitive.Fallback>,
 React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>

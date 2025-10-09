@@ -1,15 +1,16 @@
-import {
-  enhancedPermissionSystem, securityAuditService, SecurityEventType   } from '@/services/securityAuditService';
-import { supabase   } from '@/integrations/supabase/client';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useParams   } from 'react-router-dom';
-import React, { createContext, useContext, useEffect, useState, ReactNode   } from 'react';
+import { enhancedPermissionSystem,
+import { securityAuditService, SecurityEventType  } from '@/services/securityAuditService';
+import { supabase  } from '@/integrations/supabase/client';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useParams  } from 'react-router-dom';
+import React, { createContext, useContext, useEffect, useState, ReactNode  } from 'react';
 
 // 新增：从路由参数自动解析 roomId，避免未传递 roomId 时权限判断失效
 // 新增：集成增强的安全系统
   type Permission,
   type Role,
-  type PermissionContext as SecurityPermissionContext  } from '@/utils/enhancedPermissionSystem';
+  type PermissionContext as SecurityPermissionContext,
+} from '@/utils/enhancedPermissionSystem';
 
 export interface PermissionState { isJudge: boolean;
   isRoomParticipant: boolean;
@@ -17,27 +18,27 @@ export interface PermissionState { isJudge: boolean;
   canUseSkill: boolean;
   canAnswerQuestions: boolean;
   canChat: boolean;
-  loading: boolean
+  loading: boolean;,
 }
 
 interface PermissionContextType extends PermissionState { refreshPermissions: () => Promise<void>;
   requireAuth: () => boolean;
   // 新增：增强的权限检查方法
   checkEnhancedPermission: (permission: Permission, context?: Partial<SecurityPermissionContext>) => Promise<boolean>;
-  checkMultiplePermissions: (permissions: Permission[], context?: Partial<SecurityPermissionContext>) => Promise<Record<Permission, boolean>>
+  checkMultiplePermissions: (permissions: Permission[], context?: Partial<SecurityPermissionContext>) => Promise<Record<Permission, boolean>>;,
 }
 
 const PermissionContext = createContext<PermissionContextType | undefined>(undefined);
 
 export const usePermissions = (roomId?: string) => { const context = useContext(PermissionContext);
   if (!context) {
-    throw new Error('usePermissions must be used within a PermissionProvider')
+    throw new Error('usePermissions must be used within a PermissionProvider');,
 }
-  return context
+  return context;,
 };
 
 interface PermissionProviderProps { children: ReactNode;
-  roomId?: string
+  roomId?: string;,
 }
 
 export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children, roomId  }) => { const { currentUser, isLoggedIn, initializing, requireAuth  } = useAuth();
@@ -51,7 +52,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     canUseSkill: false,
     canAnswerQuestions: false,
     canChat: false,
-    loading: true 
+    loading: true,
 });
 
   const checkPermissions = async () => { if (!effectiveRoomId || !currentUser?.id || !isLoggedIn) {
@@ -62,13 +63,12 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         canUseSkill: false,
         canAnswerQuestions: false,
         canChat: false,
-        loading: false 
+        loading: false,
 });
-      return
+      return;,
 }
 
-    setPermissions(prev => ({ ...prev, loading: true  
-}));
+    setPermissions(prev => ({ ...prev, loading: true  }));
 
     try { // 记录权限检查开始
       await securityAuditService.recordSecurityEvent(SecurityEventType.PERMISSION_GRANTED, {
@@ -76,9 +76,9 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         description: '开始权限检查',
         metadata: {
           roomId: effectiveRoomId,
-          action: 'permission_check_start' 
+          action: 'permission_check_start',
 },
-        source: 'permission_context' 
+        source: 'permission_context',
 });
 
       // 并行查询房间信息、玩家状态、角色状态、游戏状态
@@ -86,7 +86,8 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         supabase.from('rooms').select('judge_user_id').eq('id', effectiveRoomId).single(),
         supabase.from('room_players').select('id').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
         supabase.from('role_states').select('role_status, status_effects').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
-        supabase.from('game_states').select('current_phase, status').eq('room_id', effectiveRoomId).single() ]);
+        supabase.from('game_states').select('current_phase, status').eq('room_id', effectiveRoomId).single(),
+]);
 
       const isJudge = roomData.data?.judge_user_id === currentUser.id;
       const isRoomParticipant = !!playerData.data || isJudge;
@@ -108,14 +109,16 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
           roleStatus,
           currentPhase,
           gameStatus,
-          statusEffects }
+          statusEffects,
+}
       };
 
       // 使用增强的权限系统检查核心权限
       const [votePermission, skillPermission, chatPermission] = await Promise.all([;
         enhancedPermissionSystem.checkPermission(Permission.VOTE, securityContext),
         enhancedPermissionSystem.checkPermission(Permission.USE_SKILL, securityContext),
-        enhancedPermissionSystem.checkPermission(Permission.VIEW_GAME, securityContext) ]);
+        enhancedPermissionSystem.checkPermission(Permission.VIEW_GAME, securityContext),
+]);
 
       // 基本权限从角色状态效果中获取 (处理JSONB类型)
       const effects = statusEffects as any || {};
@@ -130,7 +133,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         canUseSkill,
         canAnswerQuestions,
         canChat,
-        loading: false 
+        loading: false,
 });
 
       // 记录权限检查完成
@@ -144,11 +147,12 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
             canVote,
             canUseSkill,
             canAnswerQuestions,
-            canChat },
-          action: 'permission_check_complete' 
+            canChat,
 },
-        source: 'permission_context' 
-})
+          action: 'permission_check_complete',
+},
+        source: 'permission_context',
+});,
 } catch (error) { console.error('Error checking permissions:', error);
 
       // 记录权限检查错误
@@ -158,9 +162,9 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         metadata: {
           roomId: effectiveRoomId,
           error: error instanceof Error ? error.message : 'Unknown error',
-          action: 'permission_check_error' 
+          action: 'permission_check_error',
 },
-        source: 'permission_context' 
+        source: 'permission_context',
 });
 
       setPermissions({ isJudge: false,
@@ -169,13 +173,13 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         canUseSkill: false,
         canAnswerQuestions: false,
         canChat: false,
-        loading: false 
-})
+        loading: false,
+});,
 }
   };
 
   useEffect(() => { if (!initializing) {
-      checkPermissions()
+      checkPermissions();,
 }
   }, [effectiveRoomId, currentUser?.id, isLoggedIn, initializing]);
 
@@ -184,27 +188,16 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
 
     const channel = supabase;
     .channel(`permissions_${effectiveRoomId }_${ currentUser.id }`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'role_states', filter: `room_id=eq.${effectiveRoomId 
-}` }, () => {
-  checkPermissions()
-
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'role_states', filter: `room_id=eq.${effectiveRoomId }` }, () => { checkPermissions();,
 })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_states', filter: `room_id=eq.${effectiveRoomId 
-}` }, () => {
-  checkPermissions()
-
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_states', filter: `room_id=eq.${effectiveRoomId }` }, () => { checkPermissions();,
 })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${effectiveRoomId 
-}` }, () => {
-  checkPermissions()
-
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${effectiveRoomId }` }, () => { checkPermissions();,
 })
     .subscribe();
 
-    return () => {
-  supabase.removeChannel(channel)
-}
-
+    return () => { supabase.removeChannel(channel);,
+};,
 }, [effectiveRoomId, currentUser?.id]);
 
   // 新增：增强的权限检查方法
@@ -217,12 +210,13 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         userId: currentUser?.id,
         roomId: effectiveRoomId,
         gameId: effectiveRoomId,
-        ...context  };
+        ...context,
+};
 
       const result = await enhancedPermissionSystem.checkPermission(permission, securityContext);
-      return result.granted
+      return result.granted;,
 } catch (error) { console.error('Enhanced permission check failed:', error);
-      return false
+      return false;,
 }
   };
 
@@ -235,34 +229,34 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         userId: currentUser?.id,
         roomId: effectiveRoomId,
         gameId: effectiveRoomId,
-        ...context  };
+        ...context,
+};
 
       const results = await enhancedPermissionSystem.checkMultiplePermissions(permissions, securityContext);
       const booleanResults: Record<Permission, boolean> = {} as any;
 
-      for (const [perm, result] of Object.entries(results)) { booleanResults[perm as Permission] = result.granted
+      for (const [perm, result] of Object.entries(results)) { booleanResults[perm as Permission] = result.granted;,
 }
 
-      return booleanResults
+      return booleanResults;,
 } catch (error) { console.error('Multiple permissions check failed:', error);
       const errorResults: Record<Permission, boolean> = { } as any;
-      permissions.forEach(perm => {
-  errorResults[perm] = false
+      permissions.forEach(perm => { errorResults[perm] = false;,
 });
-      return errorResults
+      return errorResults;,
 }
-  
-};
+  };
 
   const value: PermissionContextType = { ...permissions,
     refreshPermissions: checkPermissions,
     requireAuth,
     checkEnhancedPermission,
-    checkMultiplePermissions  };
+    checkMultiplePermissions,
+};
 
   return (;
     <PermissionContext.Provider value={ value }>;
     { children }
     </PermissionContext.Provider>
-  )
+  );,
 };

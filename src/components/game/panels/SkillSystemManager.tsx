@@ -1,14 +1,14 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { devLog   } from '@/lib/debugUtils';
-import { Settings, Play, Trash2, RefreshCw   } from 'lucide-react';
-import { supabase   } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger   } from '@/components/ui/tabs';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import { useSkillEffectAutoProcessor   } from '@/hooks/useSkillEffectAutoProcessor';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { devLog  } from '@/lib/debugUtils';
+import { Settings, Play, Trash2, RefreshCw  } from 'lucide-react';
+import { supabase  } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger  } from '@/components/ui/tabs';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import { useSkillEffectAutoProcessor  } from '@/hooks/useSkillEffectAutoProcessor';
 import React from 'react';
-import type { Tables   } from '@/integrations/supabase/types';
+import type { Tables  } from '@/integrations/supabase/types';
 import SkillEffectsDisplay from '../displays/SkillEffectsDisplay';
 import SkillUsePanel from './SkillUsePanel';
 
@@ -27,15 +27,15 @@ import SkillUsePanel from './SkillUsePanel';
 * @category game
 * @filepath game\panels\SkillSystemManager.tsx
  */
-interface SkillSystemManagerProps  { roomId: string;
+
+interface SkillSystemManagerProps { roomId: string;
   gameStateId: string;
   userId: string;
   isJudge: boolean;
   currentPhase: number;
   roleState: Tables<'role_states'> | null;
   roleDesign: Tables<'role_design'> | null;
-  players: Array<{ userId: string; name: string; roleStatus: number  
-}>
+  players: Array<{ userId: string; name: string; roleStatus: number  }>;,
 }
 
 /**
@@ -52,52 +52,45 @@ interface SkillSystemManagerProps  { roomId: string;
 * // 使用示例
 * <SkillSystemManager { ...props } />
  */
-const SkillSystemManager: React.FC<SkillSystemManagerProps> = ( { roomId,
+const SkillSystemManager: React.FC<SkillSystemManagerProps> = ({ roomId,
   gameStateId,
   userId,
   isJudge,
   currentPhase,
   roleState,
   roleDesign,
-  players }) => { const {
+  players,
+}) => { const {
     skillUses,
     skillEffectsQueue,
     skillTargets,
-    loading } = useEnhancedSkillSystem(roomId, gameStateId, userId);
+    loading,
+} = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 自动技能效果处理
   const { stats: processorStats,
     isProcessing,
     manualProcess,
     startAutoProcess,
-    stopAutoProcess } = useSkillEffectAutoProcessor(gameStateId, currentPhase, isJudge);
+    stopAutoProcess,
+} = useSkillEffectAutoProcessor(gameStateId, currentPhase, isJudge);
 
-/**
- * handleProcessEffects函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleProcessEffects = async () => { try  {
+  const handleProcessEffects = async () => { try {
       const processed = await manualProcess();
-      devLog.info(`处理了 ${processed } 个技能效果`, { processed  })
-} catch (error) { devLog.error('处理技能效果失败', error)
+      devLog.info(`处理了 ${processed } 个技能效果`, { processed  });,
+} catch (error) { devLog.error('处理技能效果失败', error);,
 }
   };
 
-/**
- * handleCleanupEffects函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleCleanupEffects = async () => { try  {
+  const handleCleanupEffects = async () => { try {
       const { error  } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
 
       if (error) { devLog.error('清理过期效果失败', error);
-        return
+        return;,
 }
 
-      devLog.info('成功清理过期技能效果')
-} catch (error) { devLog.error('清理过期效果异常', error)
+      devLog.info('成功清理过期技能效果');,
+} catch (error) { devLog.error('清理过期效果异常', error);,
 }
   };
 
@@ -105,7 +98,7 @@ const handleCleanupEffects = async () => { try  {
   const stats = { totalSkillUses: skillUses.length,
     queuedEffects: skillEffectsQueue.filter(e => e.status === 'queued').length,
     activeEffects: skillTargets.filter(t => t.is_active).length,
-    processingEffects: skillEffectsQueue.filter(e => e.status === 'processing').length
+    processingEffects: skillEffectsQueue.filter(e => e.status === 'processing').length;,
 };
 
   return (;
@@ -138,25 +131,20 @@ const handleCleanupEffects = async () => { try  {
     </div>
     </div>
 
-    { /*  法官控制面板  */
-} { isJudge && (
+    { /*  法官控制面板  */ }
+    { isJudge && (
       <div className='mt-4 pt-4 border-t space-y-3'>;
       {/*  自动处理状态  */ }
       <div className='flex items-center justify-between'>;
       <div className='text-sm'>;
       <span className='font-medium'>自动处理状态: </span>;
-      <span className={ processorStats.isRunning ? 'text-green-400' : 'text-yellow-400' 
-}>;
-      { processorStats.isRunning ? '运行中' : '已停止' 
-}
+      <span className={ processorStats.isRunning ? 'text-green-400' : 'text-yellow-400' }>;
+      { processorStats.isRunning ? '运行中' : '已停止' }
       </span>
       { isProcessing && <span className='text-blue-400 ml-2'>处理中...</span> }
       </div>
       <div className='text-xs text-muted-foreground'>;
-      已处理: { processorStats.totalProcessed 
-} | 成功: { processorStats.successCount 
-} | 失败: { processorStats.failureCount 
-}
+      已处理: { processorStats.totalProcessed } | 成功: { processorStats.successCount } | 失败: { processorStats.failureCount }
       </div>
       </div>
 
@@ -177,14 +165,11 @@ const handleCleanupEffects = async () => { try  {
       </Button>
 
       <Button
-      onClick={ processorStats.isRunning ? stopAutoProcess : startAutoProcess 
-}
-      variant={ processorStats.isRunning ? 'destructive' : 'outline' 
-}
+      onClick={ processorStats.isRunning ? stopAutoProcess : startAutoProcess }
+      variant={ processorStats.isRunning ? 'destructive' : 'outline' }
       size='sm';
       >
-      { processorStats.isRunning ? '停止自动处理' : '启动自动处理' 
-}
+      { processorStats.isRunning ? '停止自动处理' : '启动自动处理' }
       </Button>
 
       <Button
@@ -241,13 +226,7 @@ const handleCleanupEffects = async () => { try  {
     </TabsContent>
     </Tabs>
     </div>
-  )
+  );,
 };
 
-/**
- * SkillSystemManager组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default SkillSystemManager;

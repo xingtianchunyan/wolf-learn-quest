@@ -1,5 +1,5 @@
-import { Check, ChevronRight, Circle   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
+import { Check, ChevronRight, Circle  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import * as React from 'react'
 
@@ -21,55 +21,19 @@ import * as React from 'react'
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
-/**
- * DropdownMenuTrigger组件
- * DropdownMenuTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
-/**
- * DropdownMenuGroup组件
- * DropdownMenuGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
-/**
- * DropdownMenuPortal组件
- * DropdownMenuPortal组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 
-/**
- * DropdownMenuSub组件
- * DropdownMenuSub组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 
-/**
- * DropdownMenuRadioGroup组件
- * DropdownMenuRadioGroup组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
-/**
- * DropdownMenuSubTrigger组件
- * DropdownMenuSubTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuSubTrigger = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
-React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean,
 }
 >(({ className, inset, children, ...props  }, ref) => (;
   <DropdownMenuPrimitive.SubTrigger
@@ -88,12 +52,6 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & { inse
 DropdownMenuSubTrigger.displayName =;
 DropdownMenuPrimitive.SubTrigger.displayName
 
-/**
- * DropdownMenuSubContent组件
- * DropdownMenuSubContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuSubContent = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
 React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
@@ -110,12 +68,6 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
 DropdownMenuSubContent.displayName =;
 DropdownMenuPrimitive.SubContent.displayName
 
-/**
- * DropdownMenuContent组件
- * DropdownMenuContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuContent = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
@@ -134,15 +86,9 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 ))
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
-/**
- * DropdownMenuItem组件
- * DropdownMenuItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuItem = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <DropdownMenuPrimitive.Item
@@ -157,12 +103,6 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { inset?: bo
 ))
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 
-/**
- * DropdownMenuCheckboxItem组件
- * DropdownMenuCheckboxItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuCheckboxItem = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
 React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
@@ -187,12 +127,6 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
 DropdownMenuCheckboxItem.displayName =;
 DropdownMenuPrimitive.CheckboxItem.displayName
 
-/**
- * DropdownMenuRadioItem组件
- * DropdownMenuRadioItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuRadioItem = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
 React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
@@ -215,15 +149,9 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
 ))
 DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
 
-/**
- * DropdownMenuLabel组件
- * DropdownMenuLabel组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuLabel = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.Label>,
-React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & { inset?: boolean 
+React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & { inset?: boolean,
 }
 >(({ className, inset, ...props  }, ref) => (;
   <DropdownMenuPrimitive.Label
@@ -238,12 +166,6 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & { inset?: b
 ))
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
-/**
- * DropdownMenuSeparator组件
- * DropdownMenuSeparator组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DropdownMenuSeparator = React.forwardRef<;
 React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
 React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
@@ -256,19 +178,15 @@ React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
-/**
- * DropdownMenuShortcut组件
- * DropdownMenuShortcut组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const DropdownMenuShortcut = ( { className,
-  ...props }: React.HTMLAttributes<HTMLSpanElement>) => { return (;
+const DropdownMenuShortcut = ({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLSpanElement>) => { return (;
     <span
     className={cn('ml-auto text-xs tracking-widest opacity-60', className) }
     { ...props }
     />
-  ) }
+  ),
+}
 DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';
 
 export { DropdownMenu,
@@ -285,4 +203,5 @@ export { DropdownMenu,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup }
+  DropdownMenuRadioGroup,
+ }

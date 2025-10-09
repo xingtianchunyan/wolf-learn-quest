@@ -1,10 +1,10 @@
 # 接口定义文档
 
 ## 概述
-
 本文档描述了系统中所有的TypeScript接口定义。
 
 ## 接口列表
+
 
 ### PerformanceDashboardProps
 
@@ -18,11 +18,11 @@
 
 - **showDetails** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceDashboardProps {
-  /** 是否自动刷新数据 */
+/** 是否自动刷新数据 */
   autoRefresh?: boolean;
   /** 刷新间隔（毫秒） */
   refreshInterval?: number;
@@ -51,11 +51,11 @@ interface PerformanceDashboardProps {
 
 - **recentMetrics**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceSummary {
-  /** 总体健康状态 */
+/** 总体健康状态 */
   overallHealth: 'healthy' | 'warning' | 'critical';
   /** 渲染性能 */
   renderingHealth: 'healthy' | 'warning' | 'critical';
@@ -84,11 +84,11 @@ interface PerformanceSummary {
 
 - **isJudge** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemMonitorProps {
-  gameStateId?: string;
+gameStateId?: string;
   roomId?: string;
   isJudge?: boolean;
 }
@@ -110,11 +110,11 @@ interface SkillSystemMonitorProps {
 
 - **queue**: `'healthy' | 'warning' | 'critical'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SystemHealth {
-  overall: 'healthy' | 'warning' | 'critical';
+overall: 'healthy' | 'warning' | 'critical';
   database: 'healthy' | 'warning' | 'critical';
   processing: 'healthy' | 'warning' | 'critical';
   queue: 'healthy' | 'warning' | 'critical';
@@ -145,11 +145,11 @@ interface SystemHealth {
 
 - **errorRate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceMetrics {
-  totalSkillUses: number;
+totalSkillUses: number;
   activeEffects: number;
   queuedEffects: number;
   processingEffects: number;
@@ -176,11 +176,11 @@ interface PerformanceMetrics {
 
 - **isGameRoom** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ChatChannelSelectorProps {
-  currentChannel: ChatChannel;
+currentChannel: ChatChannel;
   onChannelChange: (channel: ChatChannel) => void;
   availableChannels: ChatChannel[];
   isGameRoom?: boolean;
@@ -219,8 +219,8 @@ interface ChatChannelSelectorProps {
 
 - **announcement_type** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ChatMessage {
 id: string;
@@ -234,7 +234,7 @@ id: string;
   metadata?: {
     visibility?: any;
     data?: any;
-    announcement_type?: string
+    announcement_type?: string;
 }
 ```
 
@@ -254,11 +254,11 @@ id: string;
 
 - **gameRound** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ChatMessageProps {
-  message: ChatMessage;
+message: ChatMessage;
   currentUserId?: string;
   gamePhase?: string;
   gameRound?: number;
@@ -291,11 +291,11 @@ interface ChatMessageProps {
 
 - **height** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MultiChannelChatProps {
-  roomId: string | null;
+roomId: string | null;
   currentUser: any;
   gamePhase?: string;
   gameRound?: number;
@@ -327,11 +327,11 @@ interface MultiChannelChatProps {
 
 - **fallbackComponent** (可选): `ComponentType<ErrorFallbackProps>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorBoundaryConfig {
-  /** 是否显示错误详情 */
+/** 是否显示错误详情 */
   showErrorDetails?: boolean;
   /** 是否允许重试 */
   allowRetry?: boolean;
@@ -364,11 +364,11 @@ interface ErrorBoundaryConfig {
 
 - **handlingResult** (可选): `ErrorHandlingResult`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorFallbackProps {
-  /** 错误对象 */
+/** 错误对象 */
   error: Error;
   /** 错误信息 */
   errorInfo: React.ErrorInfo;
@@ -399,11 +399,11 @@ interface ErrorFallbackProps {
 
 - **handlingResult** (可选): `ErrorHandlingResult`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorBoundaryState {
-  /** 是否有错误 */
+/** 是否有错误 */
   hasError: boolean;
   /** 错误对象 */
   error?: Error;
@@ -440,11 +440,11 @@ interface ErrorBoundaryState {
 
 - **overlayOpacity** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LoadingConfig {
-  /** 加载文本 */
+/** 加载文本 */
   loadingText?: string;
   /** 是否显示加载文本 */
   showLoadingText?: boolean;
@@ -483,11 +483,11 @@ interface LoadingConfig {
 
 - **overlayOpacity** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LoadingComponentProps {
-  /** 加载文本 */
+/** 加载文本 */
   loadingText?: string;
   /** 是否显示加载文本 */
   showLoadingText?: boolean;
@@ -514,11 +514,11 @@ interface LoadingComponentProps {
 
 - **loadingConfig** (可选): `LoadingConfig`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface WithLoadingProps {
-  /** 是否正在加载 */
+/** 是否正在加载 */
   loading?: boolean;
   /** 加载配置 */
   loadingConfig?: LoadingConfig;
@@ -543,11 +543,11 @@ interface WithLoadingProps {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionRule {
-  /** 权限类型 */
+/** 权限类型 */
   type: PermissionType;
   /** 允许的值列表 */
   allowed?: any[];
@@ -582,11 +582,11 @@ interface PermissionRule {
 
 - **customData** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionContext {
-  /** 用户ID */
+/** 用户ID */
   userId?: string;
   /** 用户角色 */
   userRole?: RoleType;
@@ -623,11 +623,11 @@ interface PermissionContext {
 
 - **skipInDevelopment** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionConfig {
-  /** 权限规则列表 */
+/** 权限规则列表 */
   rules: PermissionRule[];
   /** 权限验证模式：'all' 表示所有规则都必须通过，'any' 表示任一规则通过即可 */
   mode?: 'all' | 'any';
@@ -636,10 +636,7 @@ interface PermissionConfig {
   /** 自定义无权限组件 */
   noPermissionComponent?: ComponentType<NoPermissionProps>;
   /** 权限检查失败回调 */
-  onPermissionDenied?: (
-    context: PermissionContext,
-    failedRules: PermissionRule[]
-  ) => void;
+  onPermissionDenied?: (context: PermissionContext, failedRules: PermissionRule[]) => void;
   /** 是否在开发环境跳过权限检查 */
   skipInDevelopment?: boolean;
 }
@@ -659,11 +656,11 @@ interface PermissionConfig {
 
 - **config**: `PermissionConfig`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface NoPermissionProps {
-  /** 权限上下文 */
+/** 权限上下文 */
   context: PermissionContext;
   /** 失败的权限规则 */
   failedRules: PermissionRule[];
@@ -684,11 +681,11 @@ interface NoPermissionProps {
 
 - **permissionConfig** (可选): `Partial<PermissionConfig>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface WithPermissionProps {
-  /** 权限上下文 */
+/** 权限上下文 */
   permissionContext?: PermissionContext;
   /** 权限配置覆盖 */
   permissionConfig?: Partial<PermissionConfig>;
@@ -707,8 +704,8 @@ interface WithPermissionProps {
 
 - **icon** (可选): `React.ComponentType<{ className?: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface BaseCardProps {
 title: string;
@@ -730,11 +727,11 @@ title: string;
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
+size?: 'sm' | 'md' | 'lg';
   text?: string;
   className?: string;
 }
@@ -758,11 +755,11 @@ interface LoadingSpinnerProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerAvatarProps {
-  name: string;
+name: string;
   avatarUrl?: string;
   size?: 'sm' | 'md' | 'lg';
   status?: 'alive' | 'dead' | 'eliminated';
@@ -784,178 +781,13 @@ interface PlayerAvatarProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StatusBadgeProps {
-  status: string;
+status: string;
   variant?: 'default' | 'secondary' | 'destructive' | 'outline';
   className?: string;
-}
-```
-
----
-
-### DebugPanelProps
-
-**文件位置**: `src\components\debug\DebugPanel.tsx`
-
-**属性**:
-
-- **isVisible** (可选): `boolean`
-
-- **onClose** (可选): `() => void`
-
-- **defaultTab** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface DebugPanelProps {
-  /** 是否显示面板 */
-  isVisible?: boolean;
-  /** 关闭回调 */
-  onClose?: () => void;
-  /** 初始标签页 */
-  defaultTab?: string;
-}
-```
-
----
-
-### LogFilter
-
-**文件位置**: `src\components\debug\DebugPanel.tsx`
-
-**属性**:
-
-- **level** (可选): `DebugLevel`
-
-- **module** (可选): `string`
-
-- **search** (可选): `string`
-
-- **startTime** (可选): `number`
-
-- **endTime** (可选): `number`
-
-**完整定义**:
-
-```typescript
-interface LogFilter {
-  level?: DebugLevel;
-  module?: string;
-  search?: string;
-  startTime?: number;
-  endTime?: number;
-}
-```
-
----
-
-### DebugToolsProps
-
-**文件位置**: `src\components\debug\DebugTools.tsx`
-
-**属性**:
-
-- **autoShow** (可选): `boolean`
-
-- **initialPosition** (可选): `'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'`
-
-- **draggable** (可选): `boolean`
-
-**完整定义**:
-
-```typescript
-interface DebugToolsProps {
-  /** 是否在开发环境中自动显示 */
-  autoShow?: boolean;
-  /** 初始位置 */
-  initialPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-  /** 是否可拖拽 */
-  draggable?: boolean;
-}
-```
-
----
-
-### PerformanceData
-
-**文件位置**: `src\components\debug\PerformanceMonitor.tsx`
-
-**属性**:
-
-- **memory**: `{`
-
-- **used**: `number`
-
-- **total**: `number`
-
-- **percentage**: `number`
-
-**完整定义**:
-
-```typescript
-interface PerformanceData {
-/** 内存使用情况 */
-memory:  {
-    used: number;
-    total: number;
-    percentage: number
-}
-```
-
----
-
-### PerformanceThresholds
-
-**文件位置**: `src\components\debug\PerformanceMonitor.tsx`
-
-**属性**:
-
-- **memory**: `{ warning: number`
-
-**完整定义**:
-
-```typescript
-interface PerformanceThresholds {
-memory: { warning: number; critical: number
-}
-```
-
----
-
-### PerformanceMonitorProps
-
-**文件位置**: `src\components\debug\PerformanceMonitor.tsx`
-
-**属性**:
-
-- **showDetails** (可选): `boolean`
-
-- **updateInterval** (可选): `number`
-
-- **historySize** (可选): `number`
-
-- **thresholds** (可选): `Partial<PerformanceThresholds>`
-
-- **autoStart** (可选): `boolean`
-
-**完整定义**:
-
-```typescript
-interface PerformanceMonitorProps {
-  /** 是否显示详细信息 */
-  showDetails?: boolean;
-  /** 更新间隔（毫秒） */
-  updateInterval?: number;
-  /** 历史数据点数量 */
-  historySize?: number;
-  /** 性能阈值 */
-  thresholds?: Partial<PerformanceThresholds>;
-  /** 是否自动启动 */
-  autoStart?: boolean;
 }
 ```
 
@@ -985,11 +817,11 @@ interface PerformanceMonitorProps {
 
 - **showUserFriendlyUI** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorBoundaryProps {
-  /** 子组件 */
+/** 子组件 */
   children: ReactNode;
   /** 降级组件 */
   fallback?: ReactNode;
@@ -1034,11 +866,11 @@ interface ErrorBoundaryProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorDisplayProps {
-  /** 错误信息 */
+/** 错误信息 */
   errorInfo: UserFriendlyErrorInfo;
   /** 展示配置 */
   config?: Partial<ErrorDisplayConfig>;
@@ -1089,25 +921,25 @@ interface ErrorDisplayProps {
 
 - **confirmActions**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AccessibilitySettings {
-  // 视觉设置
+// 视觉设置
   theme: 'light' | 'dark' | 'high-contrast' | 'auto';
   fontSize: number;
   reducedMotion: boolean;
-
+  
   // 听觉设置
   soundEnabled: boolean;
   soundVolume: number;
   voiceAnnouncements: boolean;
-
+  
   // 交互设置
   keyboardNavigation: boolean;
   focusIndicators: boolean;
   clickAreas: 'normal' | 'large' | 'extra-large';
-
+  
   // 认知辅助
   gameInstructions: boolean;
   tooltipsEnabled: boolean;
@@ -1125,7 +957,9 @@ interface AccessibilitySettings {
 
 - **settings**: `AccessibilitySettings`
 
-- **updateSetting**: `<K extends keyof AccessibilitySettings>(key: K,`
+- **updateSetting**: `<K extends keyof AccessibilitySettings>(`
+
+- **key**: `K,`
 
 - **value**: `AccessibilitySettings[K]`
 
@@ -1133,11 +967,11 @@ interface AccessibilitySettings {
 
 - **isHighContrast**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AccessibilityContextType {
-  settings: AccessibilitySettings;
+settings: AccessibilitySettings;
   updateSetting: <K extends keyof AccessibilitySettings>(
     key: K,
     value: AccessibilitySettings[K]
@@ -1157,11 +991,11 @@ interface AccessibilityContextType {
 
 - **children**: `React.ReactNode`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AccessibilityProviderProps {
-  children: React.ReactNode;
+children: React.ReactNode;
 }
 ```
 
@@ -1177,11 +1011,11 @@ interface AccessibilityProviderProps {
 
 - **onClose**: `() => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AccessibilityControlPanelProps {
-  isOpen: boolean;
+isOpen: boolean;
   onClose: () => void;
 }
 ```
@@ -1202,11 +1036,11 @@ interface AccessibilityControlPanelProps {
 
 - **userId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Player {
-  id: string;
+id: string;
   name: string;
   avatar: string;
   userId?: string;
@@ -1235,11 +1069,11 @@ interface Player {
 
 - **currentPhase** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GamePlayerStatusDisplayProps {
-  players: Player[];
+players: Player[];
   roomId: string;
   maxPlayers: number;
   selectedTargetId?: string;
@@ -1261,11 +1095,11 @@ interface GamePlayerStatusDisplayProps {
 
 - **isJudge**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameStateDisplayProps {
-  roomId: string;
+roomId: string;
   isJudge: boolean; // 移除默认值，强制上层传入
 }
 ```
@@ -1286,11 +1120,11 @@ interface GameStateDisplayProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleSkillInfoProps {
-  roleName: string;
+roleName: string;
   skillEffects?: SkillEffects;
   roleAttributes?: RoleAttributes;
   className?: string;
@@ -1311,8 +1145,8 @@ interface RoleSkillInfoProps {
 
 - **players**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillEffectsDisplayProps {
 roomId: string;
@@ -1345,11 +1179,11 @@ roomId: string;
 
 - **skillType** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface FeedbackMessage {
-  id: string;
+id: string;
   type: 'success' | 'error' | 'warning' | 'info' | 'loading';
   title: string;
   description?: string;
@@ -1374,18 +1208,13 @@ interface FeedbackMessage {
 
 - **position** (可选): `'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OperationFeedbackProps {
-  messages: FeedbackMessage[];
+messages: FeedbackMessage[];
   onDismiss: (id: string) => void;
-  position?:
-    | 'top-right'
-    | 'top-left'
-    | 'bottom-right'
-    | 'bottom-left'
-    | 'top-center';
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center';
 }
 ```
 
@@ -1413,11 +1242,11 @@ interface OperationFeedbackProps {
 
 - **roleState** (可选): `Tables<'role_states'> | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedSkillManagerProps {
-  gameStateId: string;
+gameStateId: string;
   roomId: string;
   userId: string;
   currentRound: number;
@@ -1442,8 +1271,8 @@ interface EnhancedSkillManagerProps {
 
 - **nightDeaths** (可选): `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface WitchPotionState {
 canUseProtection: boolean;
@@ -1464,8 +1293,8 @@ canUseProtection: boolean;
 
 - **availablePlayers**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GuardProtectionInterfaceProps {
 onProtect: (playerId: string) => void;
@@ -1485,8 +1314,8 @@ onProtect: (playerId: string) => void;
 
 - **availablePlayers**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface HunterRevengeInterfaceProps {
 onRevenge: (playerId: string) => void;
@@ -1526,8 +1355,8 @@ onRevenge: (playerId: string) => void;
 
 - **isAlive**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface NightSkillInterfaceProps {
 roomId: string;
@@ -1541,7 +1370,7 @@ roomId: string;
     userId: string;
     name: string;
     roleStatus: number;
-    isAlive: boolean
+    isAlive: boolean;
 }
 ```
 
@@ -1557,8 +1386,8 @@ roomId: string;
 
 - **availablePlayers**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SeerInvestigationInterfaceProps {
 onInvestigate: (playerId: string) => void;
@@ -1584,11 +1413,11 @@ onInvestigate: (playerId: string) => void;
 
 - **onConflictResolved** (可选): `(conflictId: string) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflictResolverProps {
-  gameStateId: string;
+gameStateId: string;
   currentRound: number;
   currentPhase: number;
   isJudge: boolean;
@@ -1618,8 +1447,8 @@ interface SkillConflictResolverProps {
 
 - **availableTargets**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedWitchSkillInterfaceProps {
 gameStateId: string;
@@ -1644,8 +1473,8 @@ gameStateId: string;
 
 - **availablePlayers**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface WolfKillInterfaceProps {
 onKill: (playerId: string) => void;
@@ -1661,7 +1490,7 @@ onKill: (playerId: string) => void;
 
 **属性**:
 
-- **uses**: `Array< {`
+- **uses**: `Array<{`
 
 - **skillName**: `string`
 
@@ -1673,16 +1502,16 @@ onKill: (playerId: string) => void;
 
 - **duration** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillData {
-uses: Array< {
+uses: Array<{
     skillName: string;
     timestamp: number;
     target?: string;
     success: boolean;
-    duration?: number
+    duration?: number;
 }
 ```
 
@@ -1706,11 +1535,11 @@ uses: Array< {
 
 - **averageDuration** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillStats {
-  totalUses: number;
+totalUses: number;
   activeEffects: number;
   queuedEffects: number;
   conflictCount: number;
@@ -1737,11 +1566,11 @@ interface SkillStats {
 
 - **showDetailedAnalysis** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AdvancedSkillAnalyticsProps {
-  /** 技能数据 */
+/** 技能数据 */
   skillData: SkillData;
   /** 技能统计 */
   stats: SkillStats;
@@ -1770,14 +1599,14 @@ interface AdvancedSkillAnalyticsProps {
 
 - **description**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AnalysisResult {
 efficiency: {
     score: number;
     grade: string;
-    description: string
+    description: string;
 }
 ```
 
@@ -1797,11 +1626,11 @@ efficiency: {
 
 - **averageDuration**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface TimeSlotStats {
-  hour: number;
+hour: number;
   uses: number;
   successRate: number;
   averageDuration: number;
@@ -1826,11 +1655,11 @@ interface TimeSlotStats {
 
 - **percentage**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EffectTypeStats {
-  type: string;
+type: string;
   count: number;
   successRate: number;
   averageDuration: number;
@@ -1876,8 +1705,8 @@ interface EffectTypeStats {
 
 - **memoryThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OptimizedEnhancedSkillPanelProps {
 /** 房间ID */
@@ -1901,11 +1730,11 @@ interface OptimizedEnhancedSkillPanelProps {
   /** 游戏状态 */
   gameState?: GameState;
   /** 性能监控配置 */
-performanceConfig?:  {
+  performanceConfig?: {
     enableMonitoring: boolean;
     enableOptimization: boolean;
     renderThreshold: number;
-    memoryThreshold: number
+    memoryThreshold: number;
 }
 ```
 
@@ -1931,11 +1760,11 @@ performanceConfig?:  {
 
 - **isOptimized**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ComponentPerformanceState {
-  renderCount: number;
+renderCount: number;
   lastRenderTime: number;
   averageRenderTime: number;
   memoryUsage: number;
@@ -1955,8 +1784,8 @@ interface ComponentPerformanceState {
 
 - **skillConfig**: `{ ttl: number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheStrategy {
 skillConfig: { ttl: number; priority: 'high'
@@ -1975,12 +1804,60 @@ skillConfig: { ttl: number; priority: 'high'
 
 - **hitRate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheStats {
-  size: number;
+size: number;
   hitRate: number;
+}
+```
+
+---
+
+### PerformanceMonitorProps
+
+**文件位置**: `src\components\game\optimized\PerformanceMonitor.tsx`
+
+**属性**:
+
+- **performanceState**: `ComponentPerformanceState`
+
+- **cacheStats**: `CacheStats`
+
+- **onOptimize** (可选): `() => void`
+
+- **showDetails** (可选): `boolean`
+
+- **updateInterval** (可选): `number`
+
+- **thresholds** (可选): `{`
+
+- **renderTime**: `number`
+
+- **memoryUsage**: `number`
+
+- **cacheHitRate**: `number`
+
+
+**完整定义**:
+```typescript
+interface PerformanceMonitorProps {
+/** 性能状态数据 */
+  performanceState: ComponentPerformanceState;
+  /** 缓存统计信息 */
+  cacheStats: CacheStats;
+  /** 优化回调函数 */
+  onOptimize?: () => void;
+  /** 是否显示详细信息 */
+  showDetails?: boolean;
+  /** 更新间隔（毫秒） */
+  updateInterval?: number;
+  /** 性能阈值配置 */
+  thresholds?: {
+    renderTime: number;
+    memoryUsage: number;
+    cacheHitRate: number;
 }
 ```
 
@@ -2002,11 +1879,11 @@ interface CacheStats {
 
 - **subscriptionCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceDataPoint {
-  timestamp: number;
+timestamp: number;
   renderTime: number;
   memoryUsage: number;
   cacheHitRate: number;
@@ -2032,11 +1909,11 @@ interface PerformanceDataPoint {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceWarning {
-  id: string;
+id: string;
   type: 'error' | 'warning' | 'info';
   message: string;
   suggestion: string;
@@ -2066,11 +1943,11 @@ interface PerformanceWarning {
 
 - **action** (可选): `() => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OptimizationSuggestion {
-  id: string;
+id: string;
   category: 'rendering' | 'memory' | 'cache' | 'subscription';
   title: string;
   description: string;
@@ -2108,11 +1985,11 @@ interface OptimizationSuggestion {
 
 - **metadata** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillEffect {
-  id: string;
+id: string;
   effectType: string;
   isActive: boolean;
   remainingTime: number;
@@ -2149,11 +2026,11 @@ interface SkillEffect {
 
 - **onEffectClick** (可选): `(effect: SkillEffect) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillEffectsVirtualListProps {
-  /** 技能效果列表 */
+/** 技能效果列表 */
   effects: SkillEffect[];
   /** 获取效果图标的函数 */
   getEffectIcon: (effectType: string) => JSX.Element;
@@ -2192,11 +2069,11 @@ interface SkillEffectsVirtualListProps {
 
 - **itemHeights**: `Map<string, number>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VirtualizationState {
-  scrollTop: number;
+scrollTop: number;
   startIndex: number;
   endIndex: number;
   visibleItems: SkillEffect[];
@@ -2223,11 +2100,11 @@ interface VirtualizationState {
 
 - **lastOptimizationTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceMonitoringState {
-  renderCount: number;
+renderCount: number;
   averageRenderTime: number;
   scrollEventCount: number;
   memoryUsage: number;
@@ -2263,11 +2140,11 @@ interface PerformanceMonitoringState {
 
 - **gameState** (可选): `GameState`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedSkillPanelProps {
-  /** 房间ID */
+/** 房间ID */
   roomId: string;
   /** 游戏状态ID */
   gameStateId?: string;
@@ -2304,11 +2181,11 @@ interface EnhancedSkillPanelProps {
 
 - **renderCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ComponentState {
-  selectedTarget: string;
+selectedTarget: string;
   lastUpdateTime: number;
   renderCount: number;
 }
@@ -2330,11 +2207,11 @@ interface ComponentState {
 
 - **canSelectTargets** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameInfoPanelProps {
-  roomId: string;
+roomId: string;
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
   canSelectTargets?: boolean;
@@ -2351,11 +2228,11 @@ interface GameInfoPanelProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameSettingsPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -2389,8 +2266,8 @@ interface GameSettingsPanelProps {
 
 - **status** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameSkillPanelProps {
 roomId: string;
@@ -2403,7 +2280,7 @@ roomId: string;
     userId: string;
     name: string;
     roleStatus?: number;
-    status?: string
+    status?: string;
 }
 ```
 
@@ -2427,11 +2304,11 @@ roomId: string;
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerStatusManagerProps {
-  players: Player[];
+players: Player[];
   roomId: string;
   maxPlayers: number;
   showDyingStatusOnly?: boolean; // 是否只显示濒死状态变更
@@ -2450,11 +2327,11 @@ interface PlayerStatusManagerProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleStatusPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -2482,8 +2359,8 @@ interface RoleStatusPanelProps {
 
 - **players**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemManagerProps {
 roomId: string;
@@ -2519,8 +2396,8 @@ roomId: string;
 
 - **players**: `Array<{ userId: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsePanelProps {
 roomId: string;
@@ -2555,11 +2432,11 @@ roomId: string;
 
 - **correct_option**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Question {
-  id: string;
+id: string;
   question: string;
   option_a: string;
   option_b: string;
@@ -2579,11 +2456,11 @@ interface Question {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentAnswerRecordPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -2601,11 +2478,11 @@ interface StudentAnswerRecordPanelProps {
 
 - **isCorrect**: `boolean | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerAnswer {
-  selectedOption: number | null;
+selectedOption: number | null;
   responseTime: number | null;
   isCorrect: boolean | null;
 }
@@ -2627,11 +2504,11 @@ interface PlayerAnswer {
 
 - **answer**: `PlayerAnswer`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AnswerRecord {
-  round: number;
+round: number;
   phase: string;
   questionText: string;
   answer: PlayerAnswer;
@@ -2656,11 +2533,11 @@ interface AnswerRecord {
 
 - **questions**: `Question`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomQuestion {
-  id: string;
+id: string;
   room_id: string;
   question_id: string;
   question_order: number;
@@ -2678,11 +2555,11 @@ interface RoomQuestion {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentSystemPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -2698,11 +2575,11 @@ interface StudentSystemPanelProps {
 
 - **isJudge**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VotingSystemManagerProps {
-  roomId: string;
+roomId: string;
   isJudge: boolean; // 移除默认值，强制上层传入
 }
 ```
@@ -2731,8 +2608,8 @@ interface VotingSystemManagerProps {
 
 - **targetUserName** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflict {
 id: string;
@@ -2742,7 +2619,7 @@ id: string;
     userName: string;
     priority: number;
     targetUserId?: string;
-    targetUserName?: string
+    targetUserName?: string;
 }
 ```
 
@@ -2762,11 +2639,11 @@ id: string;
 
 - **isJudge**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflictVisualizationProps {
-  conflicts: SkillConflict[];
+conflicts: SkillConflict[];
   onResolveConflict: (conflictId: string, resolution: any) => void;
   gamePhase: string;
   isJudge: boolean;
@@ -2799,8 +2676,8 @@ interface SkillConflictVisualizationProps {
 
 - **isReady**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameState {
 phase: 'day' | 'evening' | 'night' | 'dawn';
@@ -2811,7 +2688,7 @@ phase: 'day' | 'evening' | 'night' | 'dawn';
     name: string;
     role: string;
     status: 'alive' | 'dying' | 'dead';
-    isReady: boolean
+    isReady: boolean;
 }
 ```
 
@@ -2843,11 +2720,11 @@ phase: 'day' | 'evening' | 'night' | 'dawn';
 
 - **conditions** (可选): `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SmartHint {
-  id: string;
+id: string;
   type: 'strategy' | 'timing' | 'warning' | 'opportunity' | 'tutorial';
   priority: 'high' | 'medium' | 'low';
   title: string;
@@ -2878,11 +2755,11 @@ interface SmartHint {
 
 - **showTutorialHints**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SmartHintSystemProps {
-  gameState: GameState;
+gameState: GameState;
   onHintAction?: (hintId: string, action: string) => void;
   onDismissHint?: (hintId: string) => void;
   userExperience: 'beginner' | 'intermediate' | 'expert';
@@ -2900,11 +2777,11 @@ interface SmartHintSystemProps {
 
 - **previousQuestion**: `Question`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentPreviousQuestionDisplayProps {
-  previousQuestion: Question;
+previousQuestion: Question;
 }
 ```
 
@@ -2928,11 +2805,11 @@ interface StudentPreviousQuestionDisplayProps {
 
 - **onOptionClick**: `(optionNumber: number) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentQuestionDisplayProps {
-  currentQuestion: Question;
+currentQuestion: Question;
   selectedOption: number | null;
   hasSubmitted: boolean;
   loading: boolean;
@@ -2957,11 +2834,11 @@ interface StudentQuestionDisplayProps {
 
 - **totalQuestions**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentQuestionNotFoundProps {
-  roundNumber: number;
+roundNumber: number;
   phaseName: string;
   expectedQuestionIndex: number;
   totalQuestions: number;
@@ -2988,85 +2865,16 @@ interface StudentQuestionNotFoundProps {
 
 - **gameState**: `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StudentTimerDisplayProps {
-  showTimer: boolean;
+showTimer: boolean;
   timeIsUp: boolean;
   timeRemaining: number;
   formatTime: (seconds: number) => string;
   isAnsweringPhase: boolean;
   gameState: any; // 保持原有类型
-}
-```
-
----
-
-### FormContainerProps
-
-**文件位置**: `src\components\hoc\withForm.tsx`
-
-**属性**:
-
-- **title** (可选): `string`
-
-- **description** (可选): `string`
-
-- **children**: `React.ReactNode`
-
-- **onSubmit** (可选): `(e: React.FormEvent) => void`
-
-- **className** (可选): `string`
-
-- **loading** (可选): `boolean`
-
-- **disabled** (可选): `boolean`
-
-**完整定义**:
-
-```typescript
-interface FormContainerProps {
-  title?: string;
-  description?: string;
-  children: React.ReactNode;
-  onSubmit?: (e: React.FormEvent) => void;
-  className?: string;
-  loading?: boolean;
-  disabled?: boolean;
-}
-```
-
----
-
-### FormActionsProps
-
-**文件位置**: `src\components\hoc\withForm.tsx`
-
-**属性**:
-
-- **submitText** (可选): `string`
-
-- **cancelText** (可选): `string`
-
-- **onCancel** (可选): `() => void`
-
-- **loading** (可选): `boolean`
-
-- **disabled** (可选): `boolean`
-
-- **className** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface FormActionsProps {
-  submitText?: string;
-  cancelText?: string;
-  onCancel?: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-  className?: string;
 }
 ```
 
@@ -3084,11 +2892,11 @@ interface FormActionsProps {
 
 - **icon**: `LucideIcon`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface FeatureCardProps {
-  title: string;
+title: string;
   description: string;
   icon: LucideIcon;
 }
@@ -3104,11 +2912,11 @@ interface FeatureCardProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AnswerRecordPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -3122,11 +2930,11 @@ interface AnswerRecordPanelProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface JudgeActionPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -3144,11 +2952,11 @@ interface JudgeActionPanelProps {
 
 - **onSubmit**: `() => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ManualQuestionEditorProps {
-  manualQuestion: ManualQuestionForm;
+manualQuestion: ManualQuestionForm;
   onUpdateQuestion: (updates: Partial<ManualQuestionForm>) => void;
   onSubmit: () => void;
 }
@@ -3166,11 +2974,11 @@ interface ManualQuestionEditorProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerStatusPanelProps {
-  roomId: string;
+roomId: string;
   className?: string;
 }
 ```
@@ -3189,11 +2997,11 @@ interface PlayerStatusPanelProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PreparationPhaseDialogProps {
-  isOpen: boolean;
+isOpen: boolean;
   onClose: () => void;
   roomId: string;
 }
@@ -3213,11 +3021,11 @@ interface PreparationPhaseDialogProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionBankDialogProps {
-  isOpen: boolean;
+isOpen: boolean;
   onClose: () => void;
   roomId: string;
 }
@@ -3235,11 +3043,11 @@ interface QuestionBankDialogProps {
 
 - **roomId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionBankPanelProps {
-  className?: string;
+className?: string;
   roomId?: string;
 }
 ```
@@ -3264,11 +3072,11 @@ interface QuestionBankPanelProps {
 
 - **is_generated** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UploadedFile {
-  id: string;
+id: string;
   file_name: string;
   file_path: string;
   uploaded_at: string;
@@ -3297,11 +3105,11 @@ interface UploadedFile {
 
 - **is_generated** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PreprocessedFile {
-  id: string;
+id: string;
   file_name: string;
   original_file_path: string;
   created_at: string;
@@ -3326,11 +3134,11 @@ interface PreprocessedFile {
 
 - **isSystemLinked**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionOrderEditorProps {
-  selectedQuestions: Question[];
+selectedQuestions: Question[];
   onDragEnd: (result: any) => void;
   onLinkSystem: () => void;
   isSystemLinked: boolean;
@@ -3357,11 +3165,11 @@ interface QuestionOrderEditorProps {
 
 - **onToggleSelection**: `(question: Question) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionPreviewProps {
-  questions: Question[];
+questions: Question[];
   selectedQuestions: Question[];
   currentIndex: number;
   loading: boolean;
@@ -3390,11 +3198,11 @@ interface QuestionPreviewProps {
 
 - **onClearAllSelections**: `() => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionSourceListProps {
-  questionSources: QuestionSource[];
+questionSources: QuestionSource[];
   selectedSources: string[];
   onToggleSource: (sourceId: string) => void;
   onSelectAllFromSource: (sourceId: string) => void;
@@ -3413,11 +3221,11 @@ interface QuestionSourceListProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface TeacherSystemPanelProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -3435,11 +3243,11 @@ interface TeacherSystemPanelProps {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DyingStatusResolutionPanelProps {
-  roomId: string;
+roomId: string;
   gameStateId: string;
   className?: string;
 }
@@ -3455,11 +3263,11 @@ interface DyingStatusResolutionPanelProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedGameStateDisplayProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -3477,11 +3285,11 @@ interface EnhancedGameStateDisplayProps {
 
 - **maxPlayers**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerStatusDisplayProps {
-  players: Player[];
+players: Player[];
   roomId: string;
   maxPlayers: number;
 }
@@ -3503,11 +3311,11 @@ interface PlayerStatusDisplayProps {
 
 - **userId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemDashboardProps {
-  gameStateId?: string;
+gameStateId?: string;
   roomId?: string;
   isJudge?: boolean;
   userId?: string;
@@ -3530,11 +3338,11 @@ interface SkillSystemDashboardProps {
 
 - **type**: `'file' | 'manual'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QuestionSource {
-  id: string;
+id: string;
   name: string;
   count: number;
   type: 'file' | 'manual';
@@ -3565,11 +3373,11 @@ interface QuestionSource {
 
 - **difficulty**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ManualQuestionForm {
-  question: string;
+question: string;
   option_a: string;
   option_b: string;
   option_c: string;
@@ -3594,11 +3402,11 @@ interface ManualQuestionForm {
 
 - **t**: `(key: string) => string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LanguageContextType {
-  language: string;
+language: string;
   setLanguage: (code: string) => void;
   t: (key: string) => string;
 }
@@ -3614,11 +3422,11 @@ interface LanguageContextType {
 
 - **children**: `React.ReactNode`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PageLayoutProps {
-  children: React.ReactNode;
+children: React.ReactNode;
 }
 ```
 
@@ -3636,11 +3444,11 @@ interface PageLayoutProps {
 
 - **onAvatarUpdate**: `(url: string) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AvatarUploadProps {
-  avatarUrl: string | null;
+avatarUrl: string | null;
   playerName: string;
   onAvatarUpdate: (url: string) => void;
 }
@@ -3666,8 +3474,8 @@ interface AvatarUploadProps {
 
 - **playerRoom**: `{ roomDbId: string | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LobbyActionButtonsProps {
 handleCreateAIJudge: () => Promise<void>;
@@ -3691,8 +3499,8 @@ handleCreateAIJudge: () => Promise<void>;
 
 - **currentUser**: `(User & { player_name?: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerInfoProps {
 className?: string;
@@ -3718,15 +3526,15 @@ className?: string;
 
 - **isLoading**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerInfoPanelProps {
 currentUser: any;
   playerRoom: {
     roomId: string | null;
     roomDbId: string | null;
-    isLoading: boolean
+    isLoading: boolean;
 }
 ```
 
@@ -3746,11 +3554,11 @@ currentUser: any;
 
 - **losses**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerStatsProps {
-  level: number;
+level: number;
   experience: number;
   wins: number;
   losses: number;
@@ -3787,11 +3595,11 @@ interface PlayerStatsProps {
 
 - **judgeName** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameRoom {
-  id: string;
+id: string;
   roomId: string;
   name: string;
   host: string;
@@ -3817,8 +3625,8 @@ interface GameRoom {
 
 - **playerRoom**: `{ roomDbId: string | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomListTableProps {
 gameRooms: GameRoom[];
@@ -3864,11 +3672,11 @@ gameRooms: GameRoom[];
 
 - **currentPlayerHasSelectedRole** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayersListProps {
-  players: Player[];
+players: Player[];
   maxPlayers: number;
   isReady: boolean;
   allReady: boolean;
@@ -3908,11 +3716,11 @@ interface PlayersListProps {
 
 - **isReady**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleSelectionProps {
-  maxPlayers: number;
+maxPlayers: number;
   currentPlayerCount: number;
   selectedCharacter: string | null;
   onCharacterSelect: (characterId: string | null) => void;
@@ -3932,11 +3740,11 @@ interface RoleSelectionProps {
 
 - **roomId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomInfoCardProps {
-  roomId: string;
+roomId: string;
 }
 ```
 
@@ -3956,115 +3764,14 @@ interface RoomInfoCardProps {
 
 - **currentPlayers**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomInfo {
-  roomId: string;
+roomId: string;
   hostPlayerId: string;
   maxPlayers: number;
   currentPlayers: number;
-}
-```
-
----
-
-### LoadingProps
-
-**文件位置**: `src\components\shared\hoc\withLoading.tsx`
-
-**属性**:
-
-- **isLoading**: `boolean`
-
-- **loadingText** (可选): `string`
-
-- **progress** (可选): `number`
-
-- **config**: `LoadingConfig`
-
-- **onCancel** (可选): `() => void`
-
-**完整定义**:
-
-```typescript
-interface LoadingProps {
-  /** 是否正在加载 */
-  isLoading: boolean;
-  /** 加载文本 */
-  loadingText?: string;
-  /** 加载进度（0-100） */
-  progress?: number;
-  /** 配置选项 */
-  config: LoadingConfig;
-  /** 取消函数 */
-  onCancel?: () => void;
-}
-```
-
----
-
-### LoadingState
-
-**文件位置**: `src\components\shared\hoc\withLoading.tsx`
-
-**属性**:
-
-- **isLoading**: `boolean`
-
-- **startTime**: `number`
-
-- **isTimeout**: `boolean`
-
-- **progress**: `number`
-
-**完整定义**:
-
-```typescript
-interface LoadingState {
-  /** 是否正在加载 */
-  isLoading: boolean;
-  /** 加载开始时间 */
-  startTime: number;
-  /** 是否已超时 */
-  isTimeout: boolean;
-  /** 加载进度 */
-  progress: number;
-}
-```
-
----
-
-### PermissionFallbackProps
-
-**文件位置**: `src\components\shared\hoc\withPermission.tsx`
-
-**属性**:
-
-- **missingPermissions**: `Permission[]`
-
-- **missingRoles**: `UserRole[]`
-
-- **userRoles**: `UserRole[]`
-
-- **userPermissions**: `Permission[]`
-
-- **config**: `PermissionConfig`
-
-**完整定义**:
-
-```typescript
-interface PermissionFallbackProps {
-  /** 缺失的权限 */
-  missingPermissions: Permission[];
-  /** 缺失的角色 */
-  missingRoles: UserRole[];
-  /** 用户当前角色 */
-  userRoles: UserRole[];
-  /** 用户当前权限 */
-  userPermissions: Permission[];
-  /** 配置选项 */
-  config: PermissionConfig;
 }
 ```
 
@@ -4086,11 +3793,11 @@ interface PermissionFallbackProps {
 
 - **errorMessage** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillProgressStep {
-  id: string;
+id: string;
   name: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   duration?: number;
@@ -4122,11 +3829,11 @@ interface SkillProgressStep {
 
 - **className** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillProgressIndicatorProps {
-  skillName: string;
+skillName: string;
   skillChineseName?: string;
   steps: SkillProgressStep[];
   currentStep?: string;
@@ -4149,11 +3856,11 @@ interface SkillProgressIndicatorProps {
 
 - **gameStateId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedVotingManagerProps {
-  roomId: string;
+roomId: string;
   gameStateId?: string;
 }
 ```
@@ -4180,438 +3887,17 @@ interface EnhancedVotingManagerProps {
 
 - **onTargetSelect** (可选): `(targetId: string) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VotingPanelProps {
-  roomId: string;
+roomId: string;
   gameStateId?: string;
   currentPhase?: number;
   currentRound?: number;
   isJudge: boolean; // 移除默认值，强制上层传入
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
-}
-```
-
----
-
-### ErrorMessage
-
-**文件位置**: `src\config\errorMessages.ts`
-
-**属性**:
-
-- **code**: `string`
-
-- **message**: `string`
-
-- **description** (可选): `string`
-
-- **level**: `ErrorLevel`
-
-- **category**: `ErrorCategory`
-
-- **userMessage**: `string`
-
-- **solution** (可选): `string`
-
-- **docUrl** (可选): `string`
-
-- **retryable**: `boolean`
-
-- **retryDelay** (可选): `number`
-
-- **maxRetries** (可选): `number`
-
-**完整定义**:
-
-```typescript
-interface ErrorMessage {
-  /** 错误码 */
-  code: string;
-  /** 错误消息 */
-  message: string;
-  /** 详细描述 */
-  description?: string;
-  /** 错误级别 */
-  level: ErrorLevel;
-  /** 错误类别 */
-  category: ErrorCategory;
-  /** 用户友好的消息 */
-  userMessage: string;
-  /** 建议的解决方案 */
-  solution?: string;
-  /** 相关文档链接 */
-  docUrl?: string;
-  /** 是否可重试 */
-  retryable: boolean;
-  /** 重试延迟（毫秒） */
-  retryDelay?: number;
-  /** 最大重试次数 */
-  maxRetries?: number;
-}
-```
-
----
-
-### GameBaseConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **version**: `string`
-
-- **description**: `string`
-
-- **minPlayers**: `number`
-
-- **maxPlayers**: `number`
-
-- **defaultMode**: `GameMode`
-
-- **defaultDifficulty**: `DifficultyLevel`
-
-- **debugMode**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface GameBaseConfig {
-  /** 游戏名称 */
-  name: string;
-  /** 游戏版本 */
-  version: string;
-  /** 游戏描述 */
-  description: string;
-  /** 最小玩家数 */
-  minPlayers: number;
-  /** 最大玩家数 */
-  maxPlayers: number;
-  /** 默认游戏模式 */
-  defaultMode: GameMode;
-  /** 默认难度等级 */
-  defaultDifficulty: DifficultyLevel;
-  /** 是否启用调试模式 */
-  debugMode: boolean;
-}
-```
-
----
-
-### GameTimeConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **dayPhaseDuration**: `number`
-
-- **nightPhaseDuration**: `number`
-
-- **votingPhaseDuration**: `number`
-
-- **discussionPhaseDuration**: `number`
-
-- **skillUseDuration**: `number`
-
-- **lastWordsDuration**: `number`
-
-- **preparationDuration**: `number`
-
-- **resultDisplayDuration**: `number`
-
-- **autoAdvanceDelay**: `number`
-
-- **enableAutoAdvance**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface GameTimeConfig {
-  /** 白天阶段时长（秒） */
-  dayPhaseDuration: number;
-  /** 夜晚阶段时长（秒） */
-  nightPhaseDuration: number;
-  /** 投票阶段时长（秒） */
-  votingPhaseDuration: number;
-  /** 讨论阶段时长（秒） */
-  discussionPhaseDuration: number;
-  /** 技能使用时长（秒） */
-  skillUseDuration: number;
-  /** 遗言时长（秒） */
-  lastWordsDuration: number;
-  /** 游戏准备时长（秒） */
-  preparationDuration: number;
-  /** 结果展示时长（秒） */
-  resultDisplayDuration: number;
-  /** 自动进入下一阶段的延迟（秒） */
-  autoAdvanceDelay: number;
-  /** 是否启用自动进入下一阶段 */
-  enableAutoAdvance: boolean;
-}
-```
-
----
-
-### RoleConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **type**: `RoleType`
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **faction**: `'werewolf' | 'villager' | 'neutral'`
-
-- **icon**: `string`
-
-- **color**: `string`
-
-- **winCondition**: `string`
-
-- **abilities**: `string[]`
-
-- **isPublic**: `boolean`
-
-- **priority**: `number`
-
-- **canBeDetected**: `boolean`
-
-- **detectionResult**: `'good' | 'evil'`
-
-**完整定义**:
-
-```typescript
-interface RoleConfig {
-  /** 角色类型 */
-  type: RoleType;
-  /** 角色名称 */
-  name: string;
-  /** 角色描述 */
-  description: string;
-  /** 角色阵营 */
-  faction: 'werewolf' | 'villager' | 'neutral';
-  /** 角色图标 */
-  icon: string;
-  /** 角色颜色 */
-  color: string;
-  /** 胜利条件 */
-  winCondition: string;
-  /** 特殊能力描述 */
-  abilities: string[];
-  /** 是否在游戏开始时公开身份 */
-  isPublic: boolean;
-  /** 优先级（用于技能执行顺序） */
-  priority: number;
-  /** 是否可以被预言家查验 */
-  canBeDetected: boolean;
-  /** 查验结果（好人/坏人） */
-  detectionResult: 'good' | 'evil';
-}
-```
-
----
-
-### GameRulesConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **allowTies**: `boolean`
-
-- **tieResolution**: `'no_elimination' | 'random_elimination' | 'revote'`
-
-- **allowAbstention**: `boolean`
-
-- **showVoteResults**: `boolean`
-
-- **allowLastWords**: `boolean`
-
-- **allowSpectating**: `boolean`
-
-- **enableSkillCooldown**: `boolean`
-
-- **enableRoleBalance**: `boolean`
-
-- **enableRandomEvents**: `boolean`
-
-- **enableAchievements**: `boolean`
-
-- **enableExperience**: `boolean`
-
-- **enableLeaderboard**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface GameRulesConfig {
-  /** 是否允许平票 */
-  allowTies: boolean;
-  /** 平票时的处理方式 */
-  tieResolution: 'no_elimination' | 'random_elimination' | 'revote';
-  /** 是否允许弃票 */
-  allowAbstention: boolean;
-  /** 是否显示投票结果 */
-  showVoteResults: boolean;
-  /** 是否允许遗言 */
-  allowLastWords: boolean;
-  /** 是否允许死者观战 */
-  allowSpectating: boolean;
-  /** 是否启用技能冷却 */
-  enableSkillCooldown: boolean;
-  /** 是否启用角色平衡 */
-  enableRoleBalance: boolean;
-  /** 是否启用随机事件 */
-  enableRandomEvents: boolean;
-  /** 是否启用成就系统 */
-  enableAchievements: boolean;
-  /** 是否启用经验系统 */
-  enableExperience: boolean;
-  /** 是否启用排行榜 */
-  enableLeaderboard: boolean;
-}
-```
-
----
-
-### WinConditionConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **werewolf**: `{`
-
-- **outnumberVillagers**: `boolean`
-
-- **eliminateAllVillagers**: `boolean`
-
-- **eliminateSpecialRoles**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface WinConditionConfig {
-/** 狼人胜利条件 */
-  werewolf: {
-    /** 狼人数量大于等于村民数量 */
-    outnumberVillagers: boolean;
-    /** 消灭所有村民 */
-    eliminateAllVillagers: boolean;
-    /** 消灭所有特殊角色 */
-    eliminateSpecialRoles: boolean;
-}
-```
-
----
-
-### DifficultyConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **level**: `DifficultyLevel`
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **timeMultiplier**: `number`
-
-- **skillCooldownMultiplier**: `number`
-
-- **hintLevel**: `'none' | 'basic' | 'detailed'`
-
-- **showRoleHints**: `boolean`
-
-- **showSkillHints**: `boolean`
-
-- **enableNewbieProtection**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface DifficultyConfig {
-  /** 难度等级 */
-  level: DifficultyLevel;
-  /** 难度名称 */
-  name: string;
-  /** 难度描述 */
-  description: string;
-  /** 时间倍数 */
-  timeMultiplier: number;
-  /** 技能冷却倍数 */
-  skillCooldownMultiplier: number;
-  /** 提示等级 */
-  hintLevel: 'none' | 'basic' | 'detailed';
-  /** 是否显示角色提示 */
-  showRoleHints: boolean;
-  /** 是否显示技能提示 */
-  showSkillHints: boolean;
-  /** 是否启用新手保护 */
-  enableNewbieProtection: boolean;
-}
-```
-
----
-
-### GameModeConfig
-
-**文件位置**: `src\config\gameConfig.ts`
-
-**属性**:
-
-- **mode**: `GameMode`
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **recommendedPlayers**: `number[]`
-
-- **roleDistribution**: `Record<`
-
-- **playerCount**: `number) => number)`
-
-- **specialRules**: `string[]`
-
-- **enableSpecialRoles**: `boolean`
-
-- **enableRandomRoles**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface GameModeConfig {
-  /** 游戏模式 */
-  mode: GameMode;
-  /** 模式名称 */
-  name: string;
-  /** 模式描述 */
-  description: string;
-  /** 推荐玩家数 */
-  recommendedPlayers: number[];
-  /** 角色配置 */
-  roleDistribution: Record<
-    RoleType,
-    number | ((playerCount: number) => number)
-  >;
-  /** 特殊规则 */
-  specialRules: string[];
-  /** 是否启用特殊角色 */
-  enableSpecialRoles: boolean;
-  /** 是否启用随机角色 */
-  enableRandomRoles: boolean;
 }
 ```
 
@@ -4639,8 +3925,8 @@ interface GameModeConfig {
 
 - **windowMs**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface APISecurityConfig {
 path: string;
@@ -4650,281 +3936,7 @@ path: string;
   requiredPermissions: Permission[];
   rateLimit: {
     maxRequests: number;
-    windowMs: number
-}
-```
-
----
-
-### BaseSkillConfig
-
-**文件位置**: `src\config\skillConfig.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **type**: `SkillType`
-
-- **icon** (可选): `string`
-
-- **enabled**: `boolean`
-
-- **level**: `number`
-
-- **maxLevel**: `number`
-
-**完整定义**:
-
-```typescript
-interface BaseSkillConfig {
-  /** 技能ID */
-  id: string;
-  /** 技能名称 */
-  name: string;
-  /** 技能描述 */
-  description: string;
-  /** 技能类型 */
-  type: SkillType;
-  /** 技能图标 */
-  icon?: string;
-  /** 是否启用 */
-  enabled: boolean;
-  /** 技能等级 */
-  level: number;
-  /** 最大等级 */
-  maxLevel: number;
-}
-```
-
----
-
-### SkillExecutionConfig
-
-**文件位置**: `src\config\skillConfig.ts`
-
-**属性**:
-
-- **cooldown**: `number`
-
-- **duration**: `number`
-
-- **cost**: `number`
-
-- **castTime**: `number`
-
-- **range**: `number`
-
-- **maxTargets**: `number`
-
-- **interruptible**: `boolean`
-
-- **requiresTarget**: `boolean`
-
-- **allowedTargets**: `SkillTarget[]`
-
-**完整定义**:
-
-```typescript
-interface SkillExecutionConfig {
-  /** 冷却时间（毫秒） */
-  cooldown: number;
-  /** 持续时间（毫秒） */
-  duration: number;
-  /** 消耗的能量/法力值 */
-  cost: number;
-  /** 施放时间（毫秒） */
-  castTime: number;
-  /** 技能范围 */
-  range: number;
-  /** 最大目标数量 */
-  maxTargets: number;
-  /** 是否可以被打断 */
-  interruptible: boolean;
-  /** 是否需要目标 */
-  requiresTarget: boolean;
-  /** 允许的目标类型 */
-  allowedTargets: SkillTarget[];
-}
-```
-
----
-
-### SkillEffectConfig
-
-**文件位置**: `src\config\skillConfig.ts`
-
-**属性**:
-
-- **basePower**: `number`
-
-- **levelMultiplier**: `number`
-
-- **criticalChance**: `number`
-
-- **criticalMultiplier**: `number`
-
-- **accuracy**: `number`
-
-- **effectType**: `SkillEffect`
-
-- **additionalEffects**: `Array<{`
-
-- **type**: `SkillEffect`
-
-- **chance**: `number`
-
-- **duration**: `number`
-
-- **power**: `number`
-
-**完整定义**:
-
-```typescript
-interface SkillEffectConfig {
-/** 基础伤害/治疗量 */
-  basePower: number;
-  /** 等级加成系数 */
-  levelMultiplier: number;
-  /** 暴击率 */
-  criticalChance: number;
-  /** 暴击倍数 */
-  criticalMultiplier: number;
-  /** 命中率 */
-  accuracy: number;
-  /** 效果类型 */
-  effectType: SkillEffect;
-  /** 附加效果 */
-  additionalEffects: Array<{
-    type: SkillEffect;
-    chance: number;
-    duration: number;
-    power: number;
-}
-```
-
----
-
-### SkillRestrictionConfig
-
-**文件位置**: `src\config\skillConfig.ts`
-
-**属性**:
-
-- **maxUsesPerTurn**: `number`
-
-- **maxUsesPerGame**: `number`
-
-- **conditions**: `Array<{`
-
-- **type**: `'health' | 'energy' | 'phase' | 'target_count' | 'custom'`
-
-- **operator**: `'>' | '<' | '>=' | '<=' | '==' | '!='`
-
-- **value**: `any`
-
-- **message**: `string`
-
-**完整定义**:
-
-```typescript
-interface SkillRestrictionConfig {
-/** 每回合最大使用次数 */
-  maxUsesPerTurn: number;
-  /** 每游戏最大使用次数 */
-  maxUsesPerGame: number;
-  /** 使用条件 */
-  conditions: Array<{
-    type: 'health' | 'energy' | 'phase' | 'target_count' | 'custom';
-    operator: '>' | '<' | '>=' | '<=' | '==' | '!=';
-    value: any;
-    message: string;
-}
-```
-
----
-
-### ValidationResult
-
-**文件位置**: `src\config\validationRules.ts`
-
-**属性**:
-
-- **isValid**: `boolean`
-
-- **errors**: `string[]`
-
-- **warnings**: `string[]`
-
-- **field** (可选): `string`
-
-- **value** (可选): `any`
-
-**完整定义**:
-
-```typescript
-interface ValidationResult {
-  /** 是否通过验证 */
-  isValid: boolean;
-  /** 错误消息列表 */
-  errors: string[];
-  /** 警告消息列表 */
-  warnings: string[];
-  /** 验证的字段名 */
-  field?: string;
-  /** 验证的值 */
-  value?: any;
-}
-```
-
----
-
-### ValidationContext
-
-**文件位置**: `src\config\validationRules.ts`
-
-**属性**:
-
-- **userId** (可选): `string`
-
-- **gameId** (可选): `string`
-
-- **gamePhase** (可选): `GamePhase`
-
-- **userRole** (可选): `RoleType`
-
-- **gameMode** (可选): `GameMode`
-
-- **difficulty** (可选): `DifficultyLevel`
-
-- **playerCount** (可选): `number`
-
-- **extra** (可选): `Record<string, any>`
-
-**完整定义**:
-
-```typescript
-interface ValidationContext {
-  /** 当前用户ID */
-  userId?: string;
-  /** 当前游戏ID */
-  gameId?: string;
-  /** 当前游戏阶段 */
-  gamePhase?: GamePhase;
-  /** 当前用户角色 */
-  userRole?: RoleType;
-  /** 游戏模式 */
-  gameMode?: GameMode;
-  /** 难度等级 */
-  difficulty?: DifficultyLevel;
-  /** 玩家数量 */
-  playerCount?: number;
-  /** 额外数据 */
-  extra?: Record<string, any>;
+    windowMs: number;
 }
 ```
 
@@ -4942,12 +3954,12 @@ interface ValidationContext {
 
 - **room_question_id**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LinkedQuestion {
-  question_order: number; // 来自room_questions表
-  question: Question; // 来自questions表的详细信息
+question_order: number; // 来自room_questions表
+  question: Question;     // 来自questions表的详细信息
   room_question_id: string; // room_questions表的id
 }
 ```
@@ -4968,11 +3980,11 @@ interface LinkedQuestion {
 
 - **saveLinkedQuestions**: `(questions: Question[]) => Promise<void>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface JudgePageContextType {
-  linkedQuestions: LinkedQuestion[] | null;
+linkedQuestions: LinkedQuestion[] | null;
   isSystemLinked: boolean;
   refreshLinkedQuestions: () => Promise<void>;
   saveLinkedQuestions: (questions: Question[]) => Promise<void>;
@@ -4991,11 +4003,11 @@ interface JudgePageContextType {
 
 - **children**: `React.ReactNode`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface JudgePageProviderProps {
-  roomId: string;
+roomId: string;
   children: React.ReactNode;
 }
 ```
@@ -5022,11 +4034,11 @@ interface JudgePageProviderProps {
 
 - **loading**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionState {
-  isJudge: boolean;
+isJudge: boolean;
   isRoomParticipant: boolean;
   canVote: boolean;
   canUseSkill: boolean;
@@ -5048,120 +4060,12 @@ interface PermissionState {
 
 - **roomId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionProviderProps {
-  children: ReactNode;
+children: ReactNode;
   roomId?: string;
-}
-```
-
----
-
-### GameConfig
-
-**文件位置**: `src\hooks\shared\useGameState.ts`
-
-**属性**:
-
-- **dayDuration**: `number`
-
-- **nightDuration**: `number`
-
-- **discussionDuration**: `number`
-
-- **votingDuration**: `number`
-
-- **maxPlayers**: `number`
-
-- **minPlayers**: `number`
-
-- **allowSpectators**: `boolean`
-
-- **skillCooldowns**: `Record<SkillType, number>`
-
-**完整定义**:
-
-```typescript
-interface GameConfig {
-  /** 白天阶段时长（秒） */
-  dayDuration: number;
-  /** 夜晚阶段时长（秒） */
-  nightDuration: number;
-  /** 讨论阶段时长（秒） */
-  discussionDuration: number;
-  /** 投票阶段时长（秒） */
-  votingDuration: number;
-  /** 最大玩家数 */
-  maxPlayers: number;
-  /** 最小玩家数 */
-  minPlayers: number;
-  /** 是否允许观众 */
-  allowSpectators: boolean;
-  /** 技能冷却时间配置 */
-  skillCooldowns: Record<SkillType, number>;
-}
-```
-
----
-
-### GameStateActions
-
-**文件位置**: `src\hooks\shared\useGameState.ts`
-
-**属性**:
-
-- **transitionToPhase**: `(phase: GamePhase, reason?: string) => Promise<void>`
-
-- **updatePlayerStatus**: `(`
-
-- **userId**: `string,`
-
-- **status**: `RoleStatus,`
-
-- **reason** (可选): `string`
-
-- **useSkill**: `(skillType: SkillType, targetId?: string) => Promise<boolean>`
-
-- **canUseSkill**: `(skillType: SkillType) => boolean`
-
-- **getSkillCooldown**: `(skillType: SkillType) => number`
-
-- **joinRoom**: `(roomId: string) => Promise<void>`
-
-- **leaveRoom**: `() => Promise<void>`
-
-- **resetGameState**: `() => void`
-
-- **syncWithServer**: `() => Promise<void>`
-
-**完整定义**:
-
-```typescript
-interface GameStateActions {
-  /** 切换游戏阶段 */
-  transitionToPhase: (phase: GamePhase, reason?: string) => Promise<void>;
-  /** 更新玩家状态 */
-  updatePlayerStatus: (
-    userId: string,
-    status: RoleStatus,
-    reason?: string
-  ) => void;
-  /** 使用技能 */
-  useSkill: (skillType: SkillType, targetId?: string) => Promise<boolean>;
-  /** 检查技能是否可用 */
-  canUseSkill: (skillType: SkillType) => boolean;
-  /** 获取技能冷却剩余时间 */
-  getSkillCooldown: (skillType: SkillType) => number;
-  /** 加入游戏房间 */
-  joinRoom: (roomId: string) => Promise<void>;
-  /** 离开游戏房间 */
-  leaveRoom: () => Promise<void>;
-  /** 重置游戏状态 */
-  resetGameState: () => void;
-  /** 同步服务器状态 */
-  syncWithServer: () => Promise<void>;
 }
 ```
 
@@ -5209,11 +4113,11 @@ interface GameStateActions {
 
 - **skill_config** (可选): `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedSkillUse {
-  id: string;
+id: string;
   user_id: string;
   game_state_id: string;
   skill_name: string;
@@ -5248,11 +4152,11 @@ interface EnhancedSkillUse {
 
 - **fetchAllSkillData**: `() => Promise<void>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UseSkillRealtimeParams {
-  gameStateId?: string;
+gameStateId?: string;
   setSkillUses: React.Dispatch<React.SetStateAction<EnhancedSkillUse[]>>;
   fetchAllSkillData: () => Promise<void>;
 }
@@ -5278,11 +4182,11 @@ interface UseSkillRealtimeParams {
 
 - **userSkillCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemStats {
-  totalUses: number;
+totalUses: number;
   activeEffects: number;
   queuedEffects: number;
   completedEffects: number;
@@ -5309,39 +4213,15 @@ interface SkillSystemStats {
 
 - **conflicts** (可选): `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSuggestion {
-  canUse: boolean;
+canUse: boolean;
   suggestion: string;
   priority: 'high' | 'medium' | 'low';
   timing: string;
   conflicts?: string[];
-}
-```
-
----
-
-### ApiConfig
-
-**文件位置**: `src\hooks\useApi.ts`
-
-**属性**:
-
-- **immediate** (可选): `boolean`
-
-- **onSuccess** (可选): `(data: any) => void`
-
-- **onError** (可选): `(error: string) => void`
-
-**完整定义**:
-
-```typescript
-interface ApiConfig {
-  immediate?: boolean; // 是否立即执行
-  onSuccess?: (data: any) => void; // 成功回调
-  onError?: (error: string) => void; // 错误回调
 }
 ```
 
@@ -5359,11 +4239,11 @@ interface ApiConfig {
 
 - **currentRound**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MinimalGameState {
-  id: string;
+id: string;
   currentPhase: number;
   currentRound: number;
 }
@@ -5385,11 +4265,11 @@ interface MinimalGameState {
 
 - **answerCheckDelay**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AutoProcessingConfig {
-  enableProtectionResolution: boolean;
+enableProtectionResolution: boolean;
   enableAnswerBasedResolution: boolean;
   protectionDelay: number; // 延迟时间(毫秒)
   answerCheckDelay: number; // 答题检查延迟(毫秒)
@@ -5410,11 +4290,11 @@ interface AutoProcessingConfig {
 
 - **enablePersistence** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheOptions {
-  ttl?: number; // Time to live in milliseconds
+ttl?: number; // Time to live in milliseconds
   maxSize?: number; // Maximum cache size
   enablePersistence?: boolean; // Enable localStorage persistence
 }
@@ -5442,11 +4322,11 @@ interface CacheOptions {
 
 - **statusEffects** (可选): `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DyingPlayer {
-  userId: string;
+userId: string;
   userName: string;
   userAvatar?: string;
   dyingReason?: string;
@@ -5470,11 +4350,11 @@ interface DyingPlayer {
 
 - **refreshAction** (可选): `() => Promise<void> | void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorRecoveryStrategy {
-  retryAction?: () => Promise<void> | void;
+retryAction?: () => Promise<void> | void;
   fallbackAction?: () => Promise<void> | void;
   refreshAction?: () => Promise<void> | void;
 }
@@ -5502,11 +4382,11 @@ interface ErrorRecoveryStrategy {
 
 - **dawnDuration**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameSettings {
-  id: string;
+id: string;
   roomId: string;
   isAutoAdvance: boolean;
   dayDuration: number;
@@ -5532,11 +4412,11 @@ interface GameSettings {
 
 - **enableAutoCleanup** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryManagerOptions {
-  componentName: string;
+componentName: string;
   maxMemoryThreshold?: number; // MB
   checkInterval?: number; // 毫秒
   enableAutoCleanup?: boolean;
@@ -5557,11 +4437,11 @@ interface MemoryManagerOptions {
 
 - **userRole** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UseMultiChannelChatProps {
-  roomId: string | null;
+roomId: string | null;
   currentUser: any;
   userRole?: string;
 }
@@ -5587,11 +4467,11 @@ interface UseMultiChannelChatProps {
 
 - **isVisibleToAll**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AnnouncementVisibility {
-  isVisibleToJudge: boolean;
+isVisibleToJudge: boolean;
   isVisibleToActor: boolean;
   isVisibleToTarget: boolean;
   isVisibleToWerewolves: boolean;
@@ -5618,15 +4498,15 @@ interface AnnouncementVisibility {
 
 - **roomId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SystemAnnouncementMetadata {
 visibility?: AnnouncementVisibility;
   data?: {
     actorUserId?: string;
     targetUserId?: string;
-    roomId?: string
+    roomId?: string;
 }
 ```
 
@@ -5650,11 +4530,11 @@ visibility?: AnnouncementVisibility;
 
 - **retryDelay** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QueryOptions {
-  enableCache?: boolean;
+enableCache?: boolean;
   cacheTTL?: number;
   enableRealtime?: boolean;
   debounceMs?: number;
@@ -5679,11 +4559,11 @@ interface QueryOptions {
 
 - **sampleRate** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UsePerformanceMonitoringOptions {
-  componentName: string;
+componentName: string;
   trackUserActions?: boolean;
   trackPerformance?: boolean;
   sampleRate?: number; // 0-1, 采样率
@@ -5708,11 +4588,11 @@ interface UsePerformanceMonitoringOptions {
 
 - **maxRenderThreshold** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UsePerformanceOptimizationOptions {
-  componentName: string;
+componentName: string;
   enableMemoryTracking?: boolean;
   enableRenderTracking?: boolean;
   debounceTime?: number;
@@ -5734,11 +4614,11 @@ interface UsePerformanceOptimizationOptions {
 
 - **loading**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionsState {
-  isJudge: boolean;
+isJudge: boolean;
   isRoomParticipant: boolean;
   loading: boolean;
 }
@@ -5758,11 +4638,11 @@ interface PermissionsState {
 
 - **online_at**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerPresence {
-  user_id: string;
+user_id: string;
   player_name: string;
   online_at: string;
 }
@@ -5782,11 +4662,11 @@ interface PlayerPresence {
 
 - **isLoading**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PlayerRoomInfo {
-  roomId: string | null;
+roomId: string | null;
   roomDbId: string | null;
   isLoading: boolean;
 }
@@ -5820,8 +4700,8 @@ interface PlayerRoomInfo {
 
 - **role_description**: `string | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleSelection {
 id: string;
@@ -5834,7 +4714,7 @@ id: string;
     id: string;
     role_name: string;
     faction: boolean;
-    role_description: string | null
+    role_description: string | null;
 }
 ```
 
@@ -5868,11 +4748,11 @@ id: string;
 
 - **updated_at**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleState {
-  id: string;
+id: string;
   game_state_id: string;
   room_id: string;
   user_id: string;
@@ -5914,11 +4794,11 @@ interface RoleState {
 
 - **created_at**: `string | null`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomAnswerRecord {
-  id: string;
+id: string;
   room_id: string | null;
   user_id: string | null;
   role_id: string | null;
@@ -5947,11 +4827,11 @@ interface RoomAnswerRecord {
 
 - **lastUpdate**: `Date`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoomRealtimeData {
-  maxPlayers: number;
+maxPlayers: number;
   status: string;
   judge_user_id?: string | null;
   lastUpdate: Date;
@@ -5976,11 +4856,11 @@ interface RoomRealtimeData {
 
 - **isRunning**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ProcessorStats {
-  totalProcessed: number;
+totalProcessed: number;
   successCount: number;
   failureCount: number;
   lastProcessTime: Date | null;
@@ -6008,11 +4888,11 @@ interface ProcessorStats {
 
 - **averageProcessTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EffectProcessorStats {
-  totalProcessed: number;
+totalProcessed: number;
   successCount: number;
   failureCount: number;
   lastProcessTime: Date | null;
@@ -6039,11 +4919,11 @@ interface EffectProcessorStats {
 
 - **enableLogging**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ProcessorConfig {
-  autoProcess: boolean;
+autoProcess: boolean;
   intervalMs: number;
   batchSize: number;
   retryAttempts: number;
@@ -6061,11 +4941,11 @@ interface ProcessorConfig {
 
 - **toasts**: `ToasterToast[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface State {
-  toasts: ToasterToast[];
+toasts: ToasterToast[]
 }
 ```
 
@@ -6095,11 +4975,11 @@ interface State {
 
 - **retryDelay** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UseUnifiedErrorHandlingOptions {
-  /** 组件名称（用于错误上下文） */
+/** 组件名称（用于错误上下文） */
   componentName?: string;
   /** 默认错误上下文 */
   defaultContext?: Partial<ErrorContext>;
@@ -6128,50 +5008,62 @@ interface UseUnifiedErrorHandlingOptions {
 
 **属性**:
 
-- **handleError**: `(error: any,`
+- **handleError**: `(`
+
+- **error**: `any,`
 
 - **context** (可选): `Partial<ErrorContext>,`
 
 - **options** (可选): `Partial<ErrorHandlingOptions>`
 
-- **wrapAsync**: `<T extends any[], R>(fn: (...args: T) => Promise<R>,`
+- **wrapAsync**: `<T extends any[], R>(`
+
+- **fn**: `(...args: T) => Promise<R>,`
 
 - **context** (可选): `Partial<ErrorContext>`
 
 - **args**: `T) => Promise<R | null>`
 
-- **wrapSync**: `<T extends any[], R>(fn: (...args: T) => R,`
+- **wrapSync**: `<T extends any[], R>(`
+
+- **fn**: `(...args: T) => R,`
 
 - **context** (可选): `Partial<ErrorContext>`
 
 - **args**: `T) => R | null`
 
-- **retry**: `<T>(operation: () => Promise<T>,`
+- **retry**: `<T>(`
+
+- **operation**: `() => Promise<T>,`
 
 - **options** (可选): `{ maxRetries?: number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UseUnifiedErrorHandlingReturn {
 /** 处理错误 */
-  handleError: (error: any,
+  handleError: (
+    error: any,
     context?: Partial<ErrorContext>,
     options?: Partial<ErrorHandlingOptions>
   ) => Promise<ErrorHandlingResult>;
-
+  
   /** 包装异步函数 */
-  wrapAsync: <T extends any[], R>(fn: (...args: T) => Promise<R>,
+  wrapAsync: <T extends any[], R>(
+    fn: (...args: T) => Promise<R>,
     context?: Partial<ErrorContext>
   ) => (...args: T) => Promise<R | null>;
-
+  
   /** 包装同步函数 */
-  wrapSync: <T extends any[], R>(fn: (...args: T) => R,
+  wrapSync: <T extends any[], R>(
+    fn: (...args: T) => R,
     context?: Partial<ErrorContext>
   ) => (...args: T) => R | null;
-
+  
   /** 重试操作 */
-  retry: <T>(operation: () => Promise<T>,
+  retry: <T>(
+    operation: () => Promise<T>,
     options?: { maxRetries?: number; delay?: number
 }
 ```
@@ -6198,11 +5090,11 @@ interface UseUnifiedErrorHandlingReturn {
 
 - **enablePerformanceMonitoring**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UXOptimizationConfig {
-  // 操作确认
+// 操作确认
   confirmCriticalActions: boolean;
   // 自动保存
   autoSaveInterval: number;
@@ -6236,11 +5128,11 @@ interface UXOptimizationConfig {
 
 - **canUndo**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OperationHistory {
-  id: string;
+id: string;
   action: string;
   data: any;
   timestamp: number;
@@ -6264,11 +5156,11 @@ interface OperationHistory {
 
 - **voters**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VoteRecord {
-  votedPlayerId: string;
+votedPlayerId: string;
   votedPlayerName: string;
   voteCount: number;
   voters: string[];
@@ -6305,11 +5197,11 @@ interface VoteRecord {
 
 - **updated_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VotingSession {
-  id: string;
+id: string;
   game_state_id: string;
   room_id: string;
   round_number: number;
@@ -6347,11 +5239,11 @@ interface VotingSession {
 
 - **created_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Vote {
-  id: string;
+id: string;
   voting_session_id: string;
   voter_id: string;
   target_id?: string;
@@ -6394,11 +5286,11 @@ interface Vote {
 
 - **updated_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VotingResult {
-  id: string;
+id: string;
   voting_session_id: string;
   target_id?: string;
   total_votes: number;
@@ -6431,11 +5323,11 @@ interface VotingResult {
 
 - **nightDeaths** (可选): `any[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PotionUsageStatus {
-  protectionUsed: boolean;
+protectionUsed: boolean;
   attackUsed: boolean;
   canUseProtection: boolean;
   canUseAttack: boolean;
@@ -6459,11 +5351,11 @@ interface PotionUsageStatus {
 
 - **error**: `(...args: unknown[]) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ILogger {
-  debug: (...args: unknown[]) => void;
+debug: (...args: unknown[]) => void;
   info: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
@@ -6488,11 +5380,11 @@ interface ILogger {
 
 - **context** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceMetric {
-  name: string;
+name: string;
   value: number;
   unit: string;
   timestamp: number;
@@ -6516,11 +5408,11 @@ interface PerformanceMetric {
 
 - **propsChanges**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ComponentRenderMetric {
-  componentName: string;
+componentName: string;
   renderTime: number;
   renderCount: number;
   propsChanges: number;
@@ -6547,18 +5439,18 @@ interface ComponentRenderMetric {
 
 - **audience**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ApiSecurityConfig {
 /** 是否启用安全中间件 */
   enabled: boolean;
   /** JWT配置 */
-jwt:  {
+  jwt: {
     secret: string;
     expiresIn: string;
     issuer: string;
-    audience: string
+    audience: string;
 }
 ```
 
@@ -6592,8 +5484,8 @@ jwt:  {
 
 - **scope**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ApiRequestContext {
 /** 请求ID */
@@ -6613,9 +5505,9 @@ interface ApiRequestContext {
   /** 权限列表 */
   permissions: string[];
   /** API密钥信息 */
-apiKey?:  {
+  apiKey?: {
     keyId: string;
-    scope: string[]
+    scope: string[];
 }
 ```
 
@@ -6645,8 +5537,8 @@ apiKey?:  {
 
 - **params**: `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityAuditLog {
 /** 日志ID */
@@ -6654,13 +5546,13 @@ interface SecurityAuditLog {
   /** 请求上下文 */
   context: ApiRequestContext;
   /** 请求信息 */
-request:  {
+  request: {
     method: string;
     url: string;
     headers: Record<string, string>;
     body?: any;
     query: Record<string, any>;
-    params: Record<string, any>
+    params: Record<string, any>;
 }
 ```
 
@@ -6690,24 +5582,24 @@ request:  {
 
 - **value**: `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionMiddlewareConfig {
 // 基础配置
   mode: PermissionCheckMode;
   strategy: PermissionStrategy;
-
+  
   // 权限配置
   permissions?: string[];
   roles?: string[];
   resources?: string[];
-
+  
   // 条件配置
   conditions?: Array<{
     field: string;
     operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'contains' | 'matches';
-    value: any
+    value: any;
 }
 ```
 
@@ -6731,8 +5623,8 @@ interface PermissionMiddlewareConfig {
 
 - **reason** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionCheckResult {
 allowed: boolean;
@@ -6740,7 +5632,7 @@ allowed: boolean;
   permissions: Array<{
     name: string;
     granted: boolean;
-    reason?: string
+    reason?: string;
 }
 ```
 
@@ -6780,11 +5672,11 @@ allowed: boolean;
 
 - **context**: `PermissionContext`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionAuditRecord {
-  id: string;
+id: string;
   timestamp: number;
   userId: string;
   endpoint: string;
@@ -6798,323 +5690,6 @@ interface PermissionAuditRecord {
   requestData?: any;
   responseData?: any;
   context: PermissionContext;
-}
-```
-
----
-
-### SkillConstructor
-
-**文件位置**: `src\patterns\factory\SkillFactory.ts`
-
-**属性**:
-
-- **config**: `SkillConfig): Skill`
-
-- **skillType**: `SkillType`
-
-- **displayName**: `string`
-
-- **description**: `string`
-
-- **defaultConfig**: `Partial<SkillConfig>`
-
-**完整定义**:
-
-```typescript
-interface SkillConstructor {
-  new (config: SkillConfig): Skill;
-  readonly skillType: SkillType;
-  readonly displayName: string;
-  readonly description: string;
-  readonly defaultConfig: Partial<SkillConfig>;
-}
-```
-
----
-
-### SkillFactoryConfig
-
-**文件位置**: `src\patterns\factory\SkillFactory.ts`
-
-**属性**:
-
-- **enableCache** (可选): `boolean`
-
-- **cacheLimit** (可选): `number`
-
-- **debug** (可选): `boolean`
-
-- **validator** (可选): `(skill: Skill) => boolean`
-
-- **beforeCreate** (可选): `(type: SkillType, config: SkillConfig) => void`
-
-- **afterCreate** (可选): `(skill: Skill) => void`
-
-**完整定义**:
-
-```typescript
-interface SkillFactoryConfig {
-  /** 是否启用技能缓存 */
-  enableCache?: boolean;
-  /** 缓存大小限制 */
-  cacheLimit?: number;
-  /** 是否启用调试模式 */
-  debug?: boolean;
-  /** 技能验证函数 */
-  validator?: (skill: Skill) => boolean;
-  /** 技能创建前钩子 */
-  beforeCreate?: (type: SkillType, config: SkillConfig) => void;
-  /** 技能创建后钩子 */
-  afterCreate?: (skill: Skill) => void;
-}
-```
-
----
-
-### SkillRegistration
-
-**文件位置**: `src\patterns\factory\SkillFactory.ts`
-
-**属性**:
-
-- **constructor**: `SkillConstructor`
-
-- **registeredAt**: `number`
-
-- **createCount**: `number`
-
-- **enabled**: `boolean`
-
-- **priority**: `number`
-
-**完整定义**:
-
-```typescript
-interface SkillRegistration {
-  /** 技能构造函数 */
-  constructor: SkillConstructor;
-  /** 注册时间 */
-  registeredAt: number;
-  /** 创建次数 */
-  createCount: number;
-  /** 是否启用 */
-  enabled: boolean;
-  /** 优先级 */
-  priority: number;
-}
-```
-
----
-
-### EventConfig
-
-**文件位置**: `src\patterns\observer\EventEmitter.ts`
-
-**属性**:
-
-- **maxListeners** (可选): `number`
-
-- **async** (可选): `boolean`
-
-- **errorHandling** (可选): `'ignore' | 'log' | 'throw'`
-
-- **debug** (可选): `boolean`
-
-- **historySize** (可选): `number`
-
-**完整定义**:
-
-```typescript
-interface EventConfig {
-  /** 最大监听器数量 */
-  maxListeners?: number;
-  /** 是否启用异步执行 */
-  async?: boolean;
-  /** 错误处理策略 */
-  errorHandling?: 'ignore' | 'log' | 'throw';
-  /** 是否启用调试模式 */
-  debug?: boolean;
-  /** 事件历史记录大小 */
-  historySize?: number;
-}
-```
-
----
-
-### EventStats
-
-**文件位置**: `src\patterns\observer\EventEmitter.ts`
-
-**属性**:
-
-- **event**: `string`
-
-- **listenerCount**: `number`
-
-- **emitCount**: `number`
-
-- **lastEmitTime**: `number`
-
-- **avgExecutionTime**: `number`
-
-- **errorCount**: `number`
-
-**完整定义**:
-
-```typescript
-interface EventStats {
-  /** 事件名称 */
-  event: string;
-  /** 监听器数量 */
-  listenerCount: number;
-  /** 触发次数 */
-  emitCount: number;
-  /** 最后触发时间 */
-  lastEmitTime: number;
-  /** 平均执行时间 */
-  avgExecutionTime: number;
-  /** 错误次数 */
-  errorCount: number;
-}
-```
-
----
-
-### ValidationStrategy
-
-**文件位置**: `src\patterns\strategy\ValidationStrategy.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **priority**: `number`
-
-- **async**: `boolean`
-
-- **context**: `ValidationContext): boolean`
-
-- **context**: `ValidationContext`
-
-- **config**: `Record<string, any>): void`
-
-**完整定义**:
-
-```typescript
-interface ValidationStrategy {
-  /** 策略名称 */
-  readonly name: string;
-  /** 策略描述 */
-  readonly description: string;
-  /** 策略优先级 */
-  readonly priority: number;
-  /** 是否支持异步验证 */
-  readonly async: boolean;
-
-  /**
-   * 检查是否适用于当前上下文
-   * @param context - 验证上下文
-   * @returns 是否适用
-   */
-  canHandle(context: ValidationContext): boolean;
-
-  /**
-   * 执行验证
-   * @param context - 验证上下文
-   * @returns 验证结果
-   */
-  validate(
-    context: ValidationContext
-  ): ValidationResult | Promise<ValidationResult>;
-
-  /**
-   * 获取策略配置
-   * @returns 策略配置
-   */
-  getConfig?(): Record<string, any>;
-
-  /**
-   * 设置策略配置
-   * @param config - 策略配置
-   */
-  setConfig?(config: Record<string, any>): void;
-}
-```
-
----
-
-### StrategyManagerConfig
-
-**文件位置**: `src\patterns\strategy\ValidationStrategy.ts`
-
-**属性**:
-
-- **defaultStrategy** (可选): `string`
-
-- **enableParallel** (可选): `boolean`
-
-- **stopOnFirstError** (可选): `boolean`
-
-- **timeout** (可选): `number`
-
-- **enableCache** (可选): `boolean`
-
-- **cacheLimit** (可选): `number`
-
-- **debug** (可选): `boolean`
-
-**完整定义**:
-
-```typescript
-interface StrategyManagerConfig {
-  /** 默认策略名称 */
-  defaultStrategy?: string;
-  /** 是否启用并行验证 */
-  enableParallel?: boolean;
-  /** 是否在第一个错误时停止 */
-  stopOnFirstError?: boolean;
-  /** 验证超时时间（毫秒） */
-  timeout?: number;
-  /** 是否启用缓存 */
-  enableCache?: boolean;
-  /** 缓存大小限制 */
-  cacheLimit?: number;
-  /** 是否启用调试模式 */
-  debug?: boolean;
-}
-```
-
----
-
-### StrategyExecutionResult
-
-**文件位置**: `src\patterns\strategy\ValidationStrategy.ts`
-
-**属性**:
-
-- **strategy**: `string`
-
-- **result**: `ValidationResult`
-
-- **status**: `'success' | 'error' | 'timeout'`
-
-- **error** (可选): `Error`
-
-**完整定义**:
-
-```typescript
-interface StrategyExecutionResult {
-  /** 策略名称 */
-  strategy: string;
-  /** 验证结果 */
-  result: ValidationResult;
-  /** 执行状态 */
-  status: 'success' | 'error' | 'timeout';
-  /** 错误信息 */
-  error?: Error;
 }
 ```
 
@@ -7138,11 +5713,11 @@ interface StrategyExecutionResult {
 
 - **games_lost**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserProfile {
-  user_id: string;
+user_id: string;
   player_name: string;
   level: number;
   experience: number;
@@ -7161,8 +5736,8 @@ interface UserProfile {
 
 - **currentUser**: `(User & { player_name?: string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AuthContextType {
 currentUser: (User & { player_name?: string
@@ -7173,7 +5748,7 @@ currentUser: (User & { player_name?: string
 
 ### UserAction
 
-**文件位置**: `src\services\AnalyticsService.ts`
+**文件位置**: `src\services\analyticsService.ts`
 
 **属性**:
 
@@ -7185,11 +5760,11 @@ currentUser: (User & { player_name?: string
 
 - **metadata** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserAction {
-  userId: string;
+userId: string;
   action: string;
   timestamp: number;
   metadata?: Record<string, any>;
@@ -7200,7 +5775,7 @@ interface UserAction {
 
 ### SkillUsageStats
 
-**文件位置**: `src\services\AnalyticsService.ts`
+**文件位置**: `src\services\analyticsService.ts`
 
 **属性**:
 
@@ -7216,11 +5791,11 @@ interface UserAction {
 
 - **usageByPhase**: `Record<string, number>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsageStats {
-  skillName: string;
+skillName: string;
   totalUses: number;
   successRate: number;
   avgResponseTime: number;
@@ -7233,7 +5808,7 @@ interface SkillUsageStats {
 
 ### UserBehaviorPattern
 
-**文件位置**: `src\services\AnalyticsService.ts`
+**文件位置**: `src\services\analyticsService.ts`
 
 **属性**:
 
@@ -7253,8 +5828,8 @@ interface SkillUsageStats {
 
 - **count**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserBehaviorPattern {
 userId: string;
@@ -7264,7 +5839,7 @@ userId: string;
   preferredPhases: string[];
   activityPattern: {
     hour: number;
-    count: number
+    count: number;
 }
 ```
 
@@ -7272,7 +5847,7 @@ userId: string;
 
 ### SecurityScheduleConfig
 
-**文件位置**: `src\services\AutomatedSecurityService.ts`
+**文件位置**: `src\services\automatedSecurityService.ts`
 
 **属性**:
 
@@ -7296,8 +5871,8 @@ userId: string;
 
 - **criticalOnly**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityScheduleConfig {
 /** 是否启用自动检查 */
@@ -7313,10 +5888,10 @@ interface SecurityScheduleConfig {
   /** 自动修复级别 */
   autoFixLevel: 'none' | 'low' | 'medium' | 'high';
   /** 通知配置 */
-notifications:  {
+  notifications: {
     enabled: boolean;
     channels: ('log' | 'email' | 'webhook')[];
-    criticalOnly: boolean
+    criticalOnly: boolean;
 }
 ```
 
@@ -7324,7 +5899,7 @@ notifications:  {
 
 ### SecurityEvent
 
-**文件位置**: `src\services\AutomatedSecurityService.ts`
+**文件位置**: `src\services\automatedSecurityService.ts`
 
 **属性**:
 
@@ -7350,16 +5925,12 @@ notifications:  {
 
 - **actions**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityEvent {
-  id: string;
-  type:
-    | 'vulnerability_detected'
-    | 'threat_detected'
-    | 'policy_violation'
-    | 'anomaly_detected';
+id: string;
+  type: 'vulnerability_detected' | 'threat_detected' | 'policy_violation' | 'anomaly_detected';
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
   source: string;
@@ -7376,7 +5947,7 @@ interface SecurityEvent {
 
 ### ThreatDetectionResult
 
-**文件位置**: `src\services\AutomatedSecurityService.ts`
+**文件位置**: `src\services\automatedSecurityService.ts`
 
 **属性**:
 
@@ -7394,8 +5965,8 @@ interface SecurityEvent {
 
 - **confidence**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ThreatDetectionResult {
 detected: boolean;
@@ -7404,7 +5975,7 @@ detected: boolean;
     severity: 'low' | 'medium' | 'high' | 'critical';
     description: string;
     indicators: string[];
-    confidence: number
+    confidence: number;
 }
 ```
 
@@ -7412,7 +5983,7 @@ detected: boolean;
 
 ### CacheConfig
 
-**文件位置**: `src\services\CacheService.ts`
+**文件位置**: `src\services\cacheService.ts`
 
 **属性**:
 
@@ -7438,11 +6009,11 @@ detected: boolean;
 
 - **syncAcrossTabs**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheConfig {
-  strategy: CacheStrategy;
+strategy: CacheStrategy;
   storageType: CacheStorageType;
   maxSize: number;
   maxItems: number;
@@ -7460,7 +6031,7 @@ interface CacheConfig {
 
 ### CacheStatistics
 
-**文件位置**: `src\services\CacheService.ts`
+**文件位置**: `src\services\cacheService.ts`
 
 **属性**:
 
@@ -7492,8 +6063,8 @@ interface CacheConfig {
 
 - **size**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheStatistics {
 totalItems: number;
@@ -7509,7 +6080,7 @@ totalItems: number;
   topKeys: Array<{
     key: string;
     accessCount: number;
-    size: number
+    size: number;
 }
 ```
 
@@ -7517,7 +6088,7 @@ totalItems: number;
 
 ### CacheQueryOptions
 
-**文件位置**: `src\services\CacheService.ts`
+**文件位置**: `src\services\cacheService.ts`
 
 **属性**:
 
@@ -7531,11 +6102,11 @@ totalItems: number;
 
 - **pattern** (可选): `RegExp`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheQueryOptions {
-  tags?: string[];
+tags?: string[];
   priority?: CachePriority;
   minAccessCount?: number;
   maxAge?: number;
@@ -7547,7 +6118,7 @@ interface CacheQueryOptions {
 
 ### ConfigurationItem
 
-**文件位置**: `src\services\ConfigurationService.ts`
+**文件位置**: `src\services\configurationService.ts`
 
 **属性**:
 
@@ -7577,8 +6148,8 @@ interface CacheQueryOptions {
 
 - **enum** (可选): `any[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigurationItem {
 key: string;
@@ -7593,7 +6164,7 @@ key: string;
     min?: number;
     max?: number;
     pattern?: string;
-    enum?: any[]
+    enum?: any[];
 }
 ```
 
@@ -7601,11 +6172,11 @@ key: string;
 
 ### ConfigurationSchema
 
-**文件位置**: `src\services\ConfigurationService.ts`
+**文件位置**: `src\services\configurationService.ts`
 
 **属性**:
 
-- **key**: `string]:  {`
+- **key**: `string]: {`
 
 - **type**: `ConfigurationType`
 
@@ -7619,17 +6190,17 @@ key: string;
 
 - **sensitive** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigurationSchema {
-[key: string]:  {
+[key: string]: {
     type: ConfigurationType;
     required: boolean;
     description: string;
     validation?: ConfigurationItem['validation'];
     defaultValue?: any;
-    sensitive?: boolean
+    sensitive?: boolean;
 }
 ```
 
@@ -7637,7 +6208,7 @@ interface ConfigurationSchema {
 
 ### ConfigurationValidationResult
 
-**文件位置**: `src\services\ConfigurationService.ts`
+**文件位置**: `src\services\configurationService.ts`
 
 **属性**:
 
@@ -7651,15 +6222,15 @@ interface ConfigurationSchema {
 
 - **severity**: `'error' | 'warning'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigurationValidationResult {
 isValid: boolean;
   errors: Array<{
     key: string;
     message: string;
-    severity: 'error' | 'warning'
+    severity: 'error' | 'warning';
 }
 ```
 
@@ -7667,7 +6238,7 @@ isValid: boolean;
 
 ### ConfigurationUpdateEvent
 
-**文件位置**: `src\services\ConfigurationService.ts`
+**文件位置**: `src\services\configurationService.ts`
 
 **属性**:
 
@@ -7685,11 +6256,11 @@ isValid: boolean;
 
 - **source**: `'api' | 'file' | 'env' | 'default'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigurationUpdateEvent {
-  key: string;
+key: string;
   oldValue: any;
   newValue: any;
   type: ConfigurationType;
@@ -7703,7 +6274,7 @@ interface ConfigurationUpdateEvent {
 
 ### DyingStatusResolution
 
-**文件位置**: `src\services\DyingStatusService.ts`
+**文件位置**: `src\services\dyingStatusService.ts`
 
 **属性**:
 
@@ -7713,11 +6284,11 @@ interface ConfigurationUpdateEvent {
 
 - **resolutionType**: `'protected' | 'answer_correct' | 'answer_wrong'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DyingStatusResolution {
-  userId: string;
+userId: string;
   gameStateId: string;
   resolutionType: 'protected' | 'answer_correct' | 'answer_wrong';
 }
@@ -7727,7 +6298,7 @@ interface DyingStatusResolution {
 
 ### StandardizedError
 
-**文件位置**: `src\services\ErrorHandlingService.ts`
+**文件位置**: `src\services\errorHandlingService.ts`
 
 **属性**:
 
@@ -7759,8 +6330,8 @@ interface DyingStatusResolution {
 
 - **line** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardizedError {
 id: string;
@@ -7776,7 +6347,7 @@ id: string;
     component?: string;
     function?: string;
     file?: string;
-    line?: number
+    line?: number;
 }
 ```
 
@@ -7784,7 +6355,7 @@ id: string;
 
 ### ErrorHandlingConfig
 
-**文件位置**: `src\services\ErrorHandlingService.ts`
+**文件位置**: `src\services\errorHandlingService.ts`
 
 **属性**:
 
@@ -7816,11 +6387,11 @@ id: string;
 
 - **errorReportingApiKey** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorHandlingConfig {
-  enabled: boolean;
+enabled: boolean;
   logErrors: boolean;
   reportErrors: boolean;
   showUserFriendlyMessages: boolean;
@@ -7841,7 +6412,7 @@ interface ErrorHandlingConfig {
 
 ### ErrorStatistics
 
-**文件位置**: `src\services\ErrorHandlingService.ts`
+**文件位置**: `src\services\errorHandlingService.ts`
 
 **属性**:
 
@@ -7867,8 +6438,8 @@ interface ErrorHandlingConfig {
 
 - **end**: `Date`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorStatistics {
 totalErrors: number;
@@ -7881,7 +6452,7 @@ totalErrors: number;
   errorRate: number;
   timeRange: {
     start: Date;
-    end: Date
+    end: Date;
 }
 ```
 
@@ -7889,7 +6460,7 @@ totalErrors: number;
 
 ### ErrorRecoveryResult
 
-**文件位置**: `src\services\ErrorHandlingService.ts`
+**文件位置**: `src\services\errorHandlingService.ts`
 
 **属性**:
 
@@ -7903,11 +6474,11 @@ totalErrors: number;
 
 - **nextAction** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorRecoveryResult {
-  success: boolean;
+success: boolean;
   strategy: ErrorRecoveryStrategy;
   message: string;
   data?: any;
@@ -7919,7 +6490,7 @@ interface ErrorRecoveryResult {
 
 ### ErrorReport
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -7959,11 +6530,11 @@ interface ErrorRecoveryResult {
 
 - **handlingResult** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorReport {
-  /** 错误ID */
+/** 错误ID */
   id: string;
   /** 错误级别 */
   level: ErrorLevel;
@@ -8006,7 +6577,7 @@ interface ErrorReport {
 
 ### BrowserInfo
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -8020,11 +6591,11 @@ interface ErrorReport {
 
 - **mobile**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface BrowserInfo {
-  /** 浏览器名称 */
+/** 浏览器名称 */
   name: string;
   /** 浏览器版本 */
   version: string;
@@ -8041,7 +6612,7 @@ interface BrowserInfo {
 
 ### DeviceInfo
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -8059,11 +6630,11 @@ interface BrowserInfo {
 
 - **networkType** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DeviceInfo {
-  /** 设备类型 */
+/** 设备类型 */
   type: 'desktop' | 'mobile' | 'tablet';
   /** 屏幕分辨率 */
   screenResolution: string;
@@ -8084,7 +6655,7 @@ interface DeviceInfo {
 
 ### ErrorContext
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -8108,11 +6679,11 @@ interface DeviceInfo {
 
 - **version** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorContext {
-  /** 组件名称 */
+/** 组件名称 */
   component?: string;
   /** 操作名称 */
   operation?: string;
@@ -8139,7 +6710,7 @@ interface ErrorContext {
 
 ### MonitoringConfig
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -8167,11 +6738,11 @@ interface ErrorContext {
 
 - **customFilters**: `((error: ErrorReport) => boolean)[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MonitoringConfig {
-  /** 是否启用错误监控 */
+/** 是否启用错误监控 */
   enableErrorMonitoring: boolean;
   /** 是否启用性能监控 */
   enablePerformanceMonitoring: boolean;
@@ -8202,7 +6773,7 @@ interface MonitoringConfig {
 
 ### MonitoringStats
 
-**文件位置**: `src\services\ErrorMonitoringService.ts`
+**文件位置**: `src\services\errorMonitoringService.ts`
 
 **属性**:
 
@@ -8224,11 +6795,11 @@ interface MonitoringConfig {
 
 - **lastUpdated**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MonitoringStats {
-  /** 总错误数 */
+/** 总错误数 */
   totalErrors: number;
   /** 按级别统计 */
   errorsByLevel: Record<ErrorLevel, number>;
@@ -8246,146 +6817,6 @@ interface MonitoringStats {
   userActivity: number;
   /** 最后更新时间 */
   lastUpdated: number;
-}
-```
-
----
-
-### GameStateChange
-
-**文件位置**: `src\services\GameStateService.ts`
-
-**属性**:
-
-- **type**: `'phase' | 'player' | 'vote' | 'skill' | 'config' | 'event'`
-
-- **timestamp**: `number`
-
-- **data**: `any`
-
-- **reason** (可选): `string`
-
-- **operatorId** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface GameStateChange {
-  /** 变更类型 */
-  type: 'phase' | 'player' | 'vote' | 'skill' | 'config' | 'event';
-  /** 变更时间戳 */
-  timestamp: number;
-  /** 变更数据 */
-  data: any;
-  /** 变更原因 */
-  reason?: string;
-  /** 操作者ID */
-  operatorId?: string;
-}
-```
-
----
-
-### GameStateSnapshot
-
-**文件位置**: `src\services\GameStateService.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **gameId**: `string`
-
-- **timestamp**: `number`
-
-- **state**: `GameState`
-
-- **description**: `string`
-
-- **type**: `'manual' | 'auto' | 'checkpoint'`
-
-**完整定义**:
-
-```typescript
-interface GameStateSnapshot {
-  /** 快照ID */
-  id: string;
-  /** 游戏ID */
-  gameId: string;
-  /** 快照时间戳 */
-  timestamp: number;
-  /** 游戏状态 */
-  state: GameState;
-  /** 快照描述 */
-  description: string;
-  /** 快照类型 */
-  type: 'manual' | 'auto' | 'checkpoint';
-}
-```
-
----
-
-### GameStateSyncConfig
-
-**文件位置**: `src\services\GameStateService.ts`
-
-**属性**:
-
-- **autoSync**: `boolean`
-
-- **syncInterval**: `number`
-
-- **incrementalSync**: `boolean`
-
-- **maxRetries**: `number`
-
-- **timeout**: `number`
-
-**完整定义**:
-
-```typescript
-interface GameStateSyncConfig {
-  /** 是否启用自动同步 */
-  autoSync: boolean;
-  /** 同步间隔（毫秒） */
-  syncInterval: number;
-  /** 是否启用增量同步 */
-  incrementalSync: boolean;
-  /** 最大重试次数 */
-  maxRetries: number;
-  /** 同步超时时间 */
-  timeout: number;
-}
-```
-
----
-
-### GameStateValidationResult
-
-**文件位置**: `src\services\GameStateService.ts`
-
-**属性**:
-
-- **isValid**: `boolean`
-
-- **errors**: `string[]`
-
-- **warnings**: `string[]`
-
-- **suggestions**: `string[]`
-
-**完整定义**:
-
-```typescript
-interface GameStateValidationResult {
-  /** 是否有效 */
-  isValid: boolean;
-  /** 错误列表 */
-  errors: string[];
-  /** 警告列表 */
-  warnings: string[];
-  /** 修复建议 */
-  suggestions: string[];
 }
 ```
 
@@ -8411,11 +6842,11 @@ interface GameStateValidationResult {
 
 - **healthy**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ServiceMetadata {
-  name: string;
+name: string;
   version: string;
   description: string;
   dependencies: string[];
@@ -8449,11 +6880,11 @@ interface ServiceMetadata {
 
 - **config**: `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ServiceConfiguration {
-  enabled: boolean;
+enabled: boolean;
   autoStart: boolean;
   retryOnFailure: boolean;
   maxRetries: number;
@@ -8468,7 +6899,7 @@ interface ServiceConfiguration {
 
 ### Alert
 
-**文件位置**: `src\services\MonitoringService.ts`
+**文件位置**: `src\services\monitoringService.ts`
 
 **属性**:
 
@@ -8482,11 +6913,11 @@ interface ServiceConfiguration {
 
 - **resolved**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Alert {
-  id: string;
+id: string;
   severity: 'info' | 'warning' | 'error' | 'critical';
   message: string;
   timestamp: number;
@@ -8496,345 +6927,9 @@ interface Alert {
 
 ---
 
-### Notification
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **type**: `NotificationType`
-
-- **priority**: `NotificationPriority`
-
-- **title**: `string`
-
-- **content**: `string`
-
-- **recipientId**: `string`
-
-- **senderId** (可选): `string`
-
-- **channels**: `NotificationChannel[]`
-
-- **status**: `NotificationStatus`
-
-- **createdAt**: `number`
-
-- **sentAt** (可选): `number`
-
-- **deliveredAt** (可选): `number`
-
-- **readAt** (可选): `number`
-
-- **expiresAt** (可选): `number`
-
-- **retryCount**: `number`
-
-- **maxRetries**: `number`
-
-- **metadata** (可选): `Record<string, any>`
-
-- **actions** (可选): `NotificationAction[]`
-
-- **dismissible**: `boolean`
-
-- **autoCloseDelay** (可选): `number`
-
-**完整定义**:
-
-```typescript
-interface Notification {
-  /** 通知ID */
-  id: string;
-  /** 通知类型 */
-  type: NotificationType;
-  /** 优先级 */
-  priority: NotificationPriority;
-  /** 标题 */
-  title: string;
-  /** 内容 */
-  content: string;
-  /** 接收者ID */
-  recipientId: string;
-  /** 发送者ID */
-  senderId?: string;
-  /** 发送渠道 */
-  channels: NotificationChannel[];
-  /** 状态 */
-  status: NotificationStatus;
-  /** 创建时间 */
-  createdAt: number;
-  /** 发送时间 */
-  sentAt?: number;
-  /** 送达时间 */
-  deliveredAt?: number;
-  /** 阅读时间 */
-  readAt?: number;
-  /** 过期时间 */
-  expiresAt?: number;
-  /** 重试次数 */
-  retryCount: number;
-  /** 最大重试次数 */
-  maxRetries: number;
-  /** 附加数据 */
-  metadata?: Record<string, any>;
-  /** 操作按钮 */
-  actions?: NotificationAction[];
-  /** 是否可关闭 */
-  dismissible: boolean;
-  /** 自动关闭时间（毫秒） */
-  autoCloseDelay?: number;
-}
-```
-
----
-
-### NotificationAction
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **label**: `string`
-
-- **type**: `'primary' | 'secondary' | 'danger'`
-
-- **handler**: `(notification: Notification) => void | Promise<void>`
-
-- **closeOnClick**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface NotificationAction {
-  /** 操作ID */
-  id: string;
-  /** 操作标签 */
-  label: string;
-  /** 操作类型 */
-  type: 'primary' | 'secondary' | 'danger';
-  /** 操作处理器 */
-  handler: (notification: Notification) => void | Promise<void>;
-  /** 是否关闭通知 */
-  closeOnClick: boolean;
-}
-```
-
----
-
-### NotificationTemplate
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **name**: `string`
-
-- **type**: `NotificationType`
-
-- **titleTemplate**: `string`
-
-- **contentTemplate**: `string`
-
-- **defaultPriority**: `NotificationPriority`
-
-- **defaultChannels**: `NotificationChannel[]`
-
-- **defaultExpiresIn** (可选): `number`
-
-- **variables**: `string[]`
-
-**完整定义**:
-
-```typescript
-interface NotificationTemplate {
-  /** 模板ID */
-  id: string;
-  /** 模板名称 */
-  name: string;
-  /** 模板类型 */
-  type: NotificationType;
-  /** 标题模板 */
-  titleTemplate: string;
-  /** 内容模板 */
-  contentTemplate: string;
-  /** 默认优先级 */
-  defaultPriority: NotificationPriority;
-  /** 默认渠道 */
-  defaultChannels: NotificationChannel[];
-  /** 默认过期时间 */
-  defaultExpiresIn?: number;
-  /** 模板变量 */
-  variables: string[];
-}
-```
-
----
-
-### NotificationConfig
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **enabled**: `boolean`
-
-- **defaultChannels**: `NotificationChannel[]`
-
-- **maxRetries**: `number`
-
-- **retryInterval**: `number`
-
-- **defaultExpiresIn**: `number`
-
-- **maxNotifications**: `number`
-
-- **enableBrowserNotifications**: `boolean`
-
-- **enableSound**: `boolean`
-
-- **soundFile** (可选): `string`
-
-- **displayDuration**: `number`
-
-**完整定义**:
-
-```typescript
-interface NotificationConfig {
-  /** 是否启用通知 */
-  enabled: boolean;
-  /** 默认渠道 */
-  defaultChannels: NotificationChannel[];
-  /** 最大重试次数 */
-  maxRetries: number;
-  /** 重试间隔（毫秒） */
-  retryInterval: number;
-  /** 通知过期时间（毫秒） */
-  defaultExpiresIn: number;
-  /** 最大通知数量 */
-  maxNotifications: number;
-  /** 是否启用浏览器通知 */
-  enableBrowserNotifications: boolean;
-  /** 是否启用声音 */
-  enableSound: boolean;
-  /** 声音文件路径 */
-  soundFile?: string;
-  /** 通知显示时间 */
-  displayDuration: number;
-}
-```
-
----
-
-### NotificationStats
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **total**: `number`
-
-- **sent**: `number`
-
-- **delivered**: `number`
-
-- **read**: `number`
-
-- **failed**: `number`
-
-- **expired**: `number`
-
-- **byType**: `Record<NotificationType, number>`
-
-- **byPriority**: `Record<NotificationPriority, number>`
-
-- **byChannel**: `Record<NotificationChannel, number>`
-
-- **averageDeliveryTime**: `number`
-
-- **readRate**: `number`
-
-**完整定义**:
-
-```typescript
-interface NotificationStats {
-  /** 总通知数 */
-  total: number;
-  /** 已发送数 */
-  sent: number;
-  /** 已送达数 */
-  delivered: number;
-  /** 已读数 */
-  read: number;
-  /** 失败数 */
-  failed: number;
-  /** 过期数 */
-  expired: number;
-  /** 按类型统计 */
-  byType: Record<NotificationType, number>;
-  /** 按优先级统计 */
-  byPriority: Record<NotificationPriority, number>;
-  /** 按渠道统计 */
-  byChannel: Record<NotificationChannel, number>;
-  /** 平均送达时间 */
-  averageDeliveryTime: number;
-  /** 阅读率 */
-  readRate: number;
-}
-```
-
----
-
-### NotificationFilter
-
-**文件位置**: `src\services\NotificationService.ts`
-
-**属性**:
-
-- **types** (可选): `NotificationType[]`
-
-- **priorities** (可选): `NotificationPriority[]`
-
-- **statuses** (可选): `NotificationStatus[]`
-
-- **recipientIds** (可选): `string[]`
-
-- **timeRange** (可选): `{`
-
-- **start**: `number`
-
-- **end**: `number`
-
-**完整定义**:
-
-```typescript
-interface NotificationFilter {
-/** 类型过滤 */
-  types?: NotificationType[];
-  /** 优先级过滤 */
-  priorities?: NotificationPriority[];
-  /** 状态过滤 */
-  statuses?: NotificationStatus[];
-  /** 接收者过滤 */
-  recipientIds?: string[];
-  /** 时间范围过滤 */
-timeRange?:  {
-    start: number;
-    end: number
-}
-```
-
----
-
 ### PerformanceThreshold
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -8848,11 +6943,11 @@ timeRange?:  {
 
 - **description**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceThreshold {
-  type: PerformanceMetricType;
+type: PerformanceMetricType;
   warningThreshold: number;
   criticalThreshold: number;
   unit: string;
@@ -8864,7 +6959,7 @@ interface PerformanceThreshold {
 
 ### PerformanceAnalysis
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -8888,8 +6983,8 @@ interface PerformanceThreshold {
 
 - **bestPerformingComponents**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceAnalysis {
 overallScore: number; // 0-100分
@@ -8901,7 +6996,7 @@ overallScore: number; // 0-100分
     totalMetrics: number;
     averageScore: number;
     worstPerformingComponents: string[];
-    bestPerformingComponents: string[]
+    bestPerformingComponents: string[];
 }
 ```
 
@@ -8909,7 +7004,7 @@ overallScore: number; // 0-100分
 
 ### PerformanceIssue
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -8933,11 +7028,11 @@ overallScore: number; // 0-100分
 
 - **detectedAt**: `Date`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceIssue {
-  id: string;
+id: string;
   type: PerformanceMetricType;
   severity: 'warning' | 'critical';
   componentName?: string;
@@ -8954,7 +7049,7 @@ interface PerformanceIssue {
 
 ### PerformanceRecommendation
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -8976,11 +7071,11 @@ interface PerformanceIssue {
 
 - **relatedMetrics**: `PerformanceMetricType[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceRecommendation {
-  id: string;
+id: string;
   category: 'rendering' | 'memory' | 'network' | 'caching' | 'code_splitting';
   priority: 'high' | 'medium' | 'low';
   title: string;
@@ -8996,7 +7091,7 @@ interface PerformanceRecommendation {
 
 ### PerformanceTrend
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -9014,8 +7109,8 @@ interface PerformanceRecommendation {
 
 - **value**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceTrend {
 type: PerformanceMetricType;
@@ -9024,7 +7119,7 @@ type: PerformanceMetricType;
   timeRange: string;
   dataPoints: Array<{
     timestamp: Date;
-    value: number
+    value: number;
 }
 ```
 
@@ -9032,7 +7127,7 @@ type: PerformanceMetricType;
 
 ### PerformanceMonitoringConfig
 
-**文件位置**: `src\services\PerformanceMonitoringService.ts`
+**文件位置**: `src\services\performanceMonitoringService.ts`
 
 **属性**:
 
@@ -9050,11 +7145,11 @@ type: PerformanceMetricType;
 
 - **autoOptimization**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceMonitoringConfig {
-  enabled: boolean;
+enabled: boolean;
   sampleRate: number; // 0-1之间，采样率
   bufferSize: number; // 缓存的指标数量
   reportingInterval: number; // 报告间隔（毫秒）
@@ -9068,7 +7163,7 @@ interface PerformanceMonitoringConfig {
 
 ### ThreatDetectionRule
 
-**文件位置**: `src\services\SecurityAuditService.ts`
+**文件位置**: `src\services\securityAuditService.ts`
 
 **属性**:
 
@@ -9088,11 +7183,11 @@ interface PerformanceMonitoringConfig {
 
 - **enabled**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ThreatDetectionRule {
-  id: string;
+id: string;
   name: string;
   eventTypes: SecurityEventType[];
   condition: (events: SecurityEvent[]) => boolean;
@@ -9107,7 +7202,7 @@ interface ThreatDetectionRule {
 
 ### SecurityStats
 
-**文件位置**: `src\services\SecurityAuditService.ts`
+**文件位置**: `src\services\securityAuditService.ts`
 
 **属性**:
 
@@ -9119,8 +7214,8 @@ interface ThreatDetectionRule {
 
 - **topThreats**: `Array<{ type: SecurityEventType`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityStats {
 totalEvents: number;
@@ -9134,7 +7229,7 @@ totalEvents: number;
 
 ### SecurityConfig
 
-**文件位置**: `src\services\SecurityAuditService.ts`
+**文件位置**: `src\services\securityAuditService.ts`
 
 **属性**:
 
@@ -9152,8 +7247,8 @@ totalEvents: number;
 
 - **rateLimits**: `Record<string, { requests: number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityConfig {
 enableRealTimeMonitoring: boolean;
@@ -9168,174 +7263,9 @@ enableRealTimeMonitoring: boolean;
 
 ---
 
-### SkillExecutionContext
-
-**文件位置**: `src\services\SkillExecutionService.ts`
-
-**属性**:
-
-- **executorId**: `string`
-
-- **executorRole**: `RoleType`
-
-- **targetId** (可选): `string`
-
-- **gameId**: `string`
-
-- **gamePhase**: `GamePhase`
-
-- **timestamp**: `number`
-
-- **params** (可选): `Record<string, any>`
-
-**完整定义**:
-
-```typescript
-interface SkillExecutionContext {
-  /** 执行者ID */
-  executorId: string;
-  /** 执行者角色 */
-  executorRole: RoleType;
-  /** 目标ID（可选） */
-  targetId?: string;
-  /** 游戏ID */
-  gameId: string;
-  /** 当前游戏阶段 */
-  gamePhase: GamePhase;
-  /** 执行时间戳 */
-  timestamp: number;
-  /** 额外参数 */
-  params?: Record<string, any>;
-}
-```
-
----
-
-### SkillExecutionResult
-
-**文件位置**: `src\services\SkillExecutionService.ts`
-
-**属性**:
-
-- **success**: `boolean`
-
-- **skillId**: `string`
-
-- **context**: `SkillExecutionContext`
-
-- **effects**: `SkillEffectResult[]`
-
-- **error** (可选): `{`
-
-- **code**: `string`
-
-- **message**: `string`
-
-- **details** (可选): `any`
-
-**完整定义**:
-
-```typescript
-interface SkillExecutionResult {
-/** 是否执行成功 */
-  success: boolean;
-  /** 技能ID */
-  skillId: string;
-  /** 执行上下文 */
-  context: SkillExecutionContext;
-  /** 技能效果 */
-  effects: SkillEffectResult[];
-  /** 错误信息（如果失败） */
-error?:  {
-    code: string;
-    message: string;
-    details?: any
-}
-```
-
----
-
-### SkillEffectResult
-
-**文件位置**: `src\services\SkillExecutionService.ts`
-
-**属性**:
-
-- **type**: `SkillEffect`
-
-- **targetId**: `string`
-
-- **value**: `number`
-
-- **isCritical**: `boolean`
-
-- **duration**: `number`
-
-- **description**: `string`
-
-**完整定义**:
-
-```typescript
-interface SkillEffectResult {
-  /** 效果类型 */
-  type: SkillEffect;
-  /** 目标ID */
-  targetId: string;
-  /** 效果值 */
-  value: number;
-  /** 是否暴击 */
-  isCritical: boolean;
-  /** 效果持续时间 */
-  duration: number;
-  /** 效果描述 */
-  description: string;
-}
-```
-
----
-
-### SkillCooldownInfo
-
-**文件位置**: `src\services\SkillExecutionService.ts`
-
-**属性**:
-
-- **skillId**: `string`
-
-- **userId**: `string`
-
-- **startTime**: `number`
-
-- **duration**: `number`
-
-- **remainingTime**: `number`
-
-- **isOnCooldown**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface SkillCooldownInfo {
-  /** 技能ID */
-  skillId: string;
-  /** 用户ID */
-  userId: string;
-  /** 冷却开始时间 */
-  startTime: number;
-  /** 冷却持续时间 */
-  duration: number;
-  /** 剩余冷却时间 */
-  remainingTime: number;
-  /** 是否正在冷却 */
-  isOnCooldown: boolean;
-}
-```
-
----
-
 ### SkillUseRequest
 
-**文件位置**: `src\services\SkillSystemService.ts`
+**文件位置**: `src\services\skillSystemService.ts`
 
 **属性**:
 
@@ -9351,11 +7281,11 @@ interface SkillCooldownInfo {
 
 - **metadata** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUseRequest {
-  skillType: string;
+skillType: string;
   targetUserId?: string;
   gameStateId: string;
   userId: string;
@@ -9368,7 +7298,7 @@ interface SkillUseRequest {
 
 ### SkillUseResult
 
-**文件位置**: `src\services\SkillSystemService.ts`
+**文件位置**: `src\services\skillSystemService.ts`
 
 **属性**:
 
@@ -9386,8 +7316,8 @@ interface SkillUseRequest {
 
 - **value**: `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUseResult {
 success: boolean;
@@ -9396,7 +7326,7 @@ success: boolean;
   effects?: Array<{
     type: string;
     targetUserId: string;
-    value: any
+    value: any;
 }
 ```
 
@@ -9404,7 +7334,7 @@ success: boolean;
 
 ### SkillDataQueryOptions
 
-**文件位置**: `src\services\SkillSystemService.ts`
+**文件位置**: `src\services\skillSystemService.ts`
 
 **属性**:
 
@@ -9422,11 +7352,11 @@ success: boolean;
 
 - **offset** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillDataQueryOptions {
-  gameStateId?: string;
+gameStateId?: string;
   userId?: string;
   skillType?: string;
   includeEffects?: boolean;
@@ -9440,7 +7370,7 @@ interface SkillDataQueryOptions {
 
 ### SystemAnnouncementData
 
-**文件位置**: `src\services\SystemAnnouncementService.ts`
+**文件位置**: `src\services\systemAnnouncementService.ts`
 
 **属性**:
 
@@ -9470,15 +7400,11 @@ interface SkillDataQueryOptions {
 
 - **gamePhase**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SystemAnnouncementData {
-  type:
-    | 'skill_usage'
-    | 'status_change'
-    | 'hunter_broadcast'
-    | 'whitewolf_broadcast';
+type: 'skill_usage' | 'status_change' | 'hunter_broadcast' | 'whitewolf_broadcast';
   actorUserId: string;
   actorName: string;
   actorRole: string;
@@ -9491,227 +7417,6 @@ interface SystemAnnouncementData {
   roomId: string;
   gameRound: number;
   gamePhase: string;
-}
-```
-
----
-
-### ValidationConfig
-
-**文件位置**: `src\services\ValidationService.ts`
-
-**属性**:
-
-- **enableCache**: `boolean`
-
-- **cacheTtl**: `number`
-
-- **enableAsync**: `boolean`
-
-- **asyncTimeout**: `number`
-
-- **enableDetailedLogging**: `boolean`
-
-- **maxValidationDepth**: `number`
-
-**完整定义**:
-
-```typescript
-interface ValidationConfig {
-  /** 是否启用缓存 */
-  enableCache: boolean;
-  /** 缓存TTL（毫秒） */
-  cacheTtl: number;
-  /** 是否启用异步验证 */
-  enableAsync: boolean;
-  /** 异步验证超时时间 */
-  asyncTimeout: number;
-  /** 是否启用详细日志 */
-  enableDetailedLogging: boolean;
-  /** 最大验证深度 */
-  maxValidationDepth: number;
-}
-```
-
----
-
-### ValidationTask
-
-**文件位置**: `src\services\ValidationService.ts`
-
-**属性**:
-
-- **id**: `string`
-
-- **type**: `string`
-
-- **data**: `any`
-
-- **rules**: `ValidationRule[]`
-
-- **context** (可选): `ValidationContext`
-
-- **createdAt**: `number`
-
-- **status**: `'pending' | 'running' | 'completed' | 'failed'`
-
-- **result** (可选): `ValidationResult`
-
-- **error** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface ValidationTask {
-  /** 任务ID */
-  id: string;
-  /** 验证类型 */
-  type: string;
-  /** 验证数据 */
-  data: any;
-  /** 验证规则 */
-  rules: ValidationRule[];
-  /** 验证上下文 */
-  context?: ValidationContext;
-  /** 创建时间 */
-  createdAt: number;
-  /** 状态 */
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  /** 结果 */
-  result?: ValidationResult;
-  /** 错误信息 */
-  error?: string;
-}
-```
-
----
-
-### BatchValidationResult
-
-**文件位置**: `src\services\ValidationService.ts`
-
-**属性**:
-
-- **total**: `number`
-
-- **success**: `number`
-
-- **failed**: `number`
-
-- **results**: `Array< {`
-
-- **id**: `string`
-
-- **success**: `boolean`
-
-- **result**: `ValidationResult`
-
-- **error** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface BatchValidationResult {
-/** 总数 */
-  total: number;
-  /** 成功数 */
-  success: number;
-  /** 失败数 */
-  failed: number;
-  /** 详细结果 */
-results: Array< {
-    id: string;
-    success: boolean;
-    result: ValidationResult;
-    error?: string
-}
-```
-
----
-
-### ValidationStats
-
-**文件位置**: `src\services\ValidationService.ts`
-
-**属性**:
-
-- **totalValidations**: `number`
-
-- **successCount**: `number`
-
-- **failureCount**: `number`
-
-- **averageExecutionTime**: `number`
-
-- **cacheHitRate**: `number`
-
-- **byType**: `Record<`
-
-- **count**: `number`
-
-- **successRate**: `number`
-
-- **averageTime**: `number`
-
-**完整定义**:
-
-```typescript
-interface ValidationStats {
-/** 总验证次数 */
-  totalValidations: number;
-  /** 成功次数 */
-  successCount: number;
-  /** 失败次数 */
-  failureCount: number;
-  /** 平均执行时间 */
-  averageExecutionTime: number;
-  /** 缓存命中率 */
-  cacheHitRate: number;
-  /** 按类型统计 */
-  byType: Record<
-    string,
-    {
-      count: number;
-      successRate: number;
-      averageTime: number
-}
-```
-
----
-
-### CustomValidator
-
-**文件位置**: `src\services\ValidationService.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **validate**: `(`
-
-- **value**: `any,`
-
-- **context** (可选): `ValidationContext`
-
-- **description** (可选): `string`
-
-- **isAsync** (可选): `boolean`
-
-**完整定义**:
-
-```typescript
-interface CustomValidator {
-  /** 验证器名称 */
-  name: string;
-  /** 验证函数 */
-  validate: (
-    value: any,
-    context?: ValidationContext
-  ) => ValidationResult | Promise<ValidationResult>;
-  /** 验证器描述 */
-  description?: string;
-  /** 是否异步 */
-  isAsync?: boolean;
 }
 ```
 
@@ -9733,11 +7438,11 @@ interface CustomValidator {
 
 - **data** (可选): `Record<string, unknown>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillEffectData {
-  effect_type: string;
+effect_type: string;
   target_type?: TargetType;
   duration?: number;
   stack_count?: number;
@@ -9781,35 +7486,35 @@ interface SkillEffectData {
 
 - **key**: `string]: unknown`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillEffects {
-  // 狼人技能效果
+// 狼人技能效果
   werewolf_kill?: boolean;
   werewolf_target?: string;
-
+  
   // 预言家技能效果
   seer_check?: boolean;
   seer_result?: 'werewolf' | 'villager' | null;
-
+  
   // 女巫技能效果
   witch_save?: boolean;
   witch_poison?: boolean;
   witch_save_used?: boolean;
   witch_poison_used?: boolean;
-
+  
   // 守卫技能效果
   guard_protect?: boolean;
   guard_last_target?: string;
-
+  
   // 猎人技能效果
   hunter_shoot?: boolean;
   hunter_shoot_used?: boolean;
-
+  
   // 村民技能效果（睡觉）
   villager_sleep?: boolean;
-
+  
   // 通用字段
   [key: string]: unknown;
 }
@@ -9843,8 +7548,8 @@ interface SkillEffects {
 
 - **result**: `'werewolf' | 'villager'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleAttributes {
 // 女巫属性
@@ -9852,13 +7557,13 @@ interface RoleAttributes {
   hasPoisonPotion?: boolean;
   saveUsedRounds?: number[];
   poisonUsedRounds?: number[];
-
+  
   // 守卫属性
   lastProtectedTarget?: string;
-
+  
   // 猎人属性
   hasShot?: boolean;
-
+  
   // 预言家属性
   checkHistory?: Array<{
     round: number;
@@ -9909,11 +7614,11 @@ interface RoleAttributes {
 
 - **updated_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUseRecord {
-  id: string;
+id: string;
   user_id: string;
   game_state_id: string;
   skill_name: string;
@@ -9951,11 +7656,11 @@ interface SkillUseRecord {
 
 - **key**: `string]: unknown`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillResult {
-  success: boolean;
+success: boolean;
   message?: string;
   data?: Record<string, unknown>;
   // 查验结果
@@ -9999,11 +7704,11 @@ interface SkillResult {
 
 - **updated_at**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillTarget {
-  id: string;
+id: string;
   skill_use_id: string;
   skill_effects_queue_id?: string;
   target_user_id?: string;
@@ -10035,11 +7740,11 @@ interface SkillTarget {
 
 - **roleName** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AvailableTarget {
-  userId: string;
+userId: string;
   name: string;
   roleStatus: RoleStatus | number; // 兼容 number 类型
   roleName?: string;
@@ -10064,11 +7769,11 @@ interface AvailableTarget {
 
 - **usedInCurrentRound** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UsageRestriction {
-  canUse: boolean;
+canUse: boolean;
   reason?: string;
   remainingUses?: number;
   maxUses?: number;
@@ -10092,9 +7797,7 @@ interface UsageRestriction {
 
 - **canUseSkill**: `boolean`
 
-- **onUseSkill**: `(`
-
-- **skillData**: `SkillData | Record<string, unknown>`
+- **onUseSkill**: `(skillData: SkillData | Record<string, unknown>) => void | Promise<void>`
 
 - **availableTargets**: `AvailableTarget[]`
 
@@ -10108,22 +7811,20 @@ interface UsageRestriction {
 
 - **skill_name**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleSpecificSkillsProps {
 roleName: string;
   skillEffects: SkillEffects | Record<string, unknown>; // 兼容动态数据
   roleAttributes: RoleAttributes | Record<string, unknown>; // 兼容动态数据
   canUseSkill: boolean;
-  onUseSkill: (
-    skillData: SkillData | Record<string, unknown>
-  ) => void | Promise<void>; // 兼容多种类型
+  onUseSkill: (skillData: SkillData | Record<string, unknown>) => void | Promise<void>; // 兼容多种类型
   availableTargets: AvailableTarget[];
   currentPhase: number;
-  userSkillUses?: Array<{
-    round_number: number;
-    phase: string;
+  userSkillUses?: Array<{ 
+    round_number: number; 
+    phase: string; 
     skill_name: string;
 }
 ```
@@ -10154,11 +7855,11 @@ roleName: string;
 
 - **updated_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflictData {
-  id: string;
+id: string;
   game_state_id: string;
   round_number: number;
   phase: string;
@@ -10188,11 +7889,11 @@ interface SkillConflictData {
 
 - **key**: `string]: unknown`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConflictingSkill {
-  skill_use_id: string;
+skill_use_id: string;
   skill_name: string;
   user_id: string;
   priority: number;
@@ -10216,11 +7917,11 @@ interface ConflictingSkill {
 
 - **lastCleanup** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ResourceStats {
-  memoryUsage: string;
+memoryUsage: string;
   registeredIntervals: number;
   registeredTimeouts: number;
   lastCleanup?: string;
@@ -10245,11 +7946,11 @@ interface ResourceStats {
 
 - **lastUsed** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsageRecord {
-  /** 技能ID */
+/** 技能ID */
   skillId: string;
   /** 已使用次数 */
   used: number;
@@ -10272,11 +7973,11 @@ interface SkillUsageRecord {
 
 - **skillId**: `string]: SkillUsageRecord`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleSkillUsageState {
-  /** 技能使用记录映射 */
+/** 技能使用记录映射 */
   [skillId: string]: SkillUsageRecord;
 }
 ```
@@ -10291,11 +7992,11 @@ interface RoleSkillUsageState {
 
 - **roundNumber**: `number]: string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoundSkillUsage {
-  /** 回合号到技能ID列表的映射 */
+/** 回合号到技能ID列表的映射 */
   [roundNumber: number]: string[];
 }
 ```
@@ -10312,11 +8013,11 @@ interface RoundSkillUsage {
 
 - **remaining**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface LegacySkillUsageState {
-  /** 总使用次数 */
+/** 总使用次数 */
   total: number;
   /** 剩余使用次数 */
   remaining: number;
@@ -10351,11 +8052,11 @@ interface LegacySkillUsageState {
 
 - **updated_at** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleDesign {
-  /** 角色ID */
+/** 角色ID */
   id: string;
   /** 角色名称 */
   role_name: string;
@@ -10412,11 +8113,11 @@ interface RoleDesign {
 
 - **cooldown** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConfig {
-  /** 技能唯一标识 */
+/** 技能唯一标识 */
   id: string;
   /** 中文名称 */
   chineseName: string;
@@ -10471,11 +8172,11 @@ interface SkillConfig {
 
 - **additionalData** (可选): `SkillAdditionalData`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsageContext {
-  /** 用户ID */
+/** 用户ID */
   userId: string;
   /** 游戏状态ID */
   gameStateId: string;
@@ -10516,11 +8217,11 @@ interface SkillUsageContext {
 
 - **key**: `string]: unknown`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillAdditionalData {
-  /** 魔药类型（女巫专用） */
+/** 魔药类型（女巫专用） */
   potionType?: 'heal' | 'poison';
   /** 效果类型 */
   effectType?: SkillEffectType;
@@ -10553,11 +8254,11 @@ interface SkillAdditionalData {
 
 - **details** (可选): `SkillValidationDetails`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillValidationResult {
-  /** 是否有效 */
+/** 是否有效 */
   isValid: boolean;
   /** 失败原因 */
   reason?: string;
@@ -10590,11 +8291,11 @@ interface SkillValidationResult {
 
 - **permissionCheck**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillValidationDetails {
-  /** 阶段检查结果 */
+/** 阶段检查结果 */
   phaseCheck: boolean;
   /** 状态检查结果 */
   statusCheck: boolean;
@@ -10623,11 +8324,11 @@ interface SkillValidationDetails {
 
 - **conflictDetails** (可选): `SkillConflictDetail[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflictResult {
-  /** 是否有冲突 */
+/** 是否有冲突 */
   hasConflicts: boolean;
   /** 冲突列表 */
   conflicts: string[];
@@ -10654,11 +8355,11 @@ interface SkillConflictResult {
 
 - **resolution** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillConflictDetail {
-  /** 技能1 */
+/** 技能1 */
   skill1: SkillConfig;
   /** 技能2 */
   skill2: SkillConfig;
@@ -10691,11 +8392,11 @@ interface SkillConflictDetail {
 
 - **successProbability** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsageSuggestion {
-  /** 是否可以使用 */
+/** 是否可以使用 */
   canUse: boolean;
   /** 建议内容 */
   suggestion: string;
@@ -10732,11 +8433,11 @@ interface SkillUsageSuggestion {
 
 - **usageFrequency**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillStatistics {
-  /** 总使用次数 */
+/** 总使用次数 */
   totalUses: number;
   /** 成功次数 */
   successCount: number;
@@ -10779,11 +8480,11 @@ interface SkillStatistics {
 
 - **context** (可选): `Record<string, unknown>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillError {
-  /** 错误类型 */
+/** 错误类型 */
   type: SkillErrorType;
   /** 错误代码 */
   code: string;
@@ -10828,8 +8529,8 @@ interface SkillError {
 
 - **historicalBehavior**: `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface BehaviorAnalysisResult {
 suspicious: boolean;
@@ -10839,7 +8540,7 @@ suspicious: boolean;
   userProfile: {
     isNewUser: boolean;
     riskLevel: string;
-    historicalBehavior: any
+    historicalBehavior: any;
 }
 ```
 
@@ -10875,8 +8576,8 @@ suspicious: boolean;
 
 - **headers**: `Record<string, string>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AdvancedValidationContext {
 // 基础信息
@@ -10884,7 +8585,7 @@ interface AdvancedValidationContext {
   userId?: string;
   requestId: string;
   timestamp: number;
-
+  
   // 请求信息
   request: {
     ip: string;
@@ -10893,7 +8594,7 @@ interface AdvancedValidationContext {
     origin?: string;
     method: string;
     path: string;
-    headers: Record<string, string>
+    headers: Record<string, string>;
 }
 ```
 
@@ -10931,8 +8632,8 @@ interface AdvancedValidationContext {
 
 - **errorRate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationMetrics {
 totalValidations: number;
@@ -10941,17 +8642,17 @@ totalValidations: number;
   threatsDetected: number;
   averageProcessingTime: number;
   cacheHitRate: number;
-
+  
   // 威胁统计
   threatsByType: Map<string, number>;
   threatsByLevel: Map<ThreatLevel, number>;
-
+  
   // 性能统计
   performanceMetrics: {
     p50ResponseTime: number;
     p95ResponseTime: number;
     p99ResponseTime: number;
-    errorRate: number
+    errorRate: number;
 }
 ```
 
@@ -10975,11 +8676,11 @@ totalValidations: number;
 
 - **features**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AIModelConfig {
-  modelType: 'neural_network' | 'decision_tree' | 'ensemble';
+modelType: 'neural_network' | 'decision_tree' | 'ensemble';
   modelVersion: string;
   confidenceThreshold: number;
   enableOnlineLearning: boolean;
@@ -11050,42 +8751,42 @@ interface AIModelConfig {
 
 - **updatedBy**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AdvancedRole {
-  id: string;
+id: string;
   name: string;
   displayName: string;
   description: string;
   type: RoleType;
   scope: PermissionScope;
-
+  
   // 层级关系
   parentRoles: string[];
   childRoles: string[];
   level: number;
   priority: number;
-
+  
   // 权限配置
   permissions: AdvancedPermission[];
   inheritedPermissions: AdvancedPermission[];
   delegatedPermissions: AdvancedPermission[];
-
+  
   // 约束条件
   constraints: RoleConstraint[];
   conditions: RoleCondition[];
-
+  
   // 时间控制
   validFrom?: number;
   validTo?: number;
   maxDuration?: number;
-
+  
   // 状态信息
   isActive: boolean;
   isSystem: boolean;
   isAssignable: boolean;
-
+  
   // 元数据
   metadata: Record<string, any>;
   tags: string[];
@@ -11160,49 +8861,49 @@ interface AdvancedRole {
 
 - **updatedAt**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AdvancedPermission {
-  id: string;
+id: string;
   name: string;
   displayName: string;
   description: string;
-
+  
   // 权限分类
   category: string;
   subcategory?: string;
   action: string;
   resource: string;
-
+  
   // 权限范围
   scope: PermissionScope;
   scopeId?: string;
-
+  
   // 权限级别
   level: number;
   priority: number;
-
+  
   // 约束条件
   constraints: PermissionConstraint[];
   conditions: PermissionCondition[];
-
+  
   // 时间控制
   validFrom?: number;
   validTo?: number;
   maxUsage?: number;
   usageCount?: number;
-
+  
   // 状态信息
   state: PermissionState;
   isInheritable: boolean;
   isDelegatable: boolean;
   isRevocable: boolean;
-
+  
   // 依赖关系
   dependencies: string[];
   conflicts: string[];
-
+  
   // 元数据
   metadata: Record<string, any>;
   tags: string[];
@@ -11229,18 +8930,12 @@ interface AdvancedPermission {
 
 - **isActive**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleConstraint {
-  id: string;
-  type:
-    | 'mutual_exclusion'
-    | 'prerequisite'
-    | 'cardinality'
-    | 'separation_of_duty'
-    | 'time_based'
-    | 'location_based';
+id: string;
+  type: 'mutual_exclusion' | 'prerequisite' | 'cardinality' | 'separation_of_duty' | 'time_based' | 'location_based';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -11267,22 +8962,14 @@ interface RoleConstraint {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleCondition {
-  id: string;
+id: string;
   type: 'user_attribute' | 'context' | 'time' | 'location' | 'custom';
   field: string;
-  operator:
-    | 'equals'
-    | 'not_equals'
-    | 'in'
-    | 'not_in'
-    | 'greater_than'
-    | 'less_than'
-    | 'matches'
-    | 'custom';
+  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
   description?: string;
 }
@@ -11306,18 +8993,12 @@ interface RoleCondition {
 
 - **isActive**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionConstraint {
-  id: string;
-  type:
-    | 'time_window'
-    | 'usage_limit'
-    | 'ip_restriction'
-    | 'device_restriction'
-    | 'approval_required'
-    | 'custom';
+id: string;
+  type: 'time_window' | 'usage_limit' | 'ip_restriction' | 'device_restriction' | 'approval_required' | 'custom';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -11344,22 +9025,14 @@ interface PermissionConstraint {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionCondition {
-  id: string;
+id: string;
   type: 'context' | 'resource_state' | 'user_state' | 'environment' | 'custom';
   field: string;
-  operator:
-    | 'equals'
-    | 'not_equals'
-    | 'in'
-    | 'not_in'
-    | 'greater_than'
-    | 'less_than'
-    | 'matches'
-    | 'custom';
+  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
   description?: string;
 }
@@ -11411,37 +9084,37 @@ interface PermissionCondition {
 
 - **usageCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserRoleAssignment {
-  id: string;
+id: string;
   userId: string;
   roleId: string;
-
+  
   // 分配信息
   assignedBy: string;
   assignedAt: number;
   reason: string;
-
+  
   // 时间控制
   validFrom?: number;
   validTo?: number;
-
+  
   // 约束条件
   constraints: AssignmentConstraint[];
   conditions: AssignmentCondition[];
-
+  
   // 状态信息
   isActive: boolean;
   isTemporary: boolean;
   isDelegated: boolean;
-
+  
   // 委托信息
   delegatedFrom?: string;
   delegatedBy?: string;
   delegationLevel?: number;
-
+  
   // 元数据
   metadata: Record<string, any>;
   lastUsed?: number;
@@ -11467,17 +9140,12 @@ interface UserRoleAssignment {
 
 - **isActive**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AssignmentConstraint {
-  id: string;
-  type:
-    | 'approval_required'
-    | 'time_limit'
-    | 'usage_limit'
-    | 'location_based'
-    | 'custom';
+id: string;
+  type: 'approval_required' | 'time_limit' | 'usage_limit' | 'location_based' | 'custom';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -11504,28 +9172,14 @@ interface AssignmentConstraint {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AssignmentCondition {
-  id: string;
-  type:
-    | 'user_attribute'
-    | 'context'
-    | 'time'
-    | 'location'
-    | 'approval'
-    | 'custom';
+id: string;
+  type: 'user_attribute' | 'context' | 'time' | 'location' | 'approval' | 'custom';
   field: string;
-  operator:
-    | 'equals'
-    | 'not_equals'
-    | 'in'
-    | 'not_in'
-    | 'greater_than'
-    | 'less_than'
-    | 'matches'
-    | 'custom';
+  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
   value: any;
   description?: string;
 }
@@ -11565,8 +9219,8 @@ interface AssignmentCondition {
 
 - **coordinates** (可选): `{ lat: number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionEvaluationContext {
 userId: string;
@@ -11574,7 +9228,7 @@ userId: string;
   permissionName: string;
   resourceId?: string;
   resourceType?: string;
-
+  
   // 环境信息
   timestamp: number;
   ip?: string;
@@ -11619,13 +9273,13 @@ userId: string;
 
 - **reason** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionEvaluationResult {
 allowed: boolean;
   reason?: string;
-
+  
   // 详细信息
   evaluatedRoles: Array<{
     roleId: string;
@@ -11636,7 +9290,7 @@ allowed: boolean;
       permissionId: string;
       permissionName: string;
       allowed: boolean;
-      reason?: string
+      reason?: string;
 }
 ```
 
@@ -11686,33 +9340,33 @@ allowed: boolean;
 
 - **enableRedundancyDetection**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RBACConfiguration {
-  // 基础配置
+// 基础配置
   enableInheritance: boolean;
   enableDelegation: boolean;
   enableConstraints: boolean;
   enableConditions: boolean;
-
+  
   // 安全配置
   enforceConstraints: boolean;
   requireApprovalForSensitive: boolean;
   enableSeparationOfDuty: boolean;
   enableLeastPrivilege: boolean;
-
+  
   // 性能配置
   enableCaching: boolean;
   cacheTimeout: number;
   enableParallelEvaluation: boolean;
   maxEvaluationTime: number;
-
+  
   // 审计配置
   enableAuditTrail: boolean;
   auditLevel: 'basic' | 'detailed' | 'verbose';
   retentionDays: number;
-
+  
   // 优化配置
   enableAutoOptimization: boolean;
   optimizationInterval: number;
@@ -11751,11 +9405,11 @@ interface RBACConfiguration {
 
 - **blacklist** (可选): `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RateLimitConfig {
-  /** 是否启用速率限制 */
+/** 是否启用速率限制 */
   enabled: boolean;
   /** 时间窗口（秒） */
   windowMs: number;
@@ -11806,11 +9460,11 @@ interface RateLimitConfig {
 
 - **optionsSuccessStatus** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CorsConfig {
-  /** 是否启用CORS */
+/** 是否启用CORS */
   enabled: boolean;
   /** 允许的源 */
   origin: string | string[] | boolean | ((origin: string) => boolean);
@@ -11857,8 +9511,8 @@ interface CorsConfig {
 
 - **clockTolerance** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AuthenticationConfig {
 /** 认证类型 */
@@ -11866,7 +9520,7 @@ interface AuthenticationConfig {
   /** 是否必需认证 */
   required: boolean;
   /** JWT配置 */
-jwt?:  {
+  jwt?: {
     /** 密钥 */
     secret: string;
     /** 算法 */
@@ -11878,7 +9532,7 @@ jwt?:  {
     /** 受众 */
     audience?: string;
     /** 时钟偏移容忍度 */
-    clockTolerance?: number
+    clockTolerance?: number;
 }
 ```
 
@@ -11912,8 +9566,8 @@ jwt?:  {
 
 - **retentionHours**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EncryptionConfig {
 /** 是否启用加密 */
@@ -11931,13 +9585,13 @@ interface EncryptionConfig {
   /** 需要加密的字段 */
   encryptFields?: string[];
   /** 密钥轮换配置 */
-keyRotation?:  {
+  keyRotation?: {
     /** 是否启用密钥轮换 */
     enabled: boolean;
     /** 轮换间隔（小时） */
     intervalHours: number;
     /** 旧密钥保留时间（小时） */
-    retentionHours: number
+    retentionHours: number;
 }
 ```
 
@@ -11967,7 +9621,7 @@ keyRotation?:  {
 
 - **commandInjectionProtection**: `boolean`
 
-- **customRules** (可选): `Array< {`
+- **customRules** (可选): `Array<{`
 
 - **name**: `string`
 
@@ -11977,8 +9631,8 @@ keyRotation?:  {
 
 - **block**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface InputValidationConfig {
 /** 是否启用输入验证 */
@@ -12000,7 +9654,7 @@ interface InputValidationConfig {
   /** 是否启用命令注入防护 */
   commandInjectionProtection: boolean;
   /** 自定义验证规则 */
-customRules?: Array< {
+  customRules?: Array<{
     /** 规则名称 */
     name: string;
     /** 规则模式 */
@@ -12008,7 +9662,7 @@ customRules?: Array< {
     /** 错误消息 */
     message: string;
     /** 是否阻止请求 */
-    block: boolean
+    block: boolean;
 }
 ```
 
@@ -12030,20 +9684,20 @@ customRules?: Array< {
 
 - **reportOnly**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityHeadersConfig {
 /** 是否启用安全头 */
   enabled: boolean;
   /** 内容安全策略 */
-contentSecurityPolicy?:  {
+  contentSecurityPolicy?: {
     /** 是否启用 */
     enabled: boolean;
     /** CSP指令 */
     directives: Record<string, string[]>;
     /** 是否仅报告 */
-    reportOnly: boolean
+    reportOnly: boolean;
 }
 ```
 
@@ -12063,11 +9717,11 @@ contentSecurityPolicy?:  {
 
 - **suggestions**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigValidationResult {
-  /** 是否有效 */
+/** 是否有效 */
   isValid: boolean;
   /** 错误列表 */
   errors: string[];
@@ -12102,8 +9756,8 @@ interface ConfigValidationResult {
 
 - **name**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ConfigUpdateEvent {
 /** 事件类型 */
@@ -12117,9 +9771,9 @@ interface ConfigUpdateEvent {
   /** 错误信息 */
   error?: string;
   /** 用户信息 */
-user?:  {
+  user?: {
     id: string;
-    name: string
+    name: string;
 }
 ```
 
@@ -12149,11 +9803,11 @@ user?:  {
 
 - **customRules**: `SecurityCheckRule[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityCheckConfig {
-  /** 检查类型 */
+/** 检查类型 */
   types: SecurityCheckType[];
   /** 检查级别 */
   level: SecurityCheckLevel;
@@ -12198,11 +9852,11 @@ interface SecurityCheckConfig {
 
 - **frequency** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityCheckRule {
-  /** 规则ID */
+/** 规则ID */
   id: string;
   /** 规则名称 */
   name: string;
@@ -12249,11 +9903,11 @@ interface SecurityCheckRule {
 
 - **requiresImmediateAction**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityCheckResult {
-  /** 检查ID */
+/** 检查ID */
   checkId: string;
   /** 检查类型 */
   type: SecurityCheckType;
@@ -12304,11 +9958,11 @@ interface SecurityCheckResult {
 
 - **lastCheckTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityMonitoringStats {
-  /** 总检查次数 */
+/** 总检查次数 */
   totalChecks: number;
   /** 通过的检查数 */
   passedChecks: number;
@@ -12333,85 +9987,28 @@ interface SecurityMonitoringStats {
 
 ---
 
-### CodeBlock
+### ValidationResult
 
-**文件位置**: `src\utils\codeAnalyzer.ts`
-
-**属性**:
-
-- **content**: `string`
-
-- **file**: `string`
-
-- **startLine**: `number`
-
-- **endLine**: `number`
-
-- **hash**: `string`
-
-**完整定义**:
-
-```typescript
-interface CodeBlock {
-  content: string;
-  file: string;
-  startLine: number;
-  endLine: number;
-  hash: string;
-}
-```
-
----
-
-### DuplicateCodeResult
-
-**文件位置**: `src\utils\codeAnalyzer.ts`
+**文件位置**: `src\utils\common\dataValidation.ts`
 
 **属性**:
 
-- **blocks**: `CodeBlock[]`
+- **valid**: `boolean`
 
-- **similarity**: `number`
+- **reason** (可选): `string`
 
-- **suggestions**: `string[]`
+- **data** (可选): `any`
 
-**完整定义**:
-
-```typescript
-interface DuplicateCodeResult {
-  blocks: CodeBlock[];
-  similarity: number;
-  suggestions: string[];
-}
-```
-
----
-
-### ComplexityResult
-
-**文件位置**: `src\utils\codeAnalyzer.ts`
-
-**属性**:
-
-- **functionName**: `string`
-
-- **file**: `string`
-
-- **complexity**: `number`
-
-- **lineCount**: `number`
-
-- **suggestions**: `string[]`
 
 **完整定义**:
-
 ```typescript
-interface ComplexityResult {
-  functionName: string;
-  file: string;
-  complexity: number;
-  lineCount: number;
-  suggestions: string[];
+interface ValidationResult {
+/** 验证是否通过 */
+  valid: boolean;
+  /** 失败原因 */
+  reason?: string;
+  /** 额外数据 */
+  data?: any;
 }
 ```
 
@@ -12429,11 +10026,11 @@ interface ComplexityResult {
 
 - **baseDelay** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RetryableErrorConfig {
-  /** 可重试的错误类型列表 */
+/** 可重试的错误类型列表 */
   retryableTypes: SkillErrorType[];
   /** 最大重试次数 */
   maxRetries?: number;
@@ -12458,11 +10055,11 @@ interface RetryableErrorConfig {
 
 - **delay** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorRecoverySuggestion {
-  /** 建议的操作 */
+/** 建议的操作 */
   action: ErrorRecoveryAction;
   /** 建议描述 */
   description: string;
@@ -12493,11 +10090,11 @@ interface ErrorRecoverySuggestion {
 
 - **retryDelay** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorHandlingResult {
-  /** 是否成功处理 */
+/** 是否成功处理 */
   handled: boolean;
   /** 处理策略 */
   strategy: ErrorHandlingStrategy;
@@ -12528,11 +10125,11 @@ interface ErrorHandlingResult {
 
 - **resetTime** (可选): `Date`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUsageLimitResult {
-  /** 是否允许使用 */
+/** 是否允许使用 */
   allowed: boolean;
   /** 剩余使用次数 */
   remainingUses?: number;
@@ -12559,11 +10156,11 @@ interface SkillUsageLimitResult {
 
 - **conflicts** (可选): `SkillConflictResult[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillChainValidationResult {
-  /** 验证是否通过 */
+/** 验证是否通过 */
   valid: boolean;
   /** 执行顺序 */
   executionOrder?: SkillType[];
@@ -12571,49 +10168,6 @@ interface SkillChainValidationResult {
   reason?: string;
   /** 冲突详情 */
   conflicts?: SkillConflictResult[];
-}
-```
-
----
-
-### StateChangeRecord
-
-**文件位置**: `src\utils\common\stateHelpers.ts`
-
-**属性**:
-
-- **timestamp**: `number`
-
-- **type**: `'game_phase' | 'role_status' | 'skill_usage' | 'player_action'`
-
-- **previousValue**: `any`
-
-- **currentValue**: `any`
-
-- **triggeredBy** (可选): `string`
-
-- **reason** (可选): `string`
-
-- **metadata** (可选): `Record<string, any>`
-
-**完整定义**:
-
-```typescript
-interface StateChangeRecord {
-  /** 时间戳 */
-  timestamp: number;
-  /** 变化类型 */
-  type: 'game_phase' | 'role_status' | 'skill_usage' | 'player_action';
-  /** 变化前的值 */
-  previousValue: any;
-  /** 变化后的值 */
-  currentValue: any;
-  /** 触发者ID */
-  triggeredBy?: string;
-  /** 变化原因 */
-  reason?: string;
-  /** 额外数据 */
-  metadata?: Record<string, any>;
 }
 ```
 
@@ -12641,11 +10195,11 @@ interface StateChangeRecord {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RenderMetrics {
-  componentName: string;
+componentName: string;
   renderCount: number;
   averageRenderTime: number;
   lastRenderTime: number;
@@ -12678,11 +10232,11 @@ interface RenderMetrics {
 
 - **warningThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RenderOptimizationConfig {
-  enableProfiling: boolean;
+enableProfiling: boolean;
   enableMemoization: boolean;
   enableVirtualization: boolean;
   debounceDelay: number;
@@ -12726,11 +10280,11 @@ interface RenderOptimizationConfig {
 
 - **detectedAt**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityVulnerability {
-  id: string;
+id: string;
   type: VulnerabilityType;
   severity: VulnerabilitySeverity;
   title: string;
@@ -12778,8 +10332,8 @@ interface SecurityVulnerability {
 
 - **infoCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityAuditResult {
 auditId: string;
@@ -12793,7 +10347,7 @@ auditId: string;
     highCount: number;
     mediumCount: number;
     lowCount: number;
-    infoCount: number
+    infoCount: number;
 }
 ```
 
@@ -12825,8 +10379,8 @@ auditId: string;
 
 - **check**: `() => Promise<SecurityVulnerability[]>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AuditConfig {
 includeCodeAnalysis: boolean;
@@ -12838,303 +10392,7 @@ includeCodeAnalysis: boolean;
   excludeCategories: VulnerabilityType[];
   customRules: Array<{
     name: string;
-    check: () => Promise<SecurityVulnerability[]>
-}
-```
-
----
-
-### DebugConfig
-
-**文件位置**: `src\utils\debugSystem.ts`
-
-**属性**:
-
-- **enabled**: `boolean`
-
-- **level**: `DebugLevel`
-
-- **showTimestamp**: `boolean`
-
-- **showStack**: `boolean`
-
-- **persistLogs**: `boolean`
-
-- **maxLogs**: `number`
-
-- **enabledModules**: `string[]`
-
-- **disabledModules**: `string[]`
-
-**完整定义**:
-
-```typescript
-interface DebugConfig {
-  /** 是否启用调试 */
-  enabled: boolean;
-  /** 调试级别 */
-  level: DebugLevel;
-  /** 是否显示时间戳 */
-  showTimestamp: boolean;
-  /** 是否显示调用栈 */
-  showStack: boolean;
-  /** 是否保存到本地存储 */
-  persistLogs: boolean;
-  /** 最大日志条数 */
-  maxLogs: number;
-  /** 启用的模块 */
-  enabledModules: string[];
-  /** 禁用的模块 */
-  disabledModules: string[];
-}
-```
-
----
-
-### DebugLogEntry
-
-**文件位置**: `src\utils\debugSystem.ts`
-
-**属性**:
-
-- **timestamp**: `number`
-
-- **level**: `DebugLevel`
-
-- **module**: `string`
-
-- **message**: `string`
-
-- **data** (可选): `any`
-
-- **stack** (可选): `string`
-
-- **userId** (可选): `string`
-
-- **sessionId** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface DebugLogEntry {
-  /** 时间戳 */
-  timestamp: number;
-  /** 调试级别 */
-  level: DebugLevel;
-  /** 模块名称 */
-  module: string;
-  /** 消息 */
-  message: string;
-  /** 数据 */
-  data?: any;
-  /** 调用栈 */
-  stack?: string;
-  /** 用户ID */
-  userId?: string;
-  /** 会话ID */
-  sessionId?: string;
-}
-```
-
----
-
-### StateSnapshot
-
-**文件位置**: `src\utils\debugSystem.ts`
-
-**属性**:
-
-- **timestamp**: `number`
-
-- **module**: `string`
-
-- **state**: `any`
-
-- **action** (可选): `string`
-
-- **userId** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface StateSnapshot {
-  /** 时间戳 */
-  timestamp: number;
-  /** 模块名称 */
-  module: string;
-  /** 状态数据 */
-  state: any;
-  /** 操作类型 */
-  action?: string;
-  /** 用户ID */
-  userId?: string;
-}
-```
-
----
-
-### DocumentationConfig
-
-**文件位置**: `src\utils\documentationGenerator.ts`
-
-**属性**:
-
-- **srcDir**: `string`
-
-- **outputDir**: `string`
-
-- **includePrivate**: `boolean`
-
-- **includeExamples**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface DocumentationConfig {
-  /** 源代码目录 */
-  srcDir: string;
-  /** 输出目录 */
-  outputDir: string;
-  /** 是否包含私有成员 */
-  includePrivate: boolean;
-  /** 是否生成示例代码 */
-  includeExamples: boolean;
-}
-```
-
----
-
-### ComponentInfo
-
-**文件位置**: `src\utils\documentationGenerator.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **filePath**: `string`
-
-- **description**: `string`
-
-- **props**: `PropInfo[]`
-
-- **hasDocumentation**: `boolean`
-
-**完整定义**:
-
-```typescript
-interface ComponentInfo {
-  /** 组件名称 */
-  name: string;
-  /** 文件路径 */
-  filePath: string;
-  /** 组件描述 */
-  description: string;
-  /** 属性列表 */
-  props: PropInfo[];
-  /** 是否有文档 */
-  hasDocumentation: boolean;
-}
-```
-
----
-
-### PropInfo
-
-**文件位置**: `src\utils\documentationGenerator.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **type**: `string`
-
-- **required**: `boolean`
-
-- **defaultValue** (可选): `string`
-
-- **description** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface PropInfo {
-  /** 属性名称 */
-  name: string;
-  /** 属性类型 */
-  type: string;
-  /** 是否必需 */
-  required: boolean;
-  /** 默认值 */
-  defaultValue?: string;
-  /** 属性描述 */
-  description?: string;
-}
-```
-
----
-
-### FunctionInfo
-
-**文件位置**: `src\utils\documentationGenerator.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **description**: `string`
-
-- **parameters**: `ParameterInfo[]`
-
-- **returnType**: `string`
-
-- **returnDescription**: `string`
-
-**完整定义**:
-
-```typescript
-interface FunctionInfo {
-  /** 函数名称 */
-  name: string;
-  /** 函数描述 */
-  description: string;
-  /** 参数列表 */
-  parameters: ParameterInfo[];
-  /** 返回类型 */
-  returnType: string;
-  /** 返回值描述 */
-  returnDescription: string;
-}
-```
-
----
-
-### ParameterInfo
-
-**文件位置**: `src\utils\documentationGenerator.ts`
-
-**属性**:
-
-- **name**: `string`
-
-- **type**: `string`
-
-- **optional**: `boolean`
-
-- **description**: `string`
-
-**完整定义**:
-
-```typescript
-interface ParameterInfo {
-  /** 参数名称 */
-  name: string;
-  /** 参数类型 */
-  type: string;
-  /** 是否可选 */
-  optional: boolean;
-  /** 参数描述 */
-  description: string;
+    check: () => Promise<SecurityVulnerability[]>;
 }
 ```
 
@@ -13156,11 +10414,11 @@ interface ParameterInfo {
 
 - **validator** (可选): `(value: any, context?: ValidationContext) => boolean | Promise<boolean>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationRule {
-  /** 规则类型 */
+/** 规则类型 */
   type: ValidationRuleType;
   /** 规则参数 */
   params?: any;
@@ -13169,10 +10427,7 @@ interface ValidationRule {
   /** 是否必需 */
   required?: boolean;
   /** 自定义验证函数 */
-  validator?: (
-    value: any,
-    context?: ValidationContext
-  ) => boolean | Promise<boolean>;
+  validator?: (value: any, context?: ValidationContext) => boolean | Promise<boolean>;
 }
 ```
 
@@ -13200,11 +10455,11 @@ interface ValidationRule {
 
 - **sanitizer** (可选): `(value: any) => any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface FieldValidationConfig {
-  /** 字段名称 */
+/** 字段名称 */
   name: string;
   /** 数据类型 */
   type: DataType;
@@ -13220,6 +10475,110 @@ interface FieldValidationConfig {
   sanitize?: boolean;
   /** 自定义清理函数 */
   sanitizer?: (value: any) => any;
+}
+```
+
+---
+
+### ValidationConfig
+
+**文件位置**: `src\utils\enhancedInputValidation.ts`
+
+**属性**:
+
+- **fields**: `FieldValidationConfig[]`
+
+- **global** (可选): `{`
+
+- **maxStringLength** (可选): `number`
+
+- **maxArrayLength** (可选): `number`
+
+- **maxObjectDepth** (可选): `number`
+
+- **allowedFileTypes** (可选): `string[]`
+
+- **maxFileSize** (可选): `number`
+
+- **enableSanitization** (可选): `boolean`
+
+- **enableXSSProtection** (可选): `boolean`
+
+- **enableSQLInjectionProtection** (可选): `boolean`
+
+- **strictMode** (可选): `boolean`
+
+
+**完整定义**:
+```typescript
+interface ValidationConfig {
+/** 字段配置列表 */
+  fields: FieldValidationConfig[];
+  /** 全局配置 */
+  global?: {
+    /** 最大字符串长度 */
+    maxStringLength?: number;
+    /** 最大数组长度 */
+    maxArrayLength?: number;
+    /** 最大对象深度 */
+    maxObjectDepth?: number;
+    /** 允许的文件类型 */
+    allowedFileTypes?: string[];
+    /** 最大文件大小 */
+    maxFileSize?: number;
+    /** 是否启用清理 */
+    enableSanitization?: boolean;
+    /** 是否启用XSS防护 */
+    enableXSSProtection?: boolean;
+    /** 是否启用SQL注入防护 */
+    enableSQLInjectionProtection?: boolean;
+    /** 严格模式 */
+    strictMode?: boolean;
+}
+```
+
+---
+
+### ValidationContext
+
+**文件位置**: `src\utils\enhancedInputValidation.ts`
+
+**属性**:
+
+- **fieldName**: `string`
+
+- **data**: `any`
+
+- **config**: `ValidationConfig`
+
+- **path**: `string[]`
+
+- **depth**: `number`
+
+- **user** (可选): `{`
+
+- **id**: `string`
+
+- **role**: `string`
+
+
+**完整定义**:
+```typescript
+interface ValidationContext {
+/** 字段名称 */
+  fieldName: string;
+  /** 完整数据对象 */
+  data: any;
+  /** 验证配置 */
+  config: ValidationConfig;
+  /** 当前路径 */
+  path: string[];
+  /** 验证深度 */
+  depth: number;
+  /** 用户信息 */
+  user?: {
+    id: string;
+    role: string;
 }
 ```
 
@@ -13243,11 +10602,11 @@ interface FieldValidationConfig {
 
 - **ruleParams** (可选): `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationError {
-  /** 字段名称 */
+/** 字段名称 */
   field: string;
   /** 错误类型 */
   type: ValidationRuleType;
@@ -13282,11 +10641,11 @@ interface ValidationError {
 
 - **scanVirus** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface FileValidationConfig {
-  /** 允许的文件类型 */
+/** 允许的文件类型 */
   allowedTypes: string[];
   /** 最大文件大小（字节） */
   maxSize: number;
@@ -13333,11 +10692,11 @@ interface FileValidationConfig {
 
 - **expiresAt** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Permission {
-  /** 权限ID */
+/** 权限ID */
   id: string;
   /** 权限名称 */
   name: string;
@@ -13394,11 +10753,11 @@ interface Permission {
 
 - **updatedAt**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface Role {
-  /** 角色ID */
+/** 角色ID */
   id: string;
   /** 角色名称 */
   name: string;
@@ -13443,11 +10802,11 @@ interface Role {
 
 - **version**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserPermissions {
-  /** 用户ID */
+/** 用户ID */
   userId: string;
   /** 直接分配的权限 */
   directPermissions: string[];
@@ -13484,8 +10843,8 @@ interface UserPermissions {
 
 - **id** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionAuditLog {
 /** 日志ID */
@@ -13497,9 +10856,9 @@ interface PermissionAuditLog {
   /** 权限ID */
   permissionId: string;
   /** 资源信息 */
-resource:  {
+  resource: {
     type: ResourceType;
-    id?: string
+    id?: string;
 }
 ```
 
@@ -13553,40 +10912,41 @@ resource:  {
 
 - **responseTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedCacheConfig {
 strategy: EnhancedCacheStrategy;
+  
   // TTL配置
   baseTTL: number;
   maxTTL: number;
   minTTL: number;
   adaptiveTTL: boolean;
-
+  
   // 性能配置
   maxMemoryUsage: number;        // 最大内存使用（字节）
   compressionThreshold: number;   // 压缩阈值（字节）
   maxCacheSize: number;          // 最大缓存条目数
-
+  
   // 预加载配置
   enablePreloading: boolean;
   preloadThreshold: number;      // 预加载触发阈值
   maxPreloadItems: number;       // 最大预加载项目数
   preloadBatchSize: number;      // 预加载批次大小
-
+  
   // 智能优化配置
   enableLearning: boolean;       // 启用机器学习优化
   learningRate: number;          // 学习率
   optimizationInterval: number;  // 优化间隔（毫秒）
-
+  
   // 监控配置
   enableMetrics: boolean;        // 启用指标收集
   metricsInterval: number;       // 指标收集间隔
   alertThresholds: {
     hitRate: number;
     memoryUsage: number;
-    responseTime: number
+    responseTime: number;
 }
 ```
 
@@ -13620,11 +10980,11 @@ strategy: EnhancedCacheStrategy;
 
 - **metadata** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EnhancedQueryContext {
-  key: string;
+key: string;
   priority: QueryPriority;
   tags: string[];
   userId?: string;
@@ -13674,11 +11034,11 @@ interface EnhancedQueryContext {
 
 - **costBenefit**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QueryMetrics {
-  key: string;
+key: string;
   hitCount: number;
   missCount: number;
   totalRequests: number;
@@ -13715,11 +11075,11 @@ interface QueryMetrics {
 
 - **itemCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheLevelStats {
-  hits: number;
+hits: number;
   misses: number;
   hitRate: number;
   avgResponseTime: number;
@@ -13746,11 +11106,11 @@ interface CacheLevelStats {
 
 - **memoryUsage**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface HourlyStats {
-  hour: number;
+hour: number;
   queries: number;
   hits: number;
   avgResponseTime: number;
@@ -13774,11 +11134,11 @@ interface HourlyStats {
 
 - **recommendations**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface TrendAnalysis {
-  hitRateTrend: 'improving' | 'stable' | 'declining';
+hitRateTrend: 'improving' | 'stable' | 'declining';
   memoryTrend: 'increasing' | 'stable' | 'decreasing';
   performanceTrend: 'improving' | 'stable' | 'declining';
   recommendations: string[];
@@ -13811,8 +11171,8 @@ interface TrendAnalysis {
 
 - **responseTime** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OptimizationRecommendation {
 type: 'ttl' | 'compression' | 'preload' | 'eviction' | 'strategy';
@@ -13823,7 +11183,7 @@ type: 'ttl' | 'compression' | 'preload' | 'eviction' | 'strategy';
   impact: {
     hitRate?: number;
     memoryUsage?: number;
-    responseTime?: number
+    responseTime?: number;
 }
 ```
 
@@ -13867,11 +11227,11 @@ type: 'ttl' | 'compression' | 'preload' | 'eviction' | 'strategy';
 
 - **batchTimeout** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SubscriptionConfig {
-  table: string;
+table: string;
   filter?: string;
   event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
   schema?: string;
@@ -13928,11 +11288,11 @@ interface SubscriptionConfig {
 
 - **weakRef** (可选): `WeakRef<any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SubscriptionInfo {
-  id: string;
+id: string;
   channelName: string;
   config: SubscriptionConfig;
   status: SubscriptionStatus;
@@ -13976,11 +11336,11 @@ interface SubscriptionInfo {
 
 - **cleanupCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryStats {
-  totalSubscriptions: number;
+totalSubscriptions: number;
   totalMemoryUsage: number;
   averageMemoryPerSubscription: number;
   highPrioritySubscriptions: number;
@@ -14016,11 +11376,11 @@ interface MemoryStats {
 
 - **debounceDelay**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemOptimizationConfig {
-  /** 启用渲染优化 */
+/** 启用渲染优化 */
   enableRenderOptimization: boolean;
   /** 启用内存管理 */
   enableMemoryManagement: boolean;
@@ -14059,11 +11419,11 @@ interface SkillSystemOptimizationConfig {
 
 - **lastUpdateTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillSystemPerformanceMetrics {
-  /** 渲染次数 */
+/** 渲染次数 */
   renderCount: number;
   /** 平均渲染时间 */
   averageRenderTime: number;
@@ -14094,11 +11454,11 @@ interface SkillSystemPerformanceMetrics {
 
 - **renderStartTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RenderStateTracker {
-  /** 渲染时间戳数组 */
+/** 渲染时间戳数组 */
   renderTimestamps: number[];
   /** 渲染持续时间数组 */
   renderDurations: number[];
@@ -14119,16 +11479,16 @@ interface RenderStateTracker {
 
 - **activeSubscriptions**: `Set<() => void>`
 
-- **subscriptionMetadata**: `Map<string,  { createdAt: number`
+- **subscriptionMetadata**: `Map<string, { createdAt: number`
+
 
 **完整定义**:
-
 ```typescript
 interface SubscriptionManager {
 /** 活跃订阅集合 */
   activeSubscriptions: Set<() => void>;
   /** 订阅元数据 */
-subscriptionMetadata: Map<string,  { createdAt: number; lastUsed: number
+  subscriptionMetadata: Map<string, { createdAt: number; lastUsed: number
 }
 ```
 
@@ -14140,14 +11500,14 @@ subscriptionMetadata: Map<string,  { createdAt: number; lastUsed: number
 
 **属性**:
 
-- **cache**: `Map<string,  { data: any`
+- **cache**: `Map<string, { data: any`
+
 
 **完整定义**:
-
 ```typescript
 interface StateCacheManager {
 /** 缓存数据 */
-cache: Map<string,  { data: any; timestamp: number; ttl: number
+  cache: Map<string, { data: any; timestamp: number; ttl: number
 }
 ```
 
@@ -14179,11 +11539,11 @@ cache: Map<string,  { data: any; timestamp: number; ttl: number
 
 - **position**: `'top' | 'bottom' | 'center' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorDisplayConfig {
-  /** 展示模式 */
+/** 展示模式 */
   mode: 'toast' | 'modal' | 'inline' | 'banner' | 'sidebar';
   /** 主题样式 */
   theme: 'light' | 'dark' | 'auto';
@@ -14202,14 +11562,7 @@ interface ErrorDisplayConfig {
   /** 最大宽度 */
   maxWidth: string;
   /** 位置 */
-  position:
-    | 'top'
-    | 'bottom'
-    | 'center'
-    | 'top-right'
-    | 'top-left'
-    | 'bottom-right'
-    | 'bottom-left';
+  position: 'top' | 'bottom' | 'center' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 }
 ```
 
@@ -14247,11 +11600,11 @@ interface ErrorDisplayConfig {
 
 - **colorTheme**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserFriendlyErrorInfo {
-  /** 错误ID */
+/** 错误ID */
   id: string;
   /** 用户友好标题 */
   title: string;
@@ -14306,11 +11659,11 @@ interface UserFriendlyErrorInfo {
 
 - **recommended**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorSolution {
-  /** 解决方案ID */
+/** 解决方案ID */
   id: string;
   /** 解决方案标题 */
   title: string;
@@ -14347,11 +11700,11 @@ interface ErrorSolution {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface HelpLink {
-  /** 链接标题 */
+/** 链接标题 */
   title: string;
   /** 链接URL */
   url: string;
@@ -14384,11 +11737,11 @@ interface HelpLink {
 
 - **pageUrl**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorFeedback {
-  /** 错误ID */
+/** 错误ID */
   errorId: string;
   /** 反馈类型 */
   type: 'helpful' | 'not_helpful' | 'suggestion' | 'bug_report';
@@ -14402,6 +11755,112 @@ interface ErrorFeedback {
   userAgent: string;
   /** 页面URL */
   pageUrl: string;
+}
+```
+
+---
+
+### NotificationAction
+
+**文件位置**: `src\utils\enhancedUserNotificationSystem.ts`
+
+**属性**:
+
+- **label**: `string`
+
+- **action**: `() => void | Promise<void>`
+
+- **style** (可选): `'primary' | 'secondary' | 'danger'`
+
+- **closeAfterAction** (可选): `boolean`
+
+
+**完整定义**:
+```typescript
+interface NotificationAction {
+/** 动作标签 */
+  label: string;
+  /** 动作处理函数 */
+  action: () => void | Promise<void>;
+  /** 动作样式 */
+  style?: 'primary' | 'secondary' | 'danger';
+  /** 是否在执行后关闭通知 */
+  closeAfterAction?: boolean;
+}
+```
+
+---
+
+### NotificationConfig
+
+**文件位置**: `src\utils\enhancedUserNotificationSystem.ts`
+
+**属性**:
+
+- **id** (可选): `string`
+
+- **type**: `NotificationType`
+
+- **title** (可选): `string`
+
+- **message**: `string`
+
+- **duration** (可选): `number`
+
+- **closable** (可选): `boolean`
+
+- **position** (可选): `NotificationPosition`
+
+- **icon** (可选): `string`
+
+- **className** (可选): `string`
+
+- **actions** (可选): `NotificationAction[]`
+
+- **showProgress** (可选): `boolean`
+
+- **onClick** (可选): `() => void`
+
+- **onClose** (可选): `() => void`
+
+- **persistent** (可选): `boolean`
+
+- **priority** (可选): `number`
+
+
+**完整定义**:
+```typescript
+interface NotificationConfig {
+/** 通知ID */
+  id?: string;
+  /** 通知类型 */
+  type: NotificationType;
+  /** 标题 */
+  title?: string;
+  /** 消息内容 */
+  message: string;
+  /** 显示时长（毫秒），0表示不自动关闭 */
+  duration?: number;
+  /** 是否可关闭 */
+  closable?: boolean;
+  /** 通知位置 */
+  position?: NotificationPosition;
+  /** 图标 */
+  icon?: string;
+  /** 自定义CSS类 */
+  className?: string;
+  /** 动作按钮 */
+  actions?: NotificationAction[];
+  /** 是否显示进度条 */
+  showProgress?: boolean;
+  /** 点击回调 */
+  onClick?: () => void;
+  /** 关闭回调 */
+  onClose?: () => void;
+  /** 是否持久化（页面刷新后保留） */
+  persistent?: boolean;
+  /** 优先级（数字越大优先级越高） */
+  priority?: number;
 }
 ```
 
@@ -14427,11 +11886,11 @@ interface ErrorFeedback {
 
 - **update**: `(config: Partial<NotificationConfig>) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface NotificationInstance {
-  /** 通知ID */
+/** 通知ID */
   id: string;
   /** 通知配置 */
   config: NotificationConfig;
@@ -14468,11 +11927,11 @@ interface NotificationInstance {
 
 - **getByPosition**: `(position: NotificationPosition) => NotificationInstance[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface NotificationQueue {
-  /** 添加通知到队列 */
+/** 添加通知到队列 */
   add: (notification: NotificationInstance) => void;
   /** 从队列中移除通知 */
   remove: (id: string) => void;
@@ -14511,11 +11970,11 @@ interface NotificationQueue {
 
 - **suggestedHandling**: `string[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorClassification {
-  /** 错误类型 */
+/** 错误类型 */
   type: string;
   /** 错误分类 */
   category: string;
@@ -14550,17 +12009,14 @@ interface ErrorClassification {
 
 - **technicalDescriptionGenerator**: `(error: any) => string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorPattern {
-  /** 匹配函数 */
+/** 匹配函数 */
   matcher: (error: any) => boolean;
   /** 分类信息 */
-  classification: Omit<
-    ErrorClassification,
-    'userFriendlyDescription' | 'technicalDescription'
-  >;
+  classification: Omit<ErrorClassification, 'userFriendlyDescription' | 'technicalDescription'>;
   /** 用户友好描述生成器 */
   userDescriptionGenerator: (error: any) => string;
   /** 技术描述生成器 */
@@ -14592,11 +12048,12 @@ interface ErrorPattern {
 
 - **reportToMonitoring** (可选): `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardErrorOptions {
-  /** 错误上下文 */ context?: string;
+/** 错误上下文 */
+  context?: string;
   /** 错误严重级别 */
   severity?: ErrorSeverity;
   /** 是否显示用户提示 */
@@ -14622,9 +12079,7 @@ interface StandardErrorOptions {
 
 **属性**:
 
-- **error**: `any,`
-
-- **options** (可选): `StandardErrorOptions`
+- **error**: `any, options?: StandardErrorOptions): Promise<ErrorHandlingResult>`
 
 - **total**: `number`
 
@@ -14634,8 +12089,8 @@ interface StandardErrorOptions {
 
 - **recent**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface IErrorHandler {
 /**
@@ -14644,10 +12099,7 @@ interface IErrorHandler {
    * @param options - 处理选项
    * @returns 处理结果
    */
-  handleError(
-    error: any,
-    options?: StandardErrorOptions
-  ): Promise<ErrorHandlingResult>;
+  handleError(error: any, options?: StandardErrorOptions): Promise<ErrorHandlingResult>;
 
   /**
    * 获取错误统计信息
@@ -14677,11 +12129,11 @@ interface IErrorHandler {
 
 - **message**: `string, duration?: number): void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface IUserNotifier {
-  /**
+/**
    * 显示成功消息
    * @param message - 消息内容
    * @param duration - 显示时长（毫秒）
@@ -14725,11 +12177,11 @@ interface IUserNotifier {
 
 - **error**: `any): string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface IErrorRecoveryStrategy {
-  /**
+/**
    * 检查是否可以恢复
    * @param error - 错误对象
    * @returns 是否可以恢复
@@ -14772,8 +12224,8 @@ interface IErrorRecoveryStrategy {
 
 - **expectedRecoveryTime** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface IErrorClassifier {
 /**
@@ -14818,8 +12270,8 @@ interface IErrorClassifier {
 
 - **memoryUsageThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorMonitoringConfig {
 /** 是否启用监控 */
@@ -14835,13 +12287,13 @@ interface ErrorMonitoringConfig {
   /** 是否启用用户行为追踪 */
   enableUserBehaviorTracking: boolean;
   /** 错误阈值配置 */
-thresholds:  {
+  thresholds: {
     /** 错误率阈值（每分钟） */
     errorRatePerMinute: number;
     /** 高严重级别错误阈值 */
     highSeverityThreshold: number;
     /** 内存使用阈值（MB） */
-    memoryUsageThreshold: number
+    memoryUsageThreshold: number;
 }
 ```
 
@@ -14865,17 +12317,12 @@ thresholds:  {
 
 - **sessionId**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserBehaviorEvent {
-  /** 事件类型 */
-  type:
-    | 'click'
-    | 'navigation'
-    | 'form_submit'
-    | 'error_encounter'
-    | 'recovery_action';
+/** 事件类型 */
+  type: 'click' | 'navigation' | 'form_submit' | 'error_encounter' | 'recovery_action';
   /** 事件时间戳 */
   timestamp: string;
   /** 页面URL */
@@ -14917,8 +12364,8 @@ interface UserBehaviorEvent {
 
 - **environment**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorMonitorConfig {
 /** 是否启用监控 */
@@ -14934,10 +12381,10 @@ interface ErrorMonitorConfig {
   /** 是否启用用户行为追踪 */
   enableUserTracking: boolean;
   /** 第三方服务配置 */
-thirdPartyServices:  {
+  thirdPartyServices: {
     sentry?: {
       dsn: string;
-      environment: string
+      environment: string;
 }
 ```
 
@@ -14955,7 +12402,7 @@ thirdPartyServices:  {
 
 - **errorsByCategory**: `Record<ErrorCategory, number>`
 
-- **errorsByTime**: `Array< {`
+- **errorsByTime**: `Array<{`
 
 - **timestamp**: `number`
 
@@ -14963,8 +12410,8 @@ thirdPartyServices:  {
 
 - **severity**: `ErrorSeverity`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorStats {
 /** 总错误数 */
@@ -14974,10 +12421,10 @@ interface ErrorStats {
   /** 按分类分组的错误数 */
   errorsByCategory: Record<ErrorCategory, number>;
   /** 按时间分组的错误数 */
-errorsByTime: Array< {
+  errorsByTime: Array<{
     timestamp: number;
     count: number;
-    severity: ErrorSeverity
+    severity: ErrorSeverity;
 }
 ```
 
@@ -14997,7 +12444,7 @@ errorsByTime: Array< {
 
 - **lastActivity**: `number`
 
-- **pageViews**: `Array< {`
+- **pageViews**: `Array<{`
 
 - **url**: `string`
 
@@ -15005,8 +12452,8 @@ errorsByTime: Array< {
 
 - **duration**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserSession {
 /** 会话ID */
@@ -15018,10 +12465,10 @@ interface UserSession {
   /** 最后活动时间 */
   lastActivity: number;
   /** 页面访问记录 */
-pageViews: Array< {
+  pageViews: Array<{
     url: string;
     timestamp: number;
-    duration: number
+    duration: number;
 }
 ```
 
@@ -15047,11 +12494,11 @@ pageViews: Array< {
 
 - **config**: `any`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidatorConfig {
-  type: ValidatorType;
+type: ValidatorType;
   enabled: boolean;
   priority: number;
   weight: number;
@@ -15087,16 +12534,16 @@ interface ValidatorConfig {
 
 - **cacheTTL**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationManagerConfig {
 // 验证器配置
   validators: Record<ValidatorType, ValidatorConfig>;
-
+  
   // 策略配置
   strategy: ValidationStrategy;
-
+  
   // 性能配置
   performance: {
     enableParallel: boolean;
@@ -15104,7 +12551,7 @@ interface ValidationManagerConfig {
     timeout: number;
     enableCaching: boolean;
     cacheSize: number;
-    cacheTTL: number
+    cacheTTL: number;
 }
 ```
 
@@ -15130,11 +12577,11 @@ interface ValidationManagerConfig {
 
 - **priority** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationRequest {
-  id: string;
+id: string;
   data: any;
   context: AdvancedValidationContext;
   config?: Partial<ValidationManagerConfig>;
@@ -15170,8 +12617,8 @@ interface ValidationRequest {
 
 - **retryCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidationResponse {
 id: string;
@@ -15182,7 +12629,7 @@ id: string;
     validatorsUsed: ValidatorType[];
     processingTime: number;
     cacheHit: boolean;
-    retryCount: number
+    retryCount: number;
 }
 ```
 
@@ -15224,34 +12671,34 @@ id: string;
 
 - **consensusLevel**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AggregatedValidationResult {
 // 基础结果
   isValid: boolean;
   sanitizedData: any;
   confidence: number;
-
+  
   // 错误和警告
   errors: ValidationError[];
   warnings: ValidationError[];
-
+  
   // 安全信息
   securityScore: number;
   threatLevel: ThreatLevel;
   threats: string[];
-
+  
   // 验证器结果
   validatorResults: Map<ValidatorType, ValidationResult | AdvancedValidationResult>;
-
+  
   // 统计信息
   stats: {
     totalValidators: number;
     successfulValidators: number;
     failedValidators: number;
     averageProcessingTime: number;
-    consensusLevel: number
+    consensusLevel: number;
 }
 ```
 
@@ -15279,11 +12726,11 @@ interface AggregatedValidationResult {
 
 - **lastUpdate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ValidatorMetrics {
-  type: ValidatorType;
+type: ValidatorType;
   totalRequests: number;
   successfulRequests: number;
   failedRequests: number;
@@ -15322,8 +12769,8 @@ interface ValidatorMetrics {
 
 - **averageTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ManagerMetrics {
 totalRequests: number;
@@ -15331,15 +12778,15 @@ totalRequests: number;
   failedRequests: number;
   averageResponseTime: number;
   cacheHitRate: number;
-
+  
   // 验证器指标
   validatorMetrics: Map<ValidatorType, ValidatorMetrics>;
-
+  
   // 策略指标
   strategyMetrics: Map<ValidationStrategy, {
     usage: number;
     successRate: number;
-    averageTime: number
+    averageTime: number;
 }
 ```
 
@@ -15377,11 +12824,11 @@ totalRequests: number;
 
 - **adaptiveThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheStrategyConfig {
-  type: CacheStrategyType;
+type: CacheStrategyType;
   baseTTL: number;
   maxTTL: number;
   minTTL: number;
@@ -15429,11 +12876,11 @@ interface CacheStrategyConfig {
 
 - **accessTrend**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QueryStats {
-  key: string;
+key: string;
   hitCount: number;
   missCount: number;
   lastAccess: number;
@@ -15468,11 +12915,11 @@ interface QueryStats {
 
 - **pattern**: `QueryPattern`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PredictionResult {
-  key: string;
+key: string;
   probability: number;
   suggestedTTL: number;
   preloadPriority: number;
@@ -15507,11 +12954,11 @@ interface PredictionResult {
 
 - **adaptiveAdjustments**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CachePerformanceMetrics {
-  totalQueries: number;
+totalQueries: number;
   cacheHits: number;
   cacheMisses: number;
   hitRate: number;
@@ -15520,107 +12967,6 @@ interface CachePerformanceMetrics {
   compressionSavings: number;
   preloadSuccessRate: number;
   adaptiveAdjustments: number;
-}
-```
-
----
-
-### JSDocGeneratorConfig
-
-**文件位置**: `src\utils\jsdocGenerator.ts`
-
-**属性**:
-
-- **srcDir**: `string`
-
-- **backup**: `boolean`
-
-- **includePrivate**: `boolean`
-
-- **extensions**: `string[]`
-
-**完整定义**:
-
-```typescript
-interface JSDocGeneratorConfig {
-  /** 源代码目录 */
-  srcDir: string;
-  /** 是否备份原文件 */
-  backup: boolean;
-  /** 是否处理私有成员 */
-  includePrivate: boolean;
-  /** 文件扩展名过滤 */
-  extensions: string[];
-}
-```
-
----
-
-### ProcessResult
-
-**文件位置**: `src\utils\jsdocGenerator.ts`
-
-**属性**:
-
-- **filesProcessed**: `number`
-
-- **componentsDocumented**: `number`
-
-- **functionsDocumented**: `number`
-
-- **errors**: `string[]`
-
-- **details**: `ProcessDetail[]`
-
-**完整定义**:
-
-```typescript
-interface ProcessResult {
-  /** 处理的文件数 */
-  filesProcessed: number;
-  /** 添加的组件文档数 */
-  componentsDocumented: number;
-  /** 添加的函数文档数 */
-  functionsDocumented: number;
-  /** 错误列表 */
-  errors: string[];
-  /** 处理详情 */
-  details: ProcessDetail[];
-}
-```
-
----
-
-### ProcessDetail
-
-**文件位置**: `src\utils\jsdocGenerator.ts`
-
-**属性**:
-
-- **filePath**: `string`
-
-- **type**: `'component' | 'function'`
-
-- **name**: `string`
-
-- **action**: `'added' | 'skipped' | 'error'`
-
-- **message**: `string`
-
-**完整定义**:
-
-```typescript
-interface ProcessDetail {
-  /** 文件路径 */
-  filePath: string;
-  /** 处理类型 */
-  type: 'component' | 'function';
-  /** 项目名称 */
-  name: string;
-  /** 操作类型 */
-  action: 'added' | 'skipped' | 'error';
-  /** 消息 */
-  message: string;
 }
 ```
 
@@ -15652,11 +12998,11 @@ interface ProcessDetail {
 
 - **onRecovery** (可选): `(error: UnifiedError) => void`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ErrorHandlingOptions {
-  /** 是否记录日志 */
+/** 是否记录日志 */
   logError?: boolean;
   /** 是否显示用户通知 */
   showNotification?: boolean;
@@ -15711,11 +13057,11 @@ interface ErrorHandlingOptions {
 
 - **maxRetries**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedError {
-  /** 错误唯一标识 */
+/** 错误唯一标识 */
   id: string;
   /** 错误类型 */
   type: 'app' | 'skill' | 'network' | 'validation' | 'permission' | 'unknown';
@@ -15764,11 +13110,11 @@ interface UnifiedError {
 
 - **maxSubscriptions**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryLeakDetectionConfig {
-  /** 启用内存监控 */
+/** 启用内存监控 */
   enableMemoryMonitoring: boolean;
   /** 启用订阅泄漏检测 */
   enableSubscriptionLeakDetection: boolean;
@@ -15805,11 +13151,11 @@ interface MemoryLeakDetectionConfig {
 
 - **lastCheckTime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryUsageStats {
-  /** 当前内存使用量 */
+/** 当前内存使用量 */
   currentUsage: number;
   /** 峰值内存使用量 */
   peakUsage: number;
@@ -15840,11 +13186,11 @@ interface MemoryUsageStats {
 
 - **isCleanedUp**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DOMReferenceInfo {
-  /** 引用ID */
+/** 引用ID */
   id: string;
   /** 元素类型 */
   elementType: string;
@@ -15871,11 +13217,11 @@ interface DOMReferenceInfo {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryUsage {
-  used: number;
+used: number;
   total: number;
   percentage: number;
   timestamp: number;
@@ -15900,11 +13246,11 @@ interface MemoryUsage {
 
 - **severity**: `'low' | 'medium' | 'high' | 'critical'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryLeakDetection {
-  isLeaking: boolean;
+isLeaking: boolean;
   growthRate: number;
   suspiciousObjects: string[];
   recommendations: string[];
@@ -15934,11 +13280,11 @@ interface MemoryLeakDetection {
 
 - **lastUpdate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ComponentMemoryInfo {
-  name: string;
+name: string;
   instances: number;
   memoryUsage: number;
   subscriptions: number;
@@ -15974,11 +13320,11 @@ interface ComponentMemoryInfo {
 
 - **criticalThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryConfig {
-  maxMemoryUsage: number;
+maxMemoryUsage: number;
   leakDetectionInterval: number;
   cleanupInterval: number;
   subscriptionTimeout: number;
@@ -16012,11 +13358,11 @@ interface MemoryConfig {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RenderingMetrics {
-  renderCount: number;
+renderCount: number;
   averageRenderTime: number;
   lastRenderTime: number;
   totalRenderTime: number;
@@ -16048,11 +13394,11 @@ interface RenderingMetrics {
 
 - **debounceDelay**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RenderingConfig {
-  enableProfiling: boolean;
+enableProfiling: boolean;
   enableMemoryTracking: boolean;
   enableRenderOptimization: boolean;
   maxRenderTime: number;
@@ -16082,61 +13428,16 @@ interface RenderingConfig {
 
 - **shouldUpdate**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ComponentRenderState {
-  isRendering: boolean;
+isRendering: boolean;
   renderStartTime: number;
   renderCount: number;
   lastProps: any;
   lastState: any;
   shouldUpdate: boolean;
-}
-```
-
----
-
-### Command
-
-**文件位置**: `src\utils\patterns\command.ts`
-
-**属性**:
-
-- **description** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface Command {
-  execute(): void | Promise<void>;
-  undo?(): void | Promise<void>;
-  canUndo?(): boolean;
-  description?: string;
-}
-```
-
----
-
-### CommandResult
-
-**文件位置**: `src\utils\patterns\command.ts`
-
-**属性**:
-
-- **success**: `boolean`
-
-- **error** (可选): `Error`
-
-- **data** (可选): `any`
-
-**完整定义**:
-
-```typescript
-interface CommandResult {
-  success: boolean;
-  error?: Error;
-  data?: any;
 }
 ```
 
@@ -16158,11 +13459,11 @@ interface CommandResult {
 
 - **version**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PatternMetadata {
-  type: PatternType;
+type: PatternType;
   name: string;
   description: string;
   createdAt: Date;
@@ -16190,11 +13491,11 @@ interface PatternMetadata {
 
 - **subscribedAt**: `Date`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface EventSubscription {
-  /** 订阅ID */
+/** 订阅ID */
   id: string;
   /** 事件名称 */
   eventName: string;
@@ -16231,11 +13532,11 @@ interface EventSubscription {
 
 - **cacheHitRateThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PerformanceFixConfig {
-  enableRenderOptimization: boolean;
+enableRenderOptimization: boolean;
   enableMemoryManagement: boolean;
   enableCacheOptimization: boolean;
   enableSubscriptionCleanup: boolean;
@@ -16269,8 +13570,8 @@ interface PerformanceFixConfig {
 
 - **backoff**: `'linear' | 'exponential'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface QueryConfig {
 /** 查询键 */
@@ -16280,11 +13581,11 @@ interface QueryConfig {
   /** 缓存配置 */
   cache?: Partial<CacheConfig>;
   /** 重试配置 */
-retry:  {
+  retry: {
     enabled: boolean;
     maxAttempts: number;
     delay: number;
-    backoff: 'linear' | 'exponential'
+    backoff: 'linear' | 'exponential';
 }
 ```
 
@@ -16310,11 +13611,11 @@ retry:  {
 
 - **implementation**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheOptimizationSuggestion {
-  type: 'strategy' | 'size' | 'ttl' | 'preload' | 'cleanup';
+type: 'strategy' | 'size' | 'ttl' | 'preload' | 'cleanup';
   priority: 'high' | 'medium' | 'low';
   description: string;
   currentValue: any;
@@ -16360,17 +13661,12 @@ interface CacheOptimizationSuggestion {
 
 - **flushTimer** (可选): `NodeJS.Timeout`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SubscriptionState {
-  id: string;
-  status:
-    | 'connecting'
-    | 'connected'
-    | 'disconnected'
-    | 'error'
-    | 'reconnecting';
+id: string;
+  status: 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting';
   connection: any;
   lastActivity: number;
   reconnectAttempts: number;
@@ -16412,11 +13708,11 @@ interface SubscriptionState {
 
 - **uptime**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SubscriptionStats {
-  totalSubscriptions: number;
+totalSubscriptions: number;
   activeSubscriptions: number;
   totalMemoryUsage: number;
   totalMessages: number;
@@ -16448,11 +13744,11 @@ interface SubscriptionStats {
 
 - **gcThreshold**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface MemoryMonitorConfig {
-  enabled: boolean;
+enabled: boolean;
   checkInterval: number;
   warningThreshold: number;
   criticalThreshold: number;
@@ -16479,17 +13775,11 @@ interface MemoryMonitorConfig {
 
 - **error** (可选): `Error`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SubscriptionEvent {
-  type:
-    | 'connect'
-    | 'disconnect'
-    | 'message'
-    | 'error'
-    | 'reconnect'
-    | 'cleanup';
+type: 'connect' | 'disconnect' | 'message' | 'error' | 'reconnect' | 'cleanup';
   subscriptionId: string;
   timestamp: number;
   data?: any;
@@ -16509,11 +13799,11 @@ interface SubscriptionEvent {
 
 - **count**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RoleCountConfig {
-  roleName: string;
+roleName: string;
   count: number;
 }
 ```
@@ -16534,11 +13824,11 @@ interface RoleCountConfig {
 
 - **roleDesignId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ExpandedRole {
-  roleName: string;
+roleName: string;
   instanceId: string;
   displayName: string;
   roleDesignId?: string;
@@ -16563,11 +13853,11 @@ interface ExpandedRole {
 
 - **count**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RateLimiter {
-  key: string;
+key: string;
   requests: number;
   window: number; // 时间窗口（毫秒）
   lastReset: number;
@@ -16593,11 +13883,11 @@ interface RateLimiter {
 
 - **used**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CSRFToken {
-  token: string;
+token: string;
   userId: string;
   sessionId: string;
   expiry: number;
@@ -16625,8 +13915,8 @@ interface CSRFToken {
 
 - **windowMs**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SecurityMiddlewareOptions {
 requireAuth?: boolean;
@@ -16634,7 +13924,7 @@ requireAuth?: boolean;
   enableRateLimit?: boolean;
   rateLimitConfig?: {
     maxRequests: number;
-    windowMs: number
+    windowMs: number;
 }
 ```
 
@@ -16664,11 +13954,11 @@ requireAuth?: boolean;
 
 - **query** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface RequestContext {
-  userId?: string;
+userId?: string;
   sessionId?: string;
   ipAddress?: string;
   userAgent?: string;
@@ -16702,11 +13992,11 @@ interface RequestContext {
 
 - **userId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface BatchOperation {
-  id: string;
+id: string;
   type: 'skill_use' | 'effect_update' | 'state_sync' | 'validation_check';
   data: any;
   priority: number;
@@ -16730,8 +14020,8 @@ interface BatchOperation {
 
 - **errors**: `Array<{ operation: BatchOperation`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface BatchResult {
 success: boolean;
@@ -16754,11 +14044,11 @@ success: boolean;
 
 - **suggestion** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillValidationCache {
-  canUse: boolean;
+canUse: boolean;
   reason?: string;
   suggestion?: string;
 }
@@ -16778,11 +14068,11 @@ interface SkillValidationCache {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UserRoleStateCache {
-  roleState: any;
+roleState: any;
   roleDesign: any;
   timestamp: number;
 }
@@ -16802,11 +14092,11 @@ interface UserRoleStateCache {
 
 - **timestamp**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface GameStateCache {
-  gameState: any;
+gameState: any;
   players: any[];
   timestamp: number;
 }
@@ -16856,11 +14146,11 @@ interface GameStateCache {
 
 - **skill_config**: `SkillConfig`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardizedSkillUse {
-  id: string;
+id: string;
   user_id: string;
   game_state_id: string;
   skill_name: string;
@@ -16869,12 +14159,7 @@ interface StandardizedSkillUse {
   round_number: number;
   phase: string;
   skill_priority: number;
-  execution_status:
-    | 'pending'
-    | 'processing'
-    | 'completed'
-    | 'cancelled'
-    | 'failed';
+  execution_status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'failed';
   skill_effects: StandardizedEffectData;
   conditions_met: Record<string, any>;
   result?: any;
@@ -16925,11 +14210,11 @@ interface StandardizedSkillUse {
 
 - **updated_at**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardizedSkillEffectsQueue {
-  id: string;
+id: string;
   skill_use_id: string;
   game_state_id: string;
   room_id: string;
@@ -16981,11 +14266,11 @@ interface StandardizedSkillEffectsQueue {
 
 - **updated_at**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardizedSkillTarget {
-  id: string;
+id: string;
   skill_use_id: string;
   skill_effects_queue_id?: string;
   target_user_id?: string;
@@ -17027,8 +14312,8 @@ interface StandardizedSkillTarget {
 
 - **inconsistentFieldCount**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface DataValidationResult {
 isValid: boolean;
@@ -17039,7 +14324,37 @@ isValid: boolean;
     validRecords: number;
     invalidRecords: number;
     missingFieldCount: number;
-    inconsistentFieldCount: number
+    inconsistentFieldCount: number;
+}
+```
+
+---
+
+### SkillEffectConfig
+
+**文件位置**: `src\utils\skillEffectsManager.ts`
+
+**属性**:
+
+- **type**: `string`
+
+- **priority**: `number`
+
+- **duration** (可选): `number`
+
+- **conditions** (可选): `any`
+
+- **data**: `any`
+
+
+**完整定义**:
+```typescript
+interface SkillEffectConfig {
+type: string;
+  priority: number;
+  duration?: number;
+  conditions?: any;
+  data: any;
 }
 ```
 
@@ -17061,11 +14376,11 @@ isValid: boolean;
 
 - **data** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface StandardizedEffectData {
-  effect_type: string;
+effect_type: string;
   target_type?: string;
   duration?: number;
   stack_count?: number;
@@ -17089,11 +14404,11 @@ interface StandardizedEffectData {
 
 - **suggestedAction** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillValidationError {
-  /** 错误代码 */
+/** 错误代码 */
   code: string;
   /** 错误消息 */
   message: string;
@@ -17118,11 +14433,11 @@ interface SkillValidationError {
 
 - **reason** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillUseLimitValidation {
-  /** 是否可以使用 */
+/** 是否可以使用 */
   canUse: boolean;
   /** 剩余使用次数 */
   remainingUses?: number;
@@ -17143,7 +14458,7 @@ interface SkillUseLimitValidation {
 
 - **currentRound**: `number`
 
-- **nightDeaths** (可选): `Array< {`
+- **nightDeaths** (可选): `Array<{`
 
 - **userId**: `string`
 
@@ -17151,8 +14466,8 @@ interface SkillUseLimitValidation {
 
 - **round**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface WitchGameContext {
 /** 游戏状态ID */
@@ -17160,10 +14475,10 @@ interface WitchGameContext {
   /** 当前回合数 */
   currentRound: number;
   /** 夜晚死亡信息 */
-nightDeaths?: Array< {
+  nightDeaths?: Array<{
     userId: string;
     cause: string;
-    round: number
+    round: number;
 }
 ```
 
@@ -17183,11 +14498,11 @@ nightDeaths?: Array< {
 
 - **isAlive**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface AvailablePlayer {
-  /** 用户ID */
+/** 用户ID */
   userId: string;
   /** 用户名 */
   username?: string;
@@ -17214,11 +14529,11 @@ interface AvailablePlayer {
 
 - **targetUserId** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillQueueItem {
-  /** 技能名称 */
+/** 技能名称 */
   skillName: string;
   /** 执行优先级 */
   priority: number;
@@ -17243,11 +14558,11 @@ interface SkillQueueItem {
 
 - **suggestedOrder**: `SkillQueueItem[]`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillExecutionOrderResult {
-  /** 执行顺序是否有效 */
+/** 执行顺序是否有效 */
   validOrder: boolean;
   /** 冲突列表 */
   conflicts: string[];
@@ -17278,24 +14593,17 @@ interface SkillExecutionOrderResult {
 
 - **customValidation** (可选): `(userId: string, gameStateId: string, skillData: any) => Promise<boolean>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface SkillValidationRule {
-  skillName: string;
+skillName: string;
   phases: number[]; // 允许的游戏阶段 (1=day, 2=evening, 3=night, 4=dawn)
   maxUsesPerGame?: number; // 每局游戏最大使用次数
   maxUsesPerRound?: number; // 每回合最大使用次数
   requiresTarget: boolean; // 是否需要目标
-  targetValidation?: (
-    targetId: string,
-    gameStateId: string
-  ) => Promise<boolean>;
-  customValidation?: (
-    userId: string,
-    gameStateId: string,
-    skillData: any
-  ) => Promise<boolean>;
+  targetValidation?: (targetId: string, gameStateId: string) => Promise<boolean>;
+  customValidation?: (userId: string, gameStateId: string, skillData: any) => Promise<boolean>;
 }
 ```
 
@@ -17319,21 +14627,21 @@ interface SkillValidationRule {
 
 - **healthCheckInterval**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedCacheConfig {
 // 默认提供者
   defaultProvider: CacheProvider;
-
+  
   // 路由规则
   routingRules: CacheRoutingRule[];
-
+  
   // 负载均衡配置
   loadBalancing: {
     enabled: boolean;
     strategy: 'round_robin' | 'least_loaded' | 'performance_based';
-    healthCheckInterval: number
+    healthCheckInterval: number;
 }
 ```
 
@@ -17357,11 +14665,11 @@ interface UnifiedCacheConfig {
 
 - **enabled**: `boolean`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheRoutingRule {
-  id: string;
+id: string;
   name: string;
   condition: CacheCondition;
   provider: CacheProvider;
@@ -17382,8 +14690,8 @@ interface CacheRoutingRule {
 
 - **dataSize** (可选): `{ min?: number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheCondition {
 keyPattern?: RegExp;
@@ -17415,11 +14723,11 @@ keyPattern?: RegExp;
 
 - **retryCount** (可选): `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface CacheRequestContext {
-  key: string;
+key: string;
   operation: CacheOperation;
   priority: QueryPriority;
   tags: string[];
@@ -17452,11 +14760,11 @@ interface CacheRequestContext {
 
 - **consecutiveFailures**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ProviderHealth {
-  provider: CacheProvider;
+provider: CacheProvider;
   healthy: boolean;
   responseTime: number;
   errorRate: number;
@@ -17492,25 +14800,25 @@ interface ProviderHealth {
 
 - **routingStats**: `Map<string, number>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedCacheStats {
-  totalRequests: number;
+totalRequests: number;
   successfulRequests: number;
   failedRequests: number;
   averageResponseTime: number;
   overallHitRate: number;
-
+  
   // 按提供者分组的统计
   providerStats: Map<CacheProvider, ProviderStats>;
-
+  
   // 按操作分组的统计
   operationStats: Map<CacheOperation, OperationStats>;
-
+  
   // 健康状态
   providerHealth: Map<CacheProvider, ProviderHealth>;
-
+  
   // 路由统计
   routingStats: Map<string, number>;
 }
@@ -17536,11 +14844,11 @@ interface UnifiedCacheStats {
 
 - **memoryUsage**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface ProviderStats {
-  requests: number;
+requests: number;
   successes: number;
   failures: number;
   averageResponseTime: number;
@@ -17563,11 +14871,11 @@ interface ProviderStats {
 
 - **successRate**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface OperationStats {
-  count: number;
+count: number;
   averageResponseTime: number;
   successRate: number;
 }
@@ -17611,21 +14919,14 @@ interface OperationStats {
 
 - **actionSuggestion** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedErrorData {
-  /** 错误唯一标识 */
+/** 错误唯一标识 */
   id: string;
   /** 错误类型 */
-  type:
-    | 'app'
-    | 'skill'
-    | 'network'
-    | 'validation'
-    | 'business'
-    | 'system'
-    | 'security';
+  type: 'app' | 'skill' | 'network' | 'validation' | 'business' | 'system' | 'security';
   /** 错误代码 */
   code: string;
   /** 原始错误消息 */
@@ -17685,11 +14986,11 @@ interface UnifiedErrorData {
 
 - **createdBy**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionPolicy {
-  id: string;
+id: string;
   name: string;
   description: string;
   type: PermissionPolicyType;
@@ -17723,21 +15024,13 @@ interface PermissionPolicy {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PolicyCondition {
-  id: string;
+id: string;
   type: 'user' | 'role' | 'resource' | 'time' | 'location' | 'custom';
-  operator:
-    | 'equals'
-    | 'not_equals'
-    | 'in'
-    | 'not_in'
-    | 'contains'
-    | 'matches'
-    | 'greater_than'
-    | 'less_than';
+  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'contains' | 'matches' | 'greater_than' | 'less_than';
   field: string;
   value: any;
   description?: string;
@@ -17762,11 +15055,11 @@ interface PolicyCondition {
 
 - **description** (可选): `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PolicyAction {
-  id: string;
+id: string;
   type: PermissionOperation;
   target: string; // 权限名称或角色ID
   parameters?: Record<string, any>;
@@ -17808,11 +15101,11 @@ interface PolicyAction {
 
 - **metadata** (可选): `Record<string, any>`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionRequest {
-  id: string;
+id: string;
   userId: string;
   permissionName: string;
   resourceType: ResourceType;
@@ -17852,8 +15145,8 @@ interface PermissionRequest {
 
 - **conflict**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionAnalysis {
 userId: string;
@@ -17863,7 +15156,7 @@ userId: string;
   conflictingPermissions: Array<{
     permission1: string;
     permission2: string;
-    conflict: string
+    conflict: string;
 }
 ```
 
@@ -17893,21 +15186,21 @@ userId: string;
 
 - **averagePermissionsPerUser**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionStatistics {
 totalUsers: number;
   totalRoles: number;
   totalPermissions: number;
   totalPolicies: number;
-
+  
   // 用户统计
   userStats: {
     activeUsers: number;
     inactiveUsers: number;
     suspendedUsers: number;
-    averagePermissionsPerUser: number
+    averagePermissionsPerUser: number;
 }
 ```
 
@@ -17929,8 +15222,8 @@ totalUsers: number;
 
 - **cleanupInterval**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface UnifiedPermissionConfig {
 // 缓存配置
@@ -17938,7 +15231,7 @@ interface UnifiedPermissionConfig {
     enabled: boolean;
     ttl: number;
     maxSize: number;
-    cleanupInterval: number
+    cleanupInterval: number;
 }
 ```
 
@@ -17966,18 +15259,12 @@ interface UnifiedPermissionConfig {
 
 - **severity**: `'info' | 'warning' | 'error' | 'critical'`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface PermissionEvent {
-  id: string;
-  type:
-    | 'permission_granted'
-    | 'permission_revoked'
-    | 'role_assigned'
-    | 'role_removed'
-    | 'policy_applied'
-    | 'security_violation';
+id: string;
+  type: 'permission_granted' | 'permission_revoked' | 'role_assigned' | 'role_removed' | 'policy_applied' | 'security_violation';
   userId: string;
   targetId: string; // 权限ID、角色ID等
   details: Record<string, any>;
@@ -18013,11 +15300,11 @@ interface PermissionEvent {
 
 - **storageKey**: `string`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface NotificationSystemConfig {
-  /** 默认持续时间 */
+/** 默认持续时间 */
   defaultDuration: number;
   /** 默认位置 */
   defaultPosition: NotificationPosition;
@@ -18040,46 +15327,40 @@ interface NotificationSystemConfig {
 
 ---
 
-### EmailValidationResult
+### NotificationStats
 
-**文件位置**: `src\utils\validation.ts`
-
-**属性**:
-
-- **isValid**: `boolean`
-
-- **error** (可选): `string`
-
-**完整定义**:
-
-```typescript
-interface EmailValidationResult {
-  isValid: boolean;
-  error?: string;
-}
-```
-
----
-
-### PasswordValidationResult
-
-**文件位置**: `src\utils\validation.ts`
+**文件位置**: `src\utils\userNotificationSystem.ts`
 
 **属性**:
 
-- **isValid**: `boolean`
+- **total**: `number`
 
-- **strength**: `string`
+- **byType**: `Record<NotificationType, number>`
 
-- **error** (可选): `string`
+- **byPosition**: `Record<NotificationPosition, number>`
+
+- **averageDisplayTime**: `number`
+
+- **interactionRate**: `number`
+
+- **lastNotificationTime**: `number`
+
 
 **完整定义**:
-
 ```typescript
-interface PasswordValidationResult {
-  isValid: boolean;
-  strength: string;
-  error?: string;
+interface NotificationStats {
+/** 总通知数 */
+  total: number;
+  /** 按类型统计 */
+  byType: Record<NotificationType, number>;
+  /** 按位置统计 */
+  byPosition: Record<NotificationPosition, number>;
+  /** 平均显示时间 */
+  averageDisplayTime: number;
+  /** 用户交互率 */
+  interactionRate: number;
+  /** 最后通知时间 */
+  lastNotificationTime: number;
 }
 ```
 
@@ -18107,8 +15388,8 @@ interface PasswordValidationResult {
 
 - **percentage**: `number`
 
-**完整定义**:
 
+**完整定义**:
 ```typescript
 interface VotingSummary {
 totalVotes: number;
@@ -18118,11 +15399,12 @@ totalVotes: number;
     playerId: string;
     playerName: string;
     voteCount: number;
-    percentage: number
+    percentage: number;
 }
 ```
 
 ---
+
 
 ## 通用接口
 
@@ -18162,4 +15444,4 @@ interface PaginatedResponse<T> extends BaseResponse<T[]> {
 
 ## 更新日志
 
-- 2025-10-09: 自动生成接口定义文档
+- 2025-10-08: 自动生成接口定义文档

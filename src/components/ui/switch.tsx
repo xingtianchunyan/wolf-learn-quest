@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 import * as SwitchPrimitives from '@radix-ui/react-switch'
 
@@ -34,7 +34,7 @@ import * as SwitchPrimitives from '@radix-ui/react-switch'
 const Switch = React.forwardRef<;
 React.ElementRef<typeof SwitchPrimitives.Root>,
 React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> & { checkedLabel?: string;
-  uncheckedLabel?: string
+  uncheckedLabel?: string;,
 }
 >(({ className, checkedLabel, uncheckedLabel, ...props  }, ref) => (;
   <SwitchPrimitives.Root

@@ -25,7 +25,7 @@ class CodeFormatter {
       semicolons: true,
       singleQuotes: true,
       bracketSpacing: true,
-      arrowParens: 'avoid',
+      arrowParens: 'avoid'
     };
     this.formatLog = [];
   }
@@ -38,32 +38,22 @@ class CodeFormatter {
    */
   async run(options = {}) {
     const dryRun = options.dryRun || false;
-    const fileTypes = options.fileTypes || [
-      '.ts',
-      '.tsx',
-      '.js',
-      '.jsx',
-      '.css',
-      '.scss',
-      '.json',
-    ];
+    const fileTypes = options.fileTypes || ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss', '.json'];
 
     console.log(`🎨 开始代码格式化${dryRun ? ' (试运行模式)' : ''}...\n`);
-
+    
     // 获取所有文件
     const files = this.getFilesRecursively(this.srcPath, fileTypes);
-
+    
     // 格式化文件
     for (const filePath of files) {
       await this.formatFile(filePath, dryRun);
     }
-
+    
     // 生成报告
     await this.generateReport(dryRun);
-
-    console.log(
-      `✨ 代码格式化完成！${dryRun ? ' (试运行模式，未实际修改文件)' : ''}`
-    );
+    
+    console.log(`✨ 代码格式化完成！${dryRun ? ' (试运行模式，未实际修改文件)' : ''}`);
   }
 
   /**
@@ -74,17 +64,17 @@ class CodeFormatter {
    */
   getFilesRecursively(dir, extensions) {
     const files = [];
-
+    
     if (!fs.existsSync(dir)) {
       return files;
     }
-
+    
     const items = fs.readdirSync(dir);
-
+    
     for (const item of items) {
       const fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
-
+      
       if (stat.isDirectory()) {
         if (!this.shouldSkipDirectory(item)) {
           files.push(...this.getFilesRecursively(fullPath, extensions));
@@ -93,7 +83,7 @@ class CodeFormatter {
         files.push(fullPath);
       }
     }
-
+    
     return files;
   }
 
@@ -103,15 +93,7 @@ class CodeFormatter {
    * @returns {boolean} 是否跳过
    */
   shouldSkipDirectory(dirName) {
-    const skipDirs = [
-      'node_modules',
-      '.git',
-      'dist',
-      'build',
-      '__tests__',
-      'test',
-      'tests',
-    ];
+    const skipDirs = ['node_modules', '.git', 'dist', 'build', '__tests__', 'test', 'tests'];
     return skipDirs.includes(dirName);
   }
 
@@ -124,9 +106,9 @@ class CodeFormatter {
     try {
       const originalContent = fs.readFileSync(filePath, 'utf8');
       const extension = path.extname(filePath);
-
+      
       let formattedContent;
-
+      
       switch (extension) {
         case '.ts':
         case '.tsx':
@@ -144,24 +126,22 @@ class CodeFormatter {
         default:
           return; // 跳过不支持的文件类型
       }
-
+      
       if (formattedContent !== originalContent) {
         if (!dryRun) {
           fs.writeFileSync(filePath, formattedContent, 'utf8');
         }
-
+        
         this.formatLog.push({
           file: path.relative(this.srcPath, filePath),
           type: extension,
-          changes: this.getChangeSummary(originalContent, formattedContent),
+          changes: this.getChangeSummary(originalContent, formattedContent)
         });
-
+        
         console.log(`✅ 格式化: ${path.relative(this.srcPath, filePath)}`);
       }
     } catch (error) {
-      console.error(
-        `❌ 格式化失败: ${path.relative(this.srcPath, filePath)} - ${error.message}`
-      );
+      console.error(`❌ 格式化失败: ${path.relative(this.srcPath, filePath)} - ${error.message}`);
     }
   }
 
@@ -172,35 +152,35 @@ class CodeFormatter {
    */
   formatJavaScript(content) {
     let formatted = content;
-
+    
     // 1. 统一缩进
     formatted = this.normalizeIndentation(formatted);
-
+    
     // 2. 统一引号
     if (this.formatRules.singleQuotes) {
       formatted = this.normalizeSingleQuotes(formatted);
     }
-
+    
     // 3. 统一分号
     if (this.formatRules.semicolons) {
       formatted = this.addSemicolons(formatted);
     }
-
+    
     // 4. 格式化对象和数组
     formatted = this.formatObjectsAndArrays(formatted);
-
+    
     // 5. 格式化函数
     formatted = this.formatFunctions(formatted);
-
+    
     // 6. 格式化导入语句
     formatted = this.formatImports(formatted);
-
+    
     // 7. 移除多余空行
     formatted = this.removeExtraBlankLines(formatted);
-
+    
     // 8. 格式化注释
     formatted = this.formatComments(formatted);
-
+    
     return formatted;
   }
 
@@ -211,43 +191,30 @@ class CodeFormatter {
    */
   normalizeIndentation(content) {
     const lines = content.split('\n');
-    const indentChar =
-      this.formatRules.indentType === 'tabs'
-        ? '\t'
-        : ' '.repeat(this.formatRules.indentSize);
+    const indentChar = this.formatRules.indentType === 'tabs' ? '\t' : ' '.repeat(this.formatRules.indentSize);
     let indentLevel = 0;
-
-    return lines
-      .map(line => {
-        const trimmed = line.trim();
-
-        if (trimmed === '') {
-          return '';
-        }
-
-        // 减少缩进级别
-        if (
-          trimmed.startsWith('}') ||
-          trimmed.startsWith(']') ||
-          trimmed.startsWith(')')
-        ) {
-          indentLevel = Math.max(0, indentLevel - 1);
-        }
-
-        const formattedLine = indentChar.repeat(indentLevel) + trimmed;
-
-        // 增加缩进级别
-        if (
-          trimmed.endsWith('{') ||
-          trimmed.endsWith('[') ||
-          trimmed.endsWith('(')
-        ) {
-          indentLevel++;
-        }
-
-        return formattedLine;
-      })
-      .join('\n');
+    
+    return lines.map(line => {
+      const trimmed = line.trim();
+      
+      if (trimmed === '') {
+        return '';
+      }
+      
+      // 减少缩进级别
+      if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+        indentLevel = Math.max(0, indentLevel - 1);
+      }
+      
+      const formattedLine = indentChar.repeat(indentLevel) + trimmed;
+      
+      // 增加缩进级别
+      if (trimmed.endsWith('{') || trimmed.endsWith('[') || trimmed.endsWith('(')) {
+        indentLevel++;
+      }
+      
+      return formattedLine;
+    }).join('\n');
   }
 
   /**
@@ -267,34 +234,31 @@ class CodeFormatter {
    */
   addSemicolons(content) {
     const lines = content.split('\n');
-
-    return lines
-      .map(line => {
-        const trimmed = line.trim();
-
-        // 需要分号的语句
-        if (
-          trimmed &&
-          !trimmed.endsWith(';') &&
-          !trimmed.endsWith('{') &&
-          !trimmed.endsWith('}') &&
-          !trimmed.endsWith(',') &&
-          !trimmed.startsWith('//') &&
-          !trimmed.startsWith('/*') &&
-          !trimmed.startsWith('*') &&
+    
+    return lines.map(line => {
+      const trimmed = line.trim();
+      
+      // 需要分号的语句
+      if (trimmed && 
+          !trimmed.endsWith(';') && 
+          !trimmed.endsWith('{') && 
+          !trimmed.endsWith('}') && 
+          !trimmed.endsWith(',') && 
+          !trimmed.startsWith('//') && 
+          !trimmed.startsWith('/*') && 
+          !trimmed.startsWith('*') && 
           !trimmed.includes('//') &&
-          (trimmed.includes('=') ||
-            trimmed.startsWith('return') ||
-            trimmed.startsWith('throw') ||
-            trimmed.startsWith('break') ||
-            trimmed.startsWith('continue'))
-        ) {
-          return line + ';';
-        }
-
-        return line;
-      })
-      .join('\n');
+          (trimmed.includes('=') || 
+           trimmed.startsWith('return') || 
+           trimmed.startsWith('throw') || 
+           trimmed.startsWith('break') || 
+           trimmed.startsWith('continue'))) {
+        
+        return line + ';';
+      }
+      
+      return line;
+    }).join('\n');
   }
 
   /**
@@ -304,21 +268,21 @@ class CodeFormatter {
    */
   formatObjectsAndArrays(content) {
     let formatted = content;
-
+    
     // 在对象大括号内添加空格
     if (this.formatRules.bracketSpacing) {
       formatted = formatted.replace(/{\s*([^}]+)\s*}/g, '{ $1 }');
     }
-
+    
     // 格式化数组
     formatted = formatted.replace(/\[\s*([^\]]+)\s*\]/g, '[$1]');
-
+    
     // 添加尾随逗号
     if (this.formatRules.trailingComma) {
       formatted = formatted.replace(/([^,\s])\s*\n\s*}/g, '$1,\n}');
       formatted = formatted.replace(/([^,\s])\s*\n\s*\]/g, '$1,\n]');
     }
-
+    
     return formatted;
   }
 
@@ -329,19 +293,16 @@ class CodeFormatter {
    */
   formatFunctions(content) {
     let formatted = content;
-
+    
     // 格式化箭头函数
     if (this.formatRules.arrowParens === 'avoid') {
       formatted = formatted.replace(/\(\s*(\w+)\s*\)\s*=>/g, '$1 =>');
     }
-
+    
     // 在函数参数周围添加适当的空格
-    formatted = formatted.replace(
-      /function\s*\(\s*([^)]*)\s*\)/g,
-      'function($1)'
-    );
+    formatted = formatted.replace(/function\s*\(\s*([^)]*)\s*\)/g, 'function($1)');
     formatted = formatted.replace(/\(\s*([^)]*)\s*\)\s*=>/g, '($1) =>');
-
+    
     return formatted;
   }
 
@@ -354,7 +315,7 @@ class CodeFormatter {
     const lines = content.split('\n');
     const imports = [];
     const otherLines = [];
-
+    
     // 分离导入语句和其他代码
     for (const line of lines) {
       if (line.trim().startsWith('import ')) {
@@ -363,21 +324,21 @@ class CodeFormatter {
         otherLines.push(line);
       }
     }
-
+    
     // 排序导入语句
     imports.sort((a, b) => {
       // 先按模块类型排序（内置模块 -> 第三方模块 -> 相对模块）
       const aIsRelative = a.includes('./') || a.includes('../');
       const bIsRelative = b.includes('./') || b.includes('../');
-
+      
       if (aIsRelative !== bIsRelative) {
         return aIsRelative ? 1 : -1;
       }
-
+      
       // 然后按字母顺序排序
       return a.localeCompare(b);
     });
-
+    
     // 重新组合
     const result = [];
     if (imports.length > 0) {
@@ -385,7 +346,7 @@ class CodeFormatter {
       result.push(''); // 在导入后添加空行
     }
     result.push(...otherLines);
-
+    
     return result.join('\n');
   }
 
@@ -406,14 +367,14 @@ class CodeFormatter {
    */
   formatComments(content) {
     let formatted = content;
-
+    
     // 确保单行注释后有空格
     formatted = formatted.replace(/\/\/([^\s])/g, '// $1');
-
+    
     // 格式化多行注释
     formatted = formatted.replace(/\/\*([^*])/g, '/* $1');
     formatted = formatted.replace(/([^*])\*\//g, '$1 */');
-
+    
     return formatted;
   }
 
@@ -424,24 +385,24 @@ class CodeFormatter {
    */
   formatCSS(content) {
     let formatted = content;
-
+    
     // 1. 统一缩进
     formatted = this.normalizeIndentation(formatted);
-
+    
     // 2. 格式化选择器
     formatted = formatted.replace(/,\s*/g, ',\n');
-
+    
     // 3. 格式化属性
     formatted = formatted.replace(/:\s*/g, ': ');
     formatted = formatted.replace(/;\s*/g, ';\n');
-
+    
     // 4. 格式化大括号
     formatted = formatted.replace(/{\s*/g, ' {\n');
     formatted = formatted.replace(/}\s*/g, '\n}\n');
-
+    
     // 5. 移除多余空行
     formatted = this.removeExtraBlankLines(formatted);
-
+    
     return formatted;
   }
 
@@ -470,15 +431,15 @@ class CodeFormatter {
     const originalLines = original.split('\n').length;
     const formattedLines = formatted.split('\n').length;
     const lineDiff = formattedLines - originalLines;
-
+    
     // 计算字符差异
     const charDiff = formatted.length - original.length;
-
+    
     return {
       linesDiff: lineDiff,
       charsDiff: charDiff,
       originalLines,
-      formattedLines,
+      formattedLines
     };
   }
 
@@ -488,38 +449,32 @@ class CodeFormatter {
    */
   async generateReport(dryRun) {
     console.log('\n📊 生成格式化报告...');
-
+    
     const report = {
       timestamp: new Date().toISOString(),
       dryRun,
       summary: {
         totalFiles: this.formatLog.length,
         fileTypes: this.getFileTypesSummary(),
-        totalLineChanges: this.formatLog.reduce(
-          (sum, log) => sum + Math.abs(log.changes.linesDiff),
-          0
-        ),
-        totalCharChanges: this.formatLog.reduce(
-          (sum, log) => sum + Math.abs(log.changes.charsDiff),
-          0
-        ),
+        totalLineChanges: this.formatLog.reduce((sum, log) => sum + Math.abs(log.changes.linesDiff), 0),
+        totalCharChanges: this.formatLog.reduce((sum, log) => sum + Math.abs(log.changes.charsDiff), 0)
       },
       formatRules: this.formatRules,
-      details: this.formatLog,
+      details: this.formatLog
     };
-
+    
     // 生成JSON报告
     const reportsPath = path.join(process.cwd(), 'reports');
     if (!fs.existsSync(reportsPath)) {
       fs.mkdirSync(reportsPath, { recursive: true });
     }
-
+    
     fs.writeFileSync(
       path.join(reportsPath, 'format-report.json'),
       JSON.stringify(report, null, 2),
       'utf8'
     );
-
+    
     // 生成Markdown报告
     const markdownReport = this.generateMarkdownReport(report);
     fs.writeFileSync(
@@ -527,17 +482,17 @@ class CodeFormatter {
       markdownReport,
       'utf8'
     );
-
+    
     // 打印摘要
     console.log('\n📋 格式化摘要:');
     console.log(`  格式化文件数: ${report.summary.totalFiles}`);
     console.log(`  总行数变化: ${report.summary.totalLineChanges}`);
     console.log(`  总字符变化: ${report.summary.totalCharChanges}`);
-
+    
     for (const [type, count] of Object.entries(report.summary.fileTypes)) {
       console.log(`  ${type}: ${count} 个文件`);
     }
-
+    
     console.log(`\n📁 报告已保存到 reports/ 目录`);
   }
 
@@ -547,11 +502,11 @@ class CodeFormatter {
    */
   getFileTypesSummary() {
     const summary = {};
-
+    
     for (const log of this.formatLog) {
       summary[log.type] = (summary[log.type] || 0) + 1;
     }
-
+    
     return summary;
   }
 
@@ -584,19 +539,13 @@ class CodeFormatter {
 
 ## 文件类型统计
 
-${Object.entries(report.summary.fileTypes)
-  .map(
-    ([type, count]) => `
+${Object.entries(report.summary.fileTypes).map(([type, count]) => `
 - **${type}**: ${count} 个文件
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 详细变更
 
-${report.details
-  .map(
-    detail => `
+${report.details.map(detail => `
 ### ${detail.file}
 
 **类型**: ${detail.type}
@@ -606,9 +555,7 @@ ${report.details
 **格式化后行数**: ${detail.changes.formattedLines}
 
 ---
-`
-  )
-  .join('')}
+`).join('')}
 
 ## 建议
 
@@ -629,19 +576,16 @@ ${report.details
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
-  const fileTypes = args.includes('--types')
-    ? args[args.indexOf('--types') + 1]?.split(',')
-    : undefined;
+  const fileTypes = args.includes('--types') ? 
+    args[args.indexOf('--types') + 1]?.split(',') : 
+    undefined;
 
   const formatter = new CodeFormatter();
   await formatter.run({ dryRun, fileTypes });
 }
 
 // 执行脚本
-if (
-  import.meta.url.endsWith(process.argv[1]) ||
-  process.argv[1].endsWith('codeFormatter.js')
-) {
+if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith('codeFormatter.js')) {
   main().catch(console.error);
 }
 

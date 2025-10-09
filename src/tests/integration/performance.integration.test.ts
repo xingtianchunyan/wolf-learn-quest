@@ -20,48 +20,49 @@
  * @author SOLO Coding
  * @version 3.0.0
  */
-import  { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll  } from 'vitest';
-import { render, screen, fireEvent, waitFor, act  } from '@testing-library/react';
-import { renderHook  } from '@testing-library/react';
+
+import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import React from 'react';
 
 // 导入被测试的模块
-import { OptimizedEnhancedSkillPanel  } from '@/components/game/optimized/OptimizedEnhancedSkillPanel';
-import { SkillEffectsVirtualList  } from '@/components/game/optimized/SkillEffectsVirtualList';
-import { PerformanceMonitor  } from '@/components/game/optimized/PerformanceMonitor';
-import { AdvancedSkillAnalytics  } from '@/components/game/optimized/AdvancedSkillAnalytics';
-import { PerformanceCriticalFixes  } from '@/utils/performanceCriticalFixes';
-import { realtimeSubscriptionManager  } from '@/utils/realtimeSubscriptionManager';
-import { queryCacheOptimizer  } from '@/utils/queryCacheOptimizer';
+import { OptimizedEnhancedSkillPanel } from '@/components/game/optimized/OptimizedEnhancedSkillPanel';
+import { SkillEffectsVirtualList } from '@/components/game/optimized/SkillEffectsVirtualList';
+import { PerformanceMonitor } from '@/components/game/optimized/PerformanceMonitor';
+import { AdvancedSkillAnalytics } from '@/components/game/optimized/AdvancedSkillAnalytics';
+import { PerformanceCriticalFixes } from '@/utils/performanceCriticalFixes';
+import { realtimeSubscriptionManager } from '@/utils/realtimeSubscriptionManager';
+import { queryCacheOptimizer } from '@/utils/queryCacheOptimizer';
 
 /**
  * 接口注释：性能测试配置
  */
-interface PerformanceTestConfig  {
+interface PerformanceTestConfig {
   testType: 'rendering' | 'memory' | 'cache' | 'subscription' | 'virtualization';
   scenario: string;
   expectedMetric: string;
   threshold: number;
-  testData: Record<string, any>
+  testData: Record<string, any>;
 }
 
 /**
  * 接口注释：性能指标
  */
-interface PerformanceMetrics  {
+interface PerformanceMetrics {
   renderTime: number;
   memoryUsage: number;
   cacheHitRate: number;
   subscriptionCount: number;
   virtualizedItems: number;
   frameRate: number;
-  componentUpdateCount: number
+  componentUpdateCount: number;
 }
 
 /**
  * 接口注释：技能数据
  */
-interface SkillData  {
+interface SkillData {
   id: string;
   name: string;
   description: string;
@@ -69,20 +70,20 @@ interface SkillData  {
   cooldown: number;
   manaCost: number;
   level: number;
-  isActive: boolean
+  isActive: boolean;
 }
 
 /**
  * 接口注释：技能效果
  */
-interface SkillEffect  {
+interface SkillEffect {
   id: string;
   type: 'damage' | 'heal' | 'buff' | 'debuff' | 'utility';
   value: number;
   duration: number;
   target: 'self' | 'enemy' | 'ally' | 'all';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'active' | 'inactive' | 'expired'
+  status: 'active' | 'inactive' | 'expired';
 }
 
 /**
@@ -95,7 +96,7 @@ interface SkillEffect  {
  * - 订阅管理测试
  * - 虚拟化性能测试
  */
-describe('性能优化功能集成测试', () =>  {
+describe('性能优化功能集成测试', () => {
   let performanceFixes: PerformanceCriticalFixes;
   let mockSkillData: SkillData[];
   let mockSkillEffects: SkillEffect[];
@@ -104,9 +105,9 @@ describe('性能优化功能集成测试', () =>  {
   let memoryMonitor: any;
 
   /**
- * 函数级注释：测试前置设置
- */
-beforeAll(() =>  {
+   * 函数级注释：测试前置设置
+   */
+  beforeAll(() => {
     // 模拟性能API
     Object.defineProperty(window, 'performance', {
       value: {
@@ -121,53 +122,51 @@ beforeAll(() =>  {
           usedJSHeapSize: 1024 * 1024 * 10, // 10MB
           totalJSHeapSize: 1024 * 1024 * 50, // 50MB
           jsHeapSizeLimit: 1024 * 1024 * 100 // 100MB
-}
+        }
       },
       writable: true
-});
+    });
 
     // 模拟PerformanceObserver
     global.PerformanceObserver = vi.fn().mockImplementation((callback) => ({
       observe: vi.fn(),
       disconnect: vi.fn(),
       takeRecords: vi.fn(() => [])
-}));
+    }));
 
     // 模拟IntersectionObserver
     global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
       observe: vi.fn(),
       unobserve: vi.fn(),
       disconnect: vi.fn()
-}));
+    }));
 
     // 模拟ResizeObserver
     global.ResizeObserver = vi.fn().mockImplementation((callback) => ({
       observe: vi.fn(),
       unobserve: vi.fn(),
       disconnect: vi.fn()
-}));
+    }));
 
     // 模拟requestAnimationFrame
     global.requestAnimationFrame = vi.fn((callback) => {
-  setTimeout(callback, 16); // 60fps
-      return 1
-
-});
+      setTimeout(callback, 16); // 60fps
+      return 1;
+    });
 
     global.cancelAnimationFrame = vi.fn();
 
     // 模拟requestIdleCallback
     global.requestIdleCallback = vi.fn((callback) => {
-      setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 
-}), 1);
-      return 1
-})
-});
+      setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 }), 1);
+      return 1;
+    });
+  });
 
   /**
- * 函数级注释：每个测试前的设置
- */
-beforeEach(() =>  {
+   * 函数级注释：每个测试前的设置
+   */
+  beforeEach(() => {
     // 初始化性能修复器
     performanceFixes = PerformanceCriticalFixes.getInstance();
 
@@ -175,10 +174,8 @@ beforeEach(() =>  {
     vi.clearAllMocks();
 
     // 生成测试数据
-    mockSkillEffects = Array.from({ length: 1000 
-}, (_, index) => ({
-      id: `effect-${index
-}`,
+    mockSkillEffects = Array.from({ length: 1000 }, (_, index) => ({
+      id: `effect-${index}`,
       type: ['damage', 'heal', 'buff', 'debuff', 'utility'][index % 5] as any,
       value: Math.floor(Math.random() * 100) + 1,
       duration: Math.floor(Math.random() * 10) + 1,
@@ -187,20 +184,16 @@ beforeEach(() =>  {
       status: ['active', 'inactive', 'expired'][index % 3] as any
     }));
 
-    mockSkillData = Array.from({ length: 100 
-}, (_, index) => ({
-      id: `skill-${index
-}`,
-      name: `技能${index + 1
-}`,
-      description: `这是第${index + 1
-}个技能的描述`,
+    mockSkillData = Array.from({ length: 100 }, (_, index) => ({
+      id: `skill-${index}`,
+      name: `技能${index + 1}`,
+      description: `这是第${index + 1}个技能的描述`,
       effects: mockSkillEffects.slice(index * 10, (index + 1) * 10),
       cooldown: Math.floor(Math.random() * 30) + 5,
       manaCost: Math.floor(Math.random() * 50) + 10,
       level: Math.floor(Math.random() * 10) + 1,
       isActive: Math.random() > 0.5
-}));
+    }));
 
     // 定义性能测试配置
     performanceTestConfigs = [
@@ -209,40 +202,35 @@ beforeEach(() =>  {
         scenario: '大量技能组件渲染',
         expectedMetric: 'renderTime',
         threshold: 100, // 100ms
-        testData: { skillCount: 100 
-}
+        testData: { skillCount: 100 }
       },
       {
         testType: 'memory',
         scenario: '内存使用优化',
         expectedMetric: 'memoryUsage',
         threshold: 50 * 1024 * 1024, // 50MB
-        testData: { componentCount: 50 
-}
+        testData: { componentCount: 50 }
       },
       {
         testType: 'cache',
         scenario: '查询缓存命中率',
         expectedMetric: 'cacheHitRate',
         threshold: 0.8, // 80%
-        testData: { queryCount: 100 
-}
+        testData: { queryCount: 100 }
       },
       {
         testType: 'subscription',
         scenario: '实时订阅管理',
         expectedMetric: 'subscriptionCount',
         threshold: 10, // 最大10个活跃订阅
-        testData: { maxSubscriptions: 10 
-}
+        testData: { maxSubscriptions: 10 }
       },
       {
         testType: 'virtualization',
         scenario: '虚拟化列表性能',
         expectedMetric: 'virtualizedItems',
         threshold: 20, // 同时渲染最多20个项目
-        testData: { totalItems: 1000 
-}
+        testData: { totalItems: 1000 }
       }
     ];
 
@@ -254,35 +242,33 @@ beforeEach(() =>  {
         used: 10 * 1024 * 1024,
         total: 50 * 1024 * 1024,
         percentage: 20
-})),
+      })),
       clearMemory: vi.fn()
-}
-});
+    };
+  });
 
   /**
- * 函数级注释：每个测试后的清理
- */
-afterEach(() =>  {
-  vi.clearAllTimers();
+   * 函数级注释：每个测试后的清理
+   */
+  afterEach(() => {
+    vi.clearAllTimers();
     performanceFixes.reset();
     realtimeSubscriptionManager.shutdown();
-    queryCacheOptimizer.shutdown()
-
-});
+    queryCacheOptimizer.shutdown();
+  });
 
   /**
- * 函数级注释：测试后置清理
- */
-afterAll(() =>  {
-  vi.restoreAllMocks()
-
-});
+   * 函数级注释：测试后置清理
+   */
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
 
   describe('组件渲染性能优化测试', () => {
     /**
- * 函数级注释：测试OptimizedEnhancedSkillPanel渲染性能
- */
-it('应该优化技能面板渲染性能', async () =>  {
+     * 函数级注释：测试OptimizedEnhancedSkillPanel渲染性能
+     */
+    it('应该优化技能面板渲染性能', async () => {
       const startTime = performance.now();
 
       const { rerender } = render(
@@ -314,9 +300,9 @@ it('应该优化技能面板渲染性能', async () =>  {
     });
 
     /**
- * 函数级注释：测试组件更新频率控制
- */
-it('应该控制组件更新频率', async () =>  {
+     * 函数级注释：测试组件更新频率控制
+     */
+    it('应该控制组件更新频率', async () => {
       let updateCount = 0;
       const mockOnUpdate = vi.fn(() => updateCount++);
 
@@ -338,23 +324,22 @@ it('应该控制组件更新频率', async () =>  {
             onSkillActivate={vi.fn()}
             isVisible={true}
           />
-        )
-}
+        );
+      }
 
       // 等待防抖完成
       await act(async () => {
-  await new Promise(resolve => setTimeout(resolve, 300))
-});
+        await new Promise(resolve => setTimeout(resolve, 300));
+      });
 
       // 验证更新被防抖控制
-      expect(updateCount).toBeLessThan(10)
-
-});
+      expect(updateCount).toBeLessThan(10);
+    });
 
     /**
- * 函数级注释：测试条件渲染优化
- */
-it('应该优化条件渲染性能', () =>  {
+     * 函数级注释：测试条件渲染优化
+     */
+    it('应该优化条件渲染性能', () => {
       const { rerender } = render(
         <OptimizedEnhancedSkillPanel
           skills={mockSkillData}
@@ -377,13 +362,13 @@ it('应该优化条件渲染性能', () =>  {
         />
       );
 
-      expect(screen.getByTestId('skill-panel-content')).toBeInTheDocument()
-});
+      expect(screen.getByTestId('skill-panel-content')).toBeInTheDocument();
+    });
 
     /**
- * 函数级注释：测试懒加载组件性能
- */
-it('应该正确懒加载子组件', async () =>  {
+     * 函数级注释：测试懒加载组件性能
+     */
+    it('应该正确懒加载子组件', async () => {
       render(
         <OptimizedEnhancedSkillPanel
           skills={mockSkillData}
@@ -403,17 +388,16 @@ it('应该正确懒加载子组件', async () =>  {
 
       // 等待懒加载完成
       await waitFor(() => {
-  expect(screen.getByTestId('skill-analytics')).toBeInTheDocument()
-})
-})
-
-});
+        expect(screen.getByTestId('skill-analytics')).toBeInTheDocument();
+      });
+    });
+  });
 
   describe('虚拟化列表性能测试', () => {
     /**
- * 函数级注释：测试虚拟化渲染性能
- */
-it('应该正确实现虚拟化渲染', () =>  {
+     * 函数级注释：测试虚拟化渲染性能
+     */
+    it('应该正确实现虚拟化渲染', () => {
       render(
         <SkillEffectsVirtualList
           effects={mockSkillEffects}
@@ -430,13 +414,13 @@ it('应该正确实现虚拟化渲染', () =>  {
       // 验证总高度正确计算
       const container = screen.getByTestId('virtual-list-container');
       const totalHeight = mockSkillEffects.length * 50;
-      expect(container.style.height).toBe(`${totalHeight}px`)
-});
+      expect(container.style.height).toBe(`${totalHeight}px`);
+    });
 
     /**
- * 函数级注释：测试滚动性能
- */
-it('应该优化滚动性能', async () =>  {
+     * 函数级注释：测试滚动性能
+     */
+    it('应该优化滚动性能', async () => {
       const { container } = render(
         <SkillEffectsVirtualList
           effects={mockSkillEffects}
@@ -449,28 +433,26 @@ it('应该优化滚动性能', async () =>  {
       const scrollContainer = container.querySelector('[data-testid="scroll-container"]');
       
       // 模拟滚动事件
-      const scrollEvents = Array.from({ length: 100 
-}, (_, i) => i * 10);
+      const scrollEvents = Array.from({ length: 100 }, (_, i) => i * 10);
       
       const startTime = performance.now();
       
       for (const scrollTop of scrollEvents) {
-        fireEvent.scroll(scrollContainer!, { target: { scrollTop 
-} })
-}
+        fireEvent.scroll(scrollContainer!, { target: { scrollTop } });
+      }
 
       const scrollTime = performance.now() - startTime;
       expect(scrollTime).toBeLessThan(100); // 滚动处理应在100ms内完成
     });
 
     /**
- * 函数级注释：测试动态高度计算
- */
-it('应该正确计算动态项目高度', async () =>  {
+     * 函数级注释：测试动态高度计算
+     */
+    it('应该正确计算动态项目高度', async () => {
       const variableHeightEffects = mockSkillEffects.map((effect, index) => ({
         ...effect,
         description: 'A'.repeat((index % 5 + 1) * 20) // 不同长度的描述
-}));
+      }));
 
       render(
         <SkillEffectsVirtualList
@@ -483,22 +465,21 @@ it('应该正确计算动态项目高度', async () =>  {
 
       // 等待高度计算完成
       await waitFor(() => {
-  const items = screen.getAllByTestId(/^effect-item-/);
-        expect(items.length).toBeGreaterThan(0)
-});
+        const items = screen.getAllByTestId(/^effect-item-/);
+        expect(items.length).toBeGreaterThan(0);
+      });
 
       // 验证不同项目有不同高度
       const items = screen.getAllByTestId(/^effect-item-/);
       const heights = items.map(item => item.getBoundingClientRect().height);
       const uniqueHeights = new Set(heights);
-      expect(uniqueHeights.size).toBeGreaterThan(1)
-
-});
+      expect(uniqueHeights.size).toBeGreaterThan(1);
+    });
 
     /**
- * 函数级注释：测试预加载和缓冲区
- */
-it('应该正确实现预加载和缓冲区', () =>  {
+     * 函数级注释：测试预加载和缓冲区
+     */
+    it('应该正确实现预加载和缓冲区', () => {
       render(
         <SkillEffectsVirtualList
           effects={mockSkillEffects}
@@ -513,21 +494,22 @@ it('应该正确实现预加载和缓冲区', () =>  {
       const renderedItems = screen.getAllByTestId(/^effect-item-/);
       const visibleItems = Math.ceil(400 / 50); // 8项
       const expectedItems = visibleItems + 2 * 5; // 加上上下缓冲区
-      expect(renderedItems.length).toBeLessThanOrEqual(expectedItems)
-})
-});
+      expect(renderedItems.length).toBeLessThanOrEqual(expectedItems);
+    });
+  });
 
-  describe('实时订阅管理测试', () => { /**
- * 函数级注释：测试订阅创建和清理
- */
-it('应该正确管理订阅生命周期', async () =>  {
+  describe('实时订阅管理测试', () => {
+    /**
+     * 函数级注释：测试订阅创建和清理
+     */
+    it('应该正确管理订阅生命周期', async () => {
       const subscriptionConfig = {
         url: 'ws://localhost:8080/skills',
         type: 'websocket' as const,
         autoReconnect: true,
         maxReconnectAttempts: 3,
         reconnectInterval: 1000
-};
+      };
 
       // 创建订阅
       const subscriptionId = await realtimeSubscriptionManager.createSubscription(
@@ -546,13 +528,13 @@ it('应该正确管理订阅生命周期', async () =>  {
       await realtimeSubscriptionManager.removeSubscription(subscriptionId);
 
       const updatedStats = realtimeSubscriptionManager.getStats();
-      expect(updatedStats.activeSubscriptions).toBe(0)
-});
+      expect(updatedStats.activeSubscriptions).toBe(0);
+    });
 
     /**
- * 函数级注释：测试内存泄漏防护
- */
-it('应该防止订阅内存泄漏', async () =>  {
+     * 函数级注释：测试内存泄漏防护
+     */
+    it('应该防止订阅内存泄漏', async () => {
       const initialMemory = memoryMonitor.getMemoryUsage();
 
       // 创建大量订阅
@@ -561,15 +543,14 @@ it('应该防止订阅内存泄漏', async () =>  {
         const id = await realtimeSubscriptionManager.createSubscription(
           `test-subscription-${i}`,
           {
-            url: `ws://localhost:8080/test-${i
-}`,
+            url: `ws://localhost:8080/test-${i}`,
             type: 'websocket',
             autoReconnect: false
-},
+          },
           vi.fn()
         );
-        subscriptionIds.push(id)
-}
+        subscriptionIds.push(id);
+      }
 
       // 验证内存使用增长合理
       const peakMemory = memoryMonitor.getMemoryUsage();
@@ -578,24 +559,23 @@ it('应该防止订阅内存泄漏', async () =>  {
 
       // 清理所有订阅
       for (const id of subscriptionIds) {
-        await realtimeSubscriptionManager.removeSubscription(id)
-}
+        await realtimeSubscriptionManager.removeSubscription(id);
+      }
 
       // 等待垃圾回收
       await act(async () => {
-  await new Promise(resolve => setTimeout(resolve, 100))
-});
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
 
       // 验证内存被释放
       const finalMemory = memoryMonitor.getMemoryUsage();
       expect(finalMemory.used).toBeLessThanOrEqual(initialMemory.used * 1.1); // 允许10%误差
-    
-});
+    });
 
     /**
- * 函数级注释：测试订阅重连机制
- */
-it('应该正确处理订阅重连', async () =>  {
+     * 函数级注释：测试订阅重连机制
+     */
+    it('应该正确处理订阅重连', async () => {
       const mockOnMessage = vi.fn();
       const mockOnError = vi.fn();
 
@@ -607,7 +587,7 @@ it('应该正确处理订阅重连', async () =>  {
           autoReconnect: true,
           maxReconnectAttempts: 3,
           reconnectInterval: 100
-},
+        },
         mockOnMessage,
         mockOnError
       );
@@ -621,27 +601,26 @@ it('应该正确处理订阅重连', async () =>  {
 
       // 等待重连尝试
       await act(async () => {
-  await new Promise(resolve => setTimeout(resolve, 500))
-});
+        await new Promise(resolve => setTimeout(resolve, 500));
+      });
 
       // 验证重连尝试
       expect(mockOnError).toHaveBeenCalled();
       const finalSubscription = realtimeSubscriptionManager.getSubscriptionState(subscriptionId);
-      expect(finalSubscription?.reconnectAttempts).toBeGreaterThan(0)
-
-});
+      expect(finalSubscription?.reconnectAttempts).toBeGreaterThan(0);
+    });
 
     /**
- * 函数级注释：测试订阅性能监控
- */
-it('应该监控订阅性能指标', async () =>  {
+     * 函数级注释：测试订阅性能监控
+     */
+    it('应该监控订阅性能指标', async () => {
       const subscriptionId = await realtimeSubscriptionManager.createSubscription(
         'performance-test',
         {
           url: 'ws://localhost:8080/performance-test',
           type: 'websocket',
           autoReconnect: false
-},
+        },
         vi.fn()
       );
 
@@ -649,25 +628,23 @@ it('应该监控订阅性能指标', async () =>  {
       for (let i = 0; i < 100; i++) {
         realtimeSubscriptionManager.simulateMessage(subscriptionId, {
           type: 'skill-update',
-          data: { skillId: `skill-${i
-}`, timestamp: Date.now() 
-}
-        })
-}
+          data: { skillId: `skill-${i}`, timestamp: Date.now() }
+        });
+      }
 
       // 获取性能统计
       const stats = realtimeSubscriptionManager.getStats();
       expect(stats.totalMessagesReceived).toBe(100);
       expect(stats.averageMessageSize).toBeGreaterThan(0);
-      expect(stats.messagesPerSecond).toBeGreaterThan(0)
-})
-});
+      expect(stats.messagesPerSecond).toBeGreaterThan(0);
+    });
+  });
 
   describe('查询缓存优化测试', () => {
     /**
- * 函数级注释：测试缓存命中率
- */
-it('应该实现高效的查询缓存', async () =>  {
+     * 函数级注释：测试缓存命中率
+     */
+    it('应该实现高效的查询缓存', async () => {
       const cacheId = 'skill-cache';
       
       // 创建缓存
@@ -676,7 +653,7 @@ it('应该实现高效的查询缓存', async () =>  {
         ttl: 60000, // 1分钟
         strategy: 'lru',
         compression: true
-});
+      });
 
       // 执行查询
       const queryKey = 'getSkillById';
@@ -684,20 +661,18 @@ it('应该实现高效的查询缓存', async () =>  {
 
       // 第一次查询（缓存未命中）
       const result1 = await queryCacheOptimizer.query(cacheId, queryKey, queryFn, {
-        params: { id: 'skill-1' 
-},
+        params: { id: 'skill-1' },
         ttl: 30000
-});
+      });
 
       expect(queryFn).toHaveBeenCalledTimes(1);
       expect(result1).toEqual(mockSkillData[0]);
 
       // 第二次查询（缓存命中）
       const result2 = await queryCacheOptimizer.query(cacheId, queryKey, queryFn, {
-        params: { id: 'skill-1' 
-},
+        params: { id: 'skill-1' },
         ttl: 30000
-});
+      });
 
       expect(queryFn).toHaveBeenCalledTimes(1); // 没有再次调用
       expect(result2).toEqual(mockSkillData[0]);
@@ -708,39 +683,37 @@ it('应该实现高效的查询缓存', async () =>  {
     });
 
     /**
- * 函数级注释：测试缓存失效策略
- */
-it('应该正确处理缓存失效', async () =>  {
+     * 函数级注释：测试缓存失效策略
+     */
+    it('应该正确处理缓存失效', async () => {
       const cacheId = 'expiration-cache';
       
       await queryCacheOptimizer.createCache(cacheId, {
         maxSize: 10,
         ttl: 100, // 100ms
         strategy: 'lru'
-});
+      });
 
-      const queryFn = vi.fn().mockResolvedValue({ data: 'test' 
-});
+      const queryFn = vi.fn().mockResolvedValue({ data: 'test' });
 
       // 添加缓存项
       await queryCacheOptimizer.query(cacheId, 'test-key', queryFn);
 
       // 等待过期
       await act(async () => {
-  await new Promise(resolve => setTimeout(resolve, 150))
-});
+        await new Promise(resolve => setTimeout(resolve, 150));
+      });
 
       // 再次查询应该重新执行
       await queryCacheOptimizer.query(cacheId, 'test-key', queryFn);
 
-      expect(queryFn).toHaveBeenCalledTimes(2)
-
-});
+      expect(queryFn).toHaveBeenCalledTimes(2);
+    });
 
     /**
- * 函数级注释：测试缓存压缩
- */
-it('应该压缩大型缓存数据', async () =>  {
+     * 函数级注释：测试缓存压缩
+     */
+    it('应该压缩大型缓存数据', async () => {
       const cacheId = 'compression-cache';
       
       await queryCacheOptimizer.createCache(cacheId, {
@@ -749,13 +722,14 @@ it('应该压缩大型缓存数据', async () =>  {
         strategy: 'lru',
         compression: true,
         compressionThreshold: 1024 // 1KB
-});
+      });
 
       // 创建大型数据
-      const largeData = { skills: mockSkillData,
+      const largeData = {
+        skills: mockSkillData,
         effects: mockSkillEffects,
         metadata: 'A'.repeat(2000) // 2KB字符串
-};
+      };
 
       const queryFn = vi.fn().mockResolvedValue(largeData);
 
@@ -766,9 +740,9 @@ it('应该压缩大型缓存数据', async () =>  {
     });
 
     /**
- * 函数级注释：测试智能预加载
- */
-it('应该实现智能缓存预加载', async () =>  {
+     * 函数级注释：测试智能预加载
+     */
+    it('应该实现智能缓存预加载', async () => {
       const cacheId = 'preload-cache';
       
       await queryCacheOptimizer.createCache(cacheId, {
@@ -776,7 +750,7 @@ it('应该实现智能缓存预加载', async () =>  {
         ttl: 60000,
         strategy: 'lru',
         enablePreloading: true
-});
+      });
 
       // 模拟访问模式
       const accessPattern = ['skill-1', 'skill-2', 'skill-3', 'skill-1', 'skill-2'];
@@ -786,19 +760,20 @@ it('应该实现智能缓存预加载', async () =>  {
           cacheId,
           `getSkill-${skillId}`,
           vi.fn().mockResolvedValue(mockSkillData.find(s => s.id === skillId))
-        )
-}
+        );
+      }
 
       // 验证预加载建议
       const suggestions = await queryCacheOptimizer.generateOptimizationSuggestions(cacheId);
-      expect(suggestions.some(s => s.type === 'preload_recommendation')).toBe(true)
-})
-});
+      expect(suggestions.some(s => s.type === 'preload_recommendation')).toBe(true);
+    });
+  });
 
-  describe('性能监控和分析测试', () => { /**
- * 函数级注释：测试性能指标收集
- */
-it('应该收集详细的性能指标', async () =>  {
+  describe('性能监控和分析测试', () => {
+    /**
+     * 函数级注释：测试性能指标收集
+     */
+    it('应该收集详细的性能指标', async () => {
       const mockPerformanceState = {
         renderCount: 0,
         lastRenderTime: 0,
@@ -807,7 +782,7 @@ it('应该收集详细的性能指标', async () =>  {
         cacheHitRate: 0,
         subscriptionCount: 0,
         errorCount: 0
-};
+      };
 
       render(
         <PerformanceMonitor
@@ -821,13 +796,14 @@ it('应该收集详细的性能指标', async () =>  {
       expect(screen.getByTestId('performance-monitor')).toBeInTheDocument();
       expect(screen.getByText(/渲染次数/)).toBeInTheDocument();
       expect(screen.getByText(/内存使用/)).toBeInTheDocument();
-      expect(screen.getByText(/缓存命中率/)).toBeInTheDocument()
-});
+      expect(screen.getByText(/缓存命中率/)).toBeInTheDocument();
+    });
 
     /**
- * 函数级注释：测试性能警告生成
- */
-it('应该生成性能警告和建议', async () => { const highMemoryState =  {
+     * 函数级注释：测试性能警告生成
+     */
+    it('应该生成性能警告和建议', async () => {
+      const highMemoryState = {
         renderCount: 100,
         lastRenderTime: 150, // 超过阈值
         averageRenderTime: 120,
@@ -835,7 +811,7 @@ it('应该生成性能警告和建议', async () => { const highMemoryState =  {
         cacheHitRate: 0.3, // 低命中率
         subscriptionCount: 15, // 过多订阅
         errorCount: 5
-};
+      };
 
       const mockOnUpdate = vi.fn();
 
@@ -849,27 +825,25 @@ it('应该生成性能警告和建议', async () => { const highMemoryState =  {
 
       // 等待警告生成
       await waitFor(() => {
-  expect(screen.getByTestId('performance-warnings')).toBeInTheDocument()
-});
+        expect(screen.getByTestId('performance-warnings')).toBeInTheDocument();
+      });
 
       // 验证警告内容
       expect(screen.getByText(/渲染时间过长/)).toBeInTheDocument();
       expect(screen.getByText(/内存使用过高/)).toBeInTheDocument();
-      expect(screen.getByText(/缓存命中率低/)).toBeInTheDocument()
-
-});
+      expect(screen.getByText(/缓存命中率低/)).toBeInTheDocument();
+    });
 
     /**
- * 函数级注释：测试性能趋势分析
- */
-it('应该分析性能趋势', async () =>  {
-      const performanceData = Array.from({ length: 100 
-}, (_, index) => ({
+     * 函数级注释：测试性能趋势分析
+     */
+    it('应该分析性能趋势', async () => {
+      const performanceData = Array.from({ length: 100 }, (_, index) => ({
         timestamp: Date.now() - (100 - index) * 1000,
         renderTime: 50 + Math.sin(index * 0.1) * 20,
         memoryUsage: 20 * 1024 * 1024 + Math.random() * 10 * 1024 * 1024,
         cacheHitRate: 0.7 + Math.random() * 0.3
-}));
+      }));
 
       render(
         <AdvancedSkillAnalytics
@@ -881,18 +855,17 @@ it('应该分析性能趋势', async () =>  {
 
       // 验证趋势图表
       await waitFor(() => {
-  expect(screen.getByTestId('performance-trend-chart')).toBeInTheDocument()
-});
+        expect(screen.getByTestId('performance-trend-chart')).toBeInTheDocument();
+      });
 
       // 验证趋势分析
-      expect(screen.getByTestId('trend-analysis')).toBeInTheDocument()
-
-});
+      expect(screen.getByTestId('trend-analysis')).toBeInTheDocument();
+    });
 
     /**
- * 函数级注释：测试性能报告导出
- */
-it('应该导出详细的性能报告', async () =>  {
+     * 函数级注释：测试性能报告导出
+     */
+    it('应该导出详细的性能报告', async () => {
       const mockOnExport = vi.fn();
 
       render(
@@ -913,16 +886,17 @@ it('应该导出详细的性能报告', async () =>  {
             reportType: 'performance_analysis',
             timestamp: expect.any(Number),
             data: expect.any(Object)
-})
-        )
-})
-})
-});
+          })
+        );
+      });
+    });
+  });
 
-  describe('集成性能场景测试', () => { /**
- * 函数级注释：测试完整的性能优化工作流
- */
-it('应该完整执行性能优化工作流', async () =>  {
+  describe('集成性能场景测试', () => {
+    /**
+     * 函数级注释：测试完整的性能优化工作流
+     */
+    it('应该完整执行性能优化工作流', async () => {
       // 1. 初始化性能监控
       const performanceState = {
         renderCount: 0,
@@ -932,7 +906,7 @@ it('应该完整执行性能优化工作流', async () =>  {
         cacheHitRate: 0,
         subscriptionCount: 0,
         errorCount: 0
-};
+      };
 
       // 2. 渲染优化组件
       const { rerender } = render(
@@ -956,7 +930,7 @@ it('应该完整执行性能优化工作流', async () =>  {
         maxSize: 100,
         ttl: 60000,
         strategy: 'lru'
-});
+      });
 
       const subscriptionId = await realtimeSubscriptionManager.createSubscription(
         'integration-subscription',
@@ -964,7 +938,7 @@ it('应该完整执行性能优化工作流', async () =>  {
           url: 'ws://localhost:8080/integration',
           type: 'websocket',
           autoReconnect: true
-},
+        },
         vi.fn()
       );
 
@@ -993,10 +967,9 @@ it('应该完整执行性能优化工作流', async () =>  {
         await queryCacheOptimizer.query(
           'integration-cache',
           `query-${i}`,
-          vi.fn().mockResolvedValue({ data: i 
-})
-        )
-}
+          vi.fn().mockResolvedValue({ data: i })
+        );
+      }
 
       const totalTime = performance.now() - startTime;
 
@@ -1011,28 +984,23 @@ it('应该完整执行性能优化工作流', async () =>  {
 
       // 6. 清理资源
       await realtimeSubscriptionManager.removeSubscription(subscriptionId);
-      queryCacheOptimizer.deleteCache('integration-cache')
-});
+      queryCacheOptimizer.deleteCache('integration-cache');
+    });
 
     /**
- * 函数级注释：测试极限性能场景
- */
-it('应该在极限条件下保持性能', async () =>  {
+     * 函数级注释：测试极限性能场景
+     */
+    it('应该在极限条件下保持性能', async () => {
       // 创建大量数据
-      const largeSkillData = Array.from({ length: 1000 
-}, (_, index) => ({
+      const largeSkillData = Array.from({ length: 1000 }, (_, index) => ({
         ...mockSkillData[0],
-        id: `large-skill-${index
-}`,
-        name: `大型技能${index
-}`
+        id: `large-skill-${index}`,
+        name: `大型技能${index}`
       }));
 
-      const largeEffectData = Array.from({ length: 10000 
-}, (_, index) => ({
+      const largeEffectData = Array.from({ length: 10000 }, (_, index) => ({
         ...mockSkillEffects[0],
-        id: `large-effect-${index
-}`
+        id: `large-effect-${index}`
       }));
 
       // 渲染大量组件
@@ -1066,9 +1034,9 @@ it('应该在极限条件下保持性能', async () =>  {
     });
 
     /**
- * 函数级注释：测试内存泄漏防护
- */
-it('应该防止内存泄漏', async () =>  {
+     * 函数级注释：测试内存泄漏防护
+     */
+    it('应该防止内存泄漏', async () => {
       const initialMemory = performance.memory?.usedJSHeapSize || 0;
 
       // 创建和销毁大量组件
@@ -1086,30 +1054,28 @@ it('应该防止内存泄漏', async () =>  {
         const subscriptionId = await realtimeSubscriptionManager.createSubscription(
           `temp-subscription-${i}`,
           {
-            url: `ws://localhost:8080/temp-${i
-}`,
+            url: `ws://localhost:8080/temp-${i}`,
             type: 'websocket',
             autoReconnect: false
-},
+          },
           vi.fn()
         );
 
         // 立即清理
         unmount();
-        await realtimeSubscriptionManager.removeSubscription(subscriptionId)
-}
+        await realtimeSubscriptionManager.removeSubscription(subscriptionId);
+      }
 
       // 等待垃圾回收
       await act(async () => {
-  await new Promise(resolve => setTimeout(resolve, 100))
-});
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
 
       const finalMemory = performance.memory?.usedJSHeapSize || 0;
       const memoryIncrease = finalMemory - initialMemory;
 
       // 内存增长应该很小
       expect(memoryIncrease).toBeLessThan(5 * 1024 * 1024); // 小于5MB
-    })
-})
-
+    });
+  });
 })

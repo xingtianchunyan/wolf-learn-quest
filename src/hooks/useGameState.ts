@@ -1,7 +1,7 @@
-import { supabase   } from '@/integrations/supabase/client';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useState, useEffect   } from 'react';
-import { useToast   } from '@/hooks/useToast';
+import { supabase  } from '@/integrations/supabase/client';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useState, useEffect  } from 'react';
+import { useToast  } from '@/hooks/useToast';
 
 export interface GameState { id: string;
   roomId: string;
@@ -15,7 +15,7 @@ export interface GameState { id: string;
   totalPausedDuration: number;
   autoAdvance: boolean;
   phaseDuration: number;
-  createdAt: string
+  createdAt: string;,
 }
 
 export interface GameSettings { id: string;
@@ -24,17 +24,10 @@ export interface GameSettings { id: string;
   dayDuration: number;
   eveningDuration: number;
   nightDuration: number;
-  dawnDuration: number
+  dawnDuration: number;,
 }
 
-/**
- * useGameState函数
- * 自定义Hook
- *
- * @param roomId - roomId参数
- * @returns void
- */
-export const useGameState = (roomId: string) =>  { const [gameState, setGameState] = useState<GameState | null>(null);
+export const useGameState = (roomId: string) => { const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -44,35 +37,28 @@ export const useGameState = (roomId: string) =>  { const [gameState, setGameStat
   // Fetch initial game state and settings
   useEffect(() => { if (!roomId) return;
 
-/**
- * fetchGameData函数
- * 获取远程数据
- * @returns Promise<void>
- */
-const fetchGameData = async () =>  {
+    const fetchGameData = async () => {
       try {
         // Fetch game state
-        const { data: stateData, error: stateError  
-} = await supabase;
+        const { data: stateData, error: stateError  } = await supabase;
         .from('game_states')
         .select('*')
         .eq('room_id', roomId)
         .maybeSingle();
 
         if (stateError && stateError.code !== 'PGRST116') { console.error('Error fetching game state:', stateError);
-          return
+          return;,
 }
 
         // Fetch game settings
-        const { data: settingsData, error: settingsError  
-} = await supabase;
+        const { data: settingsData, error: settingsError  } = await supabase;
         .from('game_settings')
         .select('*')
         .eq('room_id', roomId)
         .maybeSingle();
 
         if (settingsError && settingsError.code !== 'PGRST116') { console.error('Error fetching game settings:', settingsError);
-          return
+          return;,
 }
 
         if (stateData) { setGameState({
@@ -88,8 +74,8 @@ const fetchGameData = async () =>  {
             totalPausedDuration: stateData.total_paused_duration,
             autoAdvance: stateData.auto_advance,
             phaseDuration: stateData.phase_duration,
-            createdAt: stateData.created_at 
-})
+            createdAt: stateData.created_at,
+           });,
 }
 
         if (settingsData) { setGameSettings({
@@ -99,15 +85,15 @@ const fetchGameData = async () =>  {
             dayDuration: settingsData.day_duration,
             eveningDuration: settingsData.evening_duration,
             nightDuration: settingsData.night_duration,
-            dawnDuration: settingsData.dawn_duration 
-})
+            dawnDuration: settingsData.dawn_duration,
+           });,
 }
-      } catch (error) { console.error('Error fetching game data:', error)
-} finally { setLoading(false)
+      } catch (error) { console.error('Error fetching game data:', error);,
+} finally { setLoading(false);,
 }
     };
 
-    fetchGameData()
+    fetchGameData();,
 }, [roomId]);
 
   // Subscribe to real-time updates
@@ -120,8 +106,7 @@ const fetchGameData = async () =>  {
       { event: '*',
         schema: 'public',
         table: 'game_states',
-        filter: `room_id=eq.${roomId 
-}`
+        filter: `room_id=eq.${roomId }`;,
 },
       payload => { console.log('Game state update:', payload);
         if (payload.new && typeof payload.new === 'object') {
@@ -139,8 +124,8 @@ const fetchGameData = async () =>  {
             totalPausedDuration: newData.total_paused_duration,
             autoAdvance: newData.auto_advance,
             phaseDuration: newData.phase_duration,
-            createdAt: newData.created_at 
-})
+            createdAt: newData.created_at,
+           });,
 }
       }
     )
@@ -153,8 +138,7 @@ const fetchGameData = async () =>  {
       { event: '*',
         schema: 'public',
         table: 'game_settings',
-        filter: `room_id=eq.${roomId 
-}`
+        filter: `room_id=eq.${roomId }`;,
 },
       payload => { console.log('Game settings update:', payload);
         if (payload.new && typeof payload.new === 'object') {
@@ -166,87 +150,71 @@ const fetchGameData = async () =>  {
             dayDuration: newData.day_duration,
             eveningDuration: newData.evening_duration,
             nightDuration: newData.night_duration,
-            dawnDuration: newData.dawn_duration 
-})
+            dawnDuration: newData.dawn_duration,
+           });,
 }
       }
     )
     .subscribe();
 
-    return () => {
-  supabase.removeChannel(stateChannel);
-      supabase.removeChannel(settingsChannel)
-}
-
+    return () => { supabase.removeChannel(stateChannel);
+      supabase.removeChannel(settingsChannel);,
+};,
 }, [roomId]);
 
   // Calculate time remaining
   useEffect(() => { if (!gameState || !gameState.phaseEndTime || gameState.isPaused) {
       setTimeRemaining(0);
-      return
+      return;,
 }
 
-/**
- * calculateTimeRemaining函数
- * calculateTimeRemaining函数的功能描述
- * @returns void
- */
-const calculateTimeRemaining = () =>  {
-  const now = new Date().getTime();
+    const calculateTimeRemaining = () => { const now = new Date().getTime();
       const endTime = new Date(gameState.phaseEndTime!).getTime();
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
-      setTimeRemaining(remaining)
+      setTimeRemaining(remaining);,
 };
 
     calculateTimeRemaining();
     const interval = setInterval(calculateTimeRemaining, 1000);
 
-    return () => clearInterval(interval)
-
+    return () => clearInterval(interval);,
 }, [gameState?.phaseEndTime, gameState?.isPaused]);
 
   // Start game - 修改以直接操作数据库而不使用过时的函数
-/**
- * startGame函数
- * startGame函数的功能描述
- * @returns Promise<void>
- */
-const startGame = async () =>  { if (!requireAuth() || !roomId) return false;
+  const startGame = async () => { if (!requireAuth() || !roomId) return false;
 
     try {
       // 首先确保游戏设置存在
-      const { data: existingSettings  
-} = await supabase;
+      const { data: existingSettings  } = await supabase;
       .from('game_settings')
       .select('*')
       .eq('room_id', roomId)
       .maybeSingle();
 
       if (!existingSettings) { // 创建默认游戏设置
-        const { error: settingsError  
-} = await supabase;
+        const { error: settingsError  } = await supabase;
         .from('game_settings')
         .insert({ room_id: roomId,
           is_auto_advance: true,
           day_duration: 300,
           evening_duration: 40,
           night_duration: 180,
-          dawn_duration: 40 
+          dawn_duration: 40,
 });
 
         if (settingsError) { console.error('Error creating game settings:', settingsError);
           toast({
             title: '初始化游戏设置失败',
             description: settingsError.message,
-            variant: 'destructive' 
-});
-          return false
+            variant: 'destructive',
+           });
+          return false;,
 }
       }
 
       // 计算阶段结束时间（首轮从傍晚开始，如果是自动模式则设置结束时间）
       const settings = existingSettings || { is_auto_advance: true,
-        evening_duration: 40  
+        evening_duration: 40,
 };
 
       const now = new Date();
@@ -255,8 +223,7 @@ const startGame = async () =>  { if (!requireAuth() || !roomId) return false;
       : null;
 
       // 创建或更新游戏状态（首轮进入傍晚：2）
-      const { data: gameStateData, error: gameStateError  
-} = await supabase;
+      const { data: gameStateData, error: gameStateError  } = await supabase;
       .from('game_states')
       .upsert({ room_id: roomId,
         status: 'active',
@@ -267,8 +234,8 @@ const startGame = async () =>  { if (!requireAuth() || !roomId) return false;
         is_paused: false,
         total_paused_duration: 0,
         auto_advance: settings.is_auto_advance,
-        phase_duration: settings.evening_duration || 40 
-}, { onConflict: 'room_id' 
+        phase_duration: settings.evening_duration || 40,
+}, { onConflict: 'room_id',
 })
       .select()
       .single();
@@ -277,115 +244,96 @@ const startGame = async () =>  { if (!requireAuth() || !roomId) return false;
         toast({
           title: '开始游戏失败',
           description: gameStateError.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
       // 初始化角色状态（基于角色选择）
-      const { data: initCount, error: initError  
-} = await supabase.rpc('initialize_room_role_states', { p_room_id: roomId 
+      const { data: initCount, error: initError  } = await supabase.rpc('initialize_room_role_states', { p_room_id: roomId,
 });
       if (initError) { console.error('初始化角色状态失败:', initError);
-        // 不中断流程 } else { console.log('已初始化角色状态数量:', initCount)
+        // 不中断流程,
+} else { console.log('已初始化角色状态数量:', initCount);,
 }
 
       // 记录游戏开始的第一个阶段（傍晚）
-      const { error: historyError  
-} = await supabase;
+      const { error: historyError  } = await supabase;
       .from('game_phase_history')
       .insert({ game_state_id: gameStateData.id,
         phase: '2', // 存储为字符串以兼容现有表结构
         round_number: 1,
-        started_at: now.toISOString() 
+        started_at: now.toISOString(),
 });
 
       if (historyError) { console.error('Error recording phase history:', historyError);
-        // 不阻止游戏开始，只记录错误 }
+        // 不阻止游戏开始，只记录错误,
+}
 
       toast({ title: '游戏开始',
-        description: '游戏已成功开始，进入傍晚阶段' 
-});
-      return true
+        description: '游戏已成功开始，进入傍晚阶段',
+       });
+      return true;,
 } catch (error) { console.error('Error starting game:', error);
       toast({
         title: '开始游戏时发生错误',
-        variant: 'destructive' 
-});
-      return false
+        variant: 'destructive',
+       });
+      return false;,
 }
   };
 
   // Advance phase
-/**
- * advancePhase函数
- * advancePhase函数的功能描述
- * @returns Promise<void>
- */
-const advancePhase = async () =>  { if (!requireAuth() || !roomId) return false;
+  const advancePhase = async () => { if (!requireAuth() || !roomId) return false;
 
     try {
-      const { error  } = await supabase.rpc('advance_game_phase', { p_room_id: roomId 
+      const { error  } = await supabase.rpc('advance_game_phase', { p_room_id: roomId,
 });
 
       if (error) { console.error('Error advancing phase:', error);
         toast({
           title: '阶段切换失败',
           description: error.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
-      return true
+      return true;,
 } catch (error) { console.error('Error advancing phase:', error);
-      return false
+      return false;,
 }
   };
 
   // Toggle pause
-/**
- * togglePause函数
- * 自定义Hook
- * @returns Promise<void>
- */
-const togglePause = async () =>  { if (!requireAuth() || !roomId) return false;
+  const togglePause = async () => { if (!requireAuth() || !roomId) return false;
 
     try {
-      const { data, error  } = await supabase.rpc('toggle_game_pause', { p_room_id: roomId 
+      const { data, error  } = await supabase.rpc('toggle_game_pause', { p_room_id: roomId,
 });
 
       if (error) { console.error('Error toggling pause:', error);
         toast({
           title: '暂停/恢复失败',
           description: error.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
       toast({ title: data ? '游戏已暂停' : '游戏已恢复',
-        description: data ? '游戏已暂停，计时器停止' : '游戏已恢复，计时器继续' 
-});
-      return true
+        description: data ? '游戏已暂停，计时器停止' : '游戏已恢复，计时器继续',
+       });
+      return true;,
 } catch (error) { console.error('Error toggling pause:', error);
-      return false
+      return false;,
 }
   };
 
   // Update game settings
-/**
- * updateGameSettings函数
- * 设置数据
- *
- * @param settings - settings参数
- * @param 'id' - 'id'参数
- * @returns Promise<void>
- */
-const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>) =>  { if (!requireAuth() || !roomId) return false;
+  const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>) => { if (!requireAuth() || !roomId) return false;
 
-    const dbUpdates: { [key: string]: any  
-} = {};
+    const dbUpdates: { [key: string]: any  } = {};
     if (settings.isAutoAdvance !== undefined) dbUpdates.is_auto_advance = settings.isAutoAdvance;
     if (settings.dayDuration !== undefined) dbUpdates.day_duration = settings.dayDuration;
     if (settings.eveningDuration !== undefined) dbUpdates.evening_duration = settings.eveningDuration;
@@ -403,84 +351,72 @@ const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'r
         toast({
           title: '设置更新失败',
           description: error.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
-      toast({ title: '游戏设置已更新' 
-});
-      return true
+      toast({ title: '游戏设置已更新',
+       });
+      return true;,
 } catch (error) { console.error('Error updating game settings:', error);
-      return false
+      return false;,
 }
   };
 
   // End game
-/**
- * endGame函数
- * endGame函数的功能描述
- * @returns Promise<void>
- */
-const endGame = async () =>  { if (!requireAuth() || !gameState) return false;
+  const endGame = async () => { if (!requireAuth() || !gameState) return false;
 
     try {
       // Step 1: Update game state to 'ended'
-      const { error: updateError  
-} = await supabase;
+      const { error: updateError  } = await supabase;
       .from('game_states')
-      .update({ status: 'ended'  
-})
+      .update({ status: 'ended'  })
       .eq('id', gameState.id);
 
       if (updateError) { console.error('Error ending game (updating state):', updateError);
         toast({
           title: '结束游戏失败',
           description: updateError.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
       // Step 1.5: Update room status to 'finished'
-      const { error: roomUpdateError  
-} = await supabase;
+      const { error: roomUpdateError  } = await supabase;
       .from('rooms')
-      .update({ status: 'finished'  
-})
+      .update({ status: 'finished'  })
       .eq('id', gameState.roomId);
 
       if (roomUpdateError) { console.error('Error ending game (updating room):', roomUpdateError);
         toast({
           title: '结束游戏失败',
           description: roomUpdateError.message,
-          variant: 'destructive' 
-});
-        return false
+          variant: 'destructive',
+         });
+        return false;,
 }
 
       // Step 2: Get game start time from history to calculate duration
-      const { data: historyData, error: historyError  
-} = await supabase;
+      const { data: historyData, error: historyError  } = await supabase;
       .from('game_phase_history')
       .select('started_at')
       .eq('game_state_id', gameState.id)
-      .order('started_at', { ascending: true  
-})
+      .order('started_at', { ascending: true  })
       .limit(1)
       .maybeSingle();
 
       let startTime = new Date(gameState.createdAt); // Fallback to state creation time
-      if (historyData?.started_at) { startTime = new Date(historyData.started_at)
-} else if (historyError) { console.error('Error fetching game start time:', historyError)
+      if (historyData?.started_at) { startTime = new Date(historyData.started_at);,
+} else if (historyError) { console.error('Error fetching game start time:', historyError);,
 }
 
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
 
       // Step 3: Create a game session record for the archive
-      const { error: sessionError  
-} = await supabase;
+      const { error: sessionError  } = await supabase;
       .from('game_sessions')
       .insert({ room_id: gameState.roomId,
         status: 'completed',
@@ -488,57 +424,43 @@ const endGame = async () =>  { if (!requireAuth() || !gameState) return false;
         end_time: endTime.toISOString(),
         final_round: gameState.currentRound,
         total_duration_seconds: duration,
-        end_reason: '法官结束游戏' 
-});
+        end_reason: '法官结束游戏',
+       });
 
       if (sessionError) { console.error('Error creating game session archive:', sessionError);
         toast({
           title: '游戏已结束',
-          description: `但归档时出错: ${sessionError.message 
-}`,
-          variant: 'destructive' 
+          description: `但归档时出错: ${sessionError.message }`,
+          variant: 'destructive',
 });
-        return true; // Game is ended anyway }
+        return true; // Game is ended anyway,
+}
 
       toast({ title: '游戏结束',
-        description: '游戏已结束并成功归档。' 
-});
-      return true
+        description: '游戏已结束并成功归档。',
+       });
+      return true;,
 } catch (error) { console.error('Error ending game:', error);
       toast({
         title: '结束游戏时发生未知错误',
-        variant: 'destructive' 
-});
-      return false
+        variant: 'destructive',
+       });
+      return false;,
 }
   };
 
-/**
- * formatTime函数
- * 格式化数据
- *
- * @param seconds - seconds参数
- * @returns void
- */
-const formatTime = (seconds: number) =>  { const mins = Math.floor(seconds / 60);
+  const formatTime = (seconds: number) => { const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`
+    return `${mins.toString().padStart(2, '0') }:${ secs.toString().padStart(2, '0') }`;,
 };
 
-/**
- * getPhaseDisplayName函数
- * 获取数据
- *
- * @param phase - phase参数
- * @returns void
- */
-const getPhaseDisplayName = (phase: number) => { const phaseNames =  {
+  const getPhaseDisplayName = (phase: number) => { const phaseNames = {
       1: '白天',
       2: '傍晚',
       3: '夜晚',
-      4: '黎明'  
+      4: '黎明',
 };
-    return phaseNames[phase as keyof typeof phaseNames] || '未知'
+    return phaseNames[phase as keyof typeof phaseNames] || '未知';,
 };
 
   return { gameState,
@@ -551,5 +473,6 @@ const getPhaseDisplayName = (phase: number) => { const phaseNames =  {
     updateGameSettings,
     endGame,
     formatTime,
-    getPhaseDisplayName }
+    getPhaseDisplayName,
+   };,
 };

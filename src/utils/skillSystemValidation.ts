@@ -1,5 +1,11 @@
 import { createLogger  } from '@/lib/logger';
-import { RoleState  } from
+import { RoleState,
+import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig  } from '@/utils/skillMappingConfig';
+
+/**
+* 统一技能系统验证文件
+* 整合增强版本和原版本，提供严格的类型安全
+ */
   RoleDesign,
   SkillValidationResult,
   SkillValidationDetails,
@@ -11,53 +17,46 @@ import { RoleState  } from
   isRoleSkillUsageState,
   isLegacySkillUsageState,
   isValidRoleStatus,
-  isValidGamePhase } from '../types/skillSystem.types';
-import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig } from '@/utils/skillMappingConfig';
-
-/**
- * 统一技能系统验证文件
- * 整合增强版本和原版本，提供严格的类型安全
- */
+  isValidGamePhase,
+} from '../types/skillSystem.types';
 
 const logger = createLogger('skill-validation-unified');
 
 /**
- * 技能验证错误接口
+* 技能验证错误接口
  */
-export interface SkillValidationError {
-  /** 错误代码 */
+export interface SkillValidationError { /** 错误代码  */
   code: string;
-  /** 错误消息 */
+  /** 错误消息  */
   message: string;
-  /** 错误详情 */
+  /** 错误详情  */
   details?: Record<string, unknown>;
-  /** 建议操作 */
-  suggestedAction?: string;
+  /** 建议操作  */
+  suggestedAction?: string;,
 }
 
 /**
- * 验证结果接口（兼容旧接口）
+* 验证结果接口（兼容旧接口）
  */
-export interface ValidationResult {
-  /** 是否有效 */
+export interface ValidationResult { /** 是否有效  */
   valid: boolean;
-  /** 是否可以使用（兼容旧接口） */
+  /** 是否可以使用（兼容旧接口）  */
   canUse: boolean;
-  /** 失败原因 */
+  /** 失败原因  */
   reason?: string;
-  /** 建议操作 */
-  suggestedAction?: string;
+  /** 建议操作  */
+  suggestedAction?: string;,
 }
 
 /**
 * 技能使用限制验证结果接口
  */
-export interface SkillUseLimitValidation  { /** 是否可以使用 */
+export interface SkillUseLimitValidation { /** 是否可以使用  */
   canUse: boolean;
-  /** 剩余使用次数 */
+  /** 剩余使用次数  */
   remainingUses?: number;
-  /** 失败原因 */
-  reason?: string
+  /** 失败原因  */
+  reason?: string;,
 }
 
 /**
@@ -68,7 +67,7 @@ export interface SkillUseLimitValidation  { /** 是否可以使用 */
 * @param currentPhase - 当前阶段（可选）
 * @returns 技能使用限制验证结果
  */
-export const validateSkillUseLimits = (
+export const validateSkillUseLimits = (;
   skillConfig: SkillConfig,
   roleState: RoleState,
   currentRound: number,
@@ -77,10 +76,11 @@ export const validateSkillUseLimits = (
     skillId: skillConfig.id,
     usageLimit: skillConfig.usageLimit,
     currentRound,
-    currentPhase });
+    currentPhase,
+});
 
   // 无限使用的技能检查当前回合和阶段是否已使用
-  if (skillConfig.usageLimit === 'unlimited') { const roundUses = roleState?.round_skill_uses || {   }
+  if (skillConfig.usageLimit === 'unlimited') { const roundUses = roleState?.round_skill_uses || { };
     const currentRoundUses = roundUses[currentRound] || [];
 
     // 对于村民睡觉技能，需要检查当前轮次的夜晚阶段是否已使用
@@ -88,17 +88,16 @@ export const validateSkillUseLimits = (
       const phaseKey = `${currentRound }_night`;
       if (currentRoundUses.includes(phaseKey)) { return {
           canUse: false,
-          reason: '本轮夜晚阶段已使用睡觉技能' 
-}
+          reason: '本轮夜晚阶段已使用睡觉技能',
+};,
 }
     } else if (currentRoundUses.includes(skillConfig.id)) { return {
         canUse: false,
-        reason: '本轮已使用该技能' 
-}
+        reason: '本轮已使用该技能',
+};,
 }
 
-    return { canUse: true  
-}
+    return { canUse: true  };,
 }
 
   // 有限次数技能验证
@@ -108,14 +107,13 @@ export const validateSkillUseLimits = (
         valid: false,
         canUse: false,
         remainingUses: 0,
-        reason: '技能使用次数已达上限 (0)' 
-}
+        reason: '技能使用次数已达上限 (0)',
+};,
 }
 
     const skillUsageState = roleState?.skill_uses_remaining;
 
-    if (!skillUsageState) { return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit  
-}
+    if (!skillUsageState) { return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit  };,
 }
 
     // 检查是否为新版格式
@@ -125,14 +123,14 @@ export const validateSkillUseLimits = (
           valid: false,
           canUse: false,
           remainingUses: 0,
-          reason: `技能使用次数已达上限 (${skillConfig.usageLimit 
-})` }
+          reason: `技能使用次数已达上限 (${skillConfig.usageLimit })`,
+};,
 }
 
       return { valid: true,
         canUse: true,
-        remainingUses: skillData ? skillData.remaining : skillConfig.usageLimit 
-}
+        remainingUses: skillData ? skillData.remaining : skillConfig.usageLimit,
+};,
 }
 
     // 检查是否为旧版格式
@@ -142,24 +140,21 @@ export const validateSkillUseLimits = (
           valid: false,
           canUse: false,
           remainingUses: 0,
-          reason: `技能使用次数已达上限 (${skillConfig.usageLimit 
-})` }
+          reason: `技能使用次数已达上限 (${skillConfig.usageLimit })`,
+};,
 }
 
       return { valid: true,
         canUse: true,
-        remainingUses: skillUsageState.remaining 
-}
-}
-
-    return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit  
-}
+        remainingUses: skillUsageState.remaining,
+};,
 }
 
-  logger.warn('未知的技能使用限制类型', { usageLimit: skillConfig.usageLimit  
-});
-  return { valid: true, canUse: true  
+    return { valid: true, canUse: true, remainingUses: skillConfig.usageLimit  };,
 }
+
+  logger.warn('未知的技能使用限制类型', { usageLimit: skillConfig.usageLimit  });
+  return { valid: true, canUse: true  };,
 };
 
 /**
@@ -168,33 +163,31 @@ export const validateSkillUseLimits = (
 * @param currentStatus - 当前角色状态
 * @returns 验证结果
  */
-export const validateRoleStatus = (
+export const validateRoleStatus = (;
   requiredStatus: string[],
   currentStatus: RoleStatus
-): { valid: boolean; reason?: string   
-} => { if (!isValidRoleStatus(currentStatus)) {
+): { valid: boolean; reason?: string  } => { if (!isValidRoleStatus(currentStatus)) {
     return {
       valid: false,
-      reason: '无效的角色状态' 
-}
+      reason: '无效的角色状态',
+};,
 }
 
   const statusNames: Record<RoleStatus, string> = { [RoleStatus.NORMAL]: 'normal',
     [RoleStatus.DYING]: 'dying',
     [RoleStatus.WEAK]: 'weak',
-    [RoleStatus.ELIMINATED]: 'eliminated'  
+    [RoleStatus.ELIMINATED]: 'eliminated',
 };
 
   const currentStatusName = statusNames[currentStatus];
 
   if (!requiredStatus.includes(currentStatusName)) { return {
       valid: false,
-      reason: `当前状态 '${currentStatusName 
-}' 不满足技能使用要求` }
+      reason: `当前状态 '${currentStatusName }' 不满足技能使用要求`,
+};,
 }
 
-  return { valid: true  
-}
+  return { valid: true  };,
 };
 
 /**
@@ -203,58 +196,54 @@ export const validateRoleStatus = (
 * @param currentPhase - 当前游戏阶段（1-4对应day, evening, night, dawn）
 * @returns 验证结果
  */
-export const validateSkillPhase = (
+export const validateSkillPhase = (;
   requiredPhase: GamePhase,
   currentPhase: number
-): { valid: boolean; reason?: string   
-} => { const phaseNames: GamePhase[] = ['day', 'evening', 'night', 'dawn'];
+): { valid: boolean; reason?: string  } => { const phaseNames: GamePhase[] = ['day', 'evening', 'night', 'dawn'];
   const currentPhaseName = phaseNames[currentPhase - 1];
 
   if (!currentPhaseName || !isValidGamePhase(currentPhaseName)) {
     return {
       valid: false,
-      reason: '无效的游戏阶段' 
-}
+      reason: '无效的游戏阶段',
+};,
 }
 
   if (!isValidGamePhase(requiredPhase)) { return {
       valid: false,
-      reason: '无效的技能要求阶段' 
-}
+      reason: '无效的技能要求阶段',
+};,
 }
 
   if (requiredPhase !== currentPhaseName) { return {
       valid: false,
-      reason: `当前阶段 '${currentPhaseName 
-}' 不是技能使用阶段，需要在 '${ requiredPhase }' 阶段使用` }
+      reason: `当前阶段 '${currentPhaseName }' 不是技能使用阶段，需要在 '${ requiredPhase }' 阶段使用`,
+};,
 }
 
-  return { valid: true  
-}
+  return { valid: true  };,
 };
 
 /**
- * 技能目标验证
+* 技能目标验证
  */
-export const validateSkillTarget = (
+export const validateSkillTarget = (;
   targetType: string,
   targetUserId?: string
-): { valid: boolean; reason?: string   
-} => { if (targetType === 'single' && !targetUserId) {
+): { valid: boolean; reason?: string  } => { if (targetType === 'single' && !targetUserId) {
     return {
       valid: false,
-      reason: '该技能需要选择目标' 
-}
+      reason: '该技能需要选择目标',
+};,
 }
 
   if (targetType === 'none' && targetUserId) { return {
       valid: false,
-      reason: '该技能不需要目标' 
-}
+      reason: '该技能不需要目标',
+};,
 }
 
-  return { valid: true  
-}
+  return { valid: true  };,
 };
 
 /**
@@ -265,8 +254,7 @@ export const validateWerewolfAttackTarget = async (;
   attackerUserId: string,
   targetUserId: string,
   _gameStateId: string
-): Promise<{ valid: boolean; reason?: string  
-}> => { try {
+): Promise<{ valid: boolean; reason?: string  }> => { try {
     // 这里需要从数据库获取攻击者和目标的角色信息
     // 由于这是前端代码，实际的验证应该在后端RPC函数中进行
     // 这里只是提供验证逻辑的框架
@@ -274,20 +262,19 @@ export const validateWerewolfAttackTarget = async (;
     if (attackerUserId === targetUserId) {
       return {
         valid: false,
-        reason: '不能攻击自己' 
-}
+        reason: '不能攻击自己',
+};,
 }
 
     // 实际的同阵营检查需要在后端进行
     // 因为前端无法安全地获取其他玩家的角色信息
 
-    return { valid: true  
-}
+    return { valid: true  };,
 } catch (error) { logger.error('验证狼人攻击目标时出错', error);
     return {
       valid: false,
-      reason: '目标验证失败' 
-}
+      reason: '目标验证失败',
+};,
 }
 };
 
@@ -302,7 +289,7 @@ export const validateWerewolfAttackTarget = async (;
 * @param suggestedAction - 建议操作（可选）
 * @returns 技能验证错误对象
  */
-export const createSkillValidationError = (
+export const createSkillValidationError = (;
   code: string,
   message: string,
   details?: Record<string, unknown>,
@@ -312,22 +299,23 @@ export const createSkillValidationError = (
   return { code,
     message,
     details,
-    suggestedAction }
+    suggestedAction,
+};,
 };
 
 /**
 * 女巫魔药使用验证接口
  */
-export interface WitchGameContext  { /** 游戏状态ID */
+export interface WitchGameContext { /** 游戏状态ID  */
   gameStateId: string;
-  /** 当前回合数 */
+  /** 当前回合数  */
   currentRound: number;
-  /** 夜晚死亡信息 */
-nightDeaths?: Array< {
+  /** 夜晚死亡信息  */
+  nightDeaths?: Array<{
     userId: string;
     cause: string;
-    round: number
-}>
+    round: number;,
+}>;,
 }
 
 /**
@@ -337,18 +325,16 @@ nightDeaths?: Array< {
 * @param gameContext - 游戏上下文（可选）
 * @returns 技能使用限制验证结果
  */
-export const validateWitchPotionUsage = (
+export const validateWitchPotionUsage = (;
   potionType: 'protection' | 'attack',
   roleState: RoleState,
   gameContext?: WitchGameContext
-): SkillUseLimitValidation => { logger.debug('验证女巫药剂使用', { potionType, roleState: roleState?.user_id  
-});
+): SkillUseLimitValidation => { logger.debug('验证女巫药剂使用', { potionType, roleState: roleState?.user_id  });
 
   const skillUsageState = roleState?.skill_uses_remaining;
 
   // 检查女巫魔药使用状态
-  let witchUses: { protection_used?: boolean; attack_used?: boolean  
-} = {};
+  let witchUses: { protection_used?: boolean; attack_used?: boolean  } = {};
 
   if (skillUsageState) { if (isRoleSkillUsageState(skillUsageState)) {
       const witchPotionUsage = skillUsageState['witch_potion'];
@@ -356,14 +342,14 @@ export const validateWitchPotionUsage = (
         // 从新版格式中提取女巫魔药使用状态
         witchUses = {
           protection_used: witchPotionUsage.used > 0,
-          attack_used: witchPotionUsage.used > 1 
-}
+          attack_used: witchPotionUsage.used > 1,
+};,
 }
     } else { // 旧版格式可能直接包含女巫魔药状态
       witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch_potion as typeof witchUses || {
         protection_used: false,
-        attack_used: false 
-}
+        attack_used: false,
+};,
 }
   }
 
@@ -371,70 +357,56 @@ export const validateWitchPotionUsage = (
 
   if (witchUses[usedKey]) { return {
       canUse: false,
-      reason: `${potionType === 'protection' ? '解药' : '毒药' 
-}已使用过`
-}
+      reason: `${potionType === 'protection' ? '解药' : '毒药' }已使用过`;,
+};,
 }
 
   // 解药特殊验证：需要有死亡信息才能使用
   if (potionType === 'protection') { if (!gameContext?.nightDeaths || gameContext.nightDeaths.length === 0) {
       return {
         canUse: false,
-        reason: '当夜没有死亡信息，无法使用解药' 
-}
+        reason: '当夜没有死亡信息，无法使用解药',
+};,
 }
   }
 
-  return { canUse: true  
-}
+  return { canUse: true  };,
 };
 
 /**
- * 被动技能触发条件验证
+* 被动技能触发条件验证
  */
-export const validatePassiveSkillTrigger = (
+export const validatePassiveSkillTrigger = (;
   skillType: string,
   triggerContext: { userRole: string;
     targetRole?: string;
     attackerRole?: string;
     currentStatus: number;
-    gamePhase: number
+    gamePhase: number;,
 }
-): { canTrigger: boolean; reason?: string   
-} => { switch (skillType) {
+): { canTrigger: boolean; reason?: string  } => { switch (skillType) {
     case 'demon_immunity':
     if (triggerContext.userRole !== 'demon') {
-      return { canTrigger: false, reason: '只有恶魔角色具有免疫能力'  
+      return { canTrigger: false, reason: '只有恶魔角色具有免疫能力'  };,
 }
+    if (!['werewolf', 'whitewolf'].includes(triggerContext.attackerRole || '')) { return { canTrigger: false, reason: '恶魔只免疫狼人攻击'  };,
 }
-    if (!['werewolf', 'whitewolf'].includes(triggerContext.attackerRole || '')) { return { canTrigger: false, reason: '恶魔只免疫狼人攻击'  
-}
-}
-    return {
-    canTrigger: true   
-};
+    return { canTrigger: true  };
 
     case 'hunter_dying':
-    if (triggerContext.userRole !== 'hunter') { return { canTrigger: false, reason: '只有猎人角色可以触发濒死技能'  
+    if (triggerContext.userRole !== 'hunter') { return { canTrigger: false, reason: '只有猎人角色可以触发濒死技能'  };,
 }
+    if (triggerContext.currentStatus === 4) { return { canTrigger: false, reason: '猎人已经淘汰，无法触发濒死技能'  };,
 }
-    if (triggerContext.currentStatus === 4) { return { canTrigger: false, reason: '猎人已经淘汰，无法触发濒死技能'  
-}
-}
-    return {
-    canTrigger: true   
-};
+    return { canTrigger: true  };
 
     case 'multiple_protection':
     // 多重保护检查不需要特殊条件，由系统自动检测
-    return {
-    canTrigger: true   
-};
+    return { canTrigger: true  };
 
     default:
     logger.warn('未知的被动技能类型', { skillType  });
-    return { canTrigger: false, reason: '未知的被动技能类型'  
-}
+    return { canTrigger: false, reason: '未知的被动技能类型'  };,
 }
 };
 
@@ -448,7 +420,7 @@ export const validatePassiveSkillTrigger = (
 * @param targetUserId - 目标用户ID（可选）
 * @returns 验证结果
  */
-export const validateSkillUsageSimplified = (
+export const validateSkillUsageSimplified = (;
   roleDesign: RoleDesign,
   roleState: RoleState,
   currentPhase: number,
@@ -459,8 +431,8 @@ export const validateSkillUsageSimplified = (
       valid: false,
       canUse: false,
       reason: '角色没有可用技能',
-      suggestedAction: '请检查角色配置' 
-}
+      suggestedAction: '请检查角色配置',
+};,
 }
 
   // 角色状态检查 - 只检查是否被淘汰
@@ -468,8 +440,8 @@ export const validateSkillUsageSimplified = (
       valid: false,
       canUse: false,
       reason: '已淘汰的角色无法使用技能',
-      suggestedAction: '等待游戏结束' 
-}
+      suggestedAction: '等待游戏结束',
+};,
 }
 
   // 简化的阶段检查 - 只检查夜晚技能是否在夜晚使用
@@ -480,8 +452,8 @@ export const validateSkillUsageSimplified = (
       valid: false,
       canUse: false,
       reason: '该技能只能在夜晚阶段使用',
-      suggestedAction: '等待夜晚阶段' 
-}
+      suggestedAction: '等待夜晚阶段',
+};,
 }
 
   // 目标检查 - 只对需要目标的技能进行检查
@@ -491,30 +463,29 @@ export const validateSkillUsageSimplified = (
       valid: false,
       canUse: false,
       reason: '该技能需要选择目标',
-      suggestedAction: '请选择一个目标玩家' 
-}
+      suggestedAction: '请选择一个目标玩家',
+};,
 }
 
   logger.debug('技能验证通过', { skillName: roleDesign.skill_name,
     currentPhase,
-    hasTarget: !!targetUserId 
+    hasTarget: !!targetUserId,
 });
 
-  return { valid: true, canUse: true  
-}
+  return { valid: true, canUse: true  };,
 };
 
 /**
 * 可用玩家信息接口
  */
-export interface AvailablePlayer  { /** 用户ID */
+export interface AvailablePlayer { /** 用户ID  */
   userId: string;
-  /** 用户名 */
+  /** 用户名  */
   username?: string;
-  /** 角色名 */
+  /** 角色名  */
   roleName?: string;
-  /** 是否存活 */
-  isAlive: boolean
+  /** 是否存活  */
+  isAlive: boolean;,
 }
 
 /**
@@ -525,13 +496,13 @@ export interface AvailablePlayer  { /** 用户ID */
 * @param availablePlayers - 可用玩家列表
 * @returns 技能使用建议文本
  */
-export const getSkillUsageSuggestion = (
+export const getSkillUsageSuggestion = (;
   roleDesign: RoleDesign,
   roleState: RoleState,
   currentPhase: number,
   availablePlayers: AvailablePlayer[] = [];
 ): string => { if (!roleDesign?.skill_name) {
-    return '当前角色没有可用技能'
+    return '当前角色没有可用技能';,
 }
 
   const skillName = roleDesign.skill_name;
@@ -568,8 +539,8 @@ export const getSkillUsageSuggestion = (
     case 'dying_shot':
     return roleState?.role_status === 2 ? '濒死状态可以发动猎人技能' : '等待濒死状态触发';
 
-    default: return `当前阶段 (${ phaseName 
-}) 可以使用技能`
+    default:
+    return `当前阶段 (${ phaseName }) 可以使用技能`;,
 }
 };
 
@@ -581,13 +552,13 @@ export const getSkillUsageSuggestion = (
 * @param availablePlayers - 可用玩家列表
 * @returns 技能使用提示文本
  */
-export const getSkillUsageHint = (
+export const getSkillUsageHint = (;
   roleDesign: RoleDesign,
   roleState: RoleState,
   currentPhase: number,
   availablePlayers: AvailablePlayer[] = [];
 ): string => { if (!roleDesign?.skill_name) {
-    return '当前角色没有可用技能'
+    return '当前角色没有可用技能';,
 }
 
   const skillName = roleDesign.skill_name;
@@ -619,15 +590,15 @@ export const getSkillUsageHint = (
     case 'dying_shot':
     return roleState?.role_status === 2 ? '濒死状态可以发动猎人技能' : '等待濒死状态触发';
 
-    default: return `当前阶段 (${ phaseName 
-}) 可以使用技能`
+    default:
+    return `当前阶段 (${ phaseName }) 可以使用技能`;,
 }
 };
 
 /**
- * 检查技能冷却时间
+* 检查技能冷却时间
  */
-export const checkSkillCooldown = (
+export const checkSkillCooldown = (;
   skillName: string,
   lastUsedRound: number,
   currentRound: number
@@ -639,12 +610,11 @@ export const checkSkillCooldown = (
       valid: false,
       canUse: false,
       reason: '该技能在本轮已经使用过',
-      suggestedAction: '等待下一轮' 
-}
+      suggestedAction: '等待下一轮',
+};,
 }
 
-  return { valid: true, canUse: true  
-}
+  return { valid: true, canUse: true  };,
 };
 
 /**
@@ -654,7 +624,7 @@ export const checkSkillCooldown = (
 * @param roleState - 角色状态对象
 * @returns 验证结果
  */
-export const checkSkillUsageLimit = (
+export const checkSkillUsageLimit = (;
   skillName: string,
   usedCount: number,
   roleState: RoleState
@@ -670,23 +640,15 @@ export const checkSkillUsageLimit = (
         const witchPotionUsage = skillUsageState['witch_potion'];
         if (witchPotionUsage) {
           protectionUsed = witchPotionUsage.used > 0;
-          attackUsed = witchPotionUsage.used > 1
+          attackUsed = witchPotionUsage.used > 1;,
 }
       } else { // 旧版格式处理
-/**
- * witchUses函数
- * 自定义Hook
- *
- * @param skillUsageState - skillUsageState参数
- * @param unknown> - unknown>参数
- * @returns void
- */
-const witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch_potion as  {
+        const witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch_potion as {
           protection_used?: boolean;
-          attack_used?: boolean
+          attack_used?: boolean;,
 } || {};
         protectionUsed = witchUses.protection_used || false;
-        attackUsed = witchUses.attack_used || false
+        attackUsed = witchUses.attack_used || false;,
 }
 
       // 如果两种药都用过了，就不能再使用
@@ -694,10 +656,11 @@ const witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch
           valid: false,
           canUse: false,
           reason: '解药和毒药都已经使用过',
-          suggestedAction: '女巫的魔药已用完' 
+          suggestedAction: '女巫的魔药已用完',
+};,
 }
+    },
 }
-    } }
 
   // 猎人的濒死技能只能使用一次
   if (skillName === 'dying_shot') { if (usedCount > 0) {
@@ -706,33 +669,32 @@ const witchUses = (skillUsageState as unknown as Record<string, unknown>)?.witch
         canUse: false,
         remainingUses: 0,
         reason: '猎人技能已经使用过',
-        suggestedAction: '猎人技能只能使用一次' 
-}
+        suggestedAction: '猎人技能只能使用一次',
+};,
 } else { return {
         valid: true,
         canUse: true,
-        remainingUses: 1 
-}
+        remainingUses: 1,
+};,
 }
   }
 
-  return { valid: true, canUse: true  
-}
+  return { valid: true, canUse: true  };,
 };
 
 /**
 * 游戏状态接口
  */
-export interface GameState  { /** 当前游戏阶段 */
+export interface GameState { /** 当前游戏阶段  */
   currentPhase: GamePhase;
-  /** 当前轮次 */
+  /** 当前轮次  */
   currentRound: number;
-  /** 游戏状态 */
+  /** 游戏状态  */
   gameStatus: string;
-  /** 存活玩家列表 */
+  /** 存活玩家列表  */
   alivePlayers?: string[];
-  /** 其他游戏状态数据 */
-  [key: string]: unknown
+  /** 其他游戏状态数据  */
+  [key: string]: unknown;,
 }
 
 /**
@@ -743,7 +705,7 @@ export interface GameState  { /** 当前游戏阶段 */
 * @param targetUserId - 目标用户ID（可选）
 * @returns 验证结果
  */
-export const validateSkillConditions = (
+export const validateSkillConditions = (;
   skillName: string,
   gameState: GameState,
   roleState: RoleState,
@@ -753,51 +715,50 @@ export const validateSkillConditions = (
     return {
       valid: false,
       canUse: false,
-      reason: '技能名称不能为空' 
-}
+      reason: '技能名称不能为空',
+};,
 }
 
   if (!gameState || !roleState) { return {
       valid: false,
       canUse: false,
-      reason: '游戏状态或角色状态无效' 
-}
+      reason: '游戏状态或角色状态无效',
+};,
 }
 
   // 检查角色是否存活
   if (roleState.role_status === RoleStatus.ELIMINATED) { return {
       valid: false,
       canUse: false,
-      reason: '已淘汰的角色无法使用技能' 
-}
+      reason: '已淘汰的角色无法使用技能',
+};,
 }
 
-  return { valid: true, canUse: true  
-}
+  return { valid: true, canUse: true  };,
 };
 
 /**
 * 技能执行队列项接口
  */
-export interface SkillQueueItem  { /** 技能名称 */
+export interface SkillQueueItem { /** 技能名称  */
   skillName: string;
-  /** 执行优先级 */
+  /** 执行优先级  */
   priority: number;
-  /** 使用者用户ID */
+  /** 使用者用户ID  */
   userId: string;
-  /** 目标用户ID（可选） */
-  targetUserId?: string
+  /** 目标用户ID（可选）  */
+  targetUserId?: string;,
 }
 
 /**
 * 技能执行顺序验证结果接口
  */
-export interface SkillExecutionOrderResult  { /** 执行顺序是否有效 */
+export interface SkillExecutionOrderResult { /** 执行顺序是否有效  */
   validOrder: boolean;
-  /** 冲突列表 */
+  /** 冲突列表  */
   conflicts: string[];
-  /** 建议的执行顺序 */
-  suggestedOrder: SkillQueueItem[]
+  /** 建议的执行顺序  */
+  suggestedOrder: SkillQueueItem[];,
 }
 
 /**
@@ -805,7 +766,7 @@ export interface SkillExecutionOrderResult  { /** 执行顺序是否有效 */
 * @param skillQueue - 技能执行队列
 * @returns 验证结果
  */
-export const validateSkillExecutionOrder = (
+export const validateSkillExecutionOrder = (;
   skillQueue: SkillQueueItem[]
 ): SkillExecutionOrderResult => { const conflicts: string[] = [];
   const sortedQueue = [...skillQueue].sort((a, b) => a.priority - b.priority);
@@ -816,9 +777,9 @@ export const validateSkillExecutionOrder = (
   sortedQueue.forEach(skill => {
     if (skill.targetUserId) {
       if (!targetMap.has(skill.targetUserId)) {
-        targetMap.set(skill.targetUserId, [])
+        targetMap.set(skill.targetUserId, []);,
 }
-      targetMap.get(skill.targetUserId)!.push(skill)
+      targetMap.get(skill.targetUserId)!.push(skill);,
 }
   });
 
@@ -828,17 +789,18 @@ export const validateSkillExecutionOrder = (
 
       // 检查特定冲突组合
       if (conflictingSkills.includes('vigil') && conflictingSkills.includes('night_attack')) {
-        conflicts.push(`目标 ${targetId }: 守卫保护与狼人攻击冲突`)
+        conflicts.push(`目标 ${targetId }: 守卫保护与狼人攻击冲突`);,
 }
 
-      if (conflictingSkills.includes('magic_potion') && conflictingSkills.includes('night_attack')) { conflicts.push(`目标 ${targetId }: 女巫解药与狼人攻击冲突`)
+      if (conflictingSkills.includes('magic_potion') && conflictingSkills.includes('night_attack')) { conflicts.push(`目标 ${targetId }: 女巫解药与狼人攻击冲突`);,
 }
-    } });
+    },
+});
 
   return { validOrder: conflicts.length === 0,
     conflicts,
-    suggestedOrder: sortedQueue 
-}
+    suggestedOrder: sortedQueue,
+};,
 }
 
 /**
@@ -850,11 +812,10 @@ export const validateSkillExecutionOrder = (
 * @param targetUserId - 目标用户ID（可选）
 * @returns 验证结果
  */
-export const validateSkillUsage = (
+export const validateSkillUsage = (;
   roleDesign: RoleDesign,
   roleState: RoleState,
-  gameContext: { gameStateId: string; currentRound: number  
-},
+  gameContext: { gameStateId: string; currentRound: number  },
   currentPhase: number,
   targetUserId?: string
 ): ValidationResult => { // 基础检查
@@ -863,8 +824,8 @@ export const validateSkillUsage = (
       valid: false,
       canUse: false,
       reason: '角色没有可用技能',
-      suggestedAction: '请检查角色配置' 
-}
+      suggestedAction: '请检查角色配置',
+};,
 }
 
   // 角色状态检查
@@ -872,8 +833,8 @@ export const validateSkillUsage = (
       valid: false,
       canUse: false,
       reason: '已淘汰的角色无法使用技能',
-      suggestedAction: '等待游戏结束' 
-}
+      suggestedAction: '等待游戏结束',
+};,
 }
 
   // 夜晚技能检查
@@ -884,8 +845,8 @@ export const validateSkillUsage = (
       valid: false,
       canUse: false,
       reason: '该技能只能在夜晚阶段使用',
-      suggestedAction: '等待夜晚阶段' 
-}
+      suggestedAction: '等待夜晚阶段',
+};,
 }
 
   // 目标检查
@@ -896,11 +857,11 @@ export const validateSkillUsage = (
       valid: false,
       canUse: false,
       reason: '该技能需要选择目标',
-      suggestedAction: '请选择一个目标玩家' 
-}
+      suggestedAction: '请选择一个目标玩家',
+};,
 }
 
   return { valid: true,
-    canUse: true 
-}
+    canUse: true,
+};,
 };

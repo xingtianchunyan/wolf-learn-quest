@@ -1,14 +1,14 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority   } from '@/utils/skillSystemHelpers';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull, AlertCircle   } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue   } from '@/components/ui/select';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import { validateSkillUsageSimplified, getSkillUsageSuggestion   } from '@/utils/skillSystemValidation';
-import React, { useState   } from 'react';
-import type { Tables   } from '@/integrations/supabase/types';
-import { RoleSpecificSkills   } from '../interfaces/RoleSpecificSkills';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { canUseSkillInGameState, getSkillEffectTypes, getSkillPriority  } from '@/utils/skillSystemHelpers';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { Loader2, Target, Clock, Zap, Shield, Search, Skull, AlertCircle  } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import { validateSkillUsageSimplified, getSkillUsageSuggestion  } from '@/utils/skillSystemValidation';
+import React, { useState  } from 'react';
+import type { Tables  } from '@/integrations/supabase/types';
+import { RoleSpecificSkills  } from '../interfaces/RoleSpecificSkills';
 
 /**
 * 文件级注释：SkillUsePanel 组件
@@ -25,14 +25,14 @@ import { RoleSpecificSkills   } from '../interfaces/RoleSpecificSkills';
 * @category game
 * @filepath game\panels\SkillUsePanel.tsx
  */
-interface SkillUsePanelProps  { roomId: string;
+
+interface SkillUsePanelProps { roomId: string;
   gameStateId: string;
   userId: string;
   currentPhase: number;
   roleState: Tables<'role_states'> | null;
   roleDesign: Tables<'role_design'> | null;
-  players: Array<{ userId: string; name: string; roleStatus: number  
-}>
+  players: Array<{ userId: string; name: string; roleStatus: number  }>;,
 }
 
 /**
@@ -49,20 +49,22 @@ interface SkillUsePanelProps  { roomId: string;
 * // 使用示例
 * <SkillUsePanel { ...props } />
  */
-const SkillUsePanel: React.FC<SkillUsePanelProps> = ( { roomId,
+const SkillUsePanel: React.FC<SkillUsePanelProps> = ({ roomId,
   gameStateId,
   userId,
   currentPhase,
   roleState,
   roleDesign,
-  players }) => { const [selectedTarget, setSelectedTarget] = useState<string>('');
+  players,
+}) => { const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillData, setSkillData] = useState<Record<string, unknown>>({ });
 
   const { loading,
     useSkillEnhanced: useSkill,
     skillUses,
     getUserSkillData,
-    validateSkillFrontend } = useEnhancedSkillSystem(roomId, gameStateId, userId);
+    validateSkillFrontend,
+} = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 检查是否可以使用技能
   const canUseSkill = canUseSkillInGameState(;
@@ -100,16 +102,12 @@ const skillUsageHint = getSkillUsageSuggestion(;
   availableTargets
 );
 
-/**
- * handleUseSkillLegacy函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleUseSkillLegacy = async () =>  { if (!roleDesign?.skill_name) return;
+const handleUseSkillLegacy = async () => { if (!roleDesign?.skill_name) return;
 
   // 前端验证技能是否可用
   if (!usageValidation.valid) {
-    return; // 不执行技能使用，按钮已禁用 }
+    return; // 不执行技能使用，按钮已禁用,
+}
 
   const result = await useSkill(;
     roleDesign.skill_name,
@@ -121,40 +119,26 @@ const handleUseSkillLegacy = async () =>  { if (!roleDesign?.skill_name) return;
   );
 
   if (result) { setSelectedTarget('');
-    setSkillData({ })
+    setSkillData({ });,
 }
 };
 
-/**
- * getEffectIcon函数
- * 获取数据
- *
- * @param effectType - effectType参数
- * @returns void
- */
-const getEffectIcon = (effectType: string) => { switch (effectType)  {
+const getEffectIcon = (effectType: string) => { switch (effectType) {
     case 'elimination': return <Skull className='w-4 h-4' />;
     case 'protection': return <Shield className='w-4 h-4' />;
     case 'investigation': return <Search className='w-4 h-4' />;
     case 'status_change': return <Zap className='w-4 h-4' />;
-    default: return <Target className='w-4 h-4' />
+    default: return <Target className='w-4 h-4' />;,
 }
 };
 
-/**
- * getStatusColor函数
- * 获取数据
- *
- * @param status - status参数
- * @returns void
- */
-const getStatusColor = (status: string) => { switch (status)  {
+const getStatusColor = (status: string) => { switch (status) {
     case 'pending': return 'bg-yellow-500';
     case 'processing': return 'bg-blue-500';
     case 'completed': return 'bg-green-500';
     case 'failed': return 'bg-red-500';
     case 'cancelled': return 'bg-gray-500';
-    default: return 'bg-gray-400'
+    default: return 'bg-gray-400';,
 }
 };
 
@@ -167,19 +151,11 @@ if (!roleDesign?.skill_name) { return (;
     <p className='text-muted-foreground'>当前角色没有可用技能</p>;
     </CardContent>
     </Card>
-  )
+  );,
 }
 
 // 使用角色特定技能组件
-/**
- * handleSkillUse函数
- * 处理事件
- *
- * @param skillData - skillData参数
- * @param unknown> - unknown>参数
- * @returns Promise<void>
- */
-const handleSkillUse = async (skillData: Record<string, unknown>) =>  { if (!roleDesign?.skill_name) return;
+const handleSkillUse = async (skillData: Record<string, unknown>) => { if (!roleDesign?.skill_name) return;
 
   // 前端验证 - 避免无效请求
   const frontendValidation = await validateSkillFrontend?.(;
@@ -193,7 +169,7 @@ const handleSkillUse = async (skillData: Record<string, unknown>) =>  { if (!rol
 
   if (frontendValidation && !frontendValidation.canUse) {
     // 不显示错误弹窗，只是不执行操作
-    return
+    return;,
 }
 
   const result = await useSkill(;
@@ -206,22 +182,19 @@ const handleSkillUse = async (skillData: Record<string, unknown>) =>  { if (!rol
   );
 
   if (result) { setSelectedTarget('');
-    setSkillData({ })
+    setSkillData({ });,
 }
 };
 
 return (;
   <div className='space-y-4'>;
   { /*  技能使用状态提示  */ }
-  <Card className={ `border-opacity-30 ${!usageValidation.valid ? 'border-yellow-500 bg-yellow-900/20' : 'border-blue-500 bg-blue-900/20' 
-}`}>;
+  <Card className={ `border-opacity-30 ${!usageValidation.valid ? 'border-yellow-500 bg-yellow-900/20' : 'border-blue-500 bg-blue-900/20' }`}>;
   <CardContent className='p-4'>;
-  <div className={ `flex items-center gap-2 ${!usageValidation.valid ? 'text-yellow-400' : 'text-blue-400' 
-}`}>;
+  <div className={ `flex items-center gap-2 ${!usageValidation.valid ? 'text-yellow-400' : 'text-blue-400' }`}>;
   <Clock className='w-4 h-4' />;
   <span className='text-sm font-medium'>;
-  { !usageValidation.valid ? '技能使用限制' : '技能使用建议' 
-}
+  { !usageValidation.valid ? '技能使用限制' : '技能使用建议' }
   </span>
   </div>
   { !usageValidation.valid && (
@@ -255,13 +228,7 @@ return (;
   fullSkillUses={ skillUses }
   />
   </div>
-)
+);,
 };
 
-/**
- * SkillUsePanel组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default SkillUsePanel;

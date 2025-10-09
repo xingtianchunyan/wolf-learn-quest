@@ -3,13 +3,20 @@
  * @author SOLO Coding
  * @version 1.0.0
  */
+
 import React, { useState, useEffect } from 'react';
 import { DebugPanel } from './DebugPanel';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bug, Activity, EyeOff, Minimize2, Maximize2 } from 'lucide-react';
+import { 
+  Bug, 
+  Activity, 
+  EyeOff,
+  Minimize2,
+  Maximize2
+} from 'lucide-react';
 
 /**
  * 调试工具组件属性
@@ -29,7 +36,7 @@ interface DebugToolsProps {
 export const DebugTools: React.FC<DebugToolsProps> = ({
   autoShow = process.env.NODE_ENV === 'development',
   initialPosition = 'bottom-right',
-  draggable = true,
+  draggable = true
 }) => {
   const [isVisible, setIsVisible] = useState(autoShow);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
@@ -50,29 +57,13 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
 
     switch (position) {
       case 'top-left':
-        return {
-          ...baseStyle,
-          top: '20px',
-          left: '20px',
-        };
+        return { ...baseStyle, top: '20px', left: '20px' };
       case 'top-right':
-        return {
-          ...baseStyle,
-          top: '20px',
-          right: '20px',
-        };
+        return { ...baseStyle, top: '20px', right: '20px' };
       case 'bottom-left':
-        return {
-          ...baseStyle,
-          bottom: '20px',
-          left: '20px',
-        };
+        return { ...baseStyle, bottom: '20px', left: '20px' };
       case 'bottom-right':
-        return {
-          ...baseStyle,
-          bottom: '20px',
-          right: '20px',
-        };
+        return { ...baseStyle, bottom: '20px', right: '20px' };
       default:
         return { ...baseStyle, bottom: '20px', right: '20px' };
     }
@@ -82,22 +73,13 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
    * 处理拖拽开始
    */
   const handleDragStart = (e: React.MouseEvent) => {
-    if (!draggable) {
-      return;
-    }
-
+    if (!draggable) {return;}
+    
     setIsDragging(true);
-    /**
-     * rect函数
-     * rect函数的功能描述
-     *
-     * @param e.target - e.target参数
-     * @returns void
-     */
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setDragOffset({
       x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      y: e.clientY - rect.top
     });
   };
 
@@ -105,22 +87,20 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
    * 处理拖拽
    */
   const handleDrag = (e: MouseEvent) => {
-    if (!isDragging || !draggable) {
-      return;
-    }
-
+    if (!isDragging || !draggable) {return;}
+    
     e.preventDefault();
-
+    
     // 计算新位置
     const x = e.clientX - dragOffset.x;
     const y = e.clientY - dragOffset.y;
-
+    
     // 确定最接近的角落
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-
+    
     let newPosition: typeof position;
-
+    
     if (x < windowWidth / 2 && y < windowHeight / 2) {
       newPosition = 'top-left';
     } else if (x >= windowWidth / 2 && y < windowHeight / 2) {
@@ -130,7 +110,7 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
     } else {
       newPosition = 'bottom-right';
     }
-
+    
     setPosition(newPosition);
   };
 
@@ -146,7 +126,7 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
     if (isDragging) {
       document.addEventListener('mousemove', handleDrag);
       document.addEventListener('mouseup', handleDragEnd);
-
+      
       return () => {
         document.removeEventListener('mousemove', handleDrag);
         document.removeEventListener('mouseup', handleDragEnd);
@@ -156,26 +136,19 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
 
   // 键盘快捷键
   useEffect(() => {
-    /**
-     * handleKeyDown函数
-     * 处理事件
-     *
-     * @param e - e参数
-     * @returns void
-     */
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl + Shift + D 切换调试工具显示
       if (e.ctrlKey && e.shiftKey && e.key === 'D') {
         e.preventDefault();
         setIsVisible(!isVisible);
       }
-
+      
       // Ctrl + Shift + P 切换性能监控
       if (e.ctrlKey && e.shiftKey && e.key === 'P') {
         e.preventDefault();
         setShowPerformanceMonitor(!showPerformanceMonitor);
       }
-
+      
       // Ctrl + Shift + L 切换调试面板
       if (e.ctrlKey && e.shiftKey && e.key === 'L') {
         e.preventDefault();
@@ -191,19 +164,19 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
   if (!isVisible) {
     return (
       <Button
-        variant='outline'
-        size='sm'
+        variant="outline"
+        size="sm"
         onClick={() => setIsVisible(true)}
         style={{
           position: 'fixed',
           bottom: '20px',
           right: '20px',
           zIndex: 9999,
-          opacity: 0.7,
+          opacity: 0.7
         }}
-        className='hover:opacity-100'
+        className="hover:opacity-100"
       >
-        <Bug className='h-4 w-4' />
+        <Bug className="h-4 w-4" />
       </Button>
     );
   }
@@ -211,94 +184,90 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
   return (
     <>
       {/* 调试工具控制面板 */}
-      <Card
+      <Card 
         style={getPositionStyle()}
-        className={`w-auto ${
-          isDragging ? 'cursor-grabbing' : draggable ? 'cursor-grab' : ''
-        }`}
+        className={`w-auto ${isDragging ? 'cursor-grabbing' : draggable ? 'cursor-grab' : ''}`}
         onMouseDown={handleDragStart}
       >
-        <CardContent className='p-3'>
+        <CardContent className="p-3">
           {isMinimized ? (
             // 最小化状态
-            <div className='flex items-center gap-2'>
-              <Badge variant='outline' className='flex items-center gap-1'>
-                <Bug className='h-3 w-3' />
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Bug className="h-3 w-3" />
                 调试工具
               </Badge>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsMinimized(false)}
-                className='h-6 w-6 p-0'
+                className="h-6 w-6 p-0"
               >
-                <Maximize2 className='h-3 w-3' />
+                <Maximize2 className="h-3 w-3" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsVisible(false)}
-                className='h-6 w-6 p-0'
+                className="h-6 w-6 p-0"
               >
-                <EyeOff className='h-3 w-3' />
+                <EyeOff className="h-3 w-3" />
               </Button>
             </div>
           ) : (
             // 完整状态
-            <div className='space-y-3'>
+            <div className="space-y-3">
               {/* 标题栏 */}
-              <div className='flex items-center justify-between'>
-                <Badge variant='outline' className='flex items-center gap-1'>
-                  <Bug className='h-3 w-3' />
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Bug className="h-3 w-3" />
                   调试工具
                 </Badge>
-                <div className='flex items-center gap-1'>
+                <div className="flex items-center gap-1">
                   <Button
-                    variant='ghost'
-                    size='sm'
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setIsMinimized(true)}
-                    className='h-6 w-6 p-0'
+                    className="h-6 w-6 p-0"
                   >
-                    <Minimize2 className='h-3 w-3' />
+                    <Minimize2 className="h-3 w-3" />
                   </Button>
                   <Button
-                    variant='ghost'
-                    size='sm'
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setIsVisible(false)}
-                    className='h-6 w-6 p-0'
+                    className="h-6 w-6 p-0"
                   >
-                    <EyeOff className='h-3 w-3' />
+                    <EyeOff className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
 
               {/* 工具按钮 */}
-              <div className='flex flex-col gap-2'>
+              <div className="flex flex-col gap-2">
                 <Button
-                  variant={showDebugPanel ? 'default' : 'outline'}
-                  size='sm'
+                  variant={showDebugPanel ? "default" : "outline"}
+                  size="sm"
                   onClick={() => setShowDebugPanel(!showDebugPanel)}
-                  className='justify-start'
+                  className="justify-start"
                 >
-                  <Bug className='h-4 w-4 mr-2' />
+                  <Bug className="h-4 w-4 mr-2" />
                   调试面板
                 </Button>
-
+                
                 <Button
-                  variant={showPerformanceMonitor ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() =>
-                    setShowPerformanceMonitor(!showPerformanceMonitor)
-                  }
-                  className='justify-start'
+                  variant={showPerformanceMonitor ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+                  className="justify-start"
                 >
-                  <Activity className='h-4 w-4 mr-2' />
+                  <Activity className="h-4 w-4 mr-2" />
                   性能监控
                 </Button>
               </div>
 
               {/* 快捷键提示 */}
-              <div className='text-xs text-muted-foreground space-y-1'>
+              <div className="text-xs text-muted-foreground space-y-1">
                 <div>Ctrl+Shift+D: 切换显示</div>
                 <div>Ctrl+Shift+P: 性能监控</div>
                 <div>Ctrl+Shift+L: 调试面板</div>
@@ -307,30 +276,32 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
           )}
         </CardContent>
       </Card>
-      {/* 调试面板 */}{' '}
+
+      {/* 调试面板 */}
       {showDebugPanel && (
         <DebugPanel
           isVisible={showDebugPanel}
           onClose={() => setShowDebugPanel(false)}
         />
       )}
-      {/* 性能监控 */}{' '}
+
+      {/* 性能监控 */}
       {showPerformanceMonitor && (
-        <div
-          className='fixed inset-0 z-40 bg-black/50 flex items-start justify-center p-4 overflow-auto'
-          onClick={e => {
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 flex items-start justify-center p-4 overflow-auto"
+          onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowPerformanceMonitor(false);
             }
           }}
         >
-          <div className='w-full max-w-6xl mt-4'>
-            <div className='bg-background rounded-lg p-4'>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-lg font-semibold'>性能监控</h2>
+          <div className="w-full max-w-6xl mt-4">
+            <div className="bg-background rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">性能监控</h2>
                 <Button
-                  variant='outline'
-                  size='sm'
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShowPerformanceMonitor(false)}
                 >
                   关闭
@@ -349,9 +320,7 @@ export const DebugTools: React.FC<DebugToolsProps> = ({
  * 调试工具Hook - 提供便捷的调试功能
  */
 export const useDebugTools = () => {
-  const [isDebugMode, setIsDebugMode] = useState(
-    process.env.NODE_ENV === 'development'
-  );
+  const [isDebugMode, setIsDebugMode] = useState(process.env.NODE_ENV === 'development');
 
   /**
    * 切换调试模式
@@ -370,6 +339,6 @@ export const useDebugTools = () => {
   return {
     isDebugMode,
     toggleDebugMode,
-    checkDebugMode,
+    checkDebugMode
   };
 };

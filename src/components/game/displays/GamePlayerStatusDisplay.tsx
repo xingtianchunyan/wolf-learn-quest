@@ -1,8 +1,8 @@
-import { canSeeTargetRole, canAccessWerewolfChannel, isDemonRole, isHunterRole   } from '@/utils/roleUtils';
-import { useAuth   } from '@/providers/AuthProvider';
-import { useRoleDesigns   } from '@/hooks/useRoleDesigns';
-import { useRoleSelection   } from '@/hooks/useRoleSelection';
-import { useRoleStates   } from '@/hooks/useRoleStates';
+import { canSeeTargetRole, canAccessWerewolfChannel, isDemonRole, isHunterRole  } from '@/utils/roleUtils';
+import { useAuth  } from '@/providers/AuthProvider';
+import { useRoleDesigns  } from '@/hooks/useRoleDesigns';
+import { useRoleSelection  } from '@/hooks/useRoleSelection';
+import { useRoleStates  } from '@/hooks/useRoleStates';
 import React from 'react';
 import PlayerStatusManager from '../panels/PlayerStatusManager';
 
@@ -21,10 +21,11 @@ import PlayerStatusManager from '../panels/PlayerStatusManager';
 * @category game
 * @filepath game\displays\GamePlayerStatusDisplay.tsx
  */
-interface Player  { id: string;
+
+interface Player { id: string;
   name: string;
   avatar: string;
-  userId?: string
+  userId?: string;,
 }
 
 interface GamePlayerStatusDisplayProps { players: Player[];
@@ -33,7 +34,7 @@ interface GamePlayerStatusDisplayProps { players: Player[];
   selectedTargetId?: string;
   onTargetSelect?: (targetId: string) => void;
   canSelectTargets?: boolean;
-  currentPhase?: number
+  currentPhase?: number;,
 }
 
 /**
@@ -50,13 +51,14 @@ interface GamePlayerStatusDisplayProps { players: Player[];
 * // 使用示例
 * <GamePlayerStatusDisplay { ...props } />
  */
-const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ( { players,
+const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({ players,
   roomId,
   maxPlayers,
   selectedTargetId,
   onTargetSelect,
   canSelectTargets = false,
-  currentPhase }) => { const { currentUser  } = useAuth();
+  currentPhase,
+}) => { const { currentUser  } = useAuth();
   const { roleStates  } = useRoleStates(roomId);
   const { getSelectedRoleByUser  } = useRoleSelection(roomId, currentUser?.id || null, players.length, maxPlayers);
   const { getLocalImageByDesignId  } = useRoleDesigns();
@@ -74,28 +76,18 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ( { play
   const _isCurrentUserDemon = isDemonRole(currentUserRole || '');
   const isCurrentUserHunter = isHunterRole(currentUserRole || '');
 
-  const displayPlayers = Array.from({ length: maxPlayers  
-}, (_, i) => { if (i < players.length) {
-      return players[i]
+  const displayPlayers = Array.from({ length: maxPlayers  }, (_, i) => { if (i < players.length) {
+      return players[i];,
 } else { return {
-        id: `placeholder-${i 
-}`,
+        id: `placeholder-${i }`,
         name: '等待玩家',
         avatar: '',
-        userId: undefined 
-}
+        userId: undefined,
+      };,
 }
   });
 
-/**
- * handlePlayerClick函数
- * 处理事件
- *
- * @param player - player参数
- * @returns void
- */
-const handlePlayerClick = (player: typeof displayPlayers[0]) =>  {
-  if (!canSelectTargets || !player.userId) return;
+  const handlePlayerClick = (player: typeof displayPlayers[0]) => { if (!canSelectTargets || !player.userId) return;
 
     // 在白天阶段不能选择自己，夜晚阶段可以选择自己
     const isNightPhase = currentPhase === 3 || currentPhase === 4;
@@ -105,23 +97,15 @@ const handlePlayerClick = (player: typeof displayPlayers[0]) =>  {
     const targetRoleState = roleStates.find(rs => rs.user_id === player.userId);
     if (targetRoleState?.role_status === 4) return; // 已淘汰的玩家不能被选择
 
-    onTargetSelect?.(player.userId)
-
+    onTargetSelect?.(player.userId);,
 };
 
-/**
- * getPlayerDisplayInfo函数
- * 获取数据
- *
- * @param player - player参数
- * @returns void
- */
-const getPlayerDisplayInfo = (player: typeof displayPlayers[0]) => { if (!player.userId)  {
+  const getPlayerDisplayInfo = (player: typeof displayPlayers[0]) => { if (!player.userId) {
       return {
         roleName: '',
         roleImageUrl: null,
-        showRole: false 
-}
+        showRole: false,
+};,
 }
 
     const selectedRole = getSelectedRoleByUser(player.userId);
@@ -131,8 +115,8 @@ const getPlayerDisplayInfo = (player: typeof displayPlayers[0]) => { if (!player
     if (isCurrentPlayer) { return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
-        showRole: true 
-}
+        showRole: true,
+};,
 }
 
     // 使用统一的角色可见性规则
@@ -143,8 +127,8 @@ const getPlayerDisplayInfo = (player: typeof displayPlayers[0]) => { if (!player
     if (canSeeTargetRole(currentUserRole, targetRole, currentUserRoleDesign, targetRoleDesign)) { return {
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
-        showRole: true 
-}
+        showRole: true,
+};,
 }
 
     // 猎人濒死状态下可以查看自身状态
@@ -152,24 +136,17 @@ const getPlayerDisplayInfo = (player: typeof displayPlayers[0]) => { if (!player
         roleName: selectedRole?.roleName || '未分配角色',
         roleImageUrl: selectedRole?.roleDesign ? getLocalImageByDesignId(selectedRole.roleDesign.id) : null,
         showRole: true,
-        specialStatus: '濒死状态 - 可使用技能' 
-}
+        specialStatus: '濒死状态 - 可使用技能',
+};,
 }
 
     return { roleName: '未知角色',
       roleImageUrl: null,
-      showRole: false 
-}
+      showRole: false,
+};,
 };
 
-/**
- * getStatusBorderClass函数
- * 获取数据
- *
- * @param player - player参数
- * @returns void
- */
-const getStatusBorderClass = (player: typeof displayPlayers[0]) =>  { if (!player.userId) return 'border-werewolf-purple/30';
+  const getStatusBorderClass = (player: typeof displayPlayers[0]) => { if (!player.userId) return 'border-werewolf-purple/30';
 
     const roleState = roleStates.find(rs => rs.user_id === player.userId);
     switch (roleState?.role_status) {
@@ -181,21 +158,15 @@ const getStatusBorderClass = (player: typeof displayPlayers[0]) =>  { if (!playe
       return 'border-yellow-400';
       case 4: // 淘汰
       return 'border-white';
-      default: return 'border-werewolf-purple/30'
+      default:
+      return 'border-werewolf-purple/30';,
 }
   };
 
-/**
- * getPlayerCardClass函数
- * 获取数据
- *
- * @param player - player参数
- * @returns void
- */
-const getPlayerCardClass = (player: typeof displayPlayers[0]) =>  { const baseClass = `relative w-full h-28 rounded-lg p-2 transition-all duration-200 flex-shrink-0 overflow-hidden aspect-square`;
+  const getPlayerCardClass = (player: typeof displayPlayers[0]) => { const baseClass = `relative w-full h-28 rounded-lg p-2 transition-all duration-200 flex-shrink-0 overflow-hidden aspect-square`;
 
     if (!player.userId) {
-      return `${baseClass } bg-gray-600/40 border-2 border-gray-500`
+      return `${baseClass } bg-gray-600/40 border-2 border-gray-500`;,
 }
 
     const statusBorder = getStatusBorderClass(player);
@@ -204,10 +175,10 @@ const getPlayerCardClass = (player: typeof displayPlayers[0]) =>  { const baseCl
     const isSelectable = canSelectTargets && (player.userId !== currentUser?.id || isNightPhase);
     const isEliminated = roleStates.find(rs => rs.user_id === player.userId)?.role_status === 4;
 
-    return `${ baseClass } bg-werewolf-dark/40 border-2 ${ statusBorder } ${ isSelected ? 'ring-2 ring-werewolf-purple ring-offset-2 ring-offset-werewolf-dark' : '' 
-} ${ isSelectable && !isEliminated ? 'hover: bg-werewolf-dark/60 cursor-pointer' : '' 
-} ${ isEliminated ? 'opacity-50' : '' 
-}`
+    return `${ baseClass } bg-werewolf-dark/40 border-2 ${ statusBorder } ${ isSelected ? 'ring-2 ring-werewolf-purple ring-offset-2 ring-offset-werewolf-dark' : '',
+} ${ isSelectable && !isEliminated ? 'hover:bg-werewolf-dark/60 cursor-pointer' : '',
+} ${ isEliminated ? 'opacity-50' : '',
+}`;,
 };
 
   return (;
@@ -242,10 +213,9 @@ const getPlayerCardClass = (player: typeof displayPlayers[0]) =>  { const baseCl
           />
         ) : (
           <div className={ `w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-            !player.userId ? 'bg-gray-500' : 'bg-werewolf-purple/60' 
+            !player.userId ? 'bg-gray-500' : 'bg-werewolf-purple/60',
 }`}>
-          { !player.userId ? '?' : player.name.charAt(0).toUpperCase() 
-}
+          { !player.userId ? '?' : player.name.charAt(0).toUpperCase() }
           </div>
         )}
         </div>
@@ -265,8 +235,8 @@ const getPlayerCardClass = (player: typeof displayPlayers[0]) =>  { const baseCl
         ) }
         </div>
 
-        { /*  角色图片（悬浮显示）  */
-} { showRole && roleImageUrl && (
+        { /*  角色图片（悬浮显示）  */ }
+        { showRole && roleImageUrl && (
           <div className='absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg overflow-hidden'>;
           <img
           src={roleImageUrl }
@@ -279,23 +249,17 @@ const getPlayerCardClass = (player: typeof displayPlayers[0]) =>  { const baseCl
           </div>
         )}
 
-        { /*  选中指示器  */
-} { selectedTargetId === player.userId && (;
+        { /*  选中指示器  */ }
+        { selectedTargetId === player.userId && (;
           <div className='absolute top-1 right-1 w-3 h-3 bg-werewolf-purple rounded-full border-2 border-white'></div>;
         ) }
         </div>
         </div>
-      )
+      );,
 })}
     </div>
     </div>
-  )
+  );,
 };
 
-/**
- * GamePlayerStatusDisplay组件
- * 游戏相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default GamePlayerStatusDisplay;

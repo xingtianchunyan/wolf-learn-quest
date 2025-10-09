@@ -18,17 +18,11 @@ export interface SkillConfig { id: string;
   maxStackCount?: number; // 最大叠加层数
   category?: 'offensive' | 'defensive' | 'utility' | 'passive'; // 技能分类
   description?: string; // 技能描述
-  compatibilityVersion?: string; // 兼容性版本 
+  compatibilityVersion?: string; // 兼容性版本,
 }
 
 // 基于设计表格的完整技能配置
-/**
- * SKILL组件
- * SKILL组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 判定顺序1
+export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> = { // 村民 - 判定顺序1
   'villager_sleep': {
     id: 'villager_sleep',
     chineseName: '睡觉',
@@ -44,7 +38,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     triggeredBy: ['night_phase_start'],
     category: 'passive',
     description: '村民在夜晚安全睡觉，无特殊能力',
-    compatibilityVersion: '2.0' 
+    compatibilityVersion: '2.0',
 },
 
   // 守卫 - 判定顺序2
@@ -63,7 +57,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     category: 'defensive',
     description: '守卫可以保护一名玩家免受夜晚攻击',
     maxStackCount: 1,
-    compatibilityVersion: '2.0' 
+    compatibilityVersion: '2.0',
 },
 
   // 狼人 - 判定顺序3
@@ -81,7 +75,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     triggeredBy: [],
     category: 'offensive',
     description: '狼人在夜晚攻击一名玩家',
-    compatibilityVersion: '2.0' 
+    compatibilityVersion: '2.0',
 },
 
   // 预言家 - 判定顺序4
@@ -96,7 +90,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     effectType: ['investigation'],
     isPassive: false,
     conflictsWith: [],
-    triggeredBy: [] 
+    triggeredBy: [],
 },
 
   // 恶魔 - 判定顺序5
@@ -111,7 +105,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     effectType: ['investigation'],
     isPassive: false,
     conflictsWith: [],
-    triggeredBy: [] 
+    triggeredBy: [],
 },
 
   // 女巫 - 判定顺序6
@@ -129,7 +123,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     triggeredBy: [],
     category: 'utility',
     description: '女巫可以使用解药或毒药，每种只能使用一次',
-    compatibilityVersion: '2.0' 
+    compatibilityVersion: '2.0',
 },
 
   // 暗夜术士 - 判定顺序7
@@ -144,7 +138,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     effectType: ['elimination'],
     isPassive: false,
     conflictsWith: [],
-    triggeredBy: [] 
+    triggeredBy: [],
 },
 
   // 白狼王 - 判定顺序8
@@ -159,7 +153,7 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     effectType: ['elimination'],
     isPassive: false,
     conflictsWith: [],
-    triggeredBy: [] 
+    triggeredBy: [],
 },
 
   // 猎人 - 判定顺序9
@@ -177,59 +171,24 @@ export const SKILL_MAPPING_CONFIG: Record<string, SkillConfig> =  { // 村民 - 
     triggeredBy: ['status_change_to_dying'],
     category: 'offensive',
     description: '猎人濒死时可以击毙一名玩家',
-    compatibilityVersion: '2.0' 
+    compatibilityVersion: '2.0',
 }
 };
 
 // 工具函数：根据中文名获取技能配置
-/**
- * getSkillConfigByChinese函数
- * 获取数据
- *
- * @param chineseName - chineseName参数
- * @returns void
- */
-export const getSkillConfigByChinese = (chineseName: string): SkillConfig | null =>  {
-  return Object.values(SKILL_MAPPING_CONFIG).find(config => config.chineseName === chineseName) || null
-
+export const getSkillConfigByChinese = (chineseName: string): SkillConfig | null => { return Object.values(SKILL_MAPPING_CONFIG).find(config => config.chineseName === chineseName) || null;,
 };
 
 // 工具函数：根据英文名获取技能配置
-/**
- * getSkillConfigByEnglish函数
- * 获取数据
- *
- * @param englishName - englishName参数
- * @returns void
- */
-export const getSkillConfigByEnglish = (englishName: string): SkillConfig | null =>  {
-  return Object.values(SKILL_MAPPING_CONFIG).find(config => config.englishName === englishName) || null
-
+export const getSkillConfigByEnglish = (englishName: string): SkillConfig | null => { return Object.values(SKILL_MAPPING_CONFIG).find(config => config.englishName === englishName) || null;,
 };
 
 // 工具函数：根据优先级排序技能
-/**
- * sortSkillsByPriority函数
- * sortSkillsByPriority函数的功能描述
- *
- * @param skillConfigs - skillConfigs参数
- * @returns void
- */
-export const sortSkillsByPriority = (skillConfigs: SkillConfig[]): SkillConfig[] =>  {
-  return [...skillConfigs].sort((a, b) => a.priority - b.priority)
-
+export const sortSkillsByPriority = (skillConfigs: SkillConfig[]): SkillConfig[] => { return [...skillConfigs].sort((a, b) => a.priority - b.priority);,
 };
 
 // 工具函数：检查技能冲突
-/**
- * checkSkillConflicts函数
- * checkSkillConflicts函数的功能描述
- *
- * @param activeSkills - activeSkills参数
- * @returns void
- */
-export const checkSkillConflicts = (activeSkills: SkillConfig[]): { conflicts: boolean; conflictPairs: string[][]   
-} =>  { const conflicts: string[][] = [];
+export const checkSkillConflicts = (activeSkills: SkillConfig[]): { conflicts: boolean; conflictPairs: string[][]  } => { const conflicts: string[][] = [];
 
   for (let i = 0; i < activeSkills.length; i++) {
     for (let j = i + 1; j < activeSkills.length; j++) {
@@ -237,24 +196,18 @@ export const checkSkillConflicts = (activeSkills: SkillConfig[]): { conflicts: b
       const skill2 = activeSkills[j];
 
       if (skill1.conflictsWith.includes(skill2.id) || skill2.conflictsWith.includes(skill1.id)) {
-        conflicts.push([skill1.id, skill2.id])
+        conflicts.push([skill1.id, skill2.id]);,
 }
-    } }
+    },
+}
 
   return { conflicts: conflicts.length > 0,
-    conflictPairs: conflicts 
-}
+    conflictPairs: conflicts,
+};,
 };
 
 // 工具函数：解决技能冲突（优先级高的生效）
-/**
- * resolveSkillConflicts函数
- * resolveSkillConflicts函数的功能描述
- *
- * @param conflictingSkills - conflictingSkills参数
- * @returns void
- */
-export const resolveSkillConflicts = (conflictingSkills: SkillConfig[]): SkillConfig[] =>  { if (conflictingSkills.length <= 1) return conflictingSkills;
+export const resolveSkillConflicts = (conflictingSkills: SkillConfig[]): SkillConfig[] => { if (conflictingSkills.length <= 1) return conflictingSkills;
 
   // 按优先级排序，数字小的优先级高
   const sorted = sortSkillsByPriority(conflictingSkills);
@@ -269,21 +222,15 @@ export const resolveSkillConflicts = (conflictingSkills: SkillConfig[]): SkillCo
   );
 
   if (!hasConflict) {
-    resolved.push(skill)
+    resolved.push(skill);,
 }
 }
 
-return resolved
+return resolved;,
 };
 
 // 角色与技能的映射关系
-/**
- * ROLE组件
- * ROLE组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-export const ROLE_SKILL_MAPPING: Record<string, string> =  { 'villager': 'villager_sleep',
+export const ROLE_SKILL_MAPPING: Record<string, string> = { 'villager': 'villager_sleep',
   'guard': 'guard_vigil',
   'werewolf': 'werewolf_attack',
   'seer': 'seer_prophecy',
@@ -291,23 +238,17 @@ export const ROLE_SKILL_MAPPING: Record<string, string> =  { 'villager': 'villag
   'witch': 'witch_potion',
   'warlock': 'warlock_voodoo',
   'whitewolf': 'whitewolf_destruct',
-  'hunter': 'hunter_revenge'  
+  'hunter': 'hunter_revenge',
 };
 
 // 阵营配置
-/**
- * FACTION组件
- * FACTION组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-export const FACTION_CONFIG = { GOOD:  {
+export const FACTION_CONFIG = { GOOD: {
     name: '好人阵营',
     roles: ['villager', 'guard', 'seer', 'witch', 'hunter'],
-    victoryCondition: '消灭所有狼人' 
+    victoryCondition: '消灭所有狼人',
 },
   WOLF: { name: '狼人阵营',
     roles: ['werewolf', 'demon', 'warlock', 'whitewolf'],
-    victoryCondition: '消灭所有好人或数量平衡' 
+    victoryCondition: '消灭所有好人或数量平衡',
 }
 } as const;

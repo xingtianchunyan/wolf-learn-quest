@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 import * as RechartsPrimitive from 'recharts'
 
@@ -18,21 +18,19 @@ import * as RechartsPrimitive from 'recharts'
 * @filepath ui\chart.tsx
  */
 
-// Format: { THEME_NAME: CSS_SELECTOR  
-}
-const THEMES = { light: '', dark: '.dark'  
-} as const;
+// Format: { THEME_NAME: CSS_SELECTOR  }
+const THEMES = { light: '', dark: '.dark'  } as const;
 
 export type ChartConfig = { [k in string]: {
     label?: React.ReactNode
-    icon?: React.ComponentType 
+    icon?: React.ComponentType,
 } & (
-    | { color?: string; theme?: never  
-}
+    | { color?: string; theme?: never  }
     | { color?: never; theme: Record<keyof typeof THEMES, string>  }
-  ) }
+  ),
+}
 
-type ChartContextProps = { config: ChartConfig 
+type ChartContextProps = { config: ChartConfig,
 }
 
 /**
@@ -51,32 +49,22 @@ type ChartContextProps = { config: ChartConfig
  */
 const ChartContext = React.createContext<ChartContextProps | null>(null);
 
-/**
- * useChart函数
- * 自定义Hook
- * @returns void
- */
-function useChart()  { const context = React.useContext(ChartContext);
+function useChart() { const context = React.useContext(ChartContext);
 
   if (!context) {
-    throw new Error('useChart must be used within a <ChartContainer />')
+    throw new Error('useChart must be used within a <ChartContainer />');,
 }
 
-  return context
+  return context;,
 }
 
-/**
- * ChartContainer组件
- * ChartContainer组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ChartContainer = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'> & { config: ChartConfig
   children: React.ComponentProps<
   typeof RechartsPrimitive.ResponsiveContainer
-  >['children'] }
+  >['children'],
+}
 >(({ id, className, children, config, ...props  }, ref) => { const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, '') }`;
 
@@ -97,22 +85,16 @@ React.ComponentProps<'div'> & { config: ChartConfig
     </RechartsPrimitive.ResponsiveContainer>
     </div>
     </ChartContext.Provider>
-  ) })
+  ),
+})
 ChartContainer.displayName = 'Chart';
 
-/**
- * ChartStyle组件
- * ChartStyle组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
-const ChartStyle = ({ id, config  }: { id: string; config: ChartConfig  
-}) =>  { const colorConfig = Object.entries(config).filter(;
+const ChartStyle = ({ id, config  }: { id: string; config: ChartConfig  }) => { const colorConfig = Object.entries(config).filter(;
     ([_, config]) => config.theme || config.color;
   )
 
   if (!colorConfig.length) {
-    return null
+    return null;,
 }
 
   return (;
@@ -125,30 +107,20 @@ const ChartStyle = ({ id, config  }: { id: string; config: ChartConfig
             const color =;
             itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
             itemConfig.color
-            return color ? `  --color-${key }: ${ color  
-};` : null
+            return color ? `  --color-${key }: ${ color };` : null;,
 })
-          .join('\n')} }
+          .join('\n')},
+}
         `
       )
-      .join('\n') }}
+      .join('\n'),
+    }}
     />
-  ) }
+  ),
+}
 
-/**
- * ChartTooltip组件
- * ChartTooltip组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
-/**
- * ChartTooltipContent组件
- * ChartTooltipContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ChartTooltipContent = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
@@ -156,7 +128,7 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
   hideIndicator?: boolean
   indicator?: 'line' | 'dot' | 'dashed'
   nameKey?: string
-  labelKey?: string 
+  labelKey?: string,
 }
 >((
     { active,
@@ -171,12 +143,13 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
       formatter,
       color,
       nameKey,
-      labelKey },
+      labelKey,
+     },
     ref
   ) => { const { config  } = useChart();
 
     const tooltipLabel = React.useMemo(() => { if (hideLabel || !payload?.length) {
-        return null
+        return null;,
 }
 
       const [item] = payload;
@@ -191,21 +164,23 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
           <div className={cn('font-medium', labelClassName) }>;
           { labelFormatter(value, payload) }
           </div>
-        ) }
-
-      if (!value) { return null
+        ),
 }
 
-      return <div className={ cn('font-medium', labelClassName) }>{ value }</div>
+      if (!value) { return null;,
+}
+
+      return <div className={ cn('font-medium', labelClassName) }>{ value }</div>;,
 }, [label,
       labelFormatter,
       payload,
       hideLabel,
       labelClassName,
       config,
-      labelKey ])
+      labelKey,
+    ])
 
-    if (!active || !payload?.length) { return null
+    if (!active || !payload?.length) { return null;,
 }
 
     const nestLabel = payload.length === 1 && indicator !== 'dot';
@@ -218,8 +193,7 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
         className
       ) }
       >
-      { !nestLabel ? tooltipLabel : null 
-}
+      { !nestLabel ? tooltipLabel : null }
       <div className='grid gap-1.5'>;
       { payload.map((item, index) => {
         const key = `${nameKey || item.name || item.dataKey || 'value' }`;
@@ -250,13 +224,14 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
                     'w-1': indicator === 'line',
                     'w-0 border-[1.5px] border-dashed bg-transparent':
                     indicator === 'dashed',
-                    'my-0.5': nestLabel && indicator === 'dashed' 
-}
+                    'my-0.5': nestLabel && indicator === 'dashed',
+                   }
                 )}
                 style={ {
                     '--color-bg': indicatorColor,
-                    '--color-border': indicatorColor 
-} as React.CSSProperties }
+                    '--color-border': indicatorColor,
+                   } as React.CSSProperties,
+}
                 />
               )
             )}
@@ -267,8 +242,7 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
             ) }
             >
             <div className='grid gap-1.5'>;
-            { nestLabel ? tooltipLabel : null 
-}
+            { nestLabel ? tooltipLabel : null }
             <span className='text-muted-foreground'>;
             { itemConfig?.label || item.name }
             </span>
@@ -282,39 +256,29 @@ React.ComponentProps<'div'> & { hideLabel?: boolean
             </>
           )}
           </div>
-        ) })}
+        ),
+})}
       </div>
       </div>
-    ) }
+    ),
+}
 )
 ChartTooltipContent.displayName = 'ChartTooltip';
 
-/**
- * ChartLegend组件
- * ChartLegend组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ChartLegend = RechartsPrimitive.Legend;
 
-/**
- * ChartLegendContent组件
- * ChartLegendContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ChartLegendContent = React.forwardRef<;
 HTMLDivElement,
 React.ComponentProps<'div'> &
 Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & { hideIcon?: boolean
-  nameKey?: string 
+  nameKey?: string,
 }
 >((
     { className, hideIcon = false, payload, verticalAlign = 'bottom', nameKey  },
     ref
   ) => { const { config  } = useChart();
 
-    if (!payload?.length) { return null
+    if (!payload?.length) { return null;,
 }
 
     return (;
@@ -343,30 +307,27 @@ Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & { hideIcon?: 
             <div
             className='h-2 w-2 shrink-0 rounded-[2px]';
             style={{
-              backgroundColor: item.color 
-}}
+              backgroundColor: item.color,
+             }}
             />
           )}
           { itemConfig?.label }
           </div>
-        ) })}
+        ),
+})}
       </div>
-    ) }
+    ),
+}
 )
 ChartLegendContent.displayName = 'ChartLegend';
 
 // Helper to extract item config from a payload.
-/**
- * getPayloadConfigFromPayload函数
- * 获取数据
- * @returns void
- */
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,
   key: string
 ) { if (typeof payload !== 'object' || payload === null) {
-    return undefined
+    return undefined;,
 }
 
   const payloadPayload =;
@@ -381,17 +342,19 @@ function getPayloadConfigFromPayload(
   if (
     key in payload &&
     typeof payload[key as keyof typeof payload] === 'string';
-  ) { configLabelKey = payload[key as keyof typeof payload] as string
+  ) { configLabelKey = payload[key as keyof typeof payload] as string;,
 } else if (
     payloadPayload &&
     key in payloadPayload &&
     typeof payloadPayload[key as keyof typeof payloadPayload] === 'string';
   ) { configLabelKey = payloadPayload[;
-      key as keyof typeof payloadPayload ] as string }
+      key as keyof typeof payloadPayload,
+] as string,
+}
 
   return configLabelKey in config;
   ? config[configLabelKey]
-  : config[key as keyof typeof config] 
+  : config[key as keyof typeof config],
 }
 
 export { ChartContainer,
@@ -399,4 +362,5 @@ export { ChartContainer,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  ChartStyle }
+  ChartStyle,
+ }

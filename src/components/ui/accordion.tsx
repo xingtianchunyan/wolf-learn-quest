@@ -1,5 +1,5 @@
-import { ChevronDown   } from 'lucide-react'
-import { cn   } from '@/lib/utils'
+import { ChevronDown  } from 'lucide-react'
+import { cn  } from '@/lib/utils'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import * as React from 'react'
 
@@ -34,12 +34,6 @@ import * as React from 'react'
  */
 const Accordion = AccordionPrimitive.Root;
 
-/**
- * AccordionItem组件
- * AccordionItem组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const AccordionItem = React.forwardRef<;
 React.ElementRef<typeof AccordionPrimitive.Item>,
 React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
@@ -52,12 +46,6 @@ React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 ))
 AccordionItem.displayName = 'AccordionItem';
 
-/**
- * AccordionTrigger组件
- * AccordionTrigger组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const AccordionTrigger = React.forwardRef<;
 React.ElementRef<typeof AccordionPrimitive.Trigger>,
 React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
@@ -78,12 +66,6 @@ React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
 ))
 AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
 
-/**
- * AccordionContent组件
- * AccordionContent组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const AccordionContent = React.forwardRef<;
 React.ElementRef<typeof AccordionPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>

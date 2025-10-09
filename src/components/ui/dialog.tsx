@@ -1,5 +1,5 @@
-import { cn   } from '@/lib/utils'
-import { X   } from 'lucide-react'
+import { cn  } from '@/lib/utils'
+import { X  } from 'lucide-react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as React from 'react'
 
@@ -34,36 +34,12 @@ import * as React from 'react'
  */
 const Dialog = DialogPrimitive.Root;
 
-/**
- * DialogTrigger组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogTrigger = DialogPrimitive.Trigger;
 
-/**
- * DialogPortal组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogPortal = DialogPrimitive.Portal;
 
-/**
- * DialogClose组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogClose = DialogPrimitive.Close;
 
-/**
- * DialogOverlay组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogOverlay = React.forwardRef<;
 React.ElementRef<typeof DialogPrimitive.Overlay>,
 React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -79,12 +55,6 @@ React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-/**
- * DialogContent组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogContent = React.forwardRef<;
 React.ElementRef<typeof DialogPrimitive.Content>,
 React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -109,14 +79,9 @@ React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-/**
- * DialogHeader组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
-const DialogHeader = ( { className,
-  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
+const DialogHeader = ({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col space-y-1.5 text-center sm:text-left',
@@ -127,14 +92,9 @@ const DialogHeader = ( { className,
 )
 DialogHeader.displayName = 'DialogHeader';
 
-/**
- * DialogFooter组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
-const DialogFooter = ( { className,
-  ...props }: React.HTMLAttributes<HTMLDivElement>) => (;
+const DialogFooter = ({ className,
+  ...props,
+}: React.HTMLAttributes<HTMLDivElement>) => (;
   <div
   className={ cn(;
     'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
@@ -145,12 +105,6 @@ const DialogFooter = ( { className,
 )
 DialogFooter.displayName = 'DialogFooter';
 
-/**
- * DialogTitle组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogTitle = React.forwardRef<;
 React.ElementRef<typeof DialogPrimitive.Title>,
 React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
@@ -166,12 +120,6 @@ React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-/**
- * DialogDescription组件
- * 对话框组件，用于用户交互确认
- * @param props - 组件属性
- * @returns JSX元素
- */
 const DialogDescription = React.forwardRef<;
 React.ElementRef<typeof DialogPrimitive.Description>,
 React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
@@ -193,4 +141,5 @@ export { Dialog,
   DialogHeader,
   DialogFooter,
   DialogTitle,
-  DialogDescription }
+  DialogDescription,
+ }

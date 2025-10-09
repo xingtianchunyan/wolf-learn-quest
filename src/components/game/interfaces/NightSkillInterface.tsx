@@ -1,14 +1,14 @@
-import { Badge   } from '@/components/ui/badge';
-import { Button   } from '@/components/ui/button';
-import { canUseSkillInGameState, getSkillEffectTypes   } from '@/utils/skillSystemHelpers';
-import { Card, CardContent, CardHeader, CardTitle   } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue   } from '@/components/ui/select';
-import { Target, Clock, Zap, Shield, Skull, Eye, Moon   } from 'lucide-react';
-import { useEnhancedSkillSystem   } from '@/hooks/useEnhancedSkillSystem';
-import { useWitchPotionManager   } from '@/hooks/useWitchPotionManager';
-import React, { useState   } from 'react';
-import type { Tables   } from '@/integrations/supabase/types';
-import { UnifiedWitchSkillInterface   } from './UnifiedWitchSkillInterface';
+import { Badge  } from '@/components/ui/badge';
+import { Button  } from '@/components/ui/button';
+import { canUseSkillInGameState, getSkillEffectTypes  } from '@/utils/skillSystemHelpers';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
+import { Target, Clock, Zap, Shield, Skull, Eye, Moon  } from 'lucide-react';
+import { useEnhancedSkillSystem  } from '@/hooks/useEnhancedSkillSystem';
+import { useWitchPotionManager  } from '@/hooks/useWitchPotionManager';
+import React, { useState  } from 'react';
+import type { Tables  } from '@/integrations/supabase/types';
+import { UnifiedWitchSkillInterface  } from './UnifiedWitchSkillInterface';
 
 /**
 * 文件级注释：NightSkillInterface 组件
@@ -25,7 +25,8 @@ import { UnifiedWitchSkillInterface   } from './UnifiedWitchSkillInterface';
 * @category game
 * @filepath game\interfaces\NightSkillInterface.tsx
  */
-interface NightSkillInterfaceProps  { roomId: string;
+
+interface NightSkillInterfaceProps { roomId: string;
   gameStateId: string;
   userId: string;
   currentPhase: number;
@@ -36,8 +37,8 @@ interface NightSkillInterfaceProps  { roomId: string;
     userId: string;
     name: string;
     roleStatus: number;
-    isAlive: boolean
-}>
+    isAlive: boolean;,
+}>;,
 }
 
 /**
@@ -54,25 +55,28 @@ interface NightSkillInterfaceProps  { roomId: string;
 * // 使用示例
 * <NightSkillInterface { ...props } />
  */
-export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ( { roomId,
+export const NightSkillInterface: React.FC<NightSkillInterfaceProps> = ({ roomId,
   gameStateId,
   userId,
   currentPhase,
   currentRound,
   roleState,
   roleDesign,
-  players }) => { const [selectedTarget, setSelectedTarget] = useState<string>('');
+  players,
+}) => { const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [skillConfirmation, setSkillConfirmation] = useState(false);
   const {
     useSkillEnhanced: executeSkill,
     loading,
     skillUses,
-    skillTargets } = useEnhancedSkillSystem(roomId, gameStateId, userId);
+    skillTargets,
+} = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 女巫魔药管理钩子
   const { potionStatus,
     useProtectionPotion,
-    useAttackPotion } = useWitchPotionManager(gameStateId, userId, currentRound || 1);
+    useAttackPotion,
+} = useWitchPotionManager(gameStateId, userId, currentRound || 1);
 
   // 检查是否是夜晚阶段
   const isNightPhase = currentPhase === 3;
@@ -104,18 +108,13 @@ const lastSkillUse = userSkillUses[0]; // 最近的技能使用
 // 获取用户当前的技能效果
 const userSkillEffects = skillTargets.filter(target => target.target_user_id === userId && target.is_active);
 
-/**
- * handleUseSkill函数
- * 处理事件
- * @returns Promise<void>
- */
-const handleUseSkill = async () => { if (!selectedTarget && needsTarget())  {
-    return
+const handleUseSkill = async () => { if (!selectedTarget && needsTarget()) {
+    return;,
 }
 
   const skillData = { target_id: selectedTarget || undefined,
     phase: 'night',
-    confirmation: skillConfirmation  
+    confirmation: skillConfirmation,
 };
 
   const result = await executeSkill(;
@@ -128,31 +127,19 @@ const handleUseSkill = async () => { if (!selectedTarget && needsTarget())  {
   );
 
   if (result) { setSelectedTarget('');
-    setSkillConfirmation(false)
+    setSkillConfirmation(false);,
 }
 };
 
 // 检查技能是否需要目标
-/**
- * needsTarget函数
- * 获取数据
- * @returns void
- */
-const needsTarget = () =>  {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const needsTarget = () => { // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const skillEffects = roleDesign?.skill_effects as any;
   const targetTypes = skillEffects?.target_type || [];
-  return targetTypes.includes('player') || targetTypes.includes('other_player')
-
+  return targetTypes.includes('player') || targetTypes.includes('other_player');,
 };
 
 // 获取技能图标
-/**
- * getSkillIcon函数
- * 获取数据
- * @returns void
- */
-const getSkillIcon = () =>  { const effectType = skillEffectTypes[0];
+const getSkillIcon = () => { const effectType = skillEffectTypes[0];
   switch (effectType) {
     case 'elimination':
     return <Skull className='w-5 h-5' />;
@@ -160,22 +147,16 @@ const getSkillIcon = () =>  { const effectType = skillEffectTypes[0];
     return <Shield className='w-5 h-5' />;
     case 'investigation':
     return <Eye className='w-5 h-5' />;
-    default: return <Zap className='w-5 h-5' />
+    default:
+    return <Zap className='w-5 h-5' />;,
 }
 };
 
 // 获取技能状态颜色
-/**
- * getSkillStatusColor函数
- * 获取数据
- * @returns void
- */
-const getSkillStatusColor = () =>  {
-  if (!canUseSkill) return 'text-gray-400';
+const getSkillStatusColor = () => { if (!canUseSkill) return 'text-gray-400';
   if (lastSkillUse?.execution_status === 'completed') return 'text-green-400';
   if (lastSkillUse?.execution_status === 'pending') return 'text-yellow-400';
-  return 'text-blue-400'
-
+  return 'text-blue-400';,
 };
 
 if (!isNightPhase) { return (;
@@ -186,7 +167,7 @@ if (!isNightPhase) { return (;
     <p className='text-sm text-gray-400'>夜晚技能只能在夜晚阶段使用</p>;
     </CardContent>
     </Card>
-  )
+  );,
 }
 
 // 检查是否是女巫角色
@@ -200,12 +181,10 @@ if (isWitch) { return (;
     currentRound={ currentRound }
     currentPhase={ currentPhase }
     canUseSkill={ true }
-    onUseSkill={ () => {
-  }
-}
+    onUseSkill={ () => { }}
     availableTargets={ availableTargets }
     />
-  )
+  );,
 }
 
 return (;
@@ -228,15 +207,13 @@ return (;
   <p className='text-xs text-gray-400'>{ roleDesign?.skill_description }</p>;
   </div>
   </div>
-  <Badge variant={ canUseSkill ? 'default' : 'secondary' 
-}>;
-  { canUseSkill ? '可用' : '不可用' 
-}
+  <Badge variant={ canUseSkill ? 'default' : 'secondary' }>;
+  { canUseSkill ? '可用' : '不可用' }
   </Badge>
   </div>
 
-  { /*  目标选择  */
-} { needsTarget() && canUseSkill && (
+  { /*  目标选择  */ }
+  { needsTarget() && canUseSkill && (
     <div className='space-y-2'>;
     <label className='text-sm font-medium text-werewolf-purple flex items-center gap-2'>;
     <Target className='w-4 h-4' />;
@@ -252,8 +229,7 @@ return (;
       <div className='flex items-center gap-2'>;
       <span>{ player.name }</span>
       <Badge variant='outline' className='text-xs'>;
-      状态: { player.roleStatus === 1 ? '正常' : player.roleStatus === 2 ? '濒死' : '虚弱' 
-}
+      状态: { player.roleStatus === 1 ? '正常' : player.roleStatus === 2 ? '濒死' : '虚弱' }
       </Badge>
       </div>
       </SelectItem>
@@ -285,7 +261,8 @@ return (;
   disabled={ !canUseSkill ||
     loading ||
     (needsTarget() && !selectedTarget) ||
-    (roleDesign?.skill_name?.includes('hunter') && !skillConfirmation) }
+    (roleDesign?.skill_name?.includes('hunter') && !skillConfirmation),
+}
   className='w-full bg-werewolf-purple hover:bg-werewolf-purple/80';
   >
   { loading ? (
@@ -302,8 +279,8 @@ return (;
   </Button>
   </div>
 
-  { /*  当前技能效果  */
-} { userSkillEffects.length > 0 && (
+  { /*  当前技能效果  */ }
+  { userSkillEffects.length > 0 && (
     <div className='space-y-2'>;
     <h4 className='text-sm font-medium text-werewolf-purple'>当前效果</h4>;
     <div className='space-y-1'>;
@@ -322,13 +299,7 @@ return (;
   )}
   </CardContent>
   </Card>
-)
+);,
 };
 
-/**
- * NightSkillInterface组件
- * 技能相关组件
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default NightSkillInterface;

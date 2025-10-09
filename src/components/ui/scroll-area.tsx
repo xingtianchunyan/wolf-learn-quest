@@ -1,4 +1,4 @@
-import { cn   } from '@/lib/utils'
+import { cn  } from '@/lib/utils'
 import * as React from 'react'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 
@@ -36,12 +36,6 @@ React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
 ))
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
-/**
- * ScrollBar组件
- * ScrollBar组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 const ScrollBar = React.forwardRef<;
 React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
 React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>

@@ -1,6 +1,6 @@
-import { HelpCircle   } from 'lucide-react';
-import {
-  Tooltip, useLanguage   } from '@/components/layout/LanguageSwitcher';
+import { HelpCircle  } from 'lucide-react';
+import { Tooltip,
+import { useLanguage  } from '@/components/layout/LanguageSwitcher';
 import React from 'react';
 
 /**
@@ -21,7 +21,8 @@ import React from 'react';
 
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger  } from '@/components/ui/tooltip';
+  TooltipTrigger,
+ } from '@/components/ui/tooltip';
 
 /**
 * ExperienceTooltip 组件
@@ -37,8 +38,7 @@ import React from 'react';
 * // 使用示例
 * <ExperienceTooltip />
  */
-const ExperienceTooltip: React.FC = () => { const  { t  
-} = useLanguage();
+const ExperienceTooltip: React.FC = () => { const { t  } = useLanguage();
 
   return (;
     <TooltipProvider>
@@ -65,13 +65,7 @@ const ExperienceTooltip: React.FC = () => { const  { t
     </TooltipContent>
     </Tooltip>
     </TooltipProvider>
-  )
+  );,
 };
 
-/**
- * ExperienceTooltip组件
- * ExperienceTooltip组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
 export default ExperienceTooltip;
