@@ -11,8 +11,8 @@ import { RoleState  } from
   isRoleSkillUsageState,
   isLegacySkillUsageState,
   isValidRoleStatus,
-  isValidGamePhase  } from '../types/skillSystem.types';
-import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig  } from '@/utils/skillMappingConfig';
+  isValidGamePhase } from '../types/skillSystem.types';
+import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig } from '@/utils/skillMappingConfig';
 
 /**
  * 统一技能系统验证文件
@@ -22,29 +22,31 @@ import { SKILL_MAPPING_CONFIG as _SKILL_MAPPING_CONFIG, type SkillConfig  } from
 const logger = createLogger('skill-validation-unified');
 
 /**
-* 技能验证错误接口
+ * 技能验证错误接口
  */
-export interface SkillValidationError  { /** 错误代码 */
+export interface SkillValidationError {
+  /** 错误代码 */
   code: string;
   /** 错误消息 */
   message: string;
   /** 错误详情 */
   details?: Record<string, unknown>;
   /** 建议操作 */
-  suggestedAction?: string
+  suggestedAction?: string;
 }
 
 /**
-* 验证结果接口（兼容旧接口）
+ * 验证结果接口（兼容旧接口）
  */
-export interface ValidationResult  { /** 是否有效 */
+export interface ValidationResult {
+  /** 是否有效 */
   valid: boolean;
   /** 是否可以使用（兼容旧接口） */
   canUse: boolean;
   /** 失败原因 */
   reason?: string;
   /** 建议操作 */
-  suggestedAction?: string
+  suggestedAction?: string;
 }
 
 /**

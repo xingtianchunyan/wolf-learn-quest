@@ -199,24 +199,24 @@ class CodeRefactoring {
 
 /**
  * 深度克隆对象
- * @param obj - 要克隆的对象
- * @returns 克隆后的对象
+ * @param {any} obj - 要克隆的对象
+ * @returns {any} 克隆后的对象
  */
-export function deepClone<T>(obj: T): T {
+export function deepClone(obj) {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
   
   if (obj instanceof Date) {
-    return new Date(obj.getTime()) as T;
+    return new Date(obj.getTime());
   }
   
   if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as T;
+    return obj.map(item => deepClone(item));
   }
   
   if (typeof obj === 'object') {
-    const cloned = {} as T;
+    const cloned = {};
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         cloned[key] = deepClone(obj[key]);
@@ -230,17 +230,14 @@ export function deepClone<T>(obj: T): T {
 
 /**
  * 防抖函数
- * @param func - 要防抖的函数
- * @param delay - 延迟时间（毫秒）
- * @returns 防抖后的函数
+ * @param {Function} func - 要防抖的函数
+ * @param {number} delay - 延迟时间（毫秒）
+ * @returns {Function} 防抖后的函数
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+export function debounce(func, delay) {
+  let timeoutId;
   
-  return (...args: Parameters<T>) => {
+  return (...args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
@@ -248,17 +245,14 @@ export function debounce<T extends (...args: any[]) => any>(
 
 /**
  * 节流函数
- * @param func - 要节流的函数
- * @param delay - 延迟时间（毫秒）
- * @returns 节流后的函数
+ * @param {Function} func - 要节流的函数
+ * @param {number} delay - 延迟时间（毫秒）
+ * @returns {Function} 节流后的函数
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
+export function throttle(func, delay) {
   let lastCall = 0;
   
-  return (...args: Parameters<T>) => {
+  return (...args) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
       lastCall = now;
@@ -269,11 +263,11 @@ export function throttle<T extends (...args: any[]) => any>(
 
 /**
  * 格式化日期
- * @param date - 日期对象或时间戳
- * @param format - 格式字符串
- * @returns 格式化后的日期字符串
+ * @param {Date|number} date - 日期对象或时间戳
+ * @param {string} format - 格式字符串
+ * @returns {string} 格式化后的日期字符串
  */
-export function formatDate(date: Date | number, format: string = 'YYYY-MM-DD HH:mm:ss'): string {
+export function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
   const d = new Date(date);
   
   const year = d.getFullYear();
@@ -353,21 +347,21 @@ interface ErrorBoundaryProps {
 /**
  * 错误边界高阶组件
  */
-export function withErrorBoundary<P extends object>(
-  WrappedComponent: React.ComponentType<P>,
-  fallback?: ReactNode
+export function withErrorBoundary(
+  WrappedComponent,
+  fallback
 ) {
-  return class ErrorBoundary extends Component<P & ErrorBoundaryProps, ErrorBoundaryState> {
-    constructor(props: P & ErrorBoundaryProps) {
+  return class ErrorBoundary extends Component {
+    constructor(props) {
       super(props);
       this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    static getDerivedStateFromError(error) {
       return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    componentDidCatch(error, errorInfo) {
       console.error('错误边界捕获到错误:', error, errorInfo);
       this.props.onError?.(error, errorInfo);
     }
@@ -382,7 +376,7 @@ export function withErrorBoundary<P extends object>(
         );
       }
 
-      return <WrappedComponent {...(this.props as P)} />;
+      return <WrappedComponent {...this.props} />;
     }
   };
 }`;
@@ -423,7 +417,7 @@ export function withErrorBoundary<P extends object>(
       const issuesByType = this.namingIssues.reduce((acc, issue) => {
         acc[issue.type] = (acc[issue.type] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
+      }, {});
 
       Object.entries(issuesByType).forEach(([type, count]) => {
         console.log(`     - ${type}: ${count} 个问题`);

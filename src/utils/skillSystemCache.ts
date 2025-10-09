@@ -38,16 +38,15 @@ class SkillSystemCache { private cache = new Map<string, CacheEntry<any>>();
 }
 
   /**
- * 生成缓存键
- */
-private generateKey(prefix: string, params: Record<string, any>): string  { const sortedParams = Object.keys(params);
-    .sort()
-    .map(key => `${key }: ${ params[key] 
-}`);
-    .join('|');
-    return `${ prefix }: ${ sortedParams 
-}`
-}
+   * 生成缓存键
+   */
+  private generateKey(prefix: string, params: Record<string, any>): string {
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map(key => `${key}: ${params[key]}`)
+      .join('|');
+    return `${prefix}: ${sortedParams}`;
+  }
 
   /**
  * 检查缓存项是否过期

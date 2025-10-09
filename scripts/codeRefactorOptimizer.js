@@ -58,21 +58,21 @@ class CodeRefactorOptimizer {
  * @param obj - 要克隆的对象
  * @returns 克隆后的对象
  */
-export function deepClone<T>(obj: T): T {
+export function deepClone(obj) {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
   
   if (obj instanceof Date) {
-    return new Date(obj.getTime()) as T;
+    return new Date(obj.getTime());
   }
   
   if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as T;
+    return obj.map(item => deepClone(item));
   }
   
   if (typeof obj === 'object') {
-    const clonedObj = {} as T;
+    const clonedObj = {};
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         clonedObj[key] = deepClone(obj[key]);
@@ -99,13 +99,10 @@ export function generateId(prefix: string = 'id'): string {
  * @param delay - 延迟时间（毫秒）
  * @returns 防抖后的函数
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+export function debounce(func, delay) {
+  let timeoutId;
   
-  return (...args: Parameters<T>) => {
+  return (...args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), delay);
   };
@@ -117,13 +114,10 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param delay - 延迟时间（毫秒）
  * @returns 节流后的函数
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
+export function throttle(func, delay) {
   let lastCall = 0;
   
-  return (...args: Parameters<T>) => {
+  return (...args) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
       lastCall = now;
@@ -153,7 +147,7 @@ export function formatFileSize(bytes: number): string {
  * @param defaultValue - 解析失败时的默认值
  * @returns 解析结果或默认值
  */
-export function safeJsonParse<T>(jsonString: string, defaultValue: T): T {
+export function safeJsonParse(jsonString, defaultValue) {
   try {
     return JSON.parse(jsonString);
   } catch {
@@ -353,7 +347,7 @@ export function isToday(date: Date | number): boolean {
  * @returns 日期数组
  */
 export function getDateRange(startDate: Date, endDate: Date): Date[] {
-  const dates: Date[] = [];
+  const dates = [];
   const current = new Date(startDate);
   
   while (current <= endDate) {
@@ -409,14 +403,14 @@ interface ErrorBoundaryProps {
  * @param WrappedComponent - 被包装的组件
  * @returns 带有错误边界的组件
  */
-export function withErrorBoundary<P extends object>(
-  WrappedComponent: ComponentType<P>
+export function withErrorBoundary(
+  WrappedComponent
 ) {
   /**
    * 错误边界组件类
    */
-  class ErrorBoundary extends Component<P & ErrorBoundaryProps, ErrorBoundaryState> {
-    constructor(props: P & ErrorBoundaryProps) {
+  class ErrorBoundary extends Component {
+    constructor(props) {
       super(props);
       this.state = { hasError: false };
     }
@@ -426,7 +420,7 @@ export function withErrorBoundary<P extends object>(
      * @param error - 错误对象
      * @returns 新的状态
      */
-    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    static getDerivedStateFromError(error) {
       return { hasError: true, error };
     }
 
@@ -435,7 +429,7 @@ export function withErrorBoundary<P extends object>(
      * @param error - 错误对象
      * @param errorInfo - 错误信息
      */
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    componentDidCatch(error, errorInfo) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
       this.props.onError?.(error, errorInfo);
     }
@@ -495,12 +489,12 @@ import { useState, useEffect } from 'react';
  * @param initialValue - 初始值
  * @returns [值, 设置函数]
  */
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T
-): [T, (value: T | ((val: T) => T)) => void] {
+export function useLocalStorage(
+  key,
+  initialValue
+) {
   // 获取初始值
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;

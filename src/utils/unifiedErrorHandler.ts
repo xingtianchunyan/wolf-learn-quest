@@ -29,9 +29,10 @@ export enum ErrorHandlingStrategy  { SILENT = 'silent',           // 静默处�
   FALLBACK = 'fallback'        // 使用备用方案 }
 
 /**
-* 统一错误接口
+ * 统一错误接口
  */
-export interface UnifiedError  { /** 错误ID */
+export interface UnifiedError {
+  /** 错误ID */
   id: string;
   /** 错误类型 */
   type: 'app' | 'skill' | 'network' | 'validation' | 'business' | 'system';

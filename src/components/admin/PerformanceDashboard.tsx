@@ -40,14 +40,15 @@ import React, { useState, useEffect, useCallback, useMemo   } from 'react';
   Zap,
   BarChart3,
   Cpu,
-  Memory  } from 'lucide-react';
+  Memory } from 'lucide-react';
 
 const logger = createLogger('performance-dashboard');
 
 /**
-* 性能仪表板属性接口
+ * 性能仪表板属性接口
  */
-interface PerformanceDashboardProps  { /** 是否自动刷新数据 */
+interface PerformanceDashboardProps {
+  /** 是否自动刷新数据 */
   autoRefresh?: boolean;
   /** 刷新间隔（毫秒） */
   refreshInterval?: number;
@@ -110,38 +111,43 @@ const fetchPerformanceData = useCallback(async (): Promise<void> =>  { setIsLoad
         memoryHealth: analyzeMemoryHealth(report),
         networkHealth: analyzeNetworkHealth(report),
         activeAlerts: alerts.length,
-        recentMetrics: report.summary.totalMetrics  
-};
+        recentMetrics: report.summary.totalMetrics
+      };
 
       // 计算总体健康状况
-      const healthLevels = [;
+      const healthLevels = [
         newSummary.renderingHealth,
         newSummary.memoryHealth,
-        newSummary.networkHealth ];
+        newSummary.networkHealth
+      ];
 
-      if (healthLevels.includes('critical') || newSummary.activeAlerts > 5) { newSummary.overallHealth = 'critical'
-} else if (healthLevels.includes('warning') || newSummary.activeAlerts > 2) { newSummary.overallHealth = 'warning'
-}
+      if (healthLevels.includes('critical') || newSummary.activeAlerts > 5) {
+        newSummary.overallHealth = 'critical';
+      } else if (healthLevels.includes('warning') || newSummary.activeAlerts > 2) {
+        newSummary.overallHealth = 'warning';
+      }
 
       setSummary(newSummary);
       setLastUpdate(new Date());
 
-      logger.debug('Performance data updated', newSummary)
-} catch (error: unknown) { const errorMessage = error instanceof Error ? error.message : '未知错误';
+      logger.debug('Performance data updated', newSummary);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
       logger.error('Failed to fetch performance data', error);
       toast({
         title: '性能数据获取失败',
         description: errorMessage,
-        variant: 'destructive' 
-})
-} finally { setIsLoading(false)
-}
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
 
   /**
- * 分析渲染性能健康状况
- */
-const analyzeRenderingHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' =>  {
+   * 分析渲染性能健康状况
+   */
+  const analyzeRenderingHealth = useCallback((report: any): 'healthy' | 'warning' | 'critical' => {
   const avgRenderTime = report.summary.avgResponseTime;
     if (avgRenderTime > 300) return 'critical';
     if (avgRenderTime > 150) return 'warning';
@@ -222,88 +228,86 @@ const handleClearData = useCallback((): void =>  { performanceMonitoringService.
 }, [fetchPerformanceData]);
 
   const overallDisplay = getHealthDisplay(summary.overallHealth);
-/**
- * OverallIcon组件
- * OverallIcon组件的功能描述
- * @param props - 组件属性
- * @returns JSX元素
- */
+  
+  /**
+   * OverallIcon组件
+   * OverallIcon组件的功能描述
+   * @param props - 组件属性
+   * @returns JSX元素
+   */
   const OverallIcon = overallDisplay.icon;
 
-  return (;
-    <div className='space-y-6'>;
-    { /*  总体状态卡片  */ }
-    <Card>
-    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>;
-    <CardTitle className='text-sm font-medium'>系统性能状态</CardTitle>;
-    <OverallIcon className={ `h-4 w-4 ${overallDisplay.color }`} />;
-    </CardHeader>
-    <CardContent>
-    <div className='flex items-center justify-between'>;
-    <div className='space-y-1'>;
-    <Badge variant={ overallDisplay.badge } className='text-xs'>;
-    { summary.overallHealth === 'healthy' ? '健康' : unknown;
-    summary.overallHealth === 'warning' ? '警告' : '严重' 
-}
-    </Badge>
-    <p className='text-xs text-muted-foreground'>;
-    最后更新: { lastUpdate.toLocaleTimeString() 
-}
-    </p>
-    </div>
-    <div className='flex space-x-2'>;
-    <Button
-    variant='outline';
-    size='sm';
-    onClick={ fetchPerformanceData }
-    disabled={ isLoading }
-    >
-    <RefreshCw className={ `h-4 w-4 ${isLoading ? 'animate-spin' : '' 
-}`} />;
-    </Button>
-    <Button
-    variant='outline';
-    size='sm';
-    onClick={ handleClearData }
-    >
-    <Settings className='h-4 w-4' />;
-    </Button>
-    </div>
-    </div>
-    </CardContent>
-    </Card>
-
-    { /*  详细指标  */
-} { showDetails && (
-      <Tabs defaultValue='overview' className='space-y-4'>;
-      <TabsList>
-      <TabsTrigger value='overview'>概览</TabsTrigger>;
-      <TabsTrigger value='rendering'>渲染</TabsTrigger>;
-      <TabsTrigger value='memory'>内存</TabsTrigger>;
-      <TabsTrigger value='network'>网络</TabsTrigger>;
-      </TabsList>
-
-      <TabsContent value='overview' className='space-y-4'>;
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>;
+  return (
+    <div className='space-y-6'>
+      {/* 总体状态卡片 */}
       <Card>
-      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>;
-      <CardTitle className='text-sm font-medium'>活跃告警</CardTitle>;
-      <AlertTriangle className='h-4 w-4 text-muted-foreground' />;
-      </CardHeader>
-      <CardContent>
-      <div className='text-2xl font-bold'>{summary.activeAlerts }</div>;
-      <p className='text-xs text-muted-foreground'>;
-      需要关注的性能问题
-      </p>
-      </CardContent>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>系统性能状态</CardTitle>
+          <OverallIcon className={`h-4 w-4 ${overallDisplay.color}`} />
+        </CardHeader>
+        <CardContent>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-1'>
+              <Badge variant={overallDisplay.badge} className='text-xs'>
+                {summary.overallHealth === 'healthy' ? '健康' : 
+                 summary.overallHealth === 'warning' ? '警告' : '严重'}
+              </Badge>
+              <p className='text-xs text-muted-foreground'>
+                最后更新: {lastUpdate.toLocaleTimeString()}
+              </p>
+            </div>
+            <div className='flex space-x-2'>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={fetchPerformanceData}
+                disabled={isLoading}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+    <Button
+    variant='outline';
+                size='sm'
+                onClick={handleClearData}
+              >
+                <Settings className='h-4 w-4' />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
-      <Card>
-      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>;
-      <CardTitle className='text-sm font-medium'>指标数量</CardTitle>;
-      <BarChart3 className='h-4 w-4 text-muted-foreground' />;
-      </CardHeader>
-      <CardContent>
+      {/* 详细指标 */}
+      {showDetails && (
+        <Tabs defaultValue='overview' className='space-y-4'>
+          <TabsList>
+            <TabsTrigger value='overview'>概览</TabsTrigger>
+            <TabsTrigger value='rendering'>渲染</TabsTrigger>
+            <TabsTrigger value='memory'>内存</TabsTrigger>
+            <TabsTrigger value='network'>网络</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='overview' className='space-y-4'>
+            <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>活跃告警</CardTitle>
+                  <AlertTriangle className='h-4 w-4 text-muted-foreground' />
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>{summary.activeAlerts}</div>
+                  <p className='text-xs text-muted-foreground'>
+                    需要关注的性能问题
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>指标数量</CardTitle>
+                  <BarChart3 className='h-4 w-4 text-muted-foreground' />
+                </CardHeader>
+                <CardContent>
       <div className='text-2xl font-bold'>{ summary.recentMetrics }</div>;
       <p className='text-xs text-muted-foreground'>;
       最近收集的性能指标

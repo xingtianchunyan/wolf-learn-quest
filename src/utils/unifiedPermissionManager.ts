@@ -33,7 +33,7 @@ import { MasterErrorHandler   } from './masterErrorHandler';
   ResourceType,
   PermissionContext,
   PermissionCheckResult,
-  PermissionAuditLog  } from './enhancedPermissionSystem';
+  PermissionAuditLog } from './enhancedPermissionSystem';
 
 const logger = createLogger('unified-permission-manager');
 

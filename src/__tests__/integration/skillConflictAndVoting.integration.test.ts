@@ -12,11 +12,9 @@ import  { describe, it, expect, vi, beforeEach, afterEach  } from 'vitest';
 import { supabase  } from '@/integrations/supabase/client';
 import { EnhancedSkillService  } from '@/services/enhancedSkillService';
 import { useVotingSystem  } from '@/hooks/useVotingSystem';
-import { checkSkillConflicts  } from
-  resolveSkillConflicts  } from '@/utils/skillMappingConfig';
-import { validateSkillExecutionOrder  } from '@/utils/skillSystemValidation';
-import { checkEffectConflicts  } from
-  resolveSkillEffects  } from '@/utils/skillEffectsManager';
+import { checkSkillConflicts, resolveSkillConflicts } from '@/utils/skillMappingConfig';
+import { validateSkillExecutionOrder } from '@/utils/skillSystemValidation';
+import { checkEffectConflicts, resolveSkillEffects } from '@/utils/skillEffectsManager';
 import { renderHook, act, waitFor  } from '@testing-library/react';
 import { toast  } from '@/hooks/useToast';
 import type {

@@ -31,7 +31,7 @@ import { QueryCacheOptimizer   } from './queryCacheOptimizer';
   QueryPriority,
   CacheLevel,
   PerformanceMetrics as EnhancedPerformanceMetrics,
-  OptimizationRecommendation  } from './enhancedQueryCacheStrategy';
+  OptimizationRecommendation } from './enhancedQueryCacheStrategy';
 
 const logger = createLogger('unified-cache-manager');
 
