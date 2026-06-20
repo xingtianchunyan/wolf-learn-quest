@@ -3,6 +3,7 @@
 ## 项目概览
 
 本项目使用以下技术栈：
+
 - 前端：React + Vite + TypeScript + Tailwind CSS + shadcn/ui
 - 后端/BaaS：Supabase (PostgreSQL + Auth + Edge Functions)
 - 认证：Supabase Auth
@@ -16,21 +17,21 @@
 
 ### 意图识别表
 
-| 任务类型 | 关键词特征 | 自动调用的 Skills |
-|----------|-----------|------------------|
-| 界面设计 | UI、页面、组件、样式、布局、颜色、字体、美观、视觉效果 | frontend-design + design-taste-frontend + shadcn-ui |
-| 动画效果 | 动画、动效、滚动、过渡、粒子、GSAP、缓动 | gsap-core + 21st-frontend-design |
-| 3D/视觉效果 | Three.js、WebGL、3D、着色器、粒子、流体、Canvas | threejs + shader-dev |
-| 前端开发 | React 组件实现、Hook、State、TypeScript、事件处理 | frontend-dev + frontend-designer-skill |
-| 后端API开发 | API、接口、路由、控制器、中间件、服务端 | backend-api |
-| 数据库 | 表、Schema、Migration、查询、索引、外键、迁移 | supabase + supabase-postgres-best-practices |
-| 认证授权 | 登录、注册、权限、角色、JWT、OAuth、Session、账号 | secure-auth-rbac |
-| 测试 | 测试、Test、Spec、Coverage、E2E、Mock、用例 | testing-suite |
-| 部署/DevOps | 部署、Docker、CI/CD、GitHub Actions、Vercel、构建 | devops-pipeline |
-| 监控 | 错误、监控、Sentry、性能、日志、追踪 | monitoring-observability |
-| Git操作 | 提交、分支、PR、Merge、Commit、Rebase、标签 | git-workflow |
-| 代码审查 | 审查、Review、重构、优化、清理 | design-review + frontend-designer-skill |
-| 设计系统 | Design System、Token、主题、规范、组件库 | design-md + shadcn-ui |
+| 任务类型    | 关键词特征                                             | 自动调用的 Skills                                   |
+| ----------- | ------------------------------------------------------ | --------------------------------------------------- |
+| 界面设计    | UI、页面、组件、样式、布局、颜色、字体、美观、视觉效果 | frontend-design + design-taste-frontend + shadcn-ui |
+| 动画效果    | 动画、动效、滚动、过渡、粒子、GSAP、缓动               | gsap-core + 21st-frontend-design                    |
+| 3D/视觉效果 | Three.js、WebGL、3D、着色器、粒子、流体、Canvas        | threejs + shader-dev                                |
+| 前端开发    | React 组件实现、Hook、State、TypeScript、事件处理      | frontend-dev + frontend-designer-skill              |
+| 后端API开发 | API、接口、路由、控制器、中间件、服务端                | backend-api                                         |
+| 数据库      | 表、Schema、Migration、查询、索引、外键、迁移          | supabase + supabase-postgres-best-practices         |
+| 认证授权    | 登录、注册、权限、角色、JWT、OAuth、Session、账号      | secure-auth-rbac                                    |
+| 测试        | 测试、Test、Spec、Coverage、E2E、Mock、用例            | testing-suite                                       |
+| 部署/DevOps | 部署、Docker、CI/CD、GitHub Actions、Vercel、构建      | devops-pipeline                                     |
+| 监控        | 错误、监控、Sentry、性能、日志、追踪                   | monitoring-observability                            |
+| Git操作     | 提交、分支、PR、Merge、Commit、Rebase、标签            | git-workflow                                        |
+| 代码审查    | 审查、Review、重构、优化、清理                         | design-review + frontend-designer-skill             |
+| 设计系统    | Design System、Token、主题、规范、组件库               | design-md + shadcn-ui                               |
 
 ### 多 Skill 协同规则
 
@@ -79,6 +80,7 @@
 ## 已安装 Skill 清单
 
 ### 前端设计
+
 - frontend-design — 生产级前端界面设计
 - frontend-designer-skill — 现代 CSS 架构
 - frontend-dev — 全栈开发规范
@@ -92,24 +94,31 @@
 - shader-dev — GLSL 着色器开发
 
 ### 后端开发
+
 - backend-api — 通用后端 API 开发
 
 ### 数据库
+
 - supabase — Supabase 全栈后端
 - supabase-postgres-best-practices — PostgreSQL 优化
 
 ### 认证安全
+
 - secure-auth-rbac — 认证 + RBAC 授权
 
 ### 测试
+
 - testing-suite — 完整测试套件
 
 ### DevOps
+
 - devops-pipeline — CI/CD + 部署
 
 ### 监控
+
 - monitoring-observability — Sentry + 性能监控
 
 ### SEO
+
 - nextjs-seo-optimizer — SEO 全套方案
 - i18n-nextjs — 国际化
