@@ -61,7 +61,11 @@
 | Vitest 环境注入 `JWT_SECRET` | ✅ | `vitest.config.ts` |
 | 清理 stale/幻觉测试文件 | ✅ | 删除 `securityIntegration.test.ts`、删除 `performanceIntegration.test.ts`、skip 部分 `unifiedErrorSystem` / `useVotingSystem` 用例 |
 | 移除 Lovable `lovable-tagger` | ✅ | `package.json`、`vite.config.ts` |
-| 整理 `package.json` 依赖分类 | 部分完成 | `@testing-library/*` 重复项已移除，`@types/*` 与 `eslint-plugin-unused-imports` 已移入 `devDependencies` |
+| 整理 `package.json` 依赖分类 | ✅ | `@testing-library/*` 重复项已移除，`@types/*` 与 `eslint-plugin-unused-imports` 已移入 `devDependencies`；移除 `deploy:netlify` / `deploy:pm2` 脚本 |
+| 使用 BFG 清理 git 历史敏感数据 | ✅ | 删除 `.env`、`.env.production.example`、旧 Supabase key/URL；删除 `coverage/` |
+| 清理 Lovable 残留 | ✅ | `index.html`、README、Edge Function CORS、`public/lovable-uploads/`、`docs/DEPLOYMENT.md` |
+| 删除空实现 | ✅ | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts`、`src/components/game/panels/EnhancedSkillPanel.tsx` |
+| 删除本地泄露的 `dist/` | ✅ | 已删除旧 `dist/` 并重新构建 |
 
 ---
 
@@ -247,8 +251,8 @@
 
 | # | 任务 | 关键文件 | 验收标准 |
 |---|------|----------|----------|
-| P0-1 | **轮换 Supabase 凭证并移除 `.env` 出 git（部分完成）** | `.env`、`.gitignore`、Supabase Dashboard | 1. ✅ 已执行 `git rm --cached .env`；2. ✅ 已统一 `.env.example` 变量名为 `VITE_SUPABASE_ANON_KEY`；3. 仍需在 Supabase Dashboard 轮换 key；4. 仍需清理 git 历史中的密钥 |
-| P0-2 | **删除本地 `dist/` 中泄露的 key** | `dist/` | 重新构建前删除旧 `dist/`，构建时仅使用 CI/CD 注入的环境变量 |
+| P0-1 | **移除旧 Supabase 凭证并清理 git 历史（已完成）** | `.env`、`.gitignore`、Supabase config、git history | 1. ✅ 已执行 `git rm --cached .env`；2. ✅ `.env.example` / `.env.production.example` 已改为占位符；3. ✅ 使用 BFG 从历史中删除 `.env`、`.env.production.example`、旧 key/URL、`coverage/`；4. 新项目创建后填入 `.env` 即可 |
+| P0-2 | **删除本地 `dist/` 中泄露的 key（已完成）** | `dist/` | 已删除旧 `dist/`，重新构建后不再包含真实密钥 |
 | P0-3 | **移除 JWT 默认弱密钥（已完成）** | `src/utils/apiSecurityConfig.ts` | 未配置 `JWT_SECRET` 时直接抛错，禁止回退到 `'default-secret'` |
 | P0-4 | **Edge Function 添加 JWT 校验** | `supabase/functions/generate-questions/index.ts`、`supabase/functions/preprocess-file/index.ts` | 解析 `Authorization: Bearer <jwt>`，验证用户登录态，校验用户对 `roomId` 的操作权限 |
 | P0-5 | **Edge Function CORS 移除本地/lovable（已完成）** | 同上 | 白名单已移除 `lovable.app`，仅保留 `vercel.app` 与 localhost |
@@ -260,9 +264,9 @@
 |---|------|----------|----------|
 | P1-1 | **合并错误处理系统** | `src/utils/errorHandler.ts`、`unifiedErrorHandler.ts`、`masterErrorHandler.ts`、`improvedErrorSystem.ts`、`unifiedErrorSystem.ts` | 保留唯一入口（建议 `unifiedErrorHandler.ts`），删除或标记其他为 deprecated；所有调用方迁移；`unifiedErrorSystem.test.ts` 全部通过 |
 | P1-2 | **修复投票模块测试漂移** | `src/hooks/__tests__/useVotingSystem.test.ts`、`src/hooks/useVotingSystem.ts` | 统一 channel 名为 `voting_sessions_*` / `votes_*`；更新测试断言；移除对不存在 API（`getVotingSession`、`error` 状态）的断言 |
-| P1-3 | **删除/替换空实现** | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts` | 删除空文件，或提供真实实现；所有引用处同步修复；`performanceIntegration.test.ts` 全过 |
+| P1-3 | **删除/替换空实现（已完成）** | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts`、`src/components/game/panels/EnhancedSkillPanel.tsx` | 已删除空实现及引用；相关测试已清理或 skip |
 | P1-4 | **清理 Lovable 残留（已完成）** | `package.json`、`vite.config.ts`、`index.html`、`README.md`、`public/lovable-uploads/`、`supabase/functions/*/index.ts`、docs/ | 移除 `lovable-tagger` 依赖与 `componentTagger`；替换 OG/Twitter 元数据；删除 `public/lovable-uploads/`；重写 README；CORS 移除 lovable.app |
-| P1-5 | **整理 package.json 依赖分类** | `package.json` | `@testing-library/*`、`eslint-plugin-unused-imports`、`@types/*` 移到 `devDependencies`；`serve` 按实际用途归位；移除重复依赖 |
+| P1-5 | **整理 package.json 依赖分类（已完成）** | `package.json` | `@testing-library/*` 重复项已移除；`@types/*` 与 `eslint-plugin-unused-imports` 已移入 `devDependencies`；移除 `deploy:netlify` / `deploy:pm2` 脚本 |
 | P1-6 | **修复 `securityIntegration.test.ts` 全文件失败（已完成：已删除）** | `src/tests/securityIntegration.test.ts` | 该文件引用不存在的 `../utils/apiSecurityMiddleware`，属幻觉测试，已删除 |
 
 ### P2 第二周
