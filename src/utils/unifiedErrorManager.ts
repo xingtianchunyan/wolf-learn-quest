@@ -136,7 +136,7 @@ export class UnifiedErrorManager {
   private notificationSystem: UserNotificationSystem;
   private monitoringService: ErrorMonitoringService;
   private errorHistory: UnifiedErrorData[] = [];
-  private retryTimers = new Map<string, NodeJS.Timeout>();
+  private retryTimers = new Map<string, ReturnType<typeof setInterval>>();
   private readonly MAX_HISTORY_SIZE = 500;
   private readonly DEFAULT_RETRY_DELAY = 1000;
 

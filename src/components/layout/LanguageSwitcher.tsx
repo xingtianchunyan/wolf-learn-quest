@@ -794,7 +794,6 @@ const LanguageSwitcher: React.FC = () => {
 
   const handleLanguageChange = (languageCode: string) => {
     setLanguage(languageCode);
-    console.log(`Language changed to ${languageCode}`);
   };
 
   // Get current language object

@@ -1142,7 +1142,6 @@ describe('真实系统集成测试', () => {
       expect(successfulOperations.length).toBeGreaterThan(25); // 至少83%成功
       expect(duration).toBeLessThan(5000); // 应该在5秒内完成
 
-      console.log(`负载测试完成: ${successfulOperations.length}/${results.length} 成功, 耗时: ${duration}ms`);
     });
   });
 });

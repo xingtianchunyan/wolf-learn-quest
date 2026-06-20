@@ -216,7 +216,7 @@ export class AutomatedSecurityChecker {
   /** 监控统计 */
   private stats: SecurityMonitoringStats;
   /** 定时器 */
-  private timers = new Map<string, NodeJS.Timeout>();
+  private timers = new Map<string, ReturnType<typeof setInterval>>();
   /** 运行中的检查 */
   private runningChecks = new Set<string>();
   /** 是否正在监控 */

@@ -467,7 +467,16 @@ export class ApiSecurityConfigManager {
         type: AuthenticationType.JWT,
         required: true,
         jwt: {
-          secret: process.env.JWT_SECRET || 'default-secret',
+          secret: (() => {
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+              throw new Error(
+                'JWT_SECRET environment variable is required. ' +
+                'Please set a strong, randomly generated secret and never use the default fallback in production.'
+              );
+            }
+            return secret;
+          })(),
           algorithm: 'HS256',
           expiresIn: '24h',
           issuer: 'api-server',

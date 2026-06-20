@@ -16,7 +16,6 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
   useEffect(() => {
     if (!roomId || !currentUser) return;
 
-    console.log('Setting up presence for room:', roomId, 'user:', currentUser);
 
     const roomChannel = supabase.channel(`room_presence_${roomId}`);
 
@@ -24,7 +23,6 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     roomChannel
       .on('presence', { event: 'sync' }, () => {
         const presenceState = roomChannel.presenceState();
-        console.log('Presence sync, raw state:', presenceState);
         
         // 转换presence state为我们需要的格式
         const players: PlayerPresence[] = [];
@@ -40,17 +38,13 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
           });
         });
         
-        console.log('Converted online players:', players);
         setOnlinePlayers(players);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('Player joined:', key, newPresences);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('Player left:', key, leftPresences);
       })
       .subscribe(async (status) => {
-        console.log('Presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
           // 订阅成功后，发送当前用户的在线状态
           const userStatus: PlayerPresence = {
@@ -59,9 +53,7 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
             online_at: new Date().toISOString(),
           };
 
-          console.log('Tracking user status:', userStatus);
           const trackResult = await roomChannel.track(userStatus);
-          console.log('Track result:', trackResult);
         }
       });
 
@@ -69,7 +61,6 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
 
     // 页面卸载时自动取消订阅
     const handleBeforeUnload = () => {
-      console.log('Page unloading, untracking presence');
       roomChannel.untrack();
       roomChannel.unsubscribe();
     };
@@ -77,10 +68,8 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     // 页面隐藏时标记离线
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('Page hidden, untracking presence');
         roomChannel.untrack();
       } else {
-        console.log('Page visible, tracking presence');
         // 页面重新可见时重新追踪
         const userStatus: PlayerPresence = {
           user_id: currentUser.id,
@@ -95,7 +84,6 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      console.log('Cleaning up presence listeners');
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (roomChannel) {

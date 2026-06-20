@@ -87,9 +87,6 @@ describe('简化性能基准测试套件', () => {
     expect(result.averageTime).toBeGreaterThan(0);
     expect(result.averageTime).toBeLessThan(100);
     
-    console.log(`测试结果: ${result.name}`);
-    console.log(`平均时间: ${result.averageTime.toFixed(2)}ms`);
-    console.log(`成功率: ${(result.successRate * 100).toFixed(2)}%`);
   });
 
   test('计算密集型操作性能', async () => {
@@ -110,9 +107,6 @@ describe('简化性能基准测试套件', () => {
     expect(result.averageTime).toBeGreaterThan(0);
     expect(result.averageTime).toBeLessThan(1000);
     
-    console.log(`测试结果: ${result.name}`);
-    console.log(`平均时间: ${result.averageTime.toFixed(2)}ms`);
-    console.log(`成功率: ${(result.successRate * 100).toFixed(2)}%`);
   });
 
   test('数组操作性能', async () => {
@@ -131,9 +125,6 @@ describe('简化性能基准测试套件', () => {
     expect(result.averageTime).toBeGreaterThan(0);
     expect(result.averageTime).toBeLessThan(100);
     
-    console.log(`测试结果: ${result.name}`);
-    console.log(`平均时间: ${result.averageTime.toFixed(2)}ms`);
-    console.log(`成功率: ${(result.successRate * 100).toFixed(2)}%`);
   });
 
   test('对象创建和访问性能', async () => {
@@ -160,9 +151,6 @@ describe('简化性能基准测试套件', () => {
     expect(result.averageTime).toBeGreaterThan(0);
     expect(result.averageTime).toBeLessThan(50);
     
-    console.log(`测试结果: ${result.name}`);
-    console.log(`平均时间: ${result.averageTime.toFixed(2)}ms`);
-    console.log(`成功率: ${(result.successRate * 100).toFixed(2)}%`);
   });
 
   test('错误处理性能', async () => {
@@ -185,8 +173,5 @@ describe('简化性能基准测试套件', () => {
     expect(result.averageTime).toBeGreaterThan(0);
     expect(result.averageTime).toBeLessThan(10);
     
-    console.log(`测试结果: ${result.name}`);
-    console.log(`平均时间: ${result.averageTime.toFixed(2)}ms`);
-    console.log(`成功率: ${(result.successRate * 100).toFixed(2)}%`);
   });
 });

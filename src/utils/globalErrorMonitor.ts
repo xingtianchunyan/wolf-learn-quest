@@ -195,7 +195,7 @@ export class GlobalErrorMonitor {
   }> = [];
   private stats: ErrorStats;
   private currentSession: UserSession;
-  private reportTimer: NodeJS.Timeout | null = null;
+  private reportTimer: ReturnType<typeof setInterval> | null = null;
   private performanceObserver: PerformanceObserver | null = null;
 
   /**
@@ -788,7 +788,6 @@ export class GlobalErrorMonitor {
    */
   private async sendReport(report: ErrorReport) {
     // 这里可以集成第三方监控服务
-    console.log('错误监控报告:', report);
     
     // 示例：发送到自定义端点
     try {

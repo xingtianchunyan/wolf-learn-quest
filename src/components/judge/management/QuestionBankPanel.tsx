@@ -155,7 +155,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
 
   const fetchPreprocessedFiles = async () => {
     try {
-      console.log('获取预处理文件列表...');
       
       const { data: preprocessedData, error } = await supabase
         .from('preprocessed_files')
@@ -181,7 +180,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       }));
 
       setPreprocessedFiles(filesWithStatus);
-      console.log('预处理文件列表获取成功:', filesWithStatus.length, '个文件');
     } catch (error) {
       console.error('Error fetching preprocessed files:', error);
       setError('获取预处理文件列表时发生错误');
@@ -262,8 +260,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       const timestamp = Date.now();
       const fileName = `${timestamp}_${sanitizedName}`;
       
-      console.log('原始文件名:', originalName);
-      console.log('清理后文件名:', fileName);
       
       const { data, error } = await supabase.storage
         .from('question-files')
@@ -290,7 +286,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
         throw new Error(`保存文件信息失败: ${dbError.message}`);
       }
 
-      console.log('文件上传成功:', data);
       toast({
         title: '上传成功',
         description: `文件 "${originalName}" 已成功上传`,
@@ -330,7 +325,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
 
     // 防止重复处理
     if (isProcessing) {
-      console.log('正在处理中，忽略重复请求');
       return;
     }
 
@@ -344,7 +338,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
         throw new Error('选择的文件不存在');
       }
 
-      console.log('调用预处理API:', selectedFileData);
       
       const { data, error } = await supabase.functions.invoke('preprocess-file', {
         body: {
@@ -354,7 +347,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
         }
       });
 
-      console.log('预处理API响应:', data, error);
 
       if (error) {
         console.error('Function invoke error:', error);
@@ -368,7 +360,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       }
 
       // 不要立即设置成功状态，等待实时监听来处理
-      console.log('预处理请求已发送，等待数据库更新...');
       
     } catch (error) {
       console.error('Error preprocessing file:', error);
@@ -398,7 +389,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
 
     // 防止重复生成
     if (isGenerating) {
-      console.log('正在生成中，忽略重复请求');
       return;
     }
 
@@ -407,7 +397,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
     setStatus('使用Qwen2.5-72B模型生成题目中...');
 
     try {
-      console.log('调用生成题目API:', { selectedPreprocessedFile });
       
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
@@ -417,12 +406,10 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
         }
       });
 
-      console.log('生成题目API响应:', data, error);
 
       if (error) {
         console.error('Function invoke error:', error);
         // 不立即抛出错误，先等待实时监听检测数据库变化
-        console.log('API调用可能失败，但等待数据库实时更新检测...');
         
         // 设置一个超时，如果30秒内没有检测到数据库更新，则显示错误
         setTimeout(() => {
@@ -464,7 +451,6 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
       }
 
       // 请求成功，但仍然等待实时监听来确认数据库更新
-      console.log('生成题目请求已发送，等待数据库更新...');
       
     } catch (error) {
       console.error('Error generating questions:', error);

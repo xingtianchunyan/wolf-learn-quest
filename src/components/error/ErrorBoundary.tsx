@@ -83,7 +83,7 @@ interface ErrorBoundaryProps {
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private masterErrorHandler: MasterErrorHandler;
-  private autoRecoveryTimer: NodeJS.Timeout | null = null;
+  private autoRecoveryTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 构造函数级注释：初始化错误边界

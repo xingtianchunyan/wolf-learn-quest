@@ -236,9 +236,9 @@ export class UnifiedCacheManager {
   private currentProviderIndex = 0;
   
   // 定时器
-  private healthCheckTimer: NodeJS.Timeout | null = null;
-  private metricsTimer: NodeJS.Timeout | null = null;
-  private optimizationTimer: NodeJS.Timeout | null = null;
+  private healthCheckTimer: ReturnType<typeof setInterval> | null = null;
+  private metricsTimer: ReturnType<typeof setInterval> | null = null;
+  private optimizationTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 函数级注释：构造函数

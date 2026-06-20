@@ -154,7 +154,6 @@ export const resolveSkillEffects = (
       );
       
       // 保留保护效果
-      console.log(`保护效果阻止了伤害: ${conflict.elimination.data.effect_type}`);
     }
   });
   

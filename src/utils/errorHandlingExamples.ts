@@ -40,7 +40,6 @@ export class ApiErrorHandlingExample {
       
       if (result.shouldRetry) {
         // 可以在这里实现自动重试逻辑
-        console.log('API 调用失败，建议重试');
       }
       
       throw error;

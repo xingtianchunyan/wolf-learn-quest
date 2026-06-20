@@ -90,7 +90,7 @@ export class MemoryLeakPrevention {
   private subscriptions: Map<string, SubscriptionInfo> = new Map();
   private domReferences: Map<string, DOMReferenceInfo> = new Map();
   private memoryHistory: number[] = [];
-  private monitoringTimer: NodeJS.Timeout | null = null;
+  private monitoringTimer: ReturnType<typeof setInterval> | null = null;
   private componentInstances: Map<string, number> = new Map();
 
   private constructor(config?: Partial<MemoryLeakDetectionConfig>) {

@@ -7,10 +7,22 @@ import JSZip from 'https://esm.sh/jszip@3.10.1';
 const SILICONFLOW_API_KEY = Deno.env.get('SILICONFLOW_API_KEY');
 const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://wolf-learn-quest.vercel.app',
+  'https://wolf-learn-quest.lovable.app',
+  'http://localhost:5173',
+  'http://localhost:8080'
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -70,6 +82,7 @@ function truncateContentForAPI(content: string, maxLength: number = 6000): strin
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

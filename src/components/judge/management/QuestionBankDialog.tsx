@@ -200,14 +200,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
       setQuestionSources(Array.from(sourceMap.values()));
       
-      // 添加调试信息
-      console.log('题目获取成功:', {
-        总题目数: formattedQuestions.length,
-        手动编辑题目数: formattedQuestions.filter(q => q.category === '手动编辑').length,
-        AI生成题目数: formattedQuestions.filter(q => q.category === '生成题目').length,
-        题目来源: Array.from(sourceMap.values())
-      });
-      
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
@@ -269,13 +261,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 18).map(q => ({ ...q, selected: true }));
     
-    console.log('随机全选执行:', {
-      可用题目总数: availableQuestions.length,
-      已选择的题目源: selectedSources,
-      随机选择的题目数: selected.length,
-      选择的题目ID: selected.map(q => q.id)
-    });
-    
     setSelectedQuestions(selected);
   };
 
@@ -323,7 +308,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
 
     try {
-      console.log('正在保存手动编辑的题目:', manualQuestion);
       
       const { data, error } = await supabase
         .from('questions')
@@ -345,7 +329,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         throw error;
       }
       
-      console.log('手动题目保存成功:', data);
 
       setManualQuestion({
         question: '',

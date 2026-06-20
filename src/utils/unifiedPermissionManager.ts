@@ -295,10 +295,10 @@ export class UnifiedPermissionManager {
   private performanceMetrics: Array<{ operation: string; duration: number; timestamp: number }> = [];
   
   // 定时器
-  private cacheCleanupTimer: NodeJS.Timeout | null = null;
-  private analysisTimer: NodeJS.Timeout | null = null;
-  private statisticsTimer: NodeJS.Timeout | null = null;
-  private optimizationTimer: NodeJS.Timeout | null = null;
+  private cacheCleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private analysisTimer: ReturnType<typeof setInterval> | null = null;
+  private statisticsTimer: ReturnType<typeof setInterval> | null = null;
+  private optimizationTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 函数级注释：构造函数

@@ -45,7 +45,6 @@ export const useAutoProcessDayVote = (
         }
         const session = sessions?.[0];
         if (!session) {
-          console.log('未找到当日投票会话，跳过自动处理');
           return;
         }
 
@@ -61,7 +60,6 @@ export const useAutoProcessDayVote = (
         if (existingResults && existingResults.length > 0) {
           const allCompleted = existingResults.every(r => r.processing_status === 'completed');
           if (allCompleted) {
-            console.log('投票结果已处理完成，跳过重复计算与处理');
             lastProcessedKeyRef.current = processKey;
             return;
           }
@@ -87,7 +85,6 @@ export const useAutoProcessDayVote = (
         }
 
         if (!results || results.length === 0) {
-          console.log('没有可处理的投票结果');
           return;
         }
 
@@ -112,6 +109,5 @@ export const useAutoProcessDayVote = (
     };
 
     run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, gameState?.id, gameState?.currentPhase, gameState?.currentRound]);
 };

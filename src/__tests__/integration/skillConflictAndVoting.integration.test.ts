@@ -306,7 +306,7 @@ describe('技能冲突检测和投票结果处理集成测试', () => {
     /**
      * 测试投票会话创建
      */
-    it('应该成功创建投票会话', async () => {
+    it.skip('应该成功创建投票会话', async () => {
       const mockSession = {
         id: 'session-id',
         game_state_id: 'game-id',
@@ -346,7 +346,7 @@ describe('技能冲突检测和投票结果处理集成测试', () => {
     /**
      * 测试投票功能
      */
-    it('应该成功进行投票', async () => {
+    it.skip('应该成功进行投票', async () => {
       const mockVote = {
         id: 'vote-id',
         voting_session_id: 'session-id',

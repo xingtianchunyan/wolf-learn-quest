@@ -56,7 +56,6 @@ const GameLobby = () => {
   // Auto-redirect to player's room if they're already in one
   useEffect(() => {
     if (!initializing && currentUser && !playerRoom.isLoading && playerRoom.roomDbId) {
-      console.log('Player already in room, redirecting to:', playerRoom.roomDbId);
       navigate(`/room/${playerRoom.roomDbId}`);
     }
   }, [initializing, currentUser, playerRoom, navigate]);
@@ -125,7 +124,6 @@ const GameLobby = () => {
           filter: `status=in.(waiting,active)`
         },
         () => {
-          console.log('Room change detected, refreshing rooms...');
           fetchRooms();
         }
       )
@@ -142,7 +140,6 @@ const GameLobby = () => {
           table: 'room_players'
         },
         () => {
-          console.log('Player change detected, refreshing rooms...');
           fetchRooms();
         }
       )
@@ -157,7 +154,6 @@ const GameLobby = () => {
   // Fetch rooms from the database
   const fetchRooms = async () => {
     try {
-      console.log('Fetching rooms...');
       const { data, error } = await supabase
         .from('rooms')
         .select(`
@@ -177,7 +173,6 @@ const GameLobby = () => {
         return;
       }
 
-      console.log('Fetched rooms data:', data);
 
       // Get player counts for all waiting rooms in one call using SECURITY DEFINER function
       const { data: playerCounts, error: playerCountError } = await supabase
@@ -210,7 +205,6 @@ const GameLobby = () => {
           // Get player count from the map
           const playerCount = playerCountMap.get(room.id) || 0;
           
-          console.log(`Player count for room ${room.room_id}:`, playerCount);
           
           return {
             id: room.id,
@@ -228,7 +222,6 @@ const GameLobby = () => {
         })
       );
 
-      console.log('Formatted rooms:', roomsWithJudges);
       setGameRooms(roomsWithJudges);
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -282,7 +275,6 @@ const GameLobby = () => {
   };
 
   const handleCreateRoom = async () => {
-    console.log('Create room clicked, currentUser:', currentUser);
     
     if (!currentUser) {
       toast({
@@ -307,7 +299,6 @@ const GameLobby = () => {
     try {
       const roomId = generateRoomId();
       
-      console.log('Creating room with user ID:', currentUser.id);
       
       // Create room in database
       const { data: newRoom, error: roomError } = await supabase
@@ -332,7 +323,6 @@ const GameLobby = () => {
         return;
       }
 
-      console.log('Room created:', newRoom);
 
       // Add host as player to the room
       const { error: playerError } = await supabase
@@ -373,7 +363,6 @@ const GameLobby = () => {
   };
 
   const handleCreateAIJudge = async () => {
-    console.log('Create AI judge clicked, currentUser:', currentUser);
     
     if (!currentUser) {
       toast({
@@ -398,7 +387,6 @@ const GameLobby = () => {
     try {
       const roomId = generateRoomId();
       
-      console.log('Creating AI judge room with user ID:', currentUser.id);
       
       // Create room with AI judge in database
       const { data: newRoom, error: roomError } = await supabase
@@ -423,7 +411,6 @@ const GameLobby = () => {
         return;
       }
 
-      console.log('AI judge room created:', newRoom);
 
       // Add host as player to the room
       const { error: playerError } = await supabase
@@ -483,7 +470,6 @@ const GameLobby = () => {
     }
 
     try {
-      console.log('Joining room:', roomId, 'as user:', currentUser.id);
 
       // 先检查房间是否还有空位
       const { data: roomData, error: roomError } = await supabase
@@ -537,7 +523,6 @@ const GameLobby = () => {
         return;
       }
 
-      console.log('Successfully joined room:', roomId);
       navigate(`/room/${roomId}`);
     } catch (error) {
       console.error('Error joining room:', error);
@@ -560,7 +545,6 @@ const GameLobby = () => {
     }
 
     try {
-      console.log('Playing as judge in room:', roomId);
       
       // Update the room to set current user as judge
       const { error } = await supabase

@@ -209,15 +209,6 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       return null;
     }
 
-    console.log('Creating voting session with params:', {
-      gameStateId,
-      roomId,
-      roundNumber,
-      phase,
-      sessionType,
-      userId: user.id
-    });
-
     // 先检查是否已存在该轮次阶段的投票会话
     try {
       const { data: existingData, error: existingError } = await supabase
@@ -242,14 +233,6 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
     setLoading(true);
     try {
-      console.log('Calling create_voting_session RPC with:', {
-        p_game_state_id: gameStateId,
-        p_room_id: roomId,
-        p_round_number: roundNumber,
-        p_phase: phase,
-        p_session_type: sessionType
-      });
-      
       const sessionId = await VotingService.createVotingSession(
         gameStateId,
         roomId,
@@ -258,7 +241,6 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         sessionType
       );
       
-      console.log('Voting session created successfully:', sessionId);
       
       // 获取新创建的会话
       await fetchCurrentSession(roundNumber, phase);

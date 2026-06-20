@@ -53,7 +53,7 @@ export const useOptimizedSupabaseQuery = <T = any>(
   });
 
   const abortControllerRef = useRef<AbortController>();
-  const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+  const debounceTimeoutRef = useRef<ReturnType<typeof setInterval>>();
   const subscriptionRef = useRef<any>();
 
   // 生成查询键

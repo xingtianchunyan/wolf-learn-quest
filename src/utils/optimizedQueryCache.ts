@@ -101,7 +101,7 @@ class OptimizedQueryCache {
     oldestItem: 0,
     newestItem: 0
   };
-  private cleanupTimer?: NodeJS.Timeout;
+  private cleanupTimer?: ReturnType<typeof setInterval>;
   private evictionStrategy: EvictionStrategy = EvictionStrategy.LRU;
 
   private constructor() {

@@ -40,7 +40,6 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
       
       try {
         await supabase.rpc('join_room_as_player', { p_room_id: roomId });
-        console.log('Successfully joined room');
       } catch (error) {
         console.error('Failed to join room:', error);
       }
@@ -142,7 +141,6 @@ const VotingPanel: React.FC<VotingPanelProps> = ({
     if (!gameStateId || !roomId) return;
     const sessionId = await createVotingSession(currentRound, currentPhase || 1, 'day_vote');
     if (sessionId) {
-      console.log('Manual voting session created:', sessionId);
     }
   };
 

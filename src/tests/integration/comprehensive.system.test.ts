@@ -753,10 +753,6 @@ describe('综合系统集成测试套件', () => {
       const finalHealth = systemTester.getSystemHealth();
       
       // 添加调试信息
-      console.log('Final system health:', finalHealth);
-      console.log('CPU Usage:', finalHealth.metrics.cpuUsage);
-      console.log('Memory Usage:', finalHealth.metrics.memoryUsage);
-      console.log('Error Rate:', finalHealth.metrics.errorRate);
       
       // 如果状态为 critical，先重置系统状态
       if (finalHealth.status === 'critical') {

@@ -208,7 +208,6 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
       
       if (success) {
         // 成功处理后的额外逻辑可以在这里添加
-        console.log('投票结果处理成功');
       }
     } catch (error) {
       console.error('处理投票结果失败:', error);

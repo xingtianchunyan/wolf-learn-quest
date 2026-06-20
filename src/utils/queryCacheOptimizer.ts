@@ -213,8 +213,8 @@ export class QueryCacheOptimizer {
   private configs: Map<string, CacheConfig> = new Map();
   private stats: Map<string, CacheStats> = new Map();
   private activeQueries: Map<string, Promise<any>> = new Map();
-  private cleanupTimers: Map<string, NodeJS.Timeout> = new Map();
-  private monitoringTimer?: NodeJS.Timeout;
+  private cleanupTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private monitoringTimer?: ReturnType<typeof setInterval>;
   private compressionWorker?: Worker;
   private isShuttingDown: boolean = false;
 

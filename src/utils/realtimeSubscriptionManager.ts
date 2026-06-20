@@ -79,9 +79,9 @@ export interface SubscriptionState {
   createdAt: number;
   listeners: Set<Function>;
   buffer: any[];
-  heartbeatTimer?: NodeJS.Timeout;
-  reconnectTimer?: NodeJS.Timeout;
-  flushTimer?: NodeJS.Timeout;
+  heartbeatTimer?: ReturnType<typeof setInterval>;
+  reconnectTimer?: ReturnType<typeof setInterval>;
+  flushTimer?: ReturnType<typeof setInterval>;
 }
 
 /**
@@ -138,8 +138,8 @@ export class RealtimeSubscriptionManager {
   private eventListeners: Map<string, Set<Function>> = new Map();
   private memoryMonitor: MemoryMonitorConfig;
   private stats: SubscriptionStats;
-  private cleanupTimer?: NodeJS.Timeout;
-  private memoryCheckTimer?: NodeJS.Timeout;
+  private cleanupTimer?: ReturnType<typeof setInterval>;
+  private memoryCheckTimer?: ReturnType<typeof setInterval>;
   private isShuttingDown: boolean = false;
 
   /**

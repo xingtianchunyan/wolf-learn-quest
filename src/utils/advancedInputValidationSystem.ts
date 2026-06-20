@@ -295,10 +295,10 @@ export class AdvancedInputValidationSystem {
   private modelVersion = '1.0.0';
   
   // 定时器
-  private metricsTimer: NodeJS.Timeout | null = null;
-  private cacheCleanupTimer: NodeJS.Timeout | null = null;
-  private adaptationTimer: NodeJS.Timeout | null = null;
-  private modelUpdateTimer: NodeJS.Timeout | null = null;
+  private metricsTimer: ReturnType<typeof setInterval> | null = null;
+  private cacheCleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private adaptationTimer: ReturnType<typeof setInterval> | null = null;
+  private modelUpdateTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 函数级注释：构造函数

@@ -244,9 +244,9 @@ export class EnhancedQueryCacheStrategy {
   private preloadQueue: Set<string> = new Set();
   
   // 定时器
-  private optimizationTimer: NodeJS.Timeout | null = null;
-  private metricsTimer: NodeJS.Timeout | null = null;
-  private cleanupTimer: NodeJS.Timeout | null = null;
+  private optimizationTimer: ReturnType<typeof setInterval> | null = null;
+  private metricsTimer: ReturnType<typeof setInterval> | null = null;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 函数级注释：构造函数

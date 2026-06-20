@@ -111,7 +111,7 @@ export interface NotificationInstance {
   /** 关闭时间 */
   closedAt?: number;
   /** 定时器ID */
-  timerId?: NodeJS.Timeout;
+  timerId?: ReturnType<typeof setInterval>;
 }
 
 /**

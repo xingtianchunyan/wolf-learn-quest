@@ -79,7 +79,7 @@ class MemoryManagementSystem {
   private subscriptions: Map<string, SubscriptionInfo> = new Map();
   private componentMemory: Map<string, ComponentMemoryInfo> = new Map();
   private memoryHistory: MemoryUsage[] = [];
-  private timers: Set<NodeJS.Timeout> = new Set();
+  private timers: Set<ReturnType<typeof setInterval>> = new Set();
   private eventListeners: Map<string, { element: EventTarget; event: string; handler: EventListener }> = new Map();
   private config: MemoryConfig = {
     maxMemoryUsage: 500 * 1024 * 1024, // 500MB
@@ -92,8 +92,8 @@ class MemoryManagementSystem {
     warningThreshold: 300 * 1024 * 1024, // 300MB
     criticalThreshold: 450 * 1024 * 1024 // 450MB
   };
-  private monitoringTimer?: NodeJS.Timeout;
-  private cleanupTimer?: NodeJS.Timeout;
+  private monitoringTimer?: ReturnType<typeof setInterval>;
+  private cleanupTimer?: ReturnType<typeof setInterval>;
 
   private constructor() {
     this.startMonitoring();
@@ -183,7 +183,7 @@ class MemoryManagementSystem {
   /**
    * 注册定时器
    */
-  public registerTimer(timer: NodeJS.Timeout, component: string): void {
+  public registerTimer(timer: ReturnType<typeof setInterval>, component: string): void {
     this.timers.add(timer);
     this.updateComponentMemory(component, 'timer', 1);
 
@@ -196,7 +196,7 @@ class MemoryManagementSystem {
   /**
    * 取消注册定时器
    */
-  public unregisterTimer(timer: NodeJS.Timeout, component: string): boolean {
+  public unregisterTimer(timer: ReturnType<typeof setInterval>, component: string): boolean {
     const removed = this.timers.delete(timer);
     if (removed) {
       clearTimeout(timer);
@@ -643,7 +643,7 @@ export const memoryManager = MemoryManagementSystem.getInstance();
  */
 export function useMemoryManagement(componentName: string) {
   const subscriptionIds = useRef<Set<string>>(new Set());
-  const timerIds = useRef<Set<NodeJS.Timeout>>(new Set());
+  const timerIds = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
   const listenerIds = useRef<Set<string>>(new Set());
 
   // 注册订阅
@@ -657,7 +657,7 @@ export function useMemoryManagement(componentName: string) {
   }, [componentName]);
 
   // 注册定时器
-  const registerTimer = useCallback((timer: NodeJS.Timeout) => {
+  const registerTimer = useCallback((timer: ReturnType<typeof setInterval>) => {
     memoryManager.registerTimer(timer, componentName);
     timerIds.current.add(timer);
   }, [componentName]);

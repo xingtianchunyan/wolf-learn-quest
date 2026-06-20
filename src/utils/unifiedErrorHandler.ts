@@ -116,7 +116,7 @@ export class UnifiedErrorHandler {
   private static instance: UnifiedErrorHandler;
   private errorHistory: UnifiedError[] = [];
   private maxHistorySize = 200;
-  private retryTimers = new Map<string, NodeJS.Timeout>();
+  private retryTimers = new Map<string, ReturnType<typeof setInterval>>();
 
   /**
    * 获取单例实例

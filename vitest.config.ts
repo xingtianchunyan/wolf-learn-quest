@@ -23,7 +23,8 @@ export default defineConfig({
       ]
     },
     env: {
-      DEV: 'true'
+      DEV: 'true',
+      JWT_SECRET: 'test-secret-do-not-use-in-production'
     }
   },
   resolve: {

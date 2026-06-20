@@ -80,7 +80,7 @@ export interface SubscriptionInfo {
   memoryUsage: number;
   priority: 'high' | 'medium' | 'low';
   messageBuffer: any[]; // 消息缓冲区
-  batchTimer?: NodeJS.Timeout; // 批处理定时器
+  batchTimer?: ReturnType<typeof setInterval>; // 批处理定时器
   weakRef?: WeakRef<any>; // 弱引用
 }
 
@@ -117,11 +117,11 @@ class EnhancedRealtimeManager {
   private subscriptions: Map<string, SubscriptionInfo> = new Map();
   private callbacks: Map<string, SubscriptionCallback[]> = new Map();
   private batchCallbacks: Map<string, BatchCallback[]> = new Map();
-  private heartbeatTimers: Map<string, NodeJS.Timeout> = new Map();
-  private reconnectTimers: Map<string, NodeJS.Timeout> = new Map();
-  private cleanupTimer: NodeJS.Timeout | null = null;
-  private memoryCheckTimer: NodeJS.Timeout | null = null;
-  private suspensionTimer: NodeJS.Timeout | null = null;
+  private heartbeatTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private reconnectTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private memoryCheckTimer: ReturnType<typeof setInterval> | null = null;
+  private suspensionTimer: ReturnType<typeof setInterval> | null = null;
   private isDestroyed = false;
 
   // 内存管理配置（更严格的限制）

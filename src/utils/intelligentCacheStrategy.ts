@@ -156,10 +156,10 @@ class IntelligentCacheStrategy {
   };
 
   // 定时器
-  private analysisTimer: NodeJS.Timeout | null = null;
-  private cleanupTimer: NodeJS.Timeout | null = null;
-  private preloadTimer: NodeJS.Timeout | null = null;
-  private batchTimer: NodeJS.Timeout | null = null;
+  private analysisTimer: ReturnType<typeof setInterval> | null = null;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private preloadTimer: ReturnType<typeof setInterval> | null = null;
+  private batchTimer: ReturnType<typeof setInterval> | null = null;
 
   private config: CacheStrategyConfig = {
     type: CacheStrategyType.ADAPTIVE,

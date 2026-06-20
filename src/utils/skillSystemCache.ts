@@ -34,7 +34,7 @@ class SkillSystemCache {
   private readonly MAX_CACHE_SIZE = 1000;
   private readonly CLEANUP_INTERVAL = 60 * 1000; // 1分钟清理一次
   
-  private cleanupTimer: NodeJS.Timeout | null = null;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.startPeriodicCleanup();

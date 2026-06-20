@@ -46,7 +46,7 @@ export const useSkillEffectProcessor = (
 
   const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingRef = useRef(false);
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 

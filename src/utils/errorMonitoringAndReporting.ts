@@ -167,7 +167,7 @@ export class ErrorMonitoringAndReportingSystem {
   private performanceHistory: PerformanceMetrics[] = [];
   private userBehaviorHistory: UserBehaviorEvent[] = [];
   private sessionId: string;
-  private reportTimer?: NodeJS.Timeout;
+  private reportTimer?: ReturnType<typeof setInterval>;
   private performanceObserver?: PerformanceObserver;
 
   /**
@@ -725,12 +725,6 @@ export class ErrorMonitoringAndReportingSystem {
   private saveReport(report: ErrorReport): void {
     if (this.config.reportTargets.console) {
       console.group('🔍 错误监控报告');
-      console.log('报告ID:', report.id);
-      console.log('生成时间:', report.generatedAt);
-      console.log('错误统计:', report.statistics);
-      console.log('性能指标:', report.performance);
-      console.log('关键发现:', report.keyFindings);
-      console.log('建议措施:', report.recommendations);
       console.groupEnd();
     }
 

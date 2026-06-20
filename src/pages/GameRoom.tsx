@@ -58,7 +58,6 @@ const GameRoom = () => {
   // 监听游戏状态变化，当游戏开始时自动跳转
   useEffect(() => {
     if (gameState?.status === 'active' && roomData?.id) {
-      console.log('Game started, navigating to game page...');
       navigate(`/room/${roomData.id}/game`);
     }
   }, [gameState?.status, roomData?.id, navigate]);
@@ -82,11 +81,6 @@ const GameRoom = () => {
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
   
-  console.log('Current user ID:', currentUserId);
-  console.log('Players list:', players);
-  console.log('Current player record:', currentPlayerRecord);
-  console.log('Online players list:', onlinePlayersList);
-  console.log('Online player user IDs:', onlinePlayers);
   
   const allReady = players.every(player => player.isReady);
 
@@ -109,7 +103,6 @@ const GameRoom = () => {
           if (error) {
             console.error('Error fetching current player record:', error);
           } else {
-            console.log('Current player record found:', playerRecord);
             setCurrentPlayerRecord(playerRecord);
             setIsReady(playerRecord?.is_ready || false);
           }
@@ -211,7 +204,6 @@ const GameRoom = () => {
 
         // Fetch room data using the id from URL params or fallback to user's most recent room
         if (id) {
-          console.log('Fetching room data for room ID:', id);
           
           // Fetch specific room by ID
           const { data: roomData, error: roomError } = await supabase
@@ -238,7 +230,6 @@ const GameRoom = () => {
           }
 
           if (roomData) {
-            console.log('Room data found:', roomData);
             
             /**
              * 获取房主信息
@@ -279,11 +270,9 @@ const GameRoom = () => {
             }
             setPreviousMaxPlayers(roomData.max_players);
           } else {
-            console.log('No room found with ID:', id);
           }
         } else if (session?.user) {
           // Fallback: fetch user's most recent room
-          console.log('No room ID in URL, fetching user\'s most recent room');
           
           const { data: roomPlayerData } = await supabase
             .from('room_players')

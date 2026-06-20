@@ -89,7 +89,6 @@ export const useRoomChat = (roomId: string | null, currentUser: any) => {
           filter: `room_id=eq.${roomId}`
         },
         async (payload) => {
-          console.log('New chat message:', payload);
           
           // 获取发送者信息
           const { data: userData } = await supabase

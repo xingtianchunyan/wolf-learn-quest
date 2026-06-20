@@ -24,8 +24,8 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
   } = options;
 
   const cleanupFunctionsRef = useRef<Array<() => void>>([]);
-  const intervalRefs = useRef<Set<NodeJS.Timeout>>(new Set());
-  const timeoutRefs = useRef<Set<NodeJS.Timeout>>(new Set());
+  const intervalRefs = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
+  const timeoutRefs = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
   const subscriptionsRef = useRef<Set<() => void>>(new Set());
   const lastMemoryCheckRef = useRef<number>(0);
 
@@ -35,7 +35,7 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
   }, []);
 
   // 注册间隔任务
-  const registerInterval = useCallback((intervalId: NodeJS.Timeout) => {
+  const registerInterval = useCallback((intervalId: ReturnType<typeof setInterval>) => {
     intervalRefs.current.add(intervalId);
     
     // 返回清理函数
@@ -46,7 +46,7 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
   }, []);
 
   // 注册超时任务
-  const registerTimeout = useCallback((timeoutId: NodeJS.Timeout) => {
+  const registerTimeout = useCallback((timeoutId: ReturnType<typeof setInterval>) => {
     timeoutRefs.current.add(timeoutId);
     
     // 返回清理函数

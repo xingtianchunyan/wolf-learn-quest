@@ -56,7 +56,6 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
      */
     const fetchRoomInfo = async () => {
       try {
-        console.log('Fetching room info for:', roomId);
 
         // 获取房间基本信息
         const { data: roomData, error: roomError } = await supabase

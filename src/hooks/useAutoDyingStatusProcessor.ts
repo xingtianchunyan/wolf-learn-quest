@@ -35,7 +35,7 @@ export const useAutoDyingStatusProcessor = (
 ) => {
   const { toast } = useToast();
   const processingRef = useRef<Set<string>>(new Set());
-  const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const timeoutsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
   const effectiveConfig = { ...DEFAULT_CONFIG, ...config };
 
   // 清理定时器

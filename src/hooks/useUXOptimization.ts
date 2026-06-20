@@ -74,7 +74,7 @@ export const useUXOptimization = (config: Partial<UXOptimizationConfig> = {}) =>
   const [loadingStates, setLoadingStates] = useState<Map<string, string>>(new Map());
 
   // 引用和计时器
-  const autoSaveTimer = useRef<NodeJS.Timeout>();
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
   const performanceObserver = useRef<PerformanceObserver>();
   const renderStartTime = useRef<number>();
 

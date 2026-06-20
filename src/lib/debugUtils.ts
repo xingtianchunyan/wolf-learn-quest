@@ -16,7 +16,6 @@ export const isDevelopment = (): boolean => {
 export const devLog = {
   info: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.log(`[DEV] ${message}`, data || '');
     }
     logger.info(message, data);
   },

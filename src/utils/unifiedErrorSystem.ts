@@ -245,7 +245,7 @@ export class UnifiedErrorSystem {
   /** 重试计数器 */
   private retryCounters = new Map<string, number>();
   /** 重试定时器 */
-  private retryTimers = new Map<string, NodeJS.Timeout>();
+  private retryTimers = new Map<string, ReturnType<typeof setInterval>>();
   /** 错误统计 */
   private statistics: ErrorStatistics = {
     total: 0,

@@ -270,8 +270,8 @@ export class InputValidationManager {
   
   // 性能监控
   private performanceData: number[] = [];
-  private metricsTimer: NodeJS.Timeout | null = null;
-  private cleanupTimer: NodeJS.Timeout | null = null;
+  private metricsTimer: ReturnType<typeof setInterval> | null = null;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 函数级注释：构造函数

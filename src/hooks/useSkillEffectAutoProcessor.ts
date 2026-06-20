@@ -29,7 +29,7 @@ export const useSkillEffectAutoProcessor = (
 
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingRef = useRef(false);
 
   // 核心处理函数 - 修复技能效果处理流程

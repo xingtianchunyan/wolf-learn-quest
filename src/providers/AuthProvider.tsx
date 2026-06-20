@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If user doesn't exist, create profile
       if (!existingUser) {
-        console.log('Creating user profile for:', user.id);
         
         // Get player name from user metadata or display name, fallback to email
         const playerName = user.user_metadata?.player_name || 
@@ -88,7 +87,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           return null;
         } else {
-          console.log('User profile created successfully');
           return newUser;
         }
       }
@@ -117,7 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth change:', event, session?.user?.id);
 
       if (event === 'INITIAL_SESSION') {
         isSessionInitialized.current = true;
@@ -140,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = {

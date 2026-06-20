@@ -27,7 +27,6 @@ export const useRoomRealtime = (roomId: string) => {
           filter: `id=eq.${roomId}`
         },
         (payload) => {
-          console.log('Room update received:', payload);
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             if (newData.max_players !== undefined && newData.status !== undefined) {

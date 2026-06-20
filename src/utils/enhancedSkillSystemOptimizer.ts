@@ -95,7 +95,7 @@ export class EnhancedSkillSystemOptimizer {
   private subscriptionManager: SubscriptionManager;
   private stateCacheManager: StateCacheManager;
   private performanceMetrics: SkillSystemPerformanceMetrics;
-  private optimizationTimer: NodeJS.Timeout | null = null;
+  private optimizationTimer: ReturnType<typeof setInterval> | null = null;
 
   private constructor(config?: Partial<SkillSystemOptimizationConfig>) {
     this.config = {

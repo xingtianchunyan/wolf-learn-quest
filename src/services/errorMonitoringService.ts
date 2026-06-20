@@ -293,7 +293,7 @@ export class ErrorMonitoringService {
   /** 性能观察器 */
   private performanceObserver?: PerformanceObserver;
   /** 上报定时器 */
-  private reportingTimer?: NodeJS.Timeout;
+  private reportingTimer?: ReturnType<typeof setInterval>;
 
   private constructor() {
     // 默认配置
@@ -716,7 +716,7 @@ export class ErrorMonitoringService {
     });
 
     // 滚动事件（节流）
-    let scrollTimer: NodeJS.Timeout;
+    let scrollTimer: ReturnType<typeof setInterval>;
     window.addEventListener('scroll', () => {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {

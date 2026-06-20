@@ -94,7 +94,6 @@ export const useMultiChannelChat = ({
 
     const fetchMessages = async () => {
       try {
-        console.log('Fetching messages for room:', roomId);
         
         const { data, error } = await supabase
           .from('chat_messages')
@@ -122,7 +121,6 @@ export const useMultiChannelChat = ({
           return;
         }
 
-        console.log('Fetched messages:', data);
 
         // 获取发送者信息 - 使用sender_id关联users表的user_id字段
         const messagesWithSenders = await Promise.all(
@@ -165,7 +163,6 @@ export const useMultiChannelChat = ({
           filter: `room_id=eq.${roomId}`
         },
         async (payload) => {
-          console.log('New chat message:', payload);
           
           // 获取发送者信息
           const { data: userData } = await supabase
@@ -237,7 +234,6 @@ export const useMultiChannelChat = ({
         return false;
       }
 
-      console.log('Message sent successfully');
       return true;
     } catch (error) {
       console.error('Error sending message:', error);

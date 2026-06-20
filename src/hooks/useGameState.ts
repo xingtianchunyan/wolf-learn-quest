@@ -121,7 +121,6 @@ export const useGameState = (roomId: string) => {
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('Game state update:', payload);
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             setGameState({
@@ -155,7 +154,6 @@ export const useGameState = (roomId: string) => {
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('Game settings update:', payload);
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             setGameSettings({
@@ -283,7 +281,6 @@ export const useGameState = (roomId: string) => {
         console.error('初始化角色状态失败:', initError);
         // 不中断流程
       } else {
-        console.log('已初始化角色状态数量:', initCount);
       }
 
       // 记录游戏开始的第一个阶段（傍晚）

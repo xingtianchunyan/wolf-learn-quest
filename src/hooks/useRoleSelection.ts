@@ -47,7 +47,6 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
           return;
         }
 
-        console.log('Role selections with design data:', data);
         setRoleSelections(data || []);
       } catch (error) {
         console.error('Error fetching role selections:', error);
@@ -70,7 +69,6 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('Role selection update received:', payload);
           fetchRoleSelections();
         }
       )

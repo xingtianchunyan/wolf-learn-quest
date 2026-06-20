@@ -23,7 +23,6 @@ export const usePlayersRealtime = (roomId: string) => {
     // 初始获取玩家列表
     const fetchPlayers = async () => {
       try {
-        console.log('Fetching players for room:', roomId);
         
         // 首先获取房间信息以确定房主
         const { data: roomData, error: roomError } = await supabase
@@ -48,7 +47,6 @@ export const usePlayersRealtime = (roomId: string) => {
           return;
         }
 
-        console.log('Room players data:', roomPlayers);
 
         if (roomPlayers && roomPlayers.length > 0) {
           // 获取所有非AI玩家的用户信息
@@ -68,7 +66,6 @@ export const usePlayersRealtime = (roomId: string) => {
             }
           }
 
-          console.log('Users data:', usersData);
 
           // 转换玩家数据
           const transformedPlayers: Player[] = roomPlayers.map((player: any) => {
@@ -98,10 +95,8 @@ export const usePlayersRealtime = (roomId: string) => {
             }
           });
           
-          console.log('Transformed players:', transformedPlayers);
           setPlayers(transformedPlayers);
         } else {
-          console.log('No players found in room');
           setPlayers([]);
         }
       } catch (error) {
@@ -125,7 +120,6 @@ export const usePlayersRealtime = (roomId: string) => {
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          console.log('Player update received:', payload);
           // 重新获取玩家列表以确保数据同步
           fetchPlayers();
         }

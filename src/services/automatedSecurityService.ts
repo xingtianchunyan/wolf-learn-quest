@@ -83,7 +83,7 @@ export class AutomatedSecurityService {
   private masterErrorHandler: MasterErrorHandler;
   private config: SecurityScheduleConfig;
   private isRunning: boolean = false;
-  private scheduledChecks: Map<string, NodeJS.Timeout> = new Map();
+  private scheduledChecks: Map<string, ReturnType<typeof setInterval>> = new Map();
   private securityEvents: SecurityEvent[] = [];
   private lastAuditResult: SecurityAuditResult | null = null;
   private checkCounter: number = 0;
