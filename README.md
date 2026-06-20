@@ -77,16 +77,16 @@ public/          # 静态资源
 
 ## 部署
 
-详见 [DEPLOYMENT.md](./DEPLOYMENT.md) 和 [PROJECT_AUDIT_AND_PLAN.md](./PROJECT_AUDIT_AND_PLAN.md)。
-
 默认部署目标：
 
 - **前端**：Vercel
 - **后端/BaaS**：Supabase
 
+详见 [PROJECT_AUDIT_AND_PLAN.md](./PROJECT_AUDIT_AND_PLAN.md)。
+
 ## 状态与计划
 
-项目当前已完成第一周止血修复（构建、类型、lint、测试、依赖安全），正在进行 P1–P3 架构与代码质量优化。详见 [PROJECT_AUDIT_AND_PLAN.md](./PROJECT_AUDIT_AND_PLAN.md)。
+项目已完成 P0 止血修复与 P1–P2 主要优化：统一类型定义、统一数据/实时层、合并重复 UI 入口、拆分巨型组件。P3 长期工程化（监控、E2E、依赖升级、文档同步）待后续迭代。详见 [PROJECT_AUDIT_AND_PLAN.md](./PROJECT_AUDIT_AND_PLAN.md)。
 
 ## 许可证
 
