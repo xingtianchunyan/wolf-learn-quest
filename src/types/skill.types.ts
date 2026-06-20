@@ -157,8 +157,8 @@ export interface UsageRestriction {
 
 // ============= 游戏状态相关 =============
 
-// 游戏状态类型 - 重新导出避免冲突
-export type { GameState } from '@/hooks/useGameState';
+// 游戏状态类型 - 从统一类型定义导出
+export type { GameState } from '@/types/game';
 
 // ============= 组件Props类型 =============
 

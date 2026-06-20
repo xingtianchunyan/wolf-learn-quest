@@ -2,32 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/providers/AuthProvider';
+import type { GameState, GameSettings } from '@/types/game';
 
-export interface GameState {
-  id: string;
-  roomId: string;
-  status: 'waiting' | 'active' | 'paused' | 'ended';
-  currentPhase: number; // 改为数字类型：1=白天, 2=傍晚, 3=夜晚, 4=黎明
-  currentRound: number;
-  phaseStartTime: string;
-  phaseEndTime: string | null;
-  isPaused: boolean;
-  pausedAt: string | null;
-  totalPausedDuration: number;
-  autoAdvance: boolean;
-  phaseDuration: number;
-  createdAt: string;
-}
-
-export interface GameSettings {
-  id: string;
-  roomId: string;
-  isAutoAdvance: boolean;
-  dayDuration: number;
-  eveningDuration: number;
-  nightDuration: number;
-  dawnDuration: number;
-}
+export type { GameState, GameSettings } from '@/types/game';
 
 export const useGameState = (roomId: string) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
