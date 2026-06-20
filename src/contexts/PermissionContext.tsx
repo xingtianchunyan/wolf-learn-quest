@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
 // 新增：从路由参数自动解析 roomId，避免未传递 roomId 时权限判断失效
 import { useParams } from 'react-router-dom';
 // 新增：集成增强的安全系统
@@ -11,6 +10,7 @@ import {
   type PermissionContext as SecurityPermissionContext 
 } from '@/utils/enhancedPermissionSystem';
 import { securityAuditService, SecurityEventType } from '@/services/securityAuditService';
+import { useRoomData } from '@/hooks/useRoomData';
 
 export interface PermissionState {
   isJudge: boolean;
@@ -61,6 +61,9 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     loading: true
   });
 
+  // 统一数据层：房间、玩家、游戏状态、角色状态
+  const { room, players, gameState, roleStates, loading: roomDataLoading } = useRoomData(effectiveRoomId);
+
   const checkPermissions = async () => {
     if (!effectiveRoomId || !currentUser?.id || !isLoggedIn) {
       setPermissions({
@@ -89,22 +92,15 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         source: 'permission_context'
       });
 
-      // 并行查询房间信息、玩家状态、角色状态、游戏状态
-      const [roomData, playerData, roleStateData, gameStateData] = await Promise.all([
-        supabase.from('rooms').select('judge_user_id').eq('id', effectiveRoomId).single(),
-        supabase.from('room_players').select('id').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
-        supabase.from('role_states').select('role_status, status_effects').eq('room_id', effectiveRoomId).eq('user_id', currentUser.id).single(),
-        supabase.from('game_states').select('current_phase, status').eq('room_id', effectiveRoomId).single()
-      ]);
+      // 从统一数据层读取房间信息、玩家状态、角色状态、游戏状态
+      const isJudge = room?.judge_user_id === currentUser.id;
+      const isRoomParticipant = players.some(p => p.userId === currentUser.id) || isJudge;
 
-      const isJudge = roomData.data?.judge_user_id === currentUser.id;
-      const isRoomParticipant = !!playerData.data || isJudge;
-      
-      // 基于角色状态和游戏阶段计算权限
-      const statusEffects = roleStateData.data?.status_effects || {};
-      const roleStatus = roleStateData.data?.role_status || 1;
-      const currentPhase = gameStateData.data?.current_phase || 1;
-      const gameStatus = gameStateData.data?.status || 'waiting';
+      const currentRoleState = roleStates.find(rs => rs.user_id === currentUser.id);
+      const statusEffects = currentRoleState?.status_effects || {};
+      const roleStatus = currentRoleState?.role_status || 1;
+      const currentPhase = gameState?.currentPhase || 1;
+      const gameStatus = gameState?.status || 'waiting';
 
       // 创建安全权限上下文
       const securityContext: SecurityPermissionContext = {
@@ -192,33 +188,12 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     }
   };
 
+  // 数据变化时重新计算权限（统一数据层已负责实时订阅）
   useEffect(() => {
-    if (!initializing) {
+    if (!initializing && !roomDataLoading) {
       checkPermissions();
     }
-  }, [effectiveRoomId, currentUser?.id, isLoggedIn, initializing]);
-
-  // 实时监听权限变化
-  useEffect(() => {
-    if (!effectiveRoomId || !currentUser?.id) return;
-
-    const channel = supabase
-      .channel(`permissions_${effectiveRoomId}_${currentUser.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'role_states', filter: `room_id=eq.${effectiveRoomId}` }, () => {
-        checkPermissions();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_states', filter: `room_id=eq.${effectiveRoomId}` }, () => {
-        checkPermissions();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${effectiveRoomId}` }, () => {
-        checkPermissions();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [effectiveRoomId, currentUser?.id]);
+  }, [effectiveRoomId, currentUser?.id, isLoggedIn, initializing, roomDataLoading, room, players, gameState, roleStates]);
 
   // 新增：增强的权限检查方法
   const checkEnhancedPermission = async (
