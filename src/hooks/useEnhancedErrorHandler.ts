@@ -5,7 +5,7 @@
 
 import { useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { handleError, UnifiedErrorType, ErrorHandlingOptions } from '@/utils/unifiedErrorSystem';
+import { handleError, UnifiedErrorType, ErrorHandlingOptions } from '@/utils/unifiedErrorHandler';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('enhanced-error-handler');

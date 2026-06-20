@@ -839,8 +839,35 @@ export function createErrorWrapper(
   return {
     async: <T extends any[], R>(fn: (...args: T) => Promise<R>) =>
       unifiedErrorHandler.wrapAsync(fn, context, options),
-    
+
     sync: <T extends any[], R>(fn: (...args: T) => R) =>
       unifiedErrorHandler.wrapSync(fn, context, options)
   };
 }
+
+/**
+ * 兼容旧版 `UnifiedErrorType` 枚举
+ */
+export enum UnifiedErrorType {
+  APP = 'app',
+  SKILL = 'skill',
+  NETWORK = 'network',
+  VALIDATION = 'validation',
+  PERMISSION = 'permission',
+  BUSINESS = 'business',
+  SYSTEM = 'system',
+  UNKNOWN = 'unknown'
+}
+
+/**
+ * 兼容旧版 `handleError` 函数
+ */
+export const handleError = (
+  error: Error | AppError | SkillError | unknown,
+  contextOrOptions?: ErrorContext | ErrorHandlingOptions,
+  options?: ErrorHandlingOptions
+): Promise<void> => {
+  const context = options ? (contextOrOptions as ErrorContext) : undefined;
+  const actualOptions = options || (contextOrOptions as ErrorHandlingOptions) || {};
+  return unifiedErrorHandler.handleError(error, context, actualOptions);
+};
