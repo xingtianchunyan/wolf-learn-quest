@@ -71,7 +71,6 @@ npm run build
 ```ts
 const ALLOWED_ORIGINS = [
   'https://wolf-learn-quest.vercel.app',
-  'https://wolf-learn-quest.lovable.app',
   'http://localhost:5173',
   'http://localhost:8080'
 ];

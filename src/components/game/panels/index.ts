@@ -1,5 +1,4 @@
 // Game panel components
-export { default as EnhancedSkillPanel } from './EnhancedSkillPanel';
 export { default as GameInfoPanel } from './GameInfoPanel';
 export { default as GameSettingsPanel } from './GameSettingsPanel';
 export { default as GameSkillPanel } from './GameSkillPanel';

@@ -24,7 +24,9 @@ export default defineConfig({
     },
     env: {
       DEV: 'true',
-      JWT_SECRET: 'test-secret-do-not-use-in-production'
+      JWT_SECRET: 'test-secret-do-not-use-in-production',
+      VITE_SUPABASE_URL: 'https://test-project.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'test-anon-key-do-not-use-in-production'
     }
   },
   resolve: {

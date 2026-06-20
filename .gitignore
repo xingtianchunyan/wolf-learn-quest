@@ -29,3 +29,12 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Security / cleanup artifacts
+bfg.jar
+replacements.txt
+.bfg-report/
+
+# Generated / local tooling
+coverage/
+.venv-filterrepo/

@@ -11,18 +11,14 @@ import { useSkillStats, type SkillSystemStats } from './skill/useSkillStats';
 import { usePerformanceOptimization } from './usePerformanceOptimizationNew';
 import { useMemoryManager } from './useMemoryManager';
 import { skillCache } from '@/utils/skillCache';
-import { useEnhancedSkillSystemFixes } from '@/utils/performanceCriticalFixes';
 import { useEnhancedRealtime } from '@/utils/enhancedRealtimeManager';
 import { useIntelligentCache } from '@/utils/intelligentCacheStrategy';
 
 export const useEnhancedSkillSystem = (
-  roomId: string, 
-  gameStateId?: string, 
+  roomId: string,
+  gameStateId?: string,
   userId?: string
 ) => {
-  // 性能关键问题修复
-  const performanceFixes = useEnhancedSkillSystemFixes();
-
   // 性能优化
   const performance = usePerformanceOptimization({
     componentName: 'EnhancedSkillSystem',

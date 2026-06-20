@@ -251,7 +251,7 @@
 | P0-2 | **删除本地 `dist/` 中泄露的 key** | `dist/` | 重新构建前删除旧 `dist/`，构建时仅使用 CI/CD 注入的环境变量 |
 | P0-3 | **移除 JWT 默认弱密钥（已完成）** | `src/utils/apiSecurityConfig.ts` | 未配置 `JWT_SECRET` 时直接抛错，禁止回退到 `'default-secret'` |
 | P0-4 | **Edge Function 添加 JWT 校验** | `supabase/functions/generate-questions/index.ts`、`supabase/functions/preprocess-file/index.ts` | 解析 `Authorization: Bearer <jwt>`，验证用户登录态，校验用户对 `roomId` 的操作权限 |
-| P0-5 | **Edge Function CORS 移除本地/lovable** | 同上 | 白名单仅保留实际生产域名 |
+| P0-5 | **Edge Function CORS 移除本地/lovable（已完成）** | 同上 | 白名单已移除 `lovable.app`，仅保留 `vercel.app` 与 localhost |
 | P0-6 | **修复关键安全漏洞（已完成，moderate+ 已清零）** | `package.json` | `npm audit fix` / `--force` 已将漏洞从 31 个降至 1 个 low；Vite 升级至 8.0.16；执行 `npm audit --audit-level=moderate` 无 moderate/high/critical |
 
 ### P1 第一周
@@ -261,7 +261,7 @@
 | P1-1 | **合并错误处理系统** | `src/utils/errorHandler.ts`、`unifiedErrorHandler.ts`、`masterErrorHandler.ts`、`improvedErrorSystem.ts`、`unifiedErrorSystem.ts` | 保留唯一入口（建议 `unifiedErrorHandler.ts`），删除或标记其他为 deprecated；所有调用方迁移；`unifiedErrorSystem.test.ts` 全部通过 |
 | P1-2 | **修复投票模块测试漂移** | `src/hooks/__tests__/useVotingSystem.test.ts`、`src/hooks/useVotingSystem.ts` | 统一 channel 名为 `voting_sessions_*` / `votes_*`；更新测试断言；移除对不存在 API（`getVotingSession`、`error` 状态）的断言 |
 | P1-3 | **删除/替换空实现** | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts` | 删除空文件，或提供真实实现；所有引用处同步修复；`performanceIntegration.test.ts` 全过 |
-| P1-4 | **清理 Lovable 残留** | `package.json`、`vite.config.ts`、`index.html`、`README.md`、`public/lovable-uploads/`、`supabase/functions/*/index.ts` | 移除 `lovable-tagger` 依赖与 `componentTagger`；替换 OG/Twitter 元数据；删除冗余目录；CORS 移除 lovable.app |
+| P1-4 | **清理 Lovable 残留（已完成）** | `package.json`、`vite.config.ts`、`index.html`、`README.md`、`public/lovable-uploads/`、`supabase/functions/*/index.ts`、docs/ | 移除 `lovable-tagger` 依赖与 `componentTagger`；替换 OG/Twitter 元数据；删除 `public/lovable-uploads/`；重写 README；CORS 移除 lovable.app |
 | P1-5 | **整理 package.json 依赖分类** | `package.json` | `@testing-library/*`、`eslint-plugin-unused-imports`、`@types/*` 移到 `devDependencies`；`serve` 按实际用途归位；移除重复依赖 |
 | P1-6 | **修复 `securityIntegration.test.ts` 全文件失败（已完成：已删除）** | `src/tests/securityIntegration.test.ts` | 该文件引用不存在的 `../utils/apiSecurityMiddleware`，属幻觉测试，已删除 |
 
