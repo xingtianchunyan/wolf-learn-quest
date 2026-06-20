@@ -15,8 +15,6 @@
 
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,28 +22,36 @@ import { useRoomCleanup } from '@/hooks/useRoomCleanup';
 import { usePlayerRoom } from '@/hooks/usePlayerRoom';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { usePlayerPresence } from '@/hooks/usePlayerPresence';
-import PlayersList from '@/components/room/PlayersList';
 import RoleSelection from '@/components/room/RoleSelection';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useGameState } from '@/hooks/useGameState';
-import MultiChannelChat from '@/components/chat/MultiChannelChat';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
+import { useGameRoomData } from '@/hooks/useGameRoomData';
+import GameRoomSidebar from '@/components/room/GameRoomSidebar';
+import GameRoomChatPanel from '@/components/room/GameRoomChatPanel';
+import GameRoomLoading from '@/components/room/GameRoomLoading';
+import GameRoomNotFound from '@/components/room/GameRoomNotFound';
 
 const GameRoom = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const {
+    currentUser,
+    currentUserId,
+    roomData,
+    judgeName,
+    isLoading,
+    setRoomData,
+    setIsLoading
+  } = useGameRoomData(id);
+
   const [isReady, setIsReady] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
-  const [roomData, setRoomData] = useState<any>(null);
-  const [judgeName, setJudgeName] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
   
   const { leaveCurrentRoom } = usePlayerRoom();
@@ -115,28 +121,12 @@ const GameRoom = () => {
     }
   }, [currentUserId, players.length, roomData?.id]);
   
-  // 监听法官变化并更新法官名字
+  // 初始化 previousMaxPlayers
   useEffect(() => {
-    const judgeUserId = realtimeRoomData?.judge_user_id;
-
-    const fetchJudgeName = async (userId: string) => {
-      const { data, error } = await supabase
-        .rpc('get_public_user_profile', { p_user_id: userId });
-      
-      if (!error && Array.isArray(data) && data.length > 0) {
-        setJudgeName(data[0].player_name);
-      } else {
-        console.error("Error fetching judge name for realtime update", error);
-        setJudgeName('未知');
-      }
-    };
-
-    if (judgeUserId) {
-      fetchJudgeName(judgeUserId);
-    } else {
-      setJudgeName(null); // No judge
+    if (roomData && previousMaxPlayers === null) {
+      setPreviousMaxPlayers(roomData.maxPlayers);
     }
-  }, [realtimeRoomData?.judge_user_id]);
+  }, [roomData, previousMaxPlayers]);
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
@@ -158,196 +148,6 @@ const GameRoom = () => {
     }
     setPreviousMaxPlayers(currentMaxPlayers);
   }, [currentMaxPlayers, previousMaxPlayers, clearAllRoleSelections, toast]);
-
-  /**
-   * 获取当前用户和房间数据的副作用钩子
-   * 
-   * 功能：
-   * - 获取当前用户会话信息
-   * - 根据URL参数或用户最近房间获取房间数据
-   * - 安全获取房主和法官信息
-   * 
-   * 修复要点：
-   * - 使用 get_public_user_profile RPC 函数获取用户信息
-   * - 避免直接使用外键关联查询导致的权限问题
-   * - 确保所有玩家都能查看房主和法官信息
-   */
-  useEffect(() => {
-    /**
-     * 异步获取数据函数
-     * 
-     * 处理逻辑：
-     * 1. 获取当前用户会话
-     * 2. 根据房间ID获取房间信息
-     * 3. 分别获取房主和法官的用户信息
-     * 4. 处理fallback情况（无房间ID时获取用户最近房间）
-     */
-    const fetchData = async () => {
-      try {
-        // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setCurrentUser(session.user);
-          setCurrentUserId(session.user.id);
-          
-          // Get user profile for player name
-          const { data: userData } = await supabase
-            .from('users')
-            .select('player_name')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
-          }
-        }
-
-        // Fetch room data using the id from URL params or fallback to user's most recent room
-        if (id) {
-          
-          // Fetch specific room by ID
-          const { data: roomData, error: roomError } = await supabase
-            .from('rooms')
-            .select(`
-              id,
-              room_id,
-              max_players,
-              host_id,
-              judge_user_id,
-              room_players(id, user_id)
-            `)
-            .eq('id', id)
-            .maybeSingle();
-
-          if (roomError) {
-            console.error('Error fetching room:', roomError);
-            toast({
-              title: t('error'),
-              description: t('error_loading_room'),
-              variant: "destructive",
-            });
-            return;
-          }
-
-          if (roomData) {
-            
-            /**
-             * 获取房主信息
-             * 
-             * 修复说明：
-             * - 使用 get_public_user_profile RPC 函数替代外键关联
-             * - 确保所有玩家都有权限查看房主信息
-             * - 提供默认值处理异常情况
-             */
-            let hostPlayerName = 'Unknown';
-            if (roomData.host_id) {
-              const { data: hostData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: roomData.host_id });
-              
-              if (hostData && Array.isArray(hostData) && hostData.length > 0) {
-                hostPlayerName = hostData[0].player_name;
-              }
-            }
-            
-            setRoomData({
-              id: roomData.id,
-              roomId: roomData.room_id,
-              hostPlayerId: hostPlayerName,
-              maxPlayers: roomData.max_players,
-              judge_user_id: roomData.judge_user_id,
-            });
-            if (roomData.judge_user_id) {
-              const { data: judgeData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: roomData.judge_user_id });
-              
-              if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) {
-                setJudgeName(judgeData[0].player_name);
-              } else {
-                setJudgeName('未知法官');
-              }
-            } else {
-              setJudgeName(null);
-            }
-            setPreviousMaxPlayers(roomData.max_players);
-          } else {
-          }
-        } else if (session?.user) {
-          // Fallback: fetch user's most recent room
-          
-          const { data: roomPlayerData } = await supabase
-            .from('room_players')
-            .select(`
-              id,
-              room_id,
-              rooms!inner(
-                id,
-                room_id,
-                max_players,
-                host_id,
-                judge_user_id
-              )
-            `)
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (roomPlayerData?.rooms) {
-            const room = roomPlayerData.rooms;
-            
-            /**
-             * 获取房主信息（fallback逻辑）
-             * 
-             * 修复说明：
-             * - 与主要逻辑保持一致，使用 RPC 函数获取房主信息
-             * - 确保fallback情况下也能正确显示房主信息
-             */
-            let hostPlayerName = 'Unknown';
-            if (room.host_id) {
-              const { data: hostData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: room.host_id });
-              
-              if (hostData && Array.isArray(hostData) && hostData.length > 0) {
-                hostPlayerName = hostData[0].player_name;
-              }
-            }
-            
-            setRoomData({
-              id: room.id,
-              roomId: room.room_id,
-              hostPlayerId: hostPlayerName,
-              maxPlayers: room.max_players,
-              judge_user_id: room.judge_user_id,
-            });
-             if (room.judge_user_id) {
-               const { data: judgeData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: room.judge_user_id });
-               
-               if (judgeData && Array.isArray(judgeData) && judgeData.length > 0) {
-                 setJudgeName(judgeData[0].player_name);
-               } else {
-                 setJudgeName('未知法官');
-               }
-            } else {
-              setJudgeName(null);
-            }
-            setPreviousMaxPlayers(room.max_players);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast({
-          title: t('error'),
-          description: t('error_loading_room'),
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [toast, id]);
 
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
@@ -545,37 +345,18 @@ const GameRoom = () => {
   };
 
   if (isLoading) {
-    return (
-      <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">{t('loading_room')}</p>
-            </div>
-          </div>
-        </div>
-      </PageLayout>
-    );
+    return <GameRoomLoading message={t('loading_room')} />;
   }
 
   if (!roomData) {
     return (
-      <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <p className="text-gray-400 mb-4">{t('room_not_found')}</p>
-              <p className="text-sm text-gray-500 mb-4">
-                {t('room_id_label')}: {id || t('not_specified')}
-              </p>
-              <Button onClick={() => navigate('/lobby')}>
-                {t('return_to_lobby')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </PageLayout>
+      <GameRoomNotFound
+        title={t('room_not_found')}
+        description={t('room_id_label')}
+        roomId={id}
+        notSpecifiedText={t('not_specified')}
+        returnText={t('return_to_lobby')}
+      />
     );
   }
 
@@ -585,63 +366,28 @@ const GameRoom = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Room Info & Players */}
           <div className="lg:col-span-3">
-            <div className="space-y-6">
-              {/* Room Info Card */}
-              <Card className="bg-werewolf-card border-werewolf-purple/30">
-                <CardHeader>
-                  <CardTitle className="text-werewolf-purple">{t('room_info')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-400">{t('room_id')}</p>
-                      <p className="font-bold">{roomData.roomId}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">{t('host_player_id')}</p>
-                      <p>{roomData.hostPlayerId}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">法官状态</p>
-                      <p>{judgeName || '等待法官加入'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">在线玩家</p>
-                      <p>{onlinePlayers.length} / {players.length}</p>
-                    </div>
-                    
-                    <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
-                      <p className="text-xs text-gray-400 text-center">
-                        {t('auto_close_warning')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Players List */}
-              <div>
-                <PlayersList
-                  players={players}
-                  maxPlayers={currentMaxPlayers}
-                  isReady={isReady}
-                  allReady={allReady}
-                  selectedCharacter={selectedCharacter}
-                  loading={playersLoading}
-                  onReadyToggle={handleReadyToggle}
-                  onLeaveRoom={handleLeaveRoom}
-                  onStartGame={handleStartGame}
-                  onAddAIPlayer={handleAddAIPlayer}
-                  onMaxPlayersChange={handleMaxPlayersChange}
-                  onlinePlayers={onlinePlayers}
-                  allPlayersSelectedRoles={allPlayersSelectedRoles()}
-                  canSelectRoles={canSelectRoles()}
-                  currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
-                />
-              </div>
-            </div>
+            <GameRoomSidebar
+              roomData={roomData}
+              judgeName={judgeName}
+              players={players}
+              currentMaxPlayers={currentMaxPlayers}
+              onlinePlayers={onlinePlayers}
+              isReady={isReady}
+              allReady={allReady}
+              selectedCharacter={selectedCharacter}
+              playersLoading={playersLoading}
+              allPlayersSelectedRoles={allPlayersSelectedRoles()}
+              canSelectRoles={canSelectRoles()}
+              currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
+              t={t}
+              onReadyToggle={handleReadyToggle}
+              onLeaveRoom={handleLeaveRoom}
+              onStartGame={handleStartGame}
+              onAddAIPlayer={handleAddAIPlayer}
+              onMaxPlayersChange={handleMaxPlayersChange}
+            />
           </div>
-          
+
           {/* Middle Column - Character Selection */}
           <div className="lg:col-span-5">
             <RoleSelection
@@ -654,15 +400,13 @@ const GameRoom = () => {
               isReady={isReady}
             />
           </div>
-          
+
           {/* Right Column - Chat */}
           <div className="lg:col-span-4 flex flex-col">
-            <MultiChannelChat
+            <GameRoomChatPanel
               roomId={roomData?.id || null}
               currentUser={currentUser}
-              isGameRoom={true}
               title={t('room_chat')}
-              height="100%"
             />
           </div>
         </div>
