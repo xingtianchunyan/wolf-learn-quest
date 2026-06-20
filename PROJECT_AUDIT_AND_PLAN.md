@@ -66,6 +66,10 @@
 | 清理 Lovable 残留 | ✅ | `index.html`、README、Edge Function CORS、`public/lovable-uploads/`、`docs/DEPLOYMENT.md` |
 | 删除空实现 | ✅ | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts`、`src/components/game/panels/EnhancedSkillPanel.tsx` |
 | 删除本地泄露的 `dist/` | ✅ | 已删除旧 `dist/` 并重新构建 |
+| P2-1 统一数据/实时层 | ✅ | 新增 `src/hooks/useRoomData.ts`；`PermissionContext.tsx` 改为消费 Hook 数据 |
+| P2-2 拆分巨型组件 | ✅ | `GameRoom.tsx` 拆出 `useGameRoomData`/`GameRoomSidebar`/`GameRoomChatPanel`/`GameRoomLoading`/`GameRoomNotFound`；`StudentSystemPanel.tsx` 拆出 `useStudentSystem`；`QuestionBankPanel.tsx` 拆出 `useQuestionBank` |
+| P2-3 统一类型定义 | ✅ | `GameState`/`GameSettings` 上提到 `src/types/game.ts`；新增 `src/types/index.ts` |
+| P2-4/P2-5 合并投票与技能 UI 入口 | ✅ | 删除未使用的 `VotingSystemManager`、`SkillSystemManager`、`SkillUsePanel`、`NightSkillInterface` |
 
 ---
 
@@ -274,7 +278,7 @@
 | # | 任务 | 关键文件 | 验收标准 |
 |---|------|----------|----------|
 | P2-1 | **统一数据/实时层（已完成）** | `src/hooks/useRoomData.ts`（新建）、`src/contexts/PermissionContext.tsx` | 新增 `useRoomData(roomId)` 统一返回 room/players/gameState/gameSettings/roleStates；PermissionContext 消费该 Hook 数据，移除独立查库与额外 realtime 订阅 |
-| P2-2 | **拆分巨型组件（进行中）** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | `GameRoom.tsx` 从 674 行降至 418 行；`StudentSystemPanel.tsx` 从 571 行降至 121 行并拆出 `useStudentSystem`。剩余 `GameRoom.tsx`/`QuestionBankPanel.tsx` 仍待继续拆分 |
+| P2-2 | **拆分巨型组件（接近完成）** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | `GameRoom.tsx` 从 674 行降至 418 行；`StudentSystemPanel.tsx` 从 571 行降至 121 行；`QuestionBankPanel.tsx` 从 634 行降至 213 行并拆出 `useQuestionBank`。`TeacherSystemPanel.tsx` 原本 165 行，已符合 ≤250 行目标 |
 | P2-3 | **统一类型定义（已完成）** | `src/types/game.ts`、`src/types/skill.types.ts`、`src/hooks/useGameState.ts` | 删除简陋 `GameState`；`GameState`/`GameSettings` 上提到 `src/types/game.ts`；新增 `src/types/index.ts` 统一导出 |
 | P2-4 | **合并投票 UI 入口（已完成清理）** | `VotingSystemManager.tsx`、`EnhancedVotingManager.tsx` | 删除未使用的 `VotingSystemManager`；保留 `EnhancedVotingManager` 作为法官端投票入口 |
 | P2-5 | **合并技能系统入口（已完成清理）** | `SkillSystemManager.tsx`、`SkillUsePanel.tsx`、`GameSkillPanel.tsx`、`NightSkillInterface.tsx` | 删除未使用的 `SkillSystemManager`、`SkillUsePanel`、`NightSkillInterface`；保留 `GameSkillPanel` 作为学生端技能入口 |
