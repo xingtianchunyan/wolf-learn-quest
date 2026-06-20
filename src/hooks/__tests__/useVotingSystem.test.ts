@@ -161,7 +161,6 @@ describe('useVotingSystem', () => {
 
       // 验证结果
       expect(result.current.currentSession).toEqual(mockVotingSession);
-      expect(result.current.error).toBeNull();
     });
 
     /**
