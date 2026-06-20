@@ -36,8 +36,8 @@
 |------|------|------|
 | 代码规范（Lint） | A | `npm run lint` 通过，0 errors / 0 warnings |
 | TypeScript 类型检查 | A | `npm run type-check` 通过 |
-| 生产构建 | B | 可构建（已升级至 Vite 8），主 bundle 1.25 MB，超过 Vite 500 KB 警告线 |
-| 测试 | B | 377 个用例中 362 通过、15 skipped；原 16 个失败用例已清理（ stale 测试 skip/删除） |
+| 生产构建 | B+ | 可构建（已升级至 Vite 8.0.16），主 JS 386 KB / gzip 116 KB，已无 500 KB 警告 |
+| 测试 | B+ | 349 个用例中 339 通过、10 skipped；原失败用例已清理（stale 测试 skip/删除） |
 | 依赖安全 | B | `npm audit --audit-level=moderate` 无 moderate/high/critical；剩余 1 个 low（vitest 内置 esbuild） |
 | 部署配置 | C | Dockerfile/nginx 健康，但 `.env` 入 git、Edge Function 无身份校验、Lovable 残留 |
 | 架构与代码质量 | C | 多套重复子系统、巨型文件、`any` 泛滥、空实现占位 |
@@ -107,16 +107,16 @@
 | `src/components/game/panels/StudentSystemPanel.tsx` | 571 | 题目获取/计算/提交/监听未拆分 |
 | `src/components/judge/management/QuestionBankPanel.tsx` | 634 | 题库 CRUD + UI + 导入逻辑未拆分 |
 
-#### 2.1.4 类型定义碎片化
+#### 2.1.4 类型定义（已部分统一）
 
-- `GameState` 同时存在于 `src/types/game.ts`（简陋）与 `src/hooks/useGameState.ts`（完整）。
-- `SkillConfig`、`SkillUseRecord`、`RoleDesign` 在多个类型文件中重复或矛盾。
-- 大量 `any` / `Record<string, unknown>` 兜底。
+- ✅ `GameState` / `GameSettings` 已上提到 `src/types/game.ts`，`useGameState.ts` 改为 re-export；`skill.types.ts` 改为从 `@/types/game` 引用。
+- `SkillConfig`、`SkillUseRecord`、`RoleDesign` 在多个类型文件中仍有重复或矛盾，待后续继续收敛。
+- 大量 `any` / `Record<string, unknown>` 兜底仍普遍存在。
 
-#### 2.1.5 实时订阅滥用
+#### 2.1.5 实时订阅（已部分统一）
 
-- `GameRoom.tsx` 同时调用 `useRoomRealtime`、`usePlayersRealtime`、`usePlayerPresence`、`useGameState`、`useRoleSelection`，并直接 `supabase.from(...)` 拉取数据，**同一 room 被多处重复订阅**。
-- `PermissionContext.tsx` 订阅 3 张表，每次变化并行查 4 次数据库，高频实时场景下查询放大。
+- ✅ 新增 `useRoomData` 统一订阅 room/players/gameState/roleStates；`PermissionContext.tsx` 已改为消费 `useRoomData`，移除独立查库与额外 realtime 订阅。
+- `GameRoom.tsx` 仍直接调用多个独立 hook 并手动拉取房间数据，未完全迁移到 `useRoomData`，同一 room 仍存在重复订阅。
 
 ---
 
@@ -273,11 +273,11 @@
 
 | # | 任务 | 关键文件 | 验收标准 |
 |---|------|----------|----------|
-| P2-1 | **统一数据/实时层** | `src/hooks/useRoomRealtime.ts`、`usePlayersRealtime.ts`、`useGameState.ts`、`src/contexts/PermissionContext.tsx` | 设计 `useRoomData(roomId)` 统一返回 room/players/gameState/roleStates；PermissionContext 消费该 Hook 数据，不再独立查库 |
-| P2-2 | **拆分巨型组件** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | 每个文件 ≤ 250 行；拆分为数据 Hook + 展示子组件 + 操作回调 |
-| P2-3 | **统一类型定义** | `src/types/game.ts`、`src/types/skill.types.ts`、`src/types/skillSystem.types.ts`、`src/hooks/useGameState.ts` | 删除简陋版本；核心实体类型上提；新增 `types/index.ts` 统一导出 |
-| P2-4 | **合并投票 UI 入口** | `VotingPanel.tsx`、`VotingSystemManager.tsx`、`EnhancedVotingManager.tsx` | 仅保留一个主投票面板；其他组件复用或删除 |
-| P2-5 | **合并技能系统入口** | `enhancedSkillService.ts`、`skillValidationRules.ts`、`skillSystemValidation.ts`、`SkillUsePanel.tsx`、`GameSkillPanel.tsx`、`EnhancedSkillPanel.tsx` | 统一为 `SkillEngine` + `SkillPanel`；删除重复面板 |
+| P2-1 | **统一数据/实时层（已完成）** | `src/hooks/useRoomData.ts`（新建）、`src/contexts/PermissionContext.tsx` | 新增 `useRoomData(roomId)` 统一返回 room/players/gameState/gameSettings/roleStates；PermissionContext 消费该 Hook 数据，移除独立查库与额外 realtime 订阅 |
+| P2-2 | **拆分巨型组件（待继续）** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | 每个文件 ≤ 250 行；拆分为数据 Hook + 展示子组件 + 操作回调 |
+| P2-3 | **统一类型定义（已完成）** | `src/types/game.ts`、`src/types/skill.types.ts`、`src/hooks/useGameState.ts` | 删除简陋 `GameState`；`GameState`/`GameSettings` 上提到 `src/types/game.ts`；新增 `src/types/index.ts` 统一导出 |
+| P2-4 | **合并投票 UI 入口（已完成清理）** | `VotingSystemManager.tsx`、`EnhancedVotingManager.tsx` | 删除未使用的 `VotingSystemManager`；保留 `EnhancedVotingManager` 作为法官端投票入口 |
+| P2-5 | **合并技能系统入口（已完成清理）** | `SkillSystemManager.tsx`、`SkillUsePanel.tsx`、`GameSkillPanel.tsx`、`NightSkillInterface.tsx` | 删除未使用的 `SkillSystemManager`、`SkillUsePanel`、`NightSkillInterface`；保留 `GameSkillPanel` 作为学生端技能入口 |
 | P2-6 | **bundle 拆分与性能** | `vite.config.ts` | 配置 `manualChunks` 拆分 vendor；大页面使用 `React.lazy()`；主 chunk < 500 KB |
 | P2-7 | **统一测试入口** | `src/test/`、`src/__tests__/`、`src/tests/`、`vitest.*.config.ts` | 合并为一个根目录；`package.json` 增加 `test:e2e`、`test:integration`、`test:performance` 脚本 |
 
