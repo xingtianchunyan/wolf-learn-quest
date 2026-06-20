@@ -20,7 +20,7 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
     componentName,
     maxMemoryThreshold = 50, // 50MB 默认阈值
     checkInterval = 10000, // 10秒检查间隔
-    enableAutoCleanup = true
+    enableAutoCleanup = true,
   } = options;
 
   const cleanupFunctionsRef = useRef<Array<() => void>>([]);
@@ -35,31 +35,37 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
   }, []);
 
   // 注册间隔任务
-  const registerInterval = useCallback((intervalId: ReturnType<typeof setInterval>) => {
-    intervalRefs.current.add(intervalId);
-    
-    // 返回清理函数
-    return () => {
-      clearInterval(intervalId);
-      intervalRefs.current.delete(intervalId);
-    };
-  }, []);
+  const registerInterval = useCallback(
+    (intervalId: ReturnType<typeof setInterval>) => {
+      intervalRefs.current.add(intervalId);
+
+      // 返回清理函数
+      return () => {
+        clearInterval(intervalId);
+        intervalRefs.current.delete(intervalId);
+      };
+    },
+    []
+  );
 
   // 注册超时任务
-  const registerTimeout = useCallback((timeoutId: ReturnType<typeof setInterval>) => {
-    timeoutRefs.current.add(timeoutId);
-    
-    // 返回清理函数
-    return () => {
-      clearTimeout(timeoutId);
-      timeoutRefs.current.delete(timeoutId);
-    };
-  }, []);
+  const registerTimeout = useCallback(
+    (timeoutId: ReturnType<typeof setInterval>) => {
+      timeoutRefs.current.add(timeoutId);
+
+      // 返回清理函数
+      return () => {
+        clearTimeout(timeoutId);
+        timeoutRefs.current.delete(timeoutId);
+      };
+    },
+    []
+  );
 
   // 注册订阅
   const registerSubscription = useCallback((unsubscribeFn: () => void) => {
     subscriptionsRef.current.add(unsubscribeFn);
-    
+
     // 返回清理函数
     return () => {
       unsubscribeFn();
@@ -72,14 +78,14 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
     if ('memory' in performance) {
       const memory = (performance as any).memory;
       const usedMB = memory.usedJSHeapSize / (1024 * 1024);
-      
+
       lastMemoryCheckRef.current = usedMB;
 
       if (usedMB > maxMemoryThreshold) {
         logger.warn(`${componentName}内存使用超过阈值`, {
           current: `${usedMB.toFixed(2)}MB`,
           threshold: `${maxMemoryThreshold}MB`,
-          total: `${(memory.totalJSHeapSize / (1024 * 1024)).toFixed(2)}MB`
+          total: `${(memory.totalJSHeapSize / (1024 * 1024)).toFixed(2)}MB`,
         });
 
         // 触发垃圾回收（如果可用）
@@ -95,14 +101,14 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
         return {
           isOverThreshold: true,
           currentUsage: usedMB,
-          threshold: maxMemoryThreshold
+          threshold: maxMemoryThreshold,
         };
       }
 
       return {
         isOverThreshold: false,
         currentUsage: usedMB,
-        threshold: maxMemoryThreshold
+        threshold: maxMemoryThreshold,
       };
     }
 
@@ -153,43 +159,44 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
       timeouts: timeoutRefs.current.size,
       subscriptions: subscriptionsRef.current.size,
       cleanupFunctions: cleanupFunctionsRef.current.length,
-      lastMemoryUsage: lastMemoryCheckRef.current
+      lastMemoryUsage: lastMemoryCheckRef.current,
     };
   }, []);
 
   // 创建安全的异步函数包装器
-  const createSafeAsync = useCallback(<T extends any[], R>(
-    asyncFn: (...args: T) => Promise<R>
-  ) => {
-    let isMounted = true;
-    
-    registerCleanup(() => {
-      isMounted = false;
-    });
+  const createSafeAsync = useCallback(
+    <T extends any[], R>(asyncFn: (...args: T) => Promise<R>) => {
+      let isMounted = true;
 
-    return async (...args: T): Promise<R | null> => {
-      if (!isMounted) {
-        logger.debug(`${componentName}异步操作被取消：组件已卸载`);
-        return null;
-      }
-      
-      try {
-        const result = await asyncFn(...args);
-        
+      registerCleanup(() => {
+        isMounted = false;
+      });
+
+      return async (...args: T): Promise<R | null> => {
         if (!isMounted) {
-          logger.debug(`${componentName}异步操作结果被丢弃：组件已卸载`);
+          logger.debug(`${componentName}异步操作被取消：组件已卸载`);
           return null;
         }
-        
-        return result;
-      } catch (error) {
-        if (isMounted) {
-          logger.error(`${componentName}异步操作失败`, error);
+
+        try {
+          const result = await asyncFn(...args);
+
+          if (!isMounted) {
+            logger.debug(`${componentName}异步操作结果被丢弃：组件已卸载`);
+            return null;
+          }
+
+          return result;
+        } catch (error) {
+          if (isMounted) {
+            logger.error(`${componentName}异步操作失败`, error);
+          }
+          throw error;
         }
-        throw error;
-      }
-    };
-  }, [componentName, registerCleanup]);
+      };
+    },
+    [componentName, registerCleanup]
+  );
 
   // 定期内存检查
   useEffect(() => {
@@ -224,7 +231,7 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -238,6 +245,6 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
     checkMemoryUsage,
     forceCleanup,
     getResourceStats,
-    createSafeAsync
+    createSafeAsync,
   };
 };

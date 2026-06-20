@@ -1,12 +1,11 @@
-
 /**
  * 题库对话框组件
- * 
+ *
  * 功能说明：
  * - 显示和管理题库中的所有题目（AI生成和手动编辑）
  * - 提供题目选择、预览、编辑和排序功能
  * - 支持将选中的题目链接到房间
- * 
+ *
  * 修复说明：
  * - 修复手动编辑题目无法显示的问题
  * - 将 inner join 改为 left join，确保手动编辑的题目不被过滤
@@ -23,7 +22,11 @@ import QuestionSourceList from './QuestionSourceList';
 import QuestionPreview from './QuestionPreview';
 import ManualQuestionEditor from './ManualQuestionEditor';
 import QuestionOrderEditor from './QuestionOrderEditor';
-import { Question, QuestionSource, ManualQuestionForm } from '../types/questionBank';
+import {
+  Question,
+  QuestionSource,
+  ManualQuestionForm,
+} from '../types/questionBank';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 
 interface QuestionBankDialogProps {
@@ -35,7 +38,7 @@ interface QuestionBankDialogProps {
 const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   isOpen,
   onClose,
-  roomId
+  roomId,
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -50,7 +53,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { linkedQuestions, saveLinkedQuestions, isSystemLinked } = useJudgePage();
+  const { linkedQuestions, saveLinkedQuestions, isSystemLinked } =
+    useJudgePage();
 
   const [manualQuestion, setManualQuestion] = useState<ManualQuestionForm>({
     question: '',
@@ -60,16 +64,19 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     option_d: '',
     correct_option: 1,
     explanation: '',
-    difficulty: 1
+    difficulty: 1,
   });
 
   // 拖动处理函数
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
+    if (
+      e.target === e.currentTarget ||
+      (e.target as HTMLElement).closest('.dialog-header')
+    ) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - position.x,
-        y: e.clientY - position.y
+        y: e.clientY - position.y,
       });
     }
   };
@@ -79,7 +86,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       if (isDragging) {
         setPosition({
           x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y
+          y: e.clientY - dragStart.y,
         });
       }
     };
@@ -103,10 +110,11 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     if (isOpen) {
       fetchGeneratedQuestions();
       // Convert linkedQuestions to match the local Question type
-      const convertedQuestions = linkedQuestions?.map(lq => ({
-        ...lq.question,
-        selected: true
-      })) || [];
+      const convertedQuestions =
+        linkedQuestions?.map(lq => ({
+          ...lq.question,
+          selected: true,
+        })) || [];
       setSelectedQuestions(convertedQuestions);
     }
   }, [isOpen, linkedQuestions]);
@@ -116,8 +124,13 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       setFilteredQuestions(questions);
     } else {
       const filtered = questions.filter(q => {
-        if (selectedSources.includes('manual') && q.category === '手动编辑') return true;
-        if (q.generated_questions_id && selectedSources.includes(q.generated_questions_id)) return true;
+        if (selectedSources.includes('manual') && q.category === '手动编辑')
+          return true;
+        if (
+          q.generated_questions_id &&
+          selectedSources.includes(q.generated_questions_id)
+        )
+          return true;
         return false;
       });
       setFilteredQuestions(filtered);
@@ -127,7 +140,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
   /**
    * 获取所有题目（包括手动编辑和AI生成的题目）
-   * 
+   *
    * 修复说明：
    * - 移除 inner join，改为 left join 以包含手动编辑的题目
    * - 手动编辑的题目没有 generated_questions_id，不应被过滤掉
@@ -139,10 +152,12 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       // 修复：使用 left join 而不是 inner join，以包含手动编辑的题目
       const { data, error } = await supabase
         .from('questions')
-        .select(`
+        .select(
+          `
           *,
           generated_questions(file_name)
-        `)
+        `
+        )
         .order('id', { ascending: true });
 
       if (error) {
@@ -160,23 +175,24 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         explanation: q.explanation,
         difficulty: q.difficulty || 1,
         source_file: q.generated_questions?.file_name || '手动编辑',
-        category: q.category || (q.generated_questions_id ? '生成题目' : '手动编辑'),
-        generated_questions_id: q.generated_questions_id
+        category:
+          q.category || (q.generated_questions_id ? '生成题目' : '手动编辑'),
+        generated_questions_id: q.generated_questions_id,
       }));
 
       setQuestions(formattedQuestions);
 
       // Build question sources
       const sourceMap = new Map<string, QuestionSource>();
-      
+
       // Always include "手动编辑" source
       sourceMap.set('manual', {
         id: 'manual',
         name: '手动编辑',
         count: 0,
-        type: 'manual'
+        type: 'manual',
       });
-      
+
       formattedQuestions.forEach(q => {
         if (q.category === '手动编辑') {
           const existingManual = sourceMap.get('manual');
@@ -192,14 +208,13 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               id: q.generated_questions_id,
               name: q.source_file || '未知文件',
               count: 1,
-              type: 'file'
+              type: 'file',
             });
           }
         }
       });
 
       setQuestionSources(Array.from(sourceMap.values()));
-      
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
@@ -213,8 +228,8 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   };
 
   const toggleSourceSelection = (sourceId: string) => {
-    setSelectedSources(prev => 
-      prev.includes(sourceId) 
+    setSelectedSources(prev =>
+      prev.includes(sourceId)
         ? prev.filter(id => id !== sourceId)
         : [...prev, sourceId]
     );
@@ -249,7 +264,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
   /**
    * 随机全选题目
-   * 
+   *
    * 修复说明：
    * - 从当前过滤的题目范围内进行随机选择，而不是从所有题目中选择
    * - 尊重用户选择的题目源过滤条件
@@ -257,10 +272,11 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
    */
   const randomSelectAll = () => {
     // 修复：使用 filteredQuestions 而不是 questions，确保只在用户选择的题目源范围内随机选择
-    const availableQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+    const availableQuestions =
+      filteredQuestions.length > 0 ? filteredQuestions : questions;
     const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 18).map(q => ({ ...q, selected: true }));
-    
+
     setSelectedQuestions(selected);
   };
 
@@ -270,7 +286,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
   const toggleQuestionSelection = (question: Question) => {
     const isSelected = selectedQuestions.some(q => q.id === question.id);
-    
+
     if (isSelected) {
       setSelectedQuestions(prev => prev.filter(q => q.id !== question.id));
     } else {
@@ -288,7 +304,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
 
   /**
    * 提交手动编辑的题目
-   * 
+   *
    * 功能：
    * - 验证题目信息完整性
    * - 将题目保存到数据库
@@ -296,9 +312,11 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
    * - 提供用户反馈
    */
   const handleSubmitManualQuestion = async () => {
-    if (!manualQuestion.question.trim() || 
-        !manualQuestion.option_a.trim() || 
-        !manualQuestion.option_b.trim()) {
+    if (
+      !manualQuestion.question.trim() ||
+      !manualQuestion.option_a.trim() ||
+      !manualQuestion.option_b.trim()
+    ) {
       toast({
         title: '题目信息不完整',
         description: '请至少填写题干和两个选项',
@@ -308,7 +326,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     }
 
     try {
-      
       const { data, error } = await supabase
         .from('questions')
         .insert({
@@ -320,7 +337,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
           correct_option: manualQuestion.correct_option,
           explanation: manualQuestion.explanation,
           difficulty: manualQuestion.difficulty,
-          category: '手动编辑'
+          category: '手动编辑',
         })
         .select()
         .single();
@@ -328,7 +345,6 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       if (error) {
         throw error;
       }
-      
 
       setManualQuestion({
         question: '',
@@ -338,7 +354,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
         option_d: '',
         correct_option: 1,
         explanation: '',
-        difficulty: 1
+        difficulty: 1,
       });
 
       await fetchGeneratedQuestions();
@@ -382,9 +398,9 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       explanation: q.explanation,
       difficulty: q.difficulty,
       category: q.category,
-      generated_questions_id: q.generated_questions_id
+      generated_questions_id: q.generated_questions_id,
     }));
-    
+
     await saveLinkedQuestions(questionsToSave);
     onClose();
   };
@@ -396,46 +412,59 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
+    <div className='fixed inset-0 z-50 pointer-events-none'>
       <div
         ref={dialogRef}
-        className="absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl"
+        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl'
         style={{
           left: `${position.x + 150}px`,
           top: `${position.y + 100}px`,
           width: '1000px',
-          height: '700px'
+          height: '700px',
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
-          <h2 className="text-werewolf-purple text-xl font-semibold leading-none tracking-tight">
+        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
+          <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
             题库管理
           </h2>
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple"
+            className='absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple'
           >
-            <X className="h-4 w-4" />
+            <X className='h-4 w-4' />
           </button>
         </div>
-        
-        <div className="p-4 h-[calc(100%-80px)]">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-            <TabsList className="grid w-full grid-cols-3 bg-werewolf-dark/40">
-              <TabsTrigger value="generated" className="data-[state=active]:bg-werewolf-purple data-[state=active]:text-white">
+
+        <div className='p-4 h-[calc(100%-80px)]'>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className='h-full'
+          >
+            <TabsList className='grid w-full grid-cols-3 bg-werewolf-dark/40'>
+              <TabsTrigger
+                value='generated'
+                className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
+              >
                 已生成题目
               </TabsTrigger>
-              <TabsTrigger value="manual" className="data-[state=active]:bg-werewolf-purple data-[state=active]:text-white">
+              <TabsTrigger
+                value='manual'
+                className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
+              >
                 手动编辑题目
               </TabsTrigger>
-              <TabsTrigger value="order" className="data-[state=active]:bg-werewolf-purple data-[state=active]:text-white">
+              <TabsTrigger
+                value='order'
+                className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
+              >
                 题目顺序编辑
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="generated" className="h-[calc(100%-60px)] mt-4">
-              <div className="grid grid-cols-2 gap-4 h-full">
+            <TabsContent value='generated' className='h-[calc(100%-60px)] mt-4'>
+              <div className='grid grid-cols-2 gap-4 h-full'>
                 <QuestionSourceList
                   questionSources={questionSources}
                   selectedSources={selectedSources}
@@ -455,7 +484,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               </div>
             </TabsContent>
 
-            <TabsContent value="manual" className="h-[calc(100%-60px)] mt-4">
+            <TabsContent value='manual' className='h-[calc(100%-60px)] mt-4'>
               <ManualQuestionEditor
                 manualQuestion={manualQuestion}
                 onUpdateQuestion={updateManualQuestion}
@@ -463,7 +492,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value="order" className="h-[calc(100%-60px)] mt-4">
+            <TabsContent value='order' className='h-[calc(100%-60px)] mt-4'>
               <QuestionOrderEditor
                 selectedQuestions={selectedQuestions}
                 onDragEnd={handleDragEnd}

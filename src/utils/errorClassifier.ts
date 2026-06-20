@@ -41,7 +41,10 @@ interface ErrorPattern {
   /** 匹配函数 */
   matcher: (error: any) => boolean;
   /** 分类信息 */
-  classification: Omit<ErrorClassification, 'userFriendlyDescription' | 'technicalDescription'>;
+  classification: Omit<
+    ErrorClassification,
+    'userFriendlyDescription' | 'technicalDescription'
+  >;
   /** 用户友好描述生成器 */
   userDescriptionGenerator: (error: any) => string;
   /** 技术描述生成器 */
@@ -77,12 +80,12 @@ export class ErrorClassifier implements IErrorClassifier {
   public classify(error: any): ErrorClassification {
     // 查找匹配的错误模式
     const pattern = this.errorPatterns.find(pattern => pattern.matcher(error));
-    
+
     if (pattern) {
       return {
         ...pattern.classification,
         userFriendlyDescription: pattern.userDescriptionGenerator(error),
-        technicalDescription: pattern.technicalDescriptionGenerator(error)
+        technicalDescription: pattern.technicalDescriptionGenerator(error),
       };
     }
 
@@ -100,18 +103,21 @@ export class ErrorClassifier implements IErrorClassifier {
   /**
    * 获取错误趋势分析
    */
-  public analyzeTrends(errors: any[], timeWindow: number = 3600000): {
+  public analyzeTrends(
+    errors: any[],
+    timeWindow: number = 3600000
+  ): {
     increasingErrors: string[];
     criticalPatterns: string[];
     recoverySuccess: number;
   } {
     const now = Date.now();
-    const recentErrors = errors.filter(error => 
-      (error.timestamp || Date.now()) > now - timeWindow
+    const recentErrors = errors.filter(
+      error => (error.timestamp || Date.now()) > now - timeWindow
     );
 
     const classifications = this.classifyBatch(recentErrors);
-    
+
     // 分析错误类型趋势
     const errorCounts = new Map<string, number>();
     const criticalErrors = new Set<string>();
@@ -120,11 +126,11 @@ export class ErrorClassifier implements IErrorClassifier {
     classifications.forEach(classification => {
       const key = `${classification.category}:${classification.type}`;
       errorCounts.set(key, (errorCounts.get(key) || 0) + 1);
-      
+
       if (classification.severity === ErrorSeverity.CRITICAL) {
         criticalErrors.add(key);
       }
-      
+
       if (classification.isRetryable) {
         successfulRecoveries++;
       }
@@ -138,7 +144,10 @@ export class ErrorClassifier implements IErrorClassifier {
     return {
       increasingErrors,
       criticalPatterns: Array.from(criticalErrors),
-      recoverySuccess: recentErrors.length > 0 ? successfulRecoveries / recentErrors.length : 0
+      recoverySuccess:
+        recentErrors.length > 0
+          ? successfulRecoveries / recentErrors.length
+          : 0,
     };
   }
 
@@ -149,105 +158,111 @@ export class ErrorClassifier implements IErrorClassifier {
     this.errorPatterns = [
       // 网络错误模式
       {
-        matcher: (error) => this.isNetworkError(error),
+        matcher: error => this.isNetworkError(error),
         classification: {
           type: 'network',
           category: 'connectivity',
           severity: ErrorSeverity.MEDIUM,
           isRetryable: true,
           expectedRecoveryTime: 5000,
-          suggestedHandling: ['retry', 'fallback', 'cache']
+          suggestedHandling: ['retry', 'fallback', 'cache'],
         },
-        userDescriptionGenerator: () => '网络连接出现问题，请检查网络设置后重试',
-        technicalDescriptionGenerator: (error) => `网络请求失败: ${error.message}`
+        userDescriptionGenerator: () =>
+          '网络连接出现问题，请检查网络设置后重试',
+        technicalDescriptionGenerator: error =>
+          `网络请求失败: ${error.message}`,
       },
 
       // 认证错误模式
       {
-        matcher: (error) => this.isAuthError(error),
+        matcher: error => this.isAuthError(error),
         classification: {
           type: 'authentication',
           category: 'security',
           severity: ErrorSeverity.HIGH,
           isRetryable: false,
-          suggestedHandling: ['redirect', 'reauth']
+          suggestedHandling: ['redirect', 'reauth'],
         },
         userDescriptionGenerator: () => '登录状态已过期，请重新登录',
-        technicalDescriptionGenerator: (error) => `认证失败: ${error.message}`
+        technicalDescriptionGenerator: error => `认证失败: ${error.message}`,
       },
 
       // 权限错误模式
       {
-        matcher: (error) => this.isPermissionError(error),
+        matcher: error => this.isPermissionError(error),
         classification: {
           type: 'permission',
           category: 'security',
           severity: ErrorSeverity.MEDIUM,
           isRetryable: false,
-          suggestedHandling: ['notify', 'redirect']
+          suggestedHandling: ['notify', 'redirect'],
         },
         userDescriptionGenerator: () => '您没有权限执行此操作',
-        technicalDescriptionGenerator: (error) => `权限不足: ${error.message}`
+        technicalDescriptionGenerator: error => `权限不足: ${error.message}`,
       },
 
       // 验证错误模式
       {
-        matcher: (error) => this.isValidationError(error),
+        matcher: error => this.isValidationError(error),
         classification: {
           type: 'validation',
           category: 'input',
           severity: ErrorSeverity.LOW,
           isRetryable: true,
           expectedRecoveryTime: 0,
-          suggestedHandling: ['highlight', 'guide']
+          suggestedHandling: ['highlight', 'guide'],
         },
-        userDescriptionGenerator: (error) => `输入数据有误: ${this.extractValidationMessage(error)}`,
-        technicalDescriptionGenerator: (error) => `数据验证失败: ${error.message}`
+        userDescriptionGenerator: error =>
+          `输入数据有误: ${this.extractValidationMessage(error)}`,
+        technicalDescriptionGenerator: error =>
+          `数据验证失败: ${error.message}`,
       },
 
       // 技能错误模式
       {
-        matcher: (error) => this.isSkillError(error),
+        matcher: error => this.isSkillError(error),
         classification: {
           type: 'skill',
           category: 'game',
           severity: ErrorSeverity.MEDIUM,
           isRetryable: true,
           expectedRecoveryTime: 1000,
-          suggestedHandling: ['retry', 'guide']
+          suggestedHandling: ['retry', 'guide'],
         },
-        userDescriptionGenerator: (error) => this.getSkillErrorMessage(error),
-        technicalDescriptionGenerator: (error) => `技能执行错误: ${error.message}`
+        userDescriptionGenerator: error => this.getSkillErrorMessage(error),
+        technicalDescriptionGenerator: error =>
+          `技能执行错误: ${error.message}`,
       },
 
       // 数据错误模式
       {
-        matcher: (error) => this.isDataError(error),
+        matcher: error => this.isDataError(error),
         classification: {
           type: 'data',
           category: 'storage',
           severity: ErrorSeverity.HIGH,
           isRetryable: true,
           expectedRecoveryTime: 3000,
-          suggestedHandling: ['retry', 'refresh', 'fallback']
+          suggestedHandling: ['retry', 'refresh', 'fallback'],
         },
         userDescriptionGenerator: () => '数据处理出现问题，正在尝试恢复',
-        technicalDescriptionGenerator: (error) => `数据操作失败: ${error.message}`
+        technicalDescriptionGenerator: error =>
+          `数据操作失败: ${error.message}`,
       },
 
       // 系统错误模式
       {
-        matcher: (error) => this.isSystemError(error),
+        matcher: error => this.isSystemError(error),
         classification: {
           type: 'system',
           category: 'internal',
           severity: ErrorSeverity.CRITICAL,
           isRetryable: false,
-          suggestedHandling: ['report', 'fallback']
+          suggestedHandling: ['report', 'fallback'],
         },
         userDescriptionGenerator: () => '系统出现异常，我们正在处理此问题',
-        technicalDescriptionGenerator: (error) => `系统错误: ${error.message}`
-      }
+        technicalDescriptionGenerator: error => `系统错误: ${error.message}`,
+      },
     ];
   }
 
@@ -256,10 +271,10 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isNetworkError(error: any): boolean {
     if (!error) return false;
-    
+
     const message = error.message?.toLowerCase() || '';
     const code = error.code || '';
-    
+
     return (
       message.includes('network') ||
       message.includes('fetch') ||
@@ -267,7 +282,7 @@ export class ErrorClassifier implements IErrorClassifier {
       message.includes('connection') ||
       code === 'NETWORK_ERROR' ||
       error.name === 'NetworkError' ||
-      error instanceof TypeError && message.includes('failed to fetch')
+      (error instanceof TypeError && message.includes('failed to fetch'))
     );
   }
 
@@ -276,10 +291,10 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isAuthError(error: any): boolean {
     if (!error) return false;
-    
+
     const message = error.message?.toLowerCase() || '';
     const code = error.code || '';
-    
+
     return (
       message.includes('jwt') ||
       message.includes('token') ||
@@ -295,10 +310,10 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isPermissionError(error: any): boolean {
     if (!error) return false;
-    
+
     const message = error.message?.toLowerCase() || '';
     const code = error.code || '';
-    
+
     return (
       message.includes('permission') ||
       message.includes('forbidden') ||
@@ -312,10 +327,10 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isValidationError(error: any): boolean {
     if (!error) return false;
-    
+
     const message = error.message?.toLowerCase() || '';
     const code = error.code || '';
-    
+
     return (
       message.includes('validation') ||
       message.includes('invalid') ||
@@ -330,9 +345,9 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isSkillError(error: any): boolean {
     if (!error) return false;
-    
+
     return (
-      error.type && Object.values(SkillErrorType).includes(error.type) ||
+      (error.type && Object.values(SkillErrorType).includes(error.type)) ||
       error.code === ErrorCode.SKILL_ERROR ||
       error.category === 'skill'
     );
@@ -343,9 +358,9 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isDataError(error: any): boolean {
     if (!error) return false;
-    
+
     const code = error.code || '';
-    
+
     return (
       code === ErrorCode.DATA_NOT_FOUND ||
       code === ErrorCode.DATA_CONFLICT ||
@@ -359,9 +374,9 @@ export class ErrorClassifier implements IErrorClassifier {
    */
   private isSystemError(error: any): boolean {
     if (!error) return false;
-    
+
     const message = error.message?.toLowerCase() || '';
-    
+
     return (
       message.includes('internal server error') ||
       message.includes('system error') ||
@@ -377,7 +392,7 @@ export class ErrorClassifier implements IErrorClassifier {
     if (error.details?.field && error.details?.message) {
       return `${error.details.field}: ${error.details.message}`;
     }
-    
+
     return error.message || '数据格式不正确';
   }
 
@@ -389,9 +404,9 @@ export class ErrorClassifier implements IErrorClassifier {
       [SkillErrorType.COOLDOWN_ACTIVE]: '技能正在冷却中，请稍后再试',
       [SkillErrorType.INSUFFICIENT_RESOURCES]: '资源不足，无法使用技能',
       [SkillErrorType.INVALID_TARGET]: '目标无效，请选择正确的目标',
-      [SkillErrorType.EXECUTION_ERROR]: '技能执行失败，请重试'
+      [SkillErrorType.EXECUTION_ERROR]: '技能执行失败，请重试',
     };
-    
+
     return skillErrorMessages[error.type as SkillErrorType] || '技能使用失败';
   }
 
@@ -406,7 +421,7 @@ export class ErrorClassifier implements IErrorClassifier {
       isRetryable: false,
       userFriendlyDescription: '发生了未知错误，请稍后重试',
       technicalDescription: error?.message || '未知错误',
-      suggestedHandling: ['log', 'report']
+      suggestedHandling: ['log', 'report'],
     };
   }
 }

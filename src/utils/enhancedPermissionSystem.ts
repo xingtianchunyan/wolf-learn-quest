@@ -1,20 +1,20 @@
 /**
  * 文件级注释：增强权限控制系统
- * 
+ *
  * 该文件实现了一个全面的权限控制系统，旨在：
  * - 提供细粒度的权限管理
  * - 支持基于角色的访问控制（RBAC）
  * - 实现动态权限分配和撤销
  * - 提供权限继承和层级管理
  * - 支持条件权限和上下文感知
- * 
+ *
  * 主要功能：
  * - 用户权限管理
  * - 角色权限映射
  * - 资源访问控制
  * - 权限缓存优化
  * - 权限审计追踪
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -39,7 +39,7 @@ export enum PermissionType {
   APPROVE = 'approve',
   REJECT = 'reject',
   PUBLISH = 'publish',
-  ARCHIVE = 'archive'
+  ARCHIVE = 'archive',
 }
 
 /**
@@ -58,7 +58,7 @@ export enum ResourceType {
   SYSTEM = 'system',
   API = 'api',
   FILE = 'file',
-  REPORT = 'report'
+  REPORT = 'report',
 }
 
 /**
@@ -100,7 +100,14 @@ export interface PermissionCondition {
   /** 条件类型 */
   type: 'time' | 'location' | 'device' | 'context' | 'custom';
   /** 条件操作符 */
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'in' | 'not_in' | 'contains';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'greater_than'
+    | 'less_than'
+    | 'in'
+    | 'not_in'
+    | 'contains';
   /** 条件字段 */
   field: string;
   /** 条件值 */
@@ -243,7 +250,7 @@ export interface PermissionAuditLog {
 
 /**
  * 类级注释：增强权限系统
- * 
+ *
  * 实现全面的权限管理，提供：
  * - 细粒度权限控制
  * - 角色继承机制
@@ -268,7 +275,7 @@ export class EnhancedPermissionSystem {
   private constructor() {
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.globalErrorMonitor = GlobalErrorMonitor.getInstance();
-    
+
     this.initializeDefaultPermissions();
     this.initializeDefaultRoles();
     this.startCacheCleanup();
@@ -290,7 +297,10 @@ export class EnhancedPermissionSystem {
    * 创建系统默认的权限定义
    */
   private initializeDefaultPermissions() {
-    const defaultPermissions: Omit<Permission, 'id' | 'createdAt' | 'updatedAt'>[] = [
+    const defaultPermissions: Omit<
+      Permission,
+      'id' | 'createdAt' | 'updatedAt'
+    >[] = [
       // 用户权限
       {
         name: 'user.read',
@@ -298,7 +308,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.READ,
         resourceType: ResourceType.USER,
         level: 1,
-        inheritable: true
+        inheritable: true,
       },
       {
         name: 'user.write',
@@ -306,7 +316,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.WRITE,
         resourceType: ResourceType.USER,
         level: 2,
-        inheritable: false
+        inheritable: false,
       },
       {
         name: 'user.delete',
@@ -314,9 +324,9 @@ export class EnhancedPermissionSystem {
         type: PermissionType.DELETE,
         resourceType: ResourceType.USER,
         level: 3,
-        inheritable: false
+        inheritable: false,
       },
-      
+
       // 技能权限
       {
         name: 'skill.read',
@@ -324,7 +334,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.READ,
         resourceType: ResourceType.SKILL,
         level: 1,
-        inheritable: true
+        inheritable: true,
       },
       {
         name: 'skill.create',
@@ -332,7 +342,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.CREATE,
         resourceType: ResourceType.SKILL,
         level: 2,
-        inheritable: false
+        inheritable: false,
       },
       {
         name: 'skill.manage',
@@ -340,9 +350,9 @@ export class EnhancedPermissionSystem {
         type: PermissionType.MANAGE,
         resourceType: ResourceType.SKILL,
         level: 3,
-        inheritable: false
+        inheritable: false,
       },
-      
+
       // 任务权限
       {
         name: 'quest.read',
@@ -350,7 +360,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.READ,
         resourceType: ResourceType.QUEST,
         level: 1,
-        inheritable: true
+        inheritable: true,
       },
       {
         name: 'quest.create',
@@ -358,7 +368,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.CREATE,
         resourceType: ResourceType.QUEST,
         level: 2,
-        inheritable: false
+        inheritable: false,
       },
       {
         name: 'quest.approve',
@@ -366,9 +376,9 @@ export class EnhancedPermissionSystem {
         type: PermissionType.APPROVE,
         resourceType: ResourceType.QUEST,
         level: 3,
-        inheritable: false
+        inheritable: false,
       },
-      
+
       // 系统权限
       {
         name: 'system.admin',
@@ -376,7 +386,7 @@ export class EnhancedPermissionSystem {
         type: PermissionType.ADMIN,
         resourceType: ResourceType.SYSTEM,
         level: 5,
-        inheritable: false
+        inheritable: false,
       },
       {
         name: 'analytics.view',
@@ -384,8 +394,8 @@ export class EnhancedPermissionSystem {
         type: PermissionType.VIEW,
         resourceType: ResourceType.ANALYTICS,
         level: 2,
-        inheritable: true
-      }
+        inheritable: true,
+      },
     ];
 
     defaultPermissions.forEach(permissionData => {
@@ -393,7 +403,7 @@ export class EnhancedPermissionSystem {
         ...permissionData,
         id: this.generatePermissionId(permissionData.name),
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.permissions.set(permission.id, permission);
     });
@@ -412,27 +422,38 @@ export class EnhancedPermissionSystem {
         childRoleIds: [],
         level: 1,
         isSystemRole: true,
-        isActive: true
+        isActive: true,
       },
       {
         name: 'user',
         description: '普通用户',
-        permissions: ['user.read', 'skill.read', 'skill.create', 'quest.read', 'quest.create'],
+        permissions: [
+          'user.read',
+          'skill.read',
+          'skill.create',
+          'quest.read',
+          'quest.create',
+        ],
         parentRoleId: 'guest',
         childRoleIds: [],
         level: 2,
         isSystemRole: true,
-        isActive: true
+        isActive: true,
       },
       {
         name: 'moderator',
         description: '版主',
-        permissions: ['user.write', 'skill.manage', 'quest.approve', 'analytics.view'],
+        permissions: [
+          'user.write',
+          'skill.manage',
+          'quest.approve',
+          'analytics.view',
+        ],
         parentRoleId: 'user',
         childRoleIds: [],
         level: 3,
         isSystemRole: true,
-        isActive: true
+        isActive: true,
       },
       {
         name: 'admin',
@@ -442,8 +463,8 @@ export class EnhancedPermissionSystem {
         childRoleIds: [],
         level: 4,
         isSystemRole: true,
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     defaultRoles.forEach(roleData => {
@@ -451,7 +472,7 @@ export class EnhancedPermissionSystem {
         ...roleData,
         id: this.generateRoleId(roleData.name),
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.roles.set(role.id, role);
     });
@@ -486,14 +507,19 @@ export class EnhancedPermissionSystem {
     context?: Partial<PermissionContext>
   ): Promise<boolean> {
     try {
-      const result = await this.checkPermissionDetailed(userId, permissionName, resourceId, context);
+      const result = await this.checkPermissionDetailed(
+        userId,
+        permissionName,
+        resourceId,
+        context
+      );
       return result.hasPermission;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
         context: 'permission_check',
         userId,
         permissionName,
-        resourceId
+        resourceId,
       });
       return false;
     }
@@ -512,7 +538,7 @@ export class EnhancedPermissionSystem {
     const fullContext: PermissionContext = {
       userId,
       timestamp: Date.now(),
-      ...context
+      ...context,
     };
 
     // 检查缓存
@@ -524,7 +550,7 @@ export class EnhancedPermissionSystem {
 
     // 获取用户权限
     const userPermissions = await this.getUserPermissions(userId);
-    
+
     // 查找权限定义
     const permission = this.findPermission(permissionName, resourceId);
     if (!permission) {
@@ -532,19 +558,22 @@ export class EnhancedPermissionSystem {
         hasPermission: false,
         source: 'direct',
         reason: '权限不存在',
-        checkedAt: Date.now()
+        checkedAt: Date.now(),
       };
-      
+
       this.logPermissionCheck(userId, permissionName, result, fullContext);
       return result;
     }
 
     // 检查直接权限
     if (userPermissions.directPermissions.includes(permission.id)) {
-      const result = await this.validatePermissionConditions(permission, fullContext);
+      const result = await this.validatePermissionConditions(
+        permission,
+        fullContext
+      );
       result.source = 'direct';
       result.matchedPermission = permission;
-      
+
       this.cacheResult(cacheKey, result);
       this.logPermissionCheck(userId, permissionName, result, fullContext);
       return result;
@@ -553,10 +582,13 @@ export class EnhancedPermissionSystem {
     // 检查角色权限
     for (const [roleId, rolePermissions] of userPermissions.rolePermissions) {
       if (rolePermissions.includes(permission.id)) {
-        const result = await this.validatePermissionConditions(permission, fullContext);
+        const result = await this.validatePermissionConditions(
+          permission,
+          fullContext
+        );
         result.source = 'role';
         result.matchedPermission = permission;
-        
+
         this.cacheResult(cacheKey, result);
         this.logPermissionCheck(userId, permissionName, result, fullContext);
         return result;
@@ -565,10 +597,13 @@ export class EnhancedPermissionSystem {
 
     // 检查继承权限
     if (userPermissions.inheritedPermissions.includes(permission.id)) {
-      const result = await this.validatePermissionConditions(permission, fullContext);
+      const result = await this.validatePermissionConditions(
+        permission,
+        fullContext
+      );
       result.source = 'inherited';
       result.matchedPermission = permission;
-      
+
       this.cacheResult(cacheKey, result);
       this.logPermissionCheck(userId, permissionName, result, fullContext);
       return result;
@@ -579,9 +614,9 @@ export class EnhancedPermissionSystem {
       hasPermission: false,
       source: 'direct',
       reason: '用户没有此权限',
-      checkedAt: Date.now()
+      checkedAt: Date.now(),
     };
-    
+
     this.logPermissionCheck(userId, permissionName, result, fullContext);
     return result;
   }
@@ -598,7 +633,7 @@ export class EnhancedPermissionSystem {
       hasPermission: true,
       source: 'direct',
       conditionResults: [],
-      checkedAt: Date.now()
+      checkedAt: Date.now(),
     };
 
     // 检查权限是否过期
@@ -611,9 +646,12 @@ export class EnhancedPermissionSystem {
     // 检查权限条件
     if (permission.conditions && permission.conditions.length > 0) {
       for (const condition of permission.conditions) {
-        const conditionResult = await this.evaluateCondition(condition, context);
+        const conditionResult = await this.evaluateCondition(
+          condition,
+          context
+        );
         result.conditionResults!.push(conditionResult);
-        
+
         if (!conditionResult.passed) {
           result.hasPermission = false;
           result.reason = `条件检查失败: ${conditionResult.reason}`;
@@ -632,10 +670,14 @@ export class EnhancedPermissionSystem {
   private async evaluateCondition(
     condition: PermissionCondition,
     context: PermissionContext
-  ): Promise<{ condition: PermissionCondition; passed: boolean; reason?: string }> {
+  ): Promise<{
+    condition: PermissionCondition;
+    passed: boolean;
+    reason?: string;
+  }> {
     try {
       let fieldValue: any;
-      
+
       // 获取条件字段值
       switch (condition.type) {
         case 'time':
@@ -657,23 +699,29 @@ export class EnhancedPermissionSystem {
           return {
             condition,
             passed: false,
-            reason: '未知的条件类型'
+            reason: '未知的条件类型',
           };
       }
 
       // 评估条件
-      const passed = this.evaluateConditionOperator(condition.operator, fieldValue, condition.value);
-      
+      const passed = this.evaluateConditionOperator(
+        condition.operator,
+        fieldValue,
+        condition.value
+      );
+
       return {
         condition,
         passed,
-        reason: passed ? undefined : `条件不满足: ${condition.field} ${condition.operator} ${condition.value}`
+        reason: passed
+          ? undefined
+          : `条件不满足: ${condition.field} ${condition.operator} ${condition.value}`,
       };
     } catch (error) {
       return {
         condition,
         passed: false,
-        reason: `条件评估错误: ${error.message}`
+        reason: `条件评估错误: ${error.message}`,
       };
     }
   }
@@ -684,7 +732,7 @@ export class EnhancedPermissionSystem {
    */
   private getTimeValue(field: string, context: PermissionContext): any {
     const now = new Date(context.timestamp);
-    
+
     switch (field) {
       case 'hour':
         return now.getHours();
@@ -709,7 +757,7 @@ export class EnhancedPermissionSystem {
    */
   private getLocationValue(field: string, context: PermissionContext): any {
     if (!context.location) return null;
-    
+
     switch (field) {
       case 'country':
         return context.location.country;
@@ -728,7 +776,7 @@ export class EnhancedPermissionSystem {
    */
   private getDeviceValue(field: string, context: PermissionContext): any {
     if (!context.deviceInfo) return null;
-    
+
     switch (field) {
       case 'type':
         return context.deviceInfo.type;
@@ -753,7 +801,10 @@ export class EnhancedPermissionSystem {
    * 函数级注释：获取自定义值
    * 获取自定义条件的值（可扩展）
    */
-  private async getCustomValue(field: string, context: PermissionContext): Promise<any> {
+  private async getCustomValue(
+    field: string,
+    context: PermissionContext
+  ): Promise<any> {
     // 这里可以实现自定义的条件值获取逻辑
     // 例如从数据库查询、调用外部API等
     return null;
@@ -763,7 +814,11 @@ export class EnhancedPermissionSystem {
    * 函数级注释：评估条件操作符
    * 根据操作符评估条件
    */
-  private evaluateConditionOperator(operator: string, fieldValue: any, conditionValue: any): boolean {
+  private evaluateConditionOperator(
+    operator: string,
+    fieldValue: any,
+    conditionValue: any
+  ): boolean {
     switch (operator) {
       case 'equals':
         return fieldValue === conditionValue;
@@ -774,11 +829,17 @@ export class EnhancedPermissionSystem {
       case 'less_than':
         return fieldValue < conditionValue;
       case 'in':
-        return Array.isArray(conditionValue) && conditionValue.includes(fieldValue);
+        return (
+          Array.isArray(conditionValue) && conditionValue.includes(fieldValue)
+        );
       case 'not_in':
-        return Array.isArray(conditionValue) && !conditionValue.includes(fieldValue);
+        return (
+          Array.isArray(conditionValue) && !conditionValue.includes(fieldValue)
+        );
       case 'contains':
-        return typeof fieldValue === 'string' && fieldValue.includes(conditionValue);
+        return (
+          typeof fieldValue === 'string' && fieldValue.includes(conditionValue)
+        );
       default:
         return false;
     }
@@ -790,12 +851,12 @@ export class EnhancedPermissionSystem {
    */
   private async getUserPermissions(userId: string): Promise<UserPermissions> {
     let userPermissions = this.userPermissions.get(userId);
-    
+
     if (!userPermissions || this.isPermissionCacheExpired(userPermissions)) {
       userPermissions = await this.loadUserPermissions(userId);
       this.userPermissions.set(userId, userPermissions);
     }
-    
+
     return userPermissions;
   }
 
@@ -812,19 +873,19 @@ export class EnhancedPermissionSystem {
       rolePermissions: new Map(),
       inheritedPermissions: [],
       cacheTime: Date.now(),
-      version: 1
+      version: 1,
     };
 
     // 模拟加载用户角色和权限
     // 实际实现中应该从数据库查询
     const userRoles = this.getUserRoles(userId);
-    
+
     for (const roleId of userRoles) {
       const role = this.roles.get(roleId);
       if (role && role.isActive) {
         const rolePermissions = this.getRolePermissions(roleId);
         userPermissions.rolePermissions.set(roleId, rolePermissions);
-        
+
         // 添加继承权限
         const inheritedPermissions = this.getInheritedPermissions(roleId);
         userPermissions.inheritedPermissions.push(...inheritedPermissions);
@@ -851,15 +912,15 @@ export class EnhancedPermissionSystem {
   private getRolePermissions(roleId: string): string[] {
     const role = this.roles.get(roleId);
     if (!role) return [];
-    
+
     const permissions: string[] = [...role.permissions];
-    
+
     // 添加父角色权限
     if (role.parentRoleId) {
       const parentPermissions = this.getRolePermissions(role.parentRoleId);
       permissions.push(...parentPermissions);
     }
-    
+
     return [...new Set(permissions)]; // 去重
   }
 
@@ -869,7 +930,7 @@ export class EnhancedPermissionSystem {
    */
   private getInheritedPermissions(roleId: string): string[] {
     const inheritedPermissions: string[] = [];
-    
+
     for (const permission of this.permissions.values()) {
       if (permission.inheritable) {
         // 检查权限是否应该被继承
@@ -877,7 +938,7 @@ export class EnhancedPermissionSystem {
         inheritedPermissions.push(permission.id);
       }
     }
-    
+
     return inheritedPermissions;
   }
 
@@ -885,10 +946,17 @@ export class EnhancedPermissionSystem {
    * 函数级注释：查找权限
    * 根据权限名称和资源ID查找权限定义
    */
-  private findPermission(permissionName: string, resourceId?: string): Permission | null {
+  private findPermission(
+    permissionName: string,
+    resourceId?: string
+  ): Permission | null {
     for (const permission of this.permissions.values()) {
       if (permission.name === permissionName) {
-        if (resourceId && permission.resourceId && permission.resourceId !== resourceId) {
+        if (
+          resourceId &&
+          permission.resourceId &&
+          permission.resourceId !== resourceId
+        ) {
           continue;
         }
         return permission;
@@ -901,7 +969,11 @@ export class EnhancedPermissionSystem {
    * 函数级注释：生成缓存键
    * 生成权限检查的缓存键
    */
-  private generateCacheKey(userId: string, permissionName: string, resourceId?: string): string {
+  private generateCacheKey(
+    userId: string,
+    permissionName: string,
+    resourceId?: string
+  ): string {
     return `${userId}:${permissionName}${resourceId ? `:${resourceId}` : ''}`;
   }
 
@@ -920,7 +992,7 @@ export class EnhancedPermissionSystem {
    */
   private cacheResult(cacheKey: string, result: PermissionCheckResult) {
     this.permissionCache.set(cacheKey, result);
-    
+
     // 限制缓存大小
     if (this.permissionCache.size > 10000) {
       const oldestKeys = Array.from(this.permissionCache.keys()).slice(0, 1000);
@@ -954,17 +1026,17 @@ export class EnhancedPermissionSystem {
       permissionId: result.matchedPermission?.id || permissionName,
       resource: {
         type: result.matchedPermission?.resourceType || ResourceType.SYSTEM,
-        id: result.matchedPermission?.resourceId
+        id: result.matchedPermission?.resourceId,
       },
       result: result.hasPermission ? 'success' : 'denied',
       reason: result.reason,
       operatorId: userId,
       timestamp: Date.now(),
-      context
+      context,
     };
 
     this.auditLogs.push(auditLog);
-    
+
     // 限制日志数量
     if (this.auditLogs.length > 50000) {
       this.auditLogs = this.auditLogs.slice(-25000);
@@ -1000,9 +1072,12 @@ export class EnhancedPermissionSystem {
    * 启动定期缓存清理任务
    */
   private startCacheCleanup() {
-    setInterval(() => {
-      this.cleanupExpiredCache();
-    }, 10 * 60 * 1000); // 每10分钟清理一次
+    setInterval(
+      () => {
+        this.cleanupExpiredCache();
+      },
+      10 * 60 * 1000
+    ); // 每10分钟清理一次
   }
 
   /**
@@ -1053,28 +1128,41 @@ export class EnhancedPermissionSystem {
         userPermissions.directPermissions.push(permission.id);
         userPermissions.version++;
         userPermissions.cacheTime = Date.now();
-        
+
         this.userPermissions.set(userId, userPermissions);
-        
+
         // 清理相关缓存
         this.clearUserPermissionCache(userId);
-        
+
         // 记录审计日志
-        this.logPermissionOperation('grant', userId, permission.id, operatorId, 'success');
-        
+        this.logPermissionOperation(
+          'grant',
+          userId,
+          permission.id,
+          operatorId,
+          'success'
+        );
+
         return true;
       }
-      
+
       return false;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
         context: 'grant_permission',
         userId,
         permissionName,
-        operatorId
+        operatorId,
       });
-      
-      this.logPermissionOperation('grant', userId, permissionName, operatorId, 'failure', error.message);
+
+      this.logPermissionOperation(
+        'grant',
+        userId,
+        permissionName,
+        operatorId,
+        'failure',
+        error.message
+      );
       return false;
     }
   }
@@ -1105,28 +1193,41 @@ export class EnhancedPermissionSystem {
         userPermissions.directPermissions.splice(index, 1);
         userPermissions.version++;
         userPermissions.cacheTime = Date.now();
-        
+
         this.userPermissions.set(userId, userPermissions);
-        
+
         // 清理相关缓存
         this.clearUserPermissionCache(userId);
-        
+
         // 记录审计日志
-        this.logPermissionOperation('revoke', userId, permission.id, operatorId, 'success');
-        
+        this.logPermissionOperation(
+          'revoke',
+          userId,
+          permission.id,
+          operatorId,
+          'success'
+        );
+
         return true;
       }
-      
+
       return false;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
         context: 'revoke_permission',
         userId,
         permissionName,
-        operatorId
+        operatorId,
       });
-      
-      this.logPermissionOperation('revoke', userId, permissionName, operatorId, 'failure', error.message);
+
+      this.logPermissionOperation(
+        'revoke',
+        userId,
+        permissionName,
+        operatorId,
+        'failure',
+        error.message
+      );
       return false;
     }
   }
@@ -1162,7 +1263,7 @@ export class EnhancedPermissionSystem {
       userId,
       permissionId,
       resource: {
-        type: ResourceType.PERMISSION
+        type: ResourceType.PERMISSION,
       },
       result,
       reason,
@@ -1170,8 +1271,8 @@ export class EnhancedPermissionSystem {
       timestamp: Date.now(),
       context: {
         userId: operatorId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     };
 
     this.auditLogs.push(auditLog);
@@ -1187,7 +1288,7 @@ export class EnhancedPermissionSystem {
       totalRoles: this.roles.size,
       cachedUsers: this.userPermissions.size,
       cacheHits: this.permissionCache.size,
-      auditLogs: this.auditLogs.length
+      auditLogs: this.auditLogs.length,
     };
   }
 

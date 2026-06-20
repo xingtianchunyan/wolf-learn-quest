@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class RoomServiceError extends Error {
   code?: string;
-  
+
   constructor(message: string, code?: string) {
     super(message);
     this.name = 'RoomServiceError';
@@ -13,7 +13,8 @@ export class RoomServiceError extends Error {
 export class RoomService {
   private static sanitizeError(error: any): string {
     // Map common database errors to user-friendly messages
-    if (error.code === '23505') { // Unique constraint violation
+    if (error.code === '23505') {
+      // Unique constraint violation
       if (error.message?.includes('role_selections_unique_room_role')) {
         return '该角色已被其他玩家选择';
       }
@@ -22,10 +23,12 @@ export class RoomService {
       }
       return '选择冲突，请重试';
     }
-    if (error.code === '42501') { // RLS policy violation
+    if (error.code === '42501') {
+      // RLS policy violation
       return '权限不足，无法执行此操作';
     }
-    if (error.code === 'PGRST301') { // No matching rows
+    if (error.code === 'PGRST301') {
+      // No matching rows
       return '数据不存在或无权访问';
     }
     // Default to original message for debugging, but log internally
@@ -34,7 +37,9 @@ export class RoomService {
   }
 
   static async requireAuth(): Promise<string> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user?.id) {
       throw new RoomServiceError('Authentication required');
     }
@@ -51,15 +56,13 @@ export class RoomService {
   static async joinRoom(roomId: string, userId: string): Promise<void> {
     await this.validateUserId(userId);
     const authenticatedUserId = await this.requireAuth();
-    
-    const { error } = await supabase
-      .from('room_players')
-      .insert({
-        room_id: roomId,
-        user_id: authenticatedUserId, // Use authenticated user ID instead of parameter
-        is_ready: false,
-        is_ai: false,
-      });
+
+    const { error } = await supabase.from('room_players').insert({
+      room_id: roomId,
+      user_id: authenticatedUserId, // Use authenticated user ID instead of parameter
+      is_ready: false,
+      is_ai: false,
+    });
 
     if (error) {
       throw new RoomServiceError(this.sanitizeError(error), error.code);
@@ -69,7 +72,7 @@ export class RoomService {
   static async leaveRoom(roomId: string, userId: string): Promise<void> {
     await this.validateUserId(userId);
     const authenticatedUserId = await this.requireAuth();
-    
+
     const { error } = await supabase
       .from('room_players')
       .delete()
@@ -81,10 +84,13 @@ export class RoomService {
     }
   }
 
-  static async clearRoleSelection(roomId: string, userId: string): Promise<void> {
+  static async clearRoleSelection(
+    roomId: string,
+    userId: string
+  ): Promise<void> {
     await this.validateUserId(userId);
     const authenticatedUserId = await this.requireAuth();
-    
+
     const { error } = await supabase
       .from('role_selections')
       .delete()
@@ -96,10 +102,14 @@ export class RoomService {
     }
   }
 
-  static async updatePlayerReadyStatus(roomId: string, userId: string, isReady: boolean): Promise<void> {
+  static async updatePlayerReadyStatus(
+    roomId: string,
+    userId: string,
+    isReady: boolean
+  ): Promise<void> {
     await this.validateUserId(userId);
     const authenticatedUserId = await this.requireAuth();
-    
+
     const { error } = await supabase
       .from('room_players')
       .update({ is_ready: isReady })
@@ -113,9 +123,10 @@ export class RoomService {
 
   static async createNextRoom(roomId: string): Promise<string> {
     await this.requireAuth();
-    
-    const { data, error } = await supabase
-      .rpc('create_next_room', { p_room_id: roomId });
+
+    const { data, error } = await supabase.rpc('create_next_room', {
+      p_room_id: roomId,
+    });
 
     if (error) {
       throw new RoomServiceError(this.sanitizeError(error), error.code);

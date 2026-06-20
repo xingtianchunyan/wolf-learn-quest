@@ -51,12 +51,15 @@ export interface UseStudentSystemReturn {
 
 export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
   const { currentUser } = useAuth();
-  const { gameState, timeRemaining, formatTime, getPhaseDisplayName } = useGameState(roomId);
+  const { gameState, timeRemaining, formatTime, getPhaseDisplayName } =
+    useGameState(roomId);
   const { toast } = useToast();
 
   const [roomQuestions, setRoomQuestions] = useState<RoomQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [previousQuestion, setPreviousQuestion] = useState<Question | null>(null);
+  const [previousQuestion, setPreviousQuestion] = useState<Question | null>(
+    null
+  );
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -77,9 +80,11 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
 
     try {
       setIsLoadingQuestions(true);
-      const { data: roomQuestionsData, error: roomQuestionsError } = await supabase
-        .from('room_questions')
-        .select(`
+      const { data: roomQuestionsData, error: roomQuestionsError } =
+        await supabase
+          .from('room_questions')
+          .select(
+            `
           id,
           room_id,
           question_id,
@@ -96,9 +101,10 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
             difficulty,
             category
           )
-        `)
-        .eq('room_id', roomId)
-        .order('question_order', { ascending: true });
+        `
+          )
+          .eq('room_id', roomId)
+          .order('question_order', { ascending: true });
 
       if (roomQuestionsError) {
         throw roomQuestionsError;
@@ -112,14 +118,16 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       }
 
       const validQuestions = roomQuestionsData.filter(rq => {
-        return rq.questions &&
-               typeof rq.questions === 'object' &&
-               rq.questions.question &&
-               rq.questions.option_a &&
-               rq.questions.option_b &&
-               rq.questions.option_c &&
-               rq.questions.option_d &&
-               rq.questions.correct_option;
+        return (
+          rq.questions &&
+          typeof rq.questions === 'object' &&
+          rq.questions.question &&
+          rq.questions.option_a &&
+          rq.questions.option_b &&
+          rq.questions.option_c &&
+          rq.questions.option_d &&
+          rq.questions.correct_option
+        );
       });
 
       if (validQuestions.length === 0) {
@@ -136,7 +144,7 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       toast({
         title: '获取题目失败',
         description: error.message || '请稍后重试',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setIsLoadingQuestions(false);
@@ -158,7 +166,7 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
           event: '*',
           schema: 'public',
           table: 'room_questions',
-          filter: `room_id=eq.${roomId}`
+          filter: `room_id=eq.${roomId}`,
         },
         () => {
           fetchRoomQuestions();
@@ -190,7 +198,9 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
     const targetQuestionOrder = questionIndex + 1;
     setCurrentQuestionIndex(questionIndex);
 
-    const roomQuestion = roomQuestions.find(rq => rq.question_order === targetQuestionOrder);
+    const roomQuestion = roomQuestions.find(
+      rq => rq.question_order === targetQuestionOrder
+    );
     if (roomQuestion && roomQuestion.questions) {
       setCurrentQuestion(roomQuestion.questions);
       setQuestionNotFound(false);
@@ -201,7 +211,11 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
 
   // 获取上一阶段题目
   useEffect(() => {
-    if (!gameState || gameState.status !== 'active' || roomQuestions.length === 0) {
+    if (
+      !gameState ||
+      gameState.status !== 'active' ||
+      roomQuestions.length === 0
+    ) {
       setPreviousQuestion(null);
       return;
     }
@@ -218,7 +232,9 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       return;
     }
 
-    const roomQuestion = roomQuestions.find(rq => rq.question_order === previousQuestionOrder);
+    const roomQuestion = roomQuestions.find(
+      rq => rq.question_order === previousQuestionOrder
+    );
     if (roomQuestion && roomQuestion.questions) {
       setPreviousQuestion(roomQuestion.questions);
     } else {
@@ -275,7 +291,7 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       toast({
         title: '答题时间已结束',
         description: '无法提交答案',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -290,16 +306,17 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
     const isCorrect = optionNumber === currentQuestion.correct_option;
 
     try {
-      const { error } = await supabase
-        .from('room_answers')
-        .insert({
-          room_id: roomId,
-          user_id: currentUser.id,
-          question_order: questionOrder,
-          selected_option: optionNumber,
-          is_correct: isCorrect,
-          response_time: Math.max(0, (gameState.phaseDuration || 300) - timeRemaining)
-        });
+      const { error } = await supabase.from('room_answers').insert({
+        room_id: roomId,
+        user_id: currentUser.id,
+        question_order: questionOrder,
+        selected_option: optionNumber,
+        is_correct: isCorrect,
+        response_time: Math.max(
+          0,
+          (gameState.phaseDuration || 300) - timeRemaining
+        ),
+      });
 
       if (error) {
         if ((error as any).code === '23505') {
@@ -324,14 +341,14 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
         toast({
           title: '保存答案失败',
           description: '请稍后重试',
-          variant: 'destructive'
+          variant: 'destructive',
         });
         setSelectedOption(null);
       } else {
         setHasSubmitted(true);
         toast({
           title: '答案已提交',
-          description: '您的答案已成功保存'
+          description: '您的答案已成功保存',
         });
       }
     } catch (error) {
@@ -339,7 +356,7 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       toast({
         title: '提交答案时发生错误',
         description: '请稍后重试',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       setSelectedOption(null);
     } finally {
@@ -348,15 +365,20 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
   };
 
   const roundNumber = gameState?.currentRound ?? 1;
-  const phaseName = gameState ? getPhaseDisplayName(gameState.currentPhase) : '等待中';
-  const isAnsweringPhase = gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
-  const showTimer = gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
+  const phaseName = gameState
+    ? getPhaseDisplayName(gameState.currentPhase)
+    : '等待中';
+  const isAnsweringPhase =
+    gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
+  const showTimer =
+    gameState?.status === 'active' && isAnsweringPhase && !gameState.isPaused;
   const timeIsUp = timeRemaining <= 0 && showTimer;
 
   const gameStatusInfo = (() => {
     if (!gameState) return '游戏准备中';
     if (gameState.status === 'waiting') return '游戏准备中';
-    if (gameState.status === 'active') return `游戏进行中 - 第${roundNumber}轮 ${phaseName}阶段`;
+    if (gameState.status === 'active')
+      return `游戏进行中 - 第${roundNumber}轮 ${phaseName}阶段`;
     if (gameState.status === 'ended') return '游戏已结束';
     return '未知状态';
   })();
@@ -381,6 +403,6 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
     handleOptionClick,
     formatTime,
     timeRemaining,
-    gameState
+    gameState,
   };
 };

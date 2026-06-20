@@ -107,24 +107,24 @@ export class EnhancedSkillSystemOptimizer {
       memoryThreshold: 50 * 1024 * 1024, // 50MB
       stateCacheTTL: 5000, // 5秒
       debounceDelay: 100,
-      ...config
+      ...config,
     };
 
     this.renderTracker = {
       renderTimestamps: [],
       renderDurations: [],
       isRendering: false,
-      renderStartTime: 0
+      renderStartTime: 0,
     };
 
     this.subscriptionManager = {
       activeSubscriptions: new Set(),
-      subscriptionMetadata: new Map()
+      subscriptionMetadata: new Map(),
     };
 
     this.stateCacheManager = {
       cache: new Map(),
-      stats: { hits: 0, misses: 0, evictions: 0 }
+      stats: { hits: 0, misses: 0, evictions: 0 },
     };
 
     this.performanceMetrics = {
@@ -133,7 +133,7 @@ export class EnhancedSkillSystemOptimizer {
       memoryUsage: 0,
       activeSubscriptions: 0,
       cacheHitRate: 0,
-      lastUpdateTime: Date.now()
+      lastUpdateTime: Date.now(),
     };
 
     this.startOptimizationMonitoring();
@@ -144,9 +144,13 @@ export class EnhancedSkillSystemOptimizer {
    * @param config 可选的配置参数
    * @returns 优化器实例
    */
-  public static getInstance(config?: Partial<SkillSystemOptimizationConfig>): EnhancedSkillSystemOptimizer {
+  public static getInstance(
+    config?: Partial<SkillSystemOptimizationConfig>
+  ): EnhancedSkillSystemOptimizer {
     if (!EnhancedSkillSystemOptimizer.instance) {
-      EnhancedSkillSystemOptimizer.instance = new EnhancedSkillSystemOptimizer(config);
+      EnhancedSkillSystemOptimizer.instance = new EnhancedSkillSystemOptimizer(
+        config
+      );
     }
     return EnhancedSkillSystemOptimizer.instance;
   }
@@ -179,11 +183,13 @@ export class EnhancedSkillSystemOptimizer {
       if (recentRenders.length >= this.config.maxRenderPerSecond) {
         logger.warn('EnhancedSkillSystem 渲染频率过高', {
           recentRenders: recentRenders.length,
-          maxAllowed: this.config.maxRenderPerSecond
+          maxAllowed: this.config.maxRenderPerSecond,
         });
 
         // 延迟渲染
-        return new Promise(resolve => setTimeout(resolve, this.config.debounceDelay));
+        return new Promise(resolve =>
+          setTimeout(resolve, this.config.debounceDelay)
+        );
       }
 
       return Promise.resolve();
@@ -193,7 +199,11 @@ export class EnhancedSkillSystemOptimizer {
      * 函数级注释：结束渲染跟踪
      */
     const endRender = useCallback(() => {
-      if (!this.config.enableRenderOptimization || !this.renderTracker.isRendering) return;
+      if (
+        !this.config.enableRenderOptimization ||
+        !this.renderTracker.isRendering
+      )
+        return;
 
       const now = Date.now();
       const duration = now - renderStartRef.current;
@@ -206,12 +216,15 @@ export class EnhancedSkillSystemOptimizer {
 
       // 清理旧数据（保留最近1分钟的数据）
       const oneMinuteAgo = now - 60000;
-      this.renderTracker.renderTimestamps = this.renderTracker.renderTimestamps.filter(
-        timestamp => timestamp > oneMinuteAgo
-      );
-      this.renderTracker.renderDurations = this.renderTracker.renderDurations.filter(
-        (_, index) => this.renderTracker.renderTimestamps[index] > oneMinuteAgo
-      );
+      this.renderTracker.renderTimestamps =
+        this.renderTracker.renderTimestamps.filter(
+          timestamp => timestamp > oneMinuteAgo
+        );
+      this.renderTracker.renderDurations =
+        this.renderTracker.renderDurations.filter(
+          (_, index) =>
+            this.renderTracker.renderTimestamps[index] > oneMinuteAgo
+        );
 
       // 更新性能指标
       this.updatePerformanceMetrics();
@@ -219,35 +232,38 @@ export class EnhancedSkillSystemOptimizer {
       logger.debug('EnhancedSkillSystem 渲染完成', {
         duration,
         totalRenders: renderCountRef.current,
-        recentRenders: this.renderTracker.renderTimestamps.length
+        recentRenders: this.renderTracker.renderTimestamps.length,
       });
     }, []);
 
     /**
      * 函数级注释：创建优化的回调函数
      */
-    const createOptimizedCallback = useCallback(<T extends (...args: any[]) => any>(
-      callback: T,
-      deps: React.DependencyList
-    ): T => {
-      return useCallback((...args: Parameters<T>) => {
-        startRender().then(() => {
-          try {
-            const result = callback(...args);
-            endRender();
-            return result;
-          } catch (error) {
-            endRender();
-            masterErrorHandler.handleError(error, {
-              context: 'EnhancedSkillSystem.optimizedCallback',
-              severity: 'medium',
-              metadata: { args }
-            });
-            throw error;
-          }
-        });
-      }, deps) as T;
-    }, [startRender, endRender]);
+    const createOptimizedCallback = useCallback(
+      <T extends (...args: any[]) => any>(
+        callback: T,
+        deps: React.DependencyList
+      ): T => {
+        return useCallback((...args: Parameters<T>) => {
+          startRender().then(() => {
+            try {
+              const result = callback(...args);
+              endRender();
+              return result;
+            } catch (error) {
+              endRender();
+              masterErrorHandler.handleError(error, {
+                context: 'EnhancedSkillSystem.optimizedCallback',
+                severity: 'medium',
+                metadata: { args },
+              });
+              throw error;
+            }
+          });
+        }, deps) as T;
+      },
+      [startRender, endRender]
+    );
 
     return {
       startRender,
@@ -255,11 +271,13 @@ export class EnhancedSkillSystemOptimizer {
       createOptimizedCallback,
       getRenderStats: () => ({
         renderCount: renderCountRef.current,
-        averageRenderTime: this.renderTracker.renderDurations.length > 0
-          ? this.renderTracker.renderDurations.reduce((a, b) => a + b, 0) / this.renderTracker.renderDurations.length
-          : 0,
-        recentRenderCount: this.renderTracker.renderTimestamps.length
-      })
+        averageRenderTime:
+          this.renderTracker.renderDurations.length > 0
+            ? this.renderTracker.renderDurations.reduce((a, b) => a + b, 0) /
+              this.renderTracker.renderDurations.length
+            : 0,
+        recentRenderCount: this.renderTracker.renderTimestamps.length,
+      }),
     };
   }
 
@@ -271,48 +289,49 @@ export class EnhancedSkillSystemOptimizer {
     /**
      * 函数级注释：添加订阅
      */
-    const addSubscription = useCallback((
-      subscriptionId: string,
-      cleanup: () => void
-    ) => {
-      if (!this.config.enableSubscriptionOptimization) {
+    const addSubscription = useCallback(
+      (subscriptionId: string, cleanup: () => void) => {
+        if (!this.config.enableSubscriptionOptimization) {
+          this.subscriptionManager.activeSubscriptions.add(cleanup);
+          return;
+        }
+
+        // 检查是否已存在相同订阅
+        if (this.subscriptionManager.subscriptionMetadata.has(subscriptionId)) {
+          logger.warn('重复订阅检测', { subscriptionId });
+          return;
+        }
+
         this.subscriptionManager.activeSubscriptions.add(cleanup);
-        return;
-      }
+        this.subscriptionManager.subscriptionMetadata.set(subscriptionId, {
+          createdAt: Date.now(),
+          lastUsed: Date.now(),
+        });
 
-      // 检查是否已存在相同订阅
-      if (this.subscriptionManager.subscriptionMetadata.has(subscriptionId)) {
-        logger.warn('重复订阅检测', { subscriptionId });
-        return;
-      }
-
-      this.subscriptionManager.activeSubscriptions.add(cleanup);
-      this.subscriptionManager.subscriptionMetadata.set(subscriptionId, {
-        createdAt: Date.now(),
-        lastUsed: Date.now()
-      });
-
-      logger.debug('订阅已添加', {
-        subscriptionId,
-        totalSubscriptions: this.subscriptionManager.activeSubscriptions.size
-      });
-    }, []);
+        logger.debug('订阅已添加', {
+          subscriptionId,
+          totalSubscriptions: this.subscriptionManager.activeSubscriptions.size,
+        });
+      },
+      []
+    );
 
     /**
      * 函数级注释：移除订阅
      */
-    const removeSubscription = useCallback((
-      subscriptionId: string,
-      cleanup: () => void
-    ) => {
-      this.subscriptionManager.activeSubscriptions.delete(cleanup);
-      this.subscriptionManager.subscriptionMetadata.delete(subscriptionId);
+    const removeSubscription = useCallback(
+      (subscriptionId: string, cleanup: () => void) => {
+        this.subscriptionManager.activeSubscriptions.delete(cleanup);
+        this.subscriptionManager.subscriptionMetadata.delete(subscriptionId);
 
-      logger.debug('订阅已移除', {
-        subscriptionId,
-        remainingSubscriptions: this.subscriptionManager.activeSubscriptions.size
-      });
-    }, []);
+        logger.debug('订阅已移除', {
+          subscriptionId,
+          remainingSubscriptions:
+            this.subscriptionManager.activeSubscriptions.size,
+        });
+      },
+      []
+    );
 
     /**
      * 函数级注释：清理所有订阅
@@ -324,7 +343,7 @@ export class EnhancedSkillSystemOptimizer {
         } catch (error) {
           masterErrorHandler.handleError(error, {
             context: 'EnhancedSkillSystem.subscriptionCleanup',
-            severity: 'low'
+            severity: 'low',
           });
         }
       });
@@ -344,7 +363,8 @@ export class EnhancedSkillSystemOptimizer {
       addSubscription,
       removeSubscription,
       cleanupAllSubscriptions,
-      getSubscriptionCount: () => this.subscriptionManager.activeSubscriptions.size
+      getSubscriptionCount: () =>
+        this.subscriptionManager.activeSubscriptions.size,
     };
   }
 
@@ -379,21 +399,20 @@ export class EnhancedSkillSystemOptimizer {
     /**
      * 函数级注释：设置缓存数据
      */
-    const setCachedState = useCallback(<T>(
-      key: string,
-      data: T,
-      ttl: number = this.config.stateCacheTTL
-    ) => {
-      if (!this.config.enableStateCache) return;
+    const setCachedState = useCallback(
+      <T>(key: string, data: T, ttl: number = this.config.stateCacheTTL) => {
+        if (!this.config.enableStateCache) return;
 
-      this.stateCacheManager.cache.set(key, {
-        data,
-        timestamp: Date.now(),
-        ttl
-      });
+        this.stateCacheManager.cache.set(key, {
+          data,
+          timestamp: Date.now(),
+          ttl,
+        });
 
-      logger.debug('状态已缓存', { key, ttl });
-    }, []);
+        logger.debug('状态已缓存', { key, ttl });
+      },
+      []
+    );
 
     /**
      * 函数级注释：清理过期缓存
@@ -429,7 +448,7 @@ export class EnhancedSkillSystemOptimizer {
       clearCache: () => {
         this.stateCacheManager.cache.clear();
         logger.info('缓存已清空');
-      }
+      },
     };
   }
 
@@ -441,15 +460,22 @@ export class EnhancedSkillSystemOptimizer {
 
     this.performanceMetrics = {
       renderCount: this.renderTracker.renderTimestamps.length,
-      averageRenderTime: this.renderTracker.renderDurations.length > 0
-        ? this.renderTracker.renderDurations.reduce((a, b) => a + b, 0) / this.renderTracker.renderDurations.length
-        : 0,
+      averageRenderTime:
+        this.renderTracker.renderDurations.length > 0
+          ? this.renderTracker.renderDurations.reduce((a, b) => a + b, 0) /
+            this.renderTracker.renderDurations.length
+          : 0,
       memoryUsage: this.getMemoryUsage(),
       activeSubscriptions: this.subscriptionManager.activeSubscriptions.size,
-      cacheHitRate: this.stateCacheManager.stats.hits + this.stateCacheManager.stats.misses > 0
-        ? this.stateCacheManager.stats.hits / (this.stateCacheManager.stats.hits + this.stateCacheManager.stats.misses)
-        : 0,
-      lastUpdateTime: now
+      cacheHitRate:
+        this.stateCacheManager.stats.hits +
+          this.stateCacheManager.stats.misses >
+        0
+          ? this.stateCacheManager.stats.hits /
+            (this.stateCacheManager.stats.hits +
+              this.stateCacheManager.stats.misses)
+          : 0,
+      lastUpdateTime: now,
     };
   }
 
@@ -480,10 +506,11 @@ export class EnhancedSkillSystemOptimizer {
     const metrics = this.performanceMetrics;
 
     // 检查渲染性能
-    if (metrics.averageRenderTime > 100) { // 超过100ms
+    if (metrics.averageRenderTime > 100) {
+      // 超过100ms
       logger.warn('EnhancedSkillSystem 渲染性能问题', {
         averageRenderTime: metrics.averageRenderTime,
-        renderCount: metrics.renderCount
+        renderCount: metrics.renderCount,
       });
     }
 
@@ -491,15 +518,21 @@ export class EnhancedSkillSystemOptimizer {
     if (metrics.memoryUsage > this.config.memoryThreshold) {
       logger.warn('EnhancedSkillSystem 内存使用过高', {
         memoryUsage: metrics.memoryUsage,
-        threshold: this.config.memoryThreshold
+        threshold: this.config.memoryThreshold,
       });
     }
 
     // 检查缓存命中率
-    if (metrics.cacheHitRate < 0.7 && this.stateCacheManager.stats.hits + this.stateCacheManager.stats.misses > 10) {
+    if (
+      metrics.cacheHitRate < 0.7 &&
+      this.stateCacheManager.stats.hits + this.stateCacheManager.stats.misses >
+        10
+    ) {
       logger.warn('EnhancedSkillSystem 缓存命中率过低', {
         cacheHitRate: metrics.cacheHitRate,
-        totalRequests: this.stateCacheManager.stats.hits + this.stateCacheManager.stats.misses
+        totalRequests:
+          this.stateCacheManager.stats.hits +
+          this.stateCacheManager.stats.misses,
       });
     }
   }
@@ -521,7 +554,7 @@ export class EnhancedSkillSystemOptimizer {
     this.renderTracker.renderDurations = [];
     this.stateCacheManager.stats = { hits: 0, misses: 0, evictions: 0 };
     this.updatePerformanceMetrics();
-    
+
     logger.info('性能统计已重置');
   }
 
@@ -579,7 +612,7 @@ export const useEnhancedSkillSystemOptimizer = (
     ...subscriptionManager,
     ...stateCache,
     getPerformanceMetrics: optimizer.getPerformanceMetrics.bind(optimizer),
-    resetPerformanceStats: optimizer.resetPerformanceStats.bind(optimizer)
+    resetPerformanceStats: optimizer.resetPerformanceStats.bind(optimizer),
   };
 };
 

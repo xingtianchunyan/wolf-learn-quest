@@ -11,25 +11,25 @@ interface SeerInvestigationInterfaceProps {
 
 const SeerInvestigationInterface: React.FC<SeerInvestigationInterfaceProps> = ({
   onInvestigate,
-  availablePlayers
+  availablePlayers,
 }) => {
   return (
-    <Card className="bg-werewolf-dark/40 border-werewolf-purple/30">
+    <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Eye className="w-4 h-4" />
+        <CardTitle className='flex items-center gap-2'>
+          <Eye className='w-4 h-4' />
           预言家查验
-          <Badge variant="outline">预言家技能</Badge>
+          <Badge variant='outline'>预言家技能</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className='space-y-2'>
         {availablePlayers.map(player => (
           <Button
             key={player.userId}
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onInvestigate(player.userId)}
-            className="w-full justify-start"
+            className='w-full justify-start'
           >
             查验 {player.name}
           </Button>

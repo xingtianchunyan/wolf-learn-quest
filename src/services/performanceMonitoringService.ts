@@ -4,13 +4,13 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import { 
-  PERFORMANCE_BUDGET, 
+import {
+  PERFORMANCE_BUDGET,
   PERFORMANCE_ALERTS,
   MONITORING_CONFIG,
   PerformanceAlertLevel,
   checkPerformanceBudget,
-  getPerformanceBudget
+  getPerformanceBudget,
 } from '@/config/performance.config';
 
 const logger = createLogger('PerformanceMonitoring');
@@ -43,8 +43,9 @@ class PerformanceMonitoringService {
 
   constructor() {
     const isDev = import.meta.env.DEV;
-    this.isEnabled = isDev || Math.random() < MONITORING_CONFIG.samplingRate.production;
-    
+    this.isEnabled =
+      isDev || Math.random() < MONITORING_CONFIG.samplingRate.production;
+
     if (this.isEnabled) {
       this.startMonitoring();
     }
@@ -110,7 +111,11 @@ class PerformanceMonitoringService {
       return;
     }
 
-    const result = checkPerformanceBudget(metric.name, metric.value, budgetValue);
+    const result = checkPerformanceBudget(
+      metric.name,
+      metric.value,
+      budgetValue
+    );
 
     if (result.exceeded) {
       this.raiseAlert(metric, budgetValue, result.level, result.percentage);
@@ -121,7 +126,8 @@ class PerformanceMonitoringService {
    * 获取预算值
    */
   private getBudgetValue(name: string, category: string): number | null {
-    const categoryBudget = this.budget[category as keyof typeof PERFORMANCE_BUDGET];
+    const categoryBudget =
+      this.budget[category as keyof typeof PERFORMANCE_BUDGET];
     if (!categoryBudget || typeof categoryBudget !== 'object') {
       return null;
     }
@@ -133,10 +139,14 @@ class PerformanceMonitoringService {
 
     // 尝试模糊匹配
     const keys = Object.keys(categoryBudget);
-    const matchedKey = keys.find(key => name.toLowerCase().includes(key.toLowerCase()));
-    
+    const matchedKey = keys.find(key =>
+      name.toLowerCase().includes(key.toLowerCase())
+    );
+
     if (matchedKey) {
-      return categoryBudget[matchedKey as keyof typeof categoryBudget] as number;
+      return categoryBudget[
+        matchedKey as keyof typeof categoryBudget
+      ] as number;
     }
 
     return null;
@@ -155,7 +165,7 @@ class PerformanceMonitoringService {
     const lastAlert = this.lastAlertTime.get(metric.name);
 
     // 检查冷却时间
-    if (lastAlert && (now - lastAlert) < PERFORMANCE_ALERTS.cooldown) {
+    if (lastAlert && now - lastAlert < PERFORMANCE_ALERTS.cooldown) {
       return;
     }
 
@@ -195,14 +205,26 @@ class PerformanceMonitoringService {
   /**
    * 尝试自动修复
    */
-  private attemptAutoFix(metric: PerformanceMetric, level: PerformanceAlertLevel): void {
-    if (level === PerformanceAlertLevel.CRITICAL || level === PerformanceAlertLevel.ERROR) {
-      if (PERFORMANCE_ALERTS.autoFix.clearCache && metric.category === 'rendering') {
+  private attemptAutoFix(
+    metric: PerformanceMetric,
+    level: PerformanceAlertLevel
+  ): void {
+    if (
+      level === PerformanceAlertLevel.CRITICAL ||
+      level === PerformanceAlertLevel.ERROR
+    ) {
+      if (
+        PERFORMANCE_ALERTS.autoFix.clearCache &&
+        metric.category === 'rendering'
+      ) {
         logger.info('Auto-fix: Clearing cache');
         // 清理缓存的逻辑
       }
 
-      if (PERFORMANCE_ALERTS.autoFix.unsubscribeInactive && metric.category === 'realtime') {
+      if (
+        PERFORMANCE_ALERTS.autoFix.unsubscribeInactive &&
+        metric.category === 'realtime'
+      ) {
         logger.info('Auto-fix: Unsubscribing inactive connections');
         // 取消不活跃订阅的逻辑
       }
@@ -217,11 +239,11 @@ class PerformanceMonitoringService {
     const retentionTime = MONITORING_CONFIG.retentionTime.metrics;
 
     this.metrics = this.metrics.filter(
-      metric => (now - metric.timestamp) < retentionTime
+      metric => now - metric.timestamp < retentionTime
     );
 
     this.alerts = this.alerts.filter(
-      alert => (now - alert.timestamp) < MONITORING_CONFIG.retentionTime.logs
+      alert => now - alert.timestamp < MONITORING_CONFIG.retentionTime.logs
     );
 
     logger.debug('Cleaned up old metrics and alerts');
@@ -237,9 +259,11 @@ class PerformanceMonitoringService {
 
     // 这里可以将指标发送到后端或分析服务
     logger.debug(`Flushing ${this.metrics.length} metrics`);
-    
+
     // 清空已上报的指标（保留最近的一些用于本地分析）
-    const recentMetrics = this.metrics.slice(-MONITORING_CONFIG.batchReporting.batchSize);
+    const recentMetrics = this.metrics.slice(
+      -MONITORING_CONFIG.batchReporting.batchSize
+    );
     this.metrics = recentMetrics;
   }
 
@@ -260,25 +284,27 @@ class PerformanceMonitoringService {
     const now = Date.now();
     const range = timeRange || MONITORING_CONFIG.retentionTime.metrics;
 
-    const recentMetrics = this.metrics.filter(
-      m => (now - m.timestamp) < range
-    );
+    const recentMetrics = this.metrics.filter(m => now - m.timestamp < range);
 
     const renderMetrics = recentMetrics.filter(m => m.category === 'rendering');
-    const avgRenderTime = renderMetrics.length > 0
-      ? renderMetrics.reduce((sum, m) => sum + m.value, 0) / renderMetrics.length
-      : 0;
-    const maxRenderTime = renderMetrics.length > 0
-      ? Math.max(...renderMetrics.map(m => m.value))
-      : 0;
+    const avgRenderTime =
+      renderMetrics.length > 0
+        ? renderMetrics.reduce((sum, m) => sum + m.value, 0) /
+          renderMetrics.length
+        : 0;
+    const maxRenderTime =
+      renderMetrics.length > 0
+        ? Math.max(...renderMetrics.map(m => m.value))
+        : 0;
 
     const memoryMetrics = recentMetrics.filter(m => m.category === 'memory');
-    const memoryUsage = memoryMetrics.length > 0
-      ? memoryMetrics[memoryMetrics.length - 1].value
-      : 0;
+    const memoryUsage =
+      memoryMetrics.length > 0
+        ? memoryMetrics[memoryMetrics.length - 1].value
+        : 0;
 
     const activeAlerts = this.alerts.filter(
-      a => (now - a.timestamp) < PERFORMANCE_ALERTS.cooldown
+      a => now - a.timestamp < PERFORMANCE_ALERTS.cooldown
     );
 
     return {
@@ -300,7 +326,7 @@ class PerformanceMonitoringService {
   getActiveAlerts(): PerformanceAlert[] {
     const now = Date.now();
     return this.alerts.filter(
-      a => (now - a.timestamp) < PERFORMANCE_ALERTS.cooldown
+      a => now - a.timestamp < PERFORMANCE_ALERTS.cooldown
     );
   }
 
@@ -336,8 +362,8 @@ class PerformanceMonitoringService {
       enabled: this.isEnabled,
       metricsCount: this.metrics.length,
       alertsCount: this.alerts.length,
-      samplingRate: import.meta.env.DEV 
-        ? MONITORING_CONFIG.samplingRate.development 
+      samplingRate: import.meta.env.DEV
+        ? MONITORING_CONFIG.samplingRate.development
         : MONITORING_CONFIG.samplingRate.production,
     };
   }

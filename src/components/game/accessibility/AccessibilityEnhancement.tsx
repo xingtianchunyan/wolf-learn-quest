@@ -1,11 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Monitor, Moon, Sun, Volume2, VolumeX, Keyboard, Eye } from 'lucide-react';
+import {
+  Monitor,
+  Moon,
+  Sun,
+  Volume2,
+  VolumeX,
+  Keyboard,
+  Eye,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 
 interface AccessibilitySettings {
@@ -13,17 +27,17 @@ interface AccessibilitySettings {
   theme: 'light' | 'dark' | 'high-contrast' | 'auto';
   fontSize: number;
   reducedMotion: boolean;
-  
+
   // 听觉设置
   soundEnabled: boolean;
   soundVolume: number;
   voiceAnnouncements: boolean;
-  
+
   // 交互设置
   keyboardNavigation: boolean;
   focusIndicators: boolean;
   clickAreas: 'normal' | 'large' | 'extra-large';
-  
+
   // 认知辅助
   gameInstructions: boolean;
   tooltipsEnabled: boolean;
@@ -52,15 +66,19 @@ const defaultSettings: AccessibilitySettings = {
   clickAreas: 'normal',
   gameInstructions: true,
   tooltipsEnabled: true,
-  confirmActions: false
+  confirmActions: false,
 };
 
-const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
+const AccessibilityContext = createContext<
+  AccessibilityContextType | undefined
+>(undefined);
 
 export const useAccessibility = () => {
   const context = useContext(AccessibilityContext);
   if (!context) {
-    throw new Error('useAccessibility must be used within AccessibilityProvider');
+    throw new Error(
+      'useAccessibility must be used within AccessibilityProvider'
+    );
   }
   return context;
 };
@@ -69,10 +87,14 @@ interface AccessibilityProviderProps {
   children: React.ReactNode;
 }
 
-export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ children }) => {
+export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
+  children,
+}) => {
   const [settings, setSettings] = useState<AccessibilitySettings>(() => {
     const saved = localStorage.getItem('accessibility-settings');
-    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+    return saved
+      ? { ...defaultSettings, ...JSON.parse(saved) }
+      : defaultSettings;
   });
 
   const updateSetting = <K extends keyof AccessibilitySettings>(
@@ -81,7 +103,10 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   ) => {
     setSettings(prev => {
       const newSettings = { ...prev, [key]: value };
-      localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
+      localStorage.setItem(
+        'accessibility-settings',
+        JSON.stringify(newSettings)
+      );
       return newSettings;
     });
   };
@@ -99,7 +124,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   // 应用主题设置
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // 主题设置
     if (settings.theme === 'high-contrast') {
       root.classList.add('high-contrast');
@@ -111,7 +136,9 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       root.classList.remove('dark', 'high-contrast');
     } else {
       // auto theme
-      const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const darkMode = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
       if (darkMode) {
         root.classList.add('dark');
       } else {
@@ -154,7 +181,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
         if (event.key === 'Tab') {
           document.body.classList.add('keyboard-navigation');
         }
-        
+
         // 快捷键支持
         if (event.ctrlKey || event.metaKey) {
           switch (event.key) {
@@ -194,12 +221,14 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   }, [settings.keyboardNavigation, announceText]);
 
   return (
-    <AccessibilityContext.Provider value={{
-      settings,
-      updateSetting,
-      announceText,
-      isHighContrast
-    }}>
+    <AccessibilityContext.Provider
+      value={{
+        settings,
+        updateSetting,
+        announceText,
+        isHighContrast,
+      }}
+    >
       {children}
     </AccessibilityContext.Provider>
   );
@@ -210,10 +239,9 @@ interface AccessibilityControlPanelProps {
   onClose: () => void;
 }
 
-export const AccessibilityControlPanel: React.FC<AccessibilityControlPanelProps> = ({
-  isOpen,
-  onClose
-}) => {
+export const AccessibilityControlPanel: React.FC<
+  AccessibilityControlPanelProps
+> = ({ isOpen, onClose }) => {
   const { settings, updateSetting } = useAccessibility();
 
   if (!isOpen) return null;
@@ -223,157 +251,175 @@ export const AccessibilityControlPanel: React.FC<AccessibilityControlPanelProps>
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-background rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        className='bg-background rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto'
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="w-5 h-5" />
+            <div className='flex items-center justify-between'>
+              <CardTitle className='flex items-center gap-2'>
+                <Eye className='w-5 h-5' />
                 无障碍设置
               </CardTitle>
-              <Button variant="ghost" onClick={onClose}>×</Button>
+              <Button variant='ghost' onClick={onClose}>
+                ×
+              </Button>
             </div>
           </CardHeader>
-          
-          <CardContent className="space-y-6">
+
+          <CardContent className='space-y-6'>
             {/* 视觉设置 */}
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Monitor className="w-4 h-4" />
+            <div className='space-y-4'>
+              <h3 className='font-semibold flex items-center gap-2'>
+                <Monitor className='w-4 h-4' />
                 视觉设置
               </h3>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">主题</label>
+
+              <div className='grid gap-4'>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>主题</label>
                   <Select
                     value={settings.theme}
-                    onValueChange={(value: AccessibilitySettings['theme']) => 
+                    onValueChange={(value: AccessibilitySettings['theme']) =>
                       updateSetting('theme', value)
                     }
                   >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className='w-32'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">自动</SelectItem>
-                      <SelectItem value="light">浅色</SelectItem>
-                      <SelectItem value="dark">深色</SelectItem>
-                      <SelectItem value="high-contrast">高对比度</SelectItem>
+                      <SelectItem value='auto'>自动</SelectItem>
+                      <SelectItem value='light'>浅色</SelectItem>
+                      <SelectItem value='dark'>深色</SelectItem>
+                      <SelectItem value='high-contrast'>高对比度</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">字体大小: {settings.fontSize}px</label>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>
+                    字体大小: {settings.fontSize}px
+                  </label>
                   <Slider
                     value={[settings.fontSize]}
-                    onValueChange={(value) => updateSetting('fontSize', value[0])}
+                    onValueChange={value => updateSetting('fontSize', value[0])}
                     min={12}
                     max={24}
                     step={1}
-                    className="w-full"
+                    className='w-full'
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">减少动画</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>减少动画</label>
                   <Switch
                     checked={settings.reducedMotion}
-                    onCheckedChange={(checked) => updateSetting('reducedMotion', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('reducedMotion', checked)
+                    }
                   />
                 </div>
               </div>
             </div>
 
             {/* 听觉设置 */}
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Volume2 className="w-4 h-4" />
+            <div className='space-y-4'>
+              <h3 className='font-semibold flex items-center gap-2'>
+                <Volume2 className='w-4 h-4' />
                 听觉设置
               </h3>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">启用声音</label>
+
+              <div className='grid gap-4'>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>启用声音</label>
                   <Switch
                     checked={settings.soundEnabled}
-                    onCheckedChange={(checked) => updateSetting('soundEnabled', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('soundEnabled', checked)
+                    }
                   />
                 </div>
 
                 {settings.soundEnabled && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">音量: {settings.soundVolume}%</label>
+                  <div className='space-y-2'>
+                    <label className='text-sm font-medium'>
+                      音量: {settings.soundVolume}%
+                    </label>
                     <Slider
                       value={[settings.soundVolume]}
-                      onValueChange={(value) => updateSetting('soundVolume', value[0])}
+                      onValueChange={value =>
+                        updateSetting('soundVolume', value[0])
+                      }
                       min={0}
                       max={100}
                       step={5}
-                      className="w-full"
+                      className='w-full'
                     />
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">语音播报</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>语音播报</label>
                   <Switch
                     checked={settings.voiceAnnouncements}
-                    onCheckedChange={(checked) => updateSetting('voiceAnnouncements', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('voiceAnnouncements', checked)
+                    }
                   />
                 </div>
               </div>
             </div>
 
             {/* 交互设置 */}
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Keyboard className="w-4 h-4" />
+            <div className='space-y-4'>
+              <h3 className='font-semibold flex items-center gap-2'>
+                <Keyboard className='w-4 h-4' />
                 交互设置
               </h3>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">键盘导航</label>
+
+              <div className='grid gap-4'>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>键盘导航</label>
                   <Switch
                     checked={settings.keyboardNavigation}
-                    onCheckedChange={(checked) => updateSetting('keyboardNavigation', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('keyboardNavigation', checked)
+                    }
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">焦点指示器</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>焦点指示器</label>
                   <Switch
                     checked={settings.focusIndicators}
-                    onCheckedChange={(checked) => updateSetting('focusIndicators', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('focusIndicators', checked)
+                    }
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">点击区域</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>点击区域</label>
                   <Select
                     value={settings.clickAreas}
-                    onValueChange={(value: AccessibilitySettings['clickAreas']) => 
-                      updateSetting('clickAreas', value)
-                    }
+                    onValueChange={(
+                      value: AccessibilitySettings['clickAreas']
+                    ) => updateSetting('clickAreas', value)}
                   >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className='w-32'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="normal">正常</SelectItem>
-                      <SelectItem value="large">大</SelectItem>
-                      <SelectItem value="extra-large">特大</SelectItem>
+                      <SelectItem value='normal'>正常</SelectItem>
+                      <SelectItem value='large'>大</SelectItem>
+                      <SelectItem value='extra-large'>特大</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -381,31 +427,37 @@ export const AccessibilityControlPanel: React.FC<AccessibilityControlPanelProps>
             </div>
 
             {/* 认知辅助 */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">认知辅助</h3>
-              
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">游戏说明</label>
+            <div className='space-y-4'>
+              <h3 className='font-semibold'>认知辅助</h3>
+
+              <div className='grid gap-4'>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>游戏说明</label>
                   <Switch
                     checked={settings.gameInstructions}
-                    onCheckedChange={(checked) => updateSetting('gameInstructions', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('gameInstructions', checked)
+                    }
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">工具提示</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>工具提示</label>
                   <Switch
                     checked={settings.tooltipsEnabled}
-                    onCheckedChange={(checked) => updateSetting('tooltipsEnabled', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('tooltipsEnabled', checked)
+                    }
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">操作确认</label>
+                <div className='flex items-center justify-between'>
+                  <label className='text-sm font-medium'>操作确认</label>
                   <Switch
                     checked={settings.confirmActions}
-                    onCheckedChange={(checked) => updateSetting('confirmActions', checked)}
+                    onCheckedChange={checked =>
+                      updateSetting('confirmActions', checked)
+                    }
                   />
                 </div>
               </div>
@@ -413,20 +465,20 @@ export const AccessibilityControlPanel: React.FC<AccessibilityControlPanelProps>
 
             {/* 快捷键说明 */}
             {settings.keyboardNavigation && (
-              <div className="space-y-4">
-                <h3 className="font-semibold">快捷键</h3>
-                <div className="grid gap-2 text-sm">
-                  <div className="flex justify-between">
+              <div className='space-y-4'>
+                <h3 className='font-semibold'>快捷键</h3>
+                <div className='grid gap-2 text-sm'>
+                  <div className='flex justify-between'>
                     <span>跳转到主要内容</span>
-                    <Badge variant="outline">Ctrl + 1</Badge>
+                    <Badge variant='outline'>Ctrl + 1</Badge>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>跳转到导航</span>
-                    <Badge variant="outline">Ctrl + 2</Badge>
+                    <Badge variant='outline'>Ctrl + 2</Badge>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>显示帮助</span>
-                    <Badge variant="outline">Ctrl + /</Badge>
+                    <Badge variant='outline'>Ctrl + /</Badge>
                   </div>
                 </div>
               </div>

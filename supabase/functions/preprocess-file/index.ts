@@ -1,6 +1,5 @@
-
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import 'https://deno.land/x/xhr@0.1.0/mod.ts';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import JSZip from 'https://esm.sh/jszip@3.10.1';
 
@@ -10,15 +9,18 @@ const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
 const ALLOWED_ORIGINS = [
   'https://wolf-learn-quest.vercel.app',
   'http://localhost:5173',
-  'http://localhost:8080'
+  'http://localhost:8080',
 ];
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('origin') || '';
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowed = ALLOWED_ORIGINS.includes(origin)
+    ? origin
+    : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 }
@@ -30,18 +32,18 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
   try {
     console.log('开始解析DOCX文件，大小:', fileBuffer.byteLength);
-    
+
     const zip = new JSZip();
     const zipFile = await zip.loadAsync(fileBuffer);
-    
+
     const documentFile = zipFile.file('word/document.xml');
     if (!documentFile) {
       throw new Error('无法找到document.xml文件');
     }
-    
+
     const xmlContent = await documentFile.async('string');
     console.log('成功读取document.xml，长度:', xmlContent.length);
-    
+
     let text = xmlContent
       .replace(/<[^>]*>/g, ' ')
       .replace(/&amp;/g, '&')
@@ -51,7 +53,7 @@ async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
       .replace(/&apos;/g, "'")
       .replace(/\s+/g, ' ')
       .trim();
-    
+
     console.log('DOCX文本提取完成，内容长度:', text.length);
     return text;
   } catch (error) {
@@ -71,16 +73,19 @@ async function readTextFile(fileBuffer: ArrayBuffer): Promise<string> {
 }
 
 // 截断文本以适配API限制
-function truncateContentForAPI(content: string, maxLength: number = 6000): string {
+function truncateContentForAPI(
+  content: string,
+  maxLength: number = 6000
+): string {
   if (content.length <= maxLength) {
     return content;
   }
-  
+
   console.log(`内容过长 (${content.length} 字符)，截断到 ${maxLength} 字符`);
   return content.substring(0, maxLength) + '\n\n[内容已截断，仅处理前半部分]';
 }
 
-serve(async (req) => {
+serve(async req => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -88,7 +93,7 @@ serve(async (req) => {
 
   try {
     console.log('开始处理预处理文件请求');
-    
+
     if (!SILICONFLOW_API_KEY) {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
@@ -105,14 +110,17 @@ serve(async (req) => {
 
     if (existingPreprocessed) {
       console.log('文件已预处理过，返回现有结果');
-      return new Response(JSON.stringify({
-        success: true,
-        message: '文件已预处理完成',
-        preprocessed_id: existingPreprocessed.id,
-        content_length: existingPreprocessed.preprocessed_content.length
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: '文件已预处理完成',
+          preprocessed_id: existingPreprocessed.id,
+          content_length: existingPreprocessed.preprocessed_content.length,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // 记录或获取文件信息
@@ -131,7 +139,7 @@ serve(async (req) => {
         .insert({
           file_name: fileName,
           file_path: filePath,
-          room_id: roomId
+          room_id: roomId,
         })
         .select()
         .single();
@@ -182,7 +190,7 @@ serve(async (req) => {
     const response = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
+        Authorization: `Bearer ${SILICONFLOW_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -200,15 +208,15 @@ serve(async (req) => {
 5. 保持原文的准确性和完整性
 6. 如果内容过长，进行合理的分段和总结
 
-请返回结构化的、适合用于题目生成的文本内容。`
+请返回结构化的、适合用于题目生成的文本内容。`,
           },
           {
             role: 'user',
-            content: `请对以下学习材料进行预处理和结构化整理：\n\n${truncatedContent}`
-          }
+            content: `请对以下学习材料进行预处理和结构化整理：\n\n${truncatedContent}`,
+          },
         ],
         temperature: 0.3,
-        max_tokens: 4000  // 修改为4000以符合API限制
+        max_tokens: 4000, // 修改为4000以符合API限制
       }),
     });
 
@@ -221,7 +229,7 @@ serve(async (req) => {
     }
 
     const result = await response.json();
-    
+
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
       console.error('API返回格式错误:', result);
       throw new Error('API返回数据格式错误');
@@ -238,7 +246,7 @@ serve(async (req) => {
         file_name: fileName,
         preprocessed_content: preprocessedContent,
         model_used: 'Qwen/Qwen2.5-72B-Instruct',
-        uploaded_file_id: uploadedFileId
+        uploaded_file_id: uploadedFileId,
       })
       .select()
       .single();
@@ -250,23 +258,28 @@ serve(async (req) => {
 
     console.log('预处理结果已保存，ID:', savedData.id);
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: '文件预处理完成',
-      preprocessed_id: savedData.id,
-      content_length: preprocessedContent.length
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: '文件预处理完成',
+        preprocessed_id: savedData.id,
+        content_length: preprocessedContent.length,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     console.error('预处理过程中发生错误:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : '未知错误'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : '未知错误',
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });

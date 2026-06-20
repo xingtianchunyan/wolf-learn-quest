@@ -11,25 +11,25 @@ interface HunterRevengeInterfaceProps {
 
 const HunterRevengeInterface: React.FC<HunterRevengeInterfaceProps> = ({
   onRevenge,
-  availablePlayers
+  availablePlayers,
 }) => {
   return (
-    <Card className="bg-werewolf-dark/40 border-werewolf-purple/30">
+    <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="w-4 h-4" />
+        <CardTitle className='flex items-center gap-2'>
+          <Target className='w-4 h-4' />
           猎人复仇
-          <Badge variant="outline">猎人技能</Badge>
+          <Badge variant='outline'>猎人技能</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className='space-y-2'>
         {availablePlayers.map(player => (
           <Button
             key={player.userId}
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onRevenge(player.userId)}
-            className="w-full justify-start"
+            className='w-full justify-start'
           >
             击杀 {player.name}
           </Button>

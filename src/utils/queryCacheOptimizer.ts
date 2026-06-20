@@ -1,6 +1,6 @@
 /**
  * 文件级注释：查询缓存策略优化系统
- * 
+ *
  * 该文件实现了一个全面的查询缓存优化系统，专门解决：
  * - 缓存命中率低的问题
  * - 缓存内存泄漏
@@ -8,7 +8,7 @@
  * - 智能缓存策略
  * - 缓存一致性管理
  * - 预加载和预测缓存
- * 
+ *
  * 主要功能：
  * - 多层缓存架构
  * - 智能缓存策略
@@ -16,7 +16,7 @@
  * - 自动缓存清理
  * - 查询优化建议
  * - 缓存预热机制
- * 
+ *
  * @author SOLO Coding
  * @version 3.0.0
  */
@@ -199,7 +199,7 @@ export interface CacheOptimizationSuggestion {
 
 /**
  * 类级注释：查询缓存优化器
- * 
+ *
  * 实现全面的查询缓存优化，包含：
  * - 多层缓存管理
  * - 智能缓存策略
@@ -213,7 +213,8 @@ export class QueryCacheOptimizer {
   private configs: Map<string, CacheConfig> = new Map();
   private stats: Map<string, CacheStats> = new Map();
   private activeQueries: Map<string, Promise<any>> = new Map();
-  private cleanupTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private cleanupTimers: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
   private monitoringTimer?: ReturnType<typeof setInterval>;
   private compressionWorker?: Worker;
   private isShuttingDown: boolean = false;
@@ -267,7 +268,7 @@ export class QueryCacheOptimizer {
       evictions: 0,
       errors: 0,
       strategyStats: {},
-      tagStats: {}
+      tagStats: {},
     });
 
     // 启动清理定时器
@@ -315,8 +316,8 @@ export class QueryCacheOptimizer {
               key: queryConfig.key,
               strategy: config.strategy,
               size: JSON.stringify(data).length,
-              ttl: config.ttl
-            }
+              ttl: config.ttl,
+            },
           };
         }
       }
@@ -329,7 +330,10 @@ export class QueryCacheOptimizer {
         cachedItem.accessCount++;
 
         // 后台更新检查
-        if (queryConfig.backgroundUpdate.enabled && this.isStale(cachedItem, queryConfig.backgroundUpdate.staleTime)) {
+        if (
+          queryConfig.backgroundUpdate.enabled &&
+          this.isStale(cachedItem, queryConfig.backgroundUpdate.staleTime)
+        ) {
           this.backgroundUpdate(cacheName, queryConfig);
         }
 
@@ -340,13 +344,16 @@ export class QueryCacheOptimizer {
           fromCache: true,
           queryTime: Date.now() - startTime,
           cacheTime: cachedItem.createdAt,
-          isStale: this.isStale(cachedItem, queryConfig.backgroundUpdate.staleTime),
+          isStale: this.isStale(
+            cachedItem,
+            queryConfig.backgroundUpdate.staleTime
+          ),
           metadata: {
             key: queryConfig.key,
             strategy: config.strategy,
             size: cachedItem.size,
-            ttl: config.ttl
-          }
+            ttl: config.ttl,
+          },
         };
       }
 
@@ -355,7 +362,7 @@ export class QueryCacheOptimizer {
       logger.debug('缓存未命中，执行查询', { key: queryConfig.key, cacheName });
 
       const queryPromise = this.executeQuery(queryConfig);
-      
+
       // 添加到活跃查询
       if (queryConfig.deduplication.enabled) {
         this.activeQueries.set(queryConfig.key, queryPromise);
@@ -363,9 +370,14 @@ export class QueryCacheOptimizer {
 
       try {
         const data = await queryPromise;
-        
+
         // 缓存结果
-        await this.setCacheItem(cacheName, queryConfig.key, data, queryConfig.cache);
+        await this.setCacheItem(
+          cacheName,
+          queryConfig.key,
+          data,
+          queryConfig.cache
+        );
 
         const queryTime = Date.now() - startTime;
         this.updateResponseTime(stats, queryTime);
@@ -379,17 +391,15 @@ export class QueryCacheOptimizer {
             key: queryConfig.key,
             strategy: config.strategy,
             size: JSON.stringify(data).length,
-            ttl: config.ttl
-          }
+            ttl: config.ttl,
+          },
         };
-
       } finally {
         // 移除活跃查询
         if (queryConfig.deduplication.enabled) {
           this.activeQueries.delete(queryConfig.key);
         }
       }
-
     } catch (error) {
       stats.errors++;
       logger.error('查询执行失败', { error, key: queryConfig.key, cacheName });
@@ -406,7 +416,9 @@ export class QueryCacheOptimizer {
     let lastError: Error | null = null;
     let attempt = 0;
 
-    while (attempt < (queryConfig.retry.enabled ? queryConfig.retry.maxAttempts : 1)) {
+    while (
+      attempt < (queryConfig.retry.enabled ? queryConfig.retry.maxAttempts : 1)
+    ) {
       try {
         return await queryConfig.queryFn();
       } catch (error) {
@@ -419,11 +431,11 @@ export class QueryCacheOptimizer {
             delay *= Math.pow(2, attempt - 1);
           }
 
-          logger.warn('查询失败，准备重试', { 
-            error, 
-            attempt, 
+          logger.warn('查询失败，准备重试', {
+            error,
+            attempt,
             delay,
-            key: queryConfig.key 
+            key: queryConfig.key,
           });
 
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -453,7 +465,7 @@ export class QueryCacheOptimizer {
   ): Promise<void> {
     const cache = this.caches.get(cacheName);
     const config = this.configs.get(cacheName);
-    
+
     if (!cache || !config) return;
 
     const mergedConfig = { ...config, ...cacheConfig };
@@ -465,7 +477,8 @@ export class QueryCacheOptimizer {
     let compressed = false;
 
     // 压缩处理
-    if (mergedConfig.compression && size > 1024) { // 大于1KB才压缩
+    if (mergedConfig.compression && size > 1024) {
+      // 大于1KB才压缩
       try {
         finalValue = await this.compressData(value);
         compressed = true;
@@ -488,8 +501,10 @@ export class QueryCacheOptimizer {
       compressed,
       metadata: {
         originalSize: size,
-        compressionRatio: compressed ? size / JSON.stringify(finalValue).length : 1
-      }
+        compressionRatio: compressed
+          ? size / JSON.stringify(finalValue).length
+          : 1,
+      },
     };
 
     // 检查缓存大小限制
@@ -504,11 +519,11 @@ export class QueryCacheOptimizer {
       this.persistCacheItem(cacheName, item);
     }
 
-    logger.debug('缓存项已设置', { 
-      key, 
-      cacheName, 
+    logger.debug('缓存项已设置', {
+      key,
+      cacheName,
       size: item.size,
-      compressed 
+      compressed,
     });
   }
 
@@ -529,13 +544,21 @@ export class QueryCacheOptimizer {
   /**
    * 函数级注释：后台更新
    */
-  private async backgroundUpdate(cacheName: string, queryConfig: QueryConfig): Promise<void> {
+  private async backgroundUpdate(
+    cacheName: string,
+    queryConfig: QueryConfig
+  ): Promise<void> {
     try {
       logger.debug('执行后台更新', { key: queryConfig.key, cacheName });
-      
+
       const data = await queryConfig.queryFn();
-      await this.setCacheItem(cacheName, queryConfig.key, data, queryConfig.cache);
-      
+      await this.setCacheItem(
+        cacheName,
+        queryConfig.key,
+        data,
+        queryConfig.cache
+      );
+
       logger.debug('后台更新完成', { key: queryConfig.key, cacheName });
     } catch (error) {
       logger.error('后台更新失败', { error, key: queryConfig.key, cacheName });
@@ -594,28 +617,31 @@ export class QueryCacheOptimizer {
       stats.evictions++;
     });
 
-    logger.debug('缓存项已淘汰', { 
-      cacheName, 
-      count: toEvict.length, 
-      strategy: config.strategy 
+    logger.debug('缓存项已淘汰', {
+      cacheName,
+      count: toEvict.length,
+      strategy: config.strategy,
     });
   }
 
   /**
    * 函数级注释：自适应淘汰策略
    */
-  private adaptiveEviction(items: [string, CacheItem][], count: number): string[] {
+  private adaptiveEviction(
+    items: [string, CacheItem][],
+    count: number
+  ): string[] {
     const now = Date.now();
-    
+
     // 综合评分：考虑访问频率、最近访问时间、大小、优先级
     const scored = items.map(([key, item]) => {
       const ageScore = (now - item.lastAccessed) / (24 * 60 * 60 * 1000); // 天数
       const frequencyScore = 1 / (item.accessCount + 1);
       const sizeScore = item.size / (1024 * 1024); // MB
       const priorityScore = 1 / item.priority;
-      
+
       const totalScore = ageScore + frequencyScore + sizeScore + priorityScore;
-      
+
       return { key, score: totalScore };
     });
 
@@ -639,7 +665,7 @@ export class QueryCacheOptimizer {
         reject(new Error('压缩超时'));
       }, 5000);
 
-      this.compressionWorker!.onmessage = (event) => {
+      this.compressionWorker!.onmessage = event => {
         clearTimeout(timeout);
         if (event.data.error) {
           reject(new Error(event.data.error));
@@ -650,7 +676,7 @@ export class QueryCacheOptimizer {
 
       this.compressionWorker!.postMessage({
         action: 'compress',
-        data
+        data,
       });
     });
   }
@@ -694,9 +720,12 @@ export class QueryCacheOptimizer {
     const config = this.configs.get(cacheName);
     if (!config) return;
 
-    const timer = setInterval(() => {
-      this.cleanupExpiredItems(cacheName);
-    }, Math.min(config.ttl / 4, 60000)); // 最多每分钟清理一次
+    const timer = setInterval(
+      () => {
+        this.cleanupExpiredItems(cacheName);
+      },
+      Math.min(config.ttl / 4, 60000)
+    ); // 最多每分钟清理一次
 
     this.cleanupTimers.set(cacheName, timer);
   }
@@ -748,28 +777,31 @@ export class QueryCacheOptimizer {
 
       // 检查命中率
       if (stats.hitRate < config.monitoring.alertThresholds.hitRate) {
-        logger.warn('缓存命中率过低', { 
-          cacheName, 
+        logger.warn('缓存命中率过低', {
+          cacheName,
           hitRate: stats.hitRate,
-          threshold: config.monitoring.alertThresholds.hitRate 
+          threshold: config.monitoring.alertThresholds.hitRate,
         });
       }
 
       // 检查内存使用
       if (stats.memoryUsage > config.monitoring.alertThresholds.memoryUsage) {
-        logger.warn('缓存内存使用过高', { 
-          cacheName, 
+        logger.warn('缓存内存使用过高', {
+          cacheName,
           memoryUsage: stats.memoryUsage,
-          threshold: config.monitoring.alertThresholds.memoryUsage 
+          threshold: config.monitoring.alertThresholds.memoryUsage,
         });
       }
 
       // 检查响应时间
-      if (stats.averageResponseTime > config.monitoring.alertThresholds.responseTime) {
-        logger.warn('平均响应时间过长', { 
-          cacheName, 
+      if (
+        stats.averageResponseTime >
+        config.monitoring.alertThresholds.responseTime
+      ) {
+        logger.warn('平均响应时间过长', {
+          cacheName,
           responseTime: stats.averageResponseTime,
-          threshold: config.monitoring.alertThresholds.responseTime 
+          threshold: config.monitoring.alertThresholds.responseTime,
         });
       }
     }
@@ -779,9 +811,12 @@ export class QueryCacheOptimizer {
    * 函数级注释：启动定期清理
    */
   private startPeriodicCleanup(): void {
-    setInterval(() => {
-      this.performPeriodicCleanup();
-    }, 5 * 60 * 1000); // 每5分钟执行一次
+    setInterval(
+      () => {
+        this.performPeriodicCleanup();
+      },
+      5 * 60 * 1000
+    ); // 每5分钟执行一次
   }
 
   /**
@@ -790,11 +825,11 @@ export class QueryCacheOptimizer {
   private performPeriodicCleanup(): void {
     for (const cacheName of this.caches.keys()) {
       this.cleanupExpiredItems(cacheName);
-      
+
       // 检查缓存大小
       const cache = this.caches.get(cacheName);
       const config = this.configs.get(cacheName);
-      
+
       if (cache && config && cache.size > config.maxSize * 0.9) {
         const evictCount = Math.ceil(cache.size * 0.1); // 清理10%
         this.evictItems(cacheName, evictCount);
@@ -806,7 +841,8 @@ export class QueryCacheOptimizer {
    * 函数级注释：更新响应时间
    */
   private updateResponseTime(stats: CacheStats, responseTime: number): void {
-    const totalTime = stats.averageResponseTime * (stats.totalRequests - 1) + responseTime;
+    const totalTime =
+      stats.averageResponseTime * (stats.totalRequests - 1) + responseTime;
     stats.averageResponseTime = totalTime / stats.totalRequests;
   }
 
@@ -819,12 +855,15 @@ export class QueryCacheOptimizer {
 
     if (!cache || !stats) return;
 
-    stats.hitRate = stats.totalRequests > 0 ? stats.cacheHits / stats.totalRequests : 0;
+    stats.hitRate =
+      stats.totalRequests > 0 ? stats.cacheHits / stats.totalRequests : 0;
     stats.itemCount = cache.size;
-    
+
     // 计算内存使用
-    stats.memoryUsage = Array.from(cache.values())
-      .reduce((total, item) => total + item.size, 0);
+    stats.memoryUsage = Array.from(cache.values()).reduce(
+      (total, item) => total + item.size,
+      0
+    );
   }
 
   /**
@@ -849,15 +888,19 @@ export class QueryCacheOptimizer {
     if (pattern) {
       const regex = new RegExp(pattern);
       const keysToDelete: string[] = [];
-      
+
       for (const key of cache.keys()) {
         if (regex.test(key)) {
           keysToDelete.push(key);
         }
       }
-      
+
       keysToDelete.forEach(key => cache.delete(key));
-      logger.info('模式匹配缓存已失效', { cacheName, pattern, count: keysToDelete.length });
+      logger.info('模式匹配缓存已失效', {
+        cacheName,
+        pattern,
+        count: keysToDelete.length,
+      });
     } else {
       cache.clear();
       logger.info('缓存已全部失效', { cacheName });
@@ -891,10 +934,12 @@ export class QueryCacheOptimizer {
   /**
    * 函数级注释：生成优化建议
    */
-  public generateOptimizationSuggestions(cacheName: string): CacheOptimizationSuggestion[] {
+  public generateOptimizationSuggestions(
+    cacheName: string
+  ): CacheOptimizationSuggestion[] {
     const stats = this.stats.get(cacheName);
     const config = this.configs.get(cacheName);
-    
+
     if (!stats || !config) {
       throw new Error(`缓存不存在: ${cacheName}`);
     }
@@ -910,7 +955,7 @@ export class QueryCacheOptimizer {
         currentValue: config.strategy,
         suggestedValue: 'adaptive',
         expectedImprovement: '提升命中率15-25%',
-        implementation: '将缓存策略改为自适应策略'
+        implementation: '将缓存策略改为自适应策略',
       });
     }
 
@@ -923,7 +968,7 @@ export class QueryCacheOptimizer {
         currentValue: config.ttl,
         suggestedValue: config.ttl * 1.5,
         expectedImprovement: '减少30%的缓存淘汰',
-        implementation: '将TTL增加50%'
+        implementation: '将TTL增加50%',
       });
     }
 
@@ -936,12 +981,15 @@ export class QueryCacheOptimizer {
         currentValue: config.maxSize,
         suggestedValue: config.compression ? config.maxSize * 1.5 : '启用压缩',
         expectedImprovement: '减少50%的内存压力',
-        implementation: config.compression ? '增加缓存大小' : '启用数据压缩'
+        implementation: config.compression ? '增加缓存大小' : '启用数据压缩',
       });
     }
 
     // 预加载建议
-    if (!config.preload.enabled && stats.cacheMisses > stats.totalRequests * 0.4) {
+    if (
+      !config.preload.enabled &&
+      stats.cacheMisses > stats.totalRequests * 0.4
+    ) {
       suggestions.push({
         type: 'preload',
         priority: 'medium',
@@ -949,7 +997,7 @@ export class QueryCacheOptimizer {
         currentValue: false,
         suggestedValue: true,
         expectedImprovement: '提升20-30%的命中率',
-        implementation: '启用缓存预加载机制'
+        implementation: '启用缓存预加载机制',
       });
     }
 
@@ -978,7 +1026,7 @@ export class QueryCacheOptimizer {
    */
   public shutdown(): void {
     if (this.isShuttingDown) return;
-    
+
     this.isShuttingDown = true;
     logger.info('开始关闭查询缓存优化器');
 
@@ -1012,9 +1060,13 @@ export function useQueryCacheOptimizer() {
   return {
     createCache: queryCacheOptimizer.createCache.bind(queryCacheOptimizer),
     query: queryCacheOptimizer.query.bind(queryCacheOptimizer),
-    invalidateCache: queryCacheOptimizer.invalidateCache.bind(queryCacheOptimizer),
+    invalidateCache:
+      queryCacheOptimizer.invalidateCache.bind(queryCacheOptimizer),
     getStats: queryCacheOptimizer.getStats.bind(queryCacheOptimizer),
-    generateOptimizationSuggestions: queryCacheOptimizer.generateOptimizationSuggestions.bind(queryCacheOptimizer),
-    deleteCache: queryCacheOptimizer.deleteCache.bind(queryCacheOptimizer)
+    generateOptimizationSuggestions:
+      queryCacheOptimizer.generateOptimizationSuggestions.bind(
+        queryCacheOptimizer
+      ),
+    deleteCache: queryCacheOptimizer.deleteCache.bind(queryCacheOptimizer),
   };
 }

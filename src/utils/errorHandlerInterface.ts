@@ -59,7 +59,10 @@ export interface IErrorHandler {
    * @param options - 处理选项
    * @returns 处理结果
    */
-  handleError(error: any, options?: StandardErrorOptions): Promise<ErrorHandlingResult>;
+  handleError(
+    error: any,
+    options?: StandardErrorOptions
+  ): Promise<ErrorHandlingResult>;
 
   /**
    * 获取错误统计信息

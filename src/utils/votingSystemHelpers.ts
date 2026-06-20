@@ -1,4 +1,3 @@
-
 // 投票系统辅助函数
 
 export interface VotingSummary {
@@ -22,7 +21,10 @@ export const calculateVotingSummary = (
   _totalPlayers: number
 ): VotingSummary => {
   const validVotes = votes.filter(vote => vote.is_valid);
-  const totalVoteWeight = validVotes.reduce((sum, vote) => sum + (vote.vote_weight || 1), 0);
+  const totalVoteWeight = validVotes.reduce(
+    (sum, vote) => sum + (vote.vote_weight || 1),
+    0
+  );
   const abstentions = validVotes.filter(vote => !vote.target_id).length;
   const targetVotes = validVotes.filter(vote => vote.target_id);
 
@@ -31,24 +33,32 @@ export const calculateVotingSummary = (
   targetVotes.forEach(vote => {
     if (vote.target_id) {
       const weight = vote.vote_weight || 1;
-      voteCounts.set(vote.target_id, (voteCounts.get(vote.target_id) || 0) + weight);
+      voteCounts.set(
+        vote.target_id,
+        (voteCounts.get(vote.target_id) || 0) + weight
+      );
     }
   });
 
   // 找出最高票数
   const maxVotes = Math.max(...Array.from(voteCounts.values()), 0);
-  const topCandidates = Array.from(voteCounts.entries()).filter(([_, count]) => count === maxVotes);
+  const topCandidates = Array.from(voteCounts.entries()).filter(
+    ([_, count]) => count === maxVotes
+  );
 
-  const topCandidate = topCandidates.length > 0 ? (() => {
-    const [playerId, voteCount] = topCandidates[0];
-    const player = players.find(p => p.userId === playerId);
-    return {
-      playerId,
-      playerName: player?.name || '未知玩家',
-      voteCount,
-      percentage: Math.round((voteCount / totalVoteWeight) * 100)
-    };
-  })() : undefined;
+  const topCandidate =
+    topCandidates.length > 0
+      ? (() => {
+          const [playerId, voteCount] = topCandidates[0];
+          const player = players.find(p => p.userId === playerId);
+          return {
+            playerId,
+            playerName: player?.name || '未知玩家',
+            voteCount,
+            percentage: Math.round((voteCount / totalVoteWeight) * 100),
+          };
+        })()
+      : undefined;
 
   return {
     totalVotes: votes.length,
@@ -56,7 +66,9 @@ export const calculateVotingSummary = (
     abstentions,
     topCandidate,
     isTied: topCandidates.length > 1 && maxVotes > 0,
-    hasMajority: topCandidate ? topCandidate.voteCount > totalVoteWeight / 2 : false
+    hasMajority: topCandidate
+      ? topCandidate.voteCount > totalVoteWeight / 2
+      : false,
   };
 };
 
@@ -93,7 +105,8 @@ export const canStartVoting = (
     return { canStart: false, reason: '玩家人数不足' };
   }
 
-  if (gamePhase === 1) { // 白天阶段
+  if (gamePhase === 1) {
+    // 白天阶段
     return { canStart: true };
   }
 
@@ -195,9 +208,9 @@ export const formatVoteTime = (voteTime: string): string => {
   } else if (diffMins < 60) {
     return `${diffMins}分钟前`;
   } else {
-    return date.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 };

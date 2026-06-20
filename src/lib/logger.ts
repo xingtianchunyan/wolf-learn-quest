@@ -24,9 +24,13 @@ export function createLogger(namespace: string): ILogger {
 
   const prefix = `[${namespace}]`;
   return {
-    debug: (...args) => { if (isDev) console.debug(prefix, ...args); },
-    info:  (...args) => { if (isDev) console.info(prefix, ...args); },
-    warn:  (...args) => console.warn(prefix, ...args),
+    debug: (...args) => {
+      if (isDev) console.debug(prefix, ...args);
+    },
+    info: (...args) => {
+      if (isDev) console.info(prefix, ...args);
+    },
+    warn: (...args) => console.warn(prefix, ...args),
     error: (...args) => console.error(prefix, ...args),
   };
 }

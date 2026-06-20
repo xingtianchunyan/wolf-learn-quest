@@ -9,7 +9,12 @@ export type RoleStatus = 0 | 1 | 2 | 3; // 0: 存活, 1: 死亡, 2: 出局, 3: �
 
 export type Phase = 'night' | 'day' | 'voting' | 'discussion';
 
-export type ExecutionStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'failed';
+export type ExecutionStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
 
 export type TargetType = 'player' | 'room' | 'phase' | 'global';
 
@@ -27,28 +32,28 @@ export interface SkillEffects {
   // 狼人技能效果
   werewolf_kill?: boolean;
   werewolf_target?: string;
-  
+
   // 预言家技能效果
   seer_check?: boolean;
   seer_result?: 'werewolf' | 'villager' | null;
-  
+
   // 女巫技能效果
   witch_save?: boolean;
   witch_poison?: boolean;
   witch_save_used?: boolean;
   witch_poison_used?: boolean;
-  
+
   // 守卫技能效果
   guard_protect?: boolean;
   guard_last_target?: string;
-  
+
   // 猎人技能效果
   hunter_shoot?: boolean;
   hunter_shoot_used?: boolean;
-  
+
   // 村民技能效果（睡觉）
   villager_sleep?: boolean;
-  
+
   // 通用字段
   [key: string]: unknown;
 }
@@ -61,20 +66,20 @@ export interface RoleAttributes {
   hasPoisonPotion?: boolean;
   saveUsedRounds?: number[];
   poisonUsedRounds?: number[];
-  
+
   // 守卫属性
   lastProtectedTarget?: string;
-  
+
   // 猎人属性
   hasShot?: boolean;
-  
+
   // 预言家属性
   checkHistory?: Array<{
     round: number;
     target: string;
     result: 'werewolf' | 'villager';
   }>;
-  
+
   // 通用字段
   [key: string]: unknown;
 }
@@ -167,12 +172,14 @@ export interface RoleSpecificSkillsProps {
   skillEffects: SkillEffects | Record<string, unknown>; // 兼容动态数据
   roleAttributes: RoleAttributes | Record<string, unknown>; // 兼容动态数据
   canUseSkill: boolean;
-  onUseSkill: (skillData: SkillData | Record<string, unknown>) => void | Promise<void>; // 兼容多种类型
+  onUseSkill: (
+    skillData: SkillData | Record<string, unknown>
+  ) => void | Promise<void>; // 兼容多种类型
   availableTargets: AvailableTarget[];
   currentPhase: number;
-  userSkillUses?: Array<{ 
-    round_number: number; 
-    phase: string; 
+  userSkillUses?: Array<{
+    round_number: number;
+    phase: string;
     skill_name: string;
   }>;
   usageRestriction?: UsageRestriction;

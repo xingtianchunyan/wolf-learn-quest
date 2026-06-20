@@ -1,12 +1,12 @@
 /**
  * @fileoverview 技能验证规则测试文件
- * 
+ *
  * 本文件包含对技能验证规则系统的全面测试，包括：
  * - 技能验证规则配置测试
  * - 统一技能验证函数测试
  * - 技能使用次数限制验证测试
  * - 各种技能的特定验证逻辑测试
- * 
+ *
  * @author AI Assistant
  * @version 1.0.0
  */
@@ -24,23 +24,23 @@ vi.mock('@/integrations/supabase/client', () => ({
               single: vi.fn(),
               order: vi.fn(() => ({
                 limit: vi.fn(() => ({
-                  single: vi.fn()
-                }))
+                  single: vi.fn(),
+                })),
               })),
               limit: vi.fn(),
-              data: []
-            }))
-          }))
-        }))
-      }))
-    }))
-  }
+              data: [],
+            })),
+          })),
+        })),
+      })),
+    })),
+  },
 }));
 
-import { 
-  SKILL_VALIDATION_RULES, 
+import {
+  SKILL_VALIDATION_RULES,
   validateSkillUnified,
-  SkillValidationRule 
+  SkillValidationRule,
 } from '../skillValidationRules';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -62,7 +62,7 @@ describe('SkillValidationRules', () => {
     it('应该包含所有必要的技能验证规则', () => {
       const expectedSkills = [
         'werewolf_attack',
-        'night_attack', 
+        'night_attack',
         'seer_divination',
         'prophecy',
         'magic_potion',
@@ -73,7 +73,7 @@ describe('SkillValidationRules', () => {
         'demon_eye',
         'voodoo',
         'self_destruct',
-        'Sleep'
+        'Sleep',
       ];
 
       expectedSkills.forEach(skillName => {
@@ -87,7 +87,7 @@ describe('SkillValidationRules', () => {
      */
     it('应该正确配置狼人攻击技能规则', () => {
       const rule = SKILL_VALIDATION_RULES.werewolf_attack;
-      
+
       expect(rule.skillName).toBe('werewolf_attack');
       expect(rule.phases).toEqual([3]); // 夜晚阶段
       expect(rule.maxUsesPerRound).toBe(1);
@@ -100,7 +100,7 @@ describe('SkillValidationRules', () => {
      */
     it('应该正确配置预言家占卜技能规则', () => {
       const rule = SKILL_VALIDATION_RULES.seer_divination;
-      
+
       expect(rule.skillName).toBe('seer_divination');
       expect(rule.phases).toEqual([3]); // 夜晚阶段
       expect(rule.maxUsesPerRound).toBe(1);
@@ -113,7 +113,7 @@ describe('SkillValidationRules', () => {
      */
     it('应该正确配置女巫魔药技能规则', () => {
       const rule = SKILL_VALIDATION_RULES.magic_potion;
-      
+
       expect(rule.skillName).toBe('magic_potion');
       expect(rule.phases).toEqual([3]); // 夜晚阶段
       expect(rule.maxUsesPerGame).toBe(2);
@@ -126,7 +126,7 @@ describe('SkillValidationRules', () => {
      */
     it('应该正确配置守卫保护技能规则', () => {
       const rule = SKILL_VALIDATION_RULES.guard_protection;
-      
+
       expect(rule.skillName).toBe('guard_protection');
       expect(rule.phases).toEqual([3]); // 夜晚阶段
       expect(rule.maxUsesPerRound).toBe(1);
@@ -139,7 +139,7 @@ describe('SkillValidationRules', () => {
      */
     it('应该正确配置猎人复仇技能规则', () => {
       const rule = SKILL_VALIDATION_RULES.hunter_revenge;
-      
+
       expect(rule.skillName).toBe('hunter_revenge');
       expect(rule.phases).toEqual([1, 2, 3, 4]); // 任何阶段
       expect(rule.maxUsesPerGame).toBe(1);
@@ -186,99 +186,103 @@ describe('SkillValidationRules', () => {
     });
 
     /**
-      * 测试缺少目标验证
-      */
-     it('应该拒绝需要目标但未提供目标的技能', async () => {
-       // Mock skill usage limits validation to pass
-       vi.mocked(supabase.from).mockImplementation((table: string) => {
-         if (table === 'skill_uses') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 eq: vi.fn(() => ({
-                   eq: vi.fn(() => ({
-                     data: []
-                   }))
-                 }))
-               }))
-             }))
-           };
-         } else if (table === 'game_states') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 single: vi.fn().mockResolvedValue({
-                   data: { current_round: 1 }
-                 })
-               }))
-             }))
-           };
-         }
-         return {} as any;
-       });
+     * 测试缺少目标验证
+     */
+    it('应该拒绝需要目标但未提供目标的技能', async () => {
+      // Mock skill usage limits validation to pass
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'skill_uses') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    data: [],
+                  })),
+                })),
+              })),
+            })),
+          };
+        } else if (table === 'game_states') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { current_round: 1 },
+                }),
+              })),
+            })),
+          };
+        }
+        return {} as any;
+      });
 
-       const result = await validateSkillUnified(
-         'werewolf_attack',
-         'user1',
-         'game1',
-         3, // 夜晚阶段
-         {} // 没有提供目标
-       );
+      const result = await validateSkillUnified(
+        'werewolf_attack',
+        'user1',
+        'game1',
+        3, // 夜晚阶段
+        {} // 没有提供目标
+      );
 
-       expect(result.valid).toBe(false);
-       expect(result.reason).toBe('该技能需要选择目标');
-     });
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('该技能需要选择目标');
+    });
 
     /**
-      * 测试有效技能验证
-      */
-     it('应该通过有效的技能验证', async () => {
-       // Mock skill usage limits validation and game state query
-       vi.mocked(supabase.from).mockImplementation((table: string) => {
-         if (table === 'skill_uses') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 eq: vi.fn(() => ({
-                   eq: vi.fn(() => ({
-                     data: [] // 没有使用记录
-                   }))
-                 }))
-               }))
-             }))
-           };
-         } else if (table === 'game_states') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 single: vi.fn().mockResolvedValue({
-                   data: { current_round: 1 }
-                 })
-               }))
-             }))
-           };
-         }
-         return {} as any;
-       });
+     * 测试有效技能验证
+     */
+    it('应该通过有效的技能验证', async () => {
+      // Mock skill usage limits validation and game state query
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'skill_uses') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    data: [], // 没有使用记录
+                  })),
+                })),
+              })),
+            })),
+          };
+        } else if (table === 'game_states') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { current_round: 1 },
+                }),
+              })),
+            })),
+          };
+        }
+        return {} as any;
+      });
 
-       // Mock target validation
-       const originalTargetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi.fn().mockResolvedValue(true);
+      // Mock target validation
+      const originalTargetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi
+        .fn()
+        .mockResolvedValue(true);
 
-       const result = await validateSkillUnified(
-         'werewolf_attack',
-         'user1',
-         'game1',
-         3, // 夜晚阶段
-         { targetUserId: 'target1' }
-       );
+      const result = await validateSkillUnified(
+        'werewolf_attack',
+        'user1',
+        'game1',
+        3, // 夜晚阶段
+        { targetUserId: 'target1' }
+      );
 
-       expect(result.valid).toBe(true);
-       expect(result.reason).toBeUndefined();
+      expect(result.valid).toBe(true);
+      expect(result.reason).toBeUndefined();
 
-       // Restore original function
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = originalTargetValidation;
-     });
+      // Restore original function
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation =
+        originalTargetValidation;
+    });
   });
 
   /**
@@ -286,40 +290,50 @@ describe('SkillValidationRules', () => {
    */
   describe('目标验证', () => {
     /**
-      * 测试存活目标验证
-      */
-     it('应该验证目标是否存活', async () => {
-       // Mock target as alive - 直接 mock targetValidation 函数
-       const originalTargetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi.fn().mockResolvedValue(true);
+     * 测试存活目标验证
+     */
+    it('应该验证目标是否存活', async () => {
+      // Mock target as alive - 直接 mock targetValidation 函数
+      const originalTargetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi
+        .fn()
+        .mockResolvedValue(true);
 
-       const targetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       if (targetValidation) {
-         const result = await targetValidation('target1', 'game1');
-         expect(result).toBe(true);
-       }
+      const targetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      if (targetValidation) {
+        const result = await targetValidation('target1', 'game1');
+        expect(result).toBe(true);
+      }
 
-       // Restore original function
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = originalTargetValidation;
-     });
+      // Restore original function
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation =
+        originalTargetValidation;
+    });
 
     /**
-      * 测试死亡目标验证
-      */
-     it('应该拒绝已死亡的目标', async () => {
-       // Mock target as dead - 直接 mock targetValidation 函数
-       const originalTargetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi.fn().mockResolvedValue(false);
+     * 测试死亡目标验证
+     */
+    it('应该拒绝已死亡的目标', async () => {
+      // Mock target as dead - 直接 mock targetValidation 函数
+      const originalTargetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi
+        .fn()
+        .mockResolvedValue(false);
 
-       const targetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       if (targetValidation) {
-         const result = await targetValidation('target1', 'game1');
-         expect(result).toBe(false);
-       }
+      const targetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      if (targetValidation) {
+        const result = await targetValidation('target1', 'game1');
+        expect(result).toBe(false);
+      }
 
-       // Restore original function
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = originalTargetValidation;
-     });
+      // Restore original function
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation =
+        originalTargetValidation;
+    });
   });
 
   /**
@@ -337,47 +351,47 @@ describe('SkillValidationRules', () => {
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                  data: []
-                }))
-              }))
-            }))
-          }))
-        }))
+                  data: [],
+                })),
+              })),
+            })),
+          })),
+        })),
       } as any);
 
-      const customValidation = SKILL_VALIDATION_RULES.magic_potion.customValidation;
+      const customValidation =
+        SKILL_VALIDATION_RULES.magic_potion.customValidation;
       if (customValidation) {
-        const result = await customValidation(
-          'user1',
-          'game1',
-          { potionType: 'antidote' }
-        );
+        const result = await customValidation('user1', 'game1', {
+          potionType: 'antidote',
+        });
         expect(result).toBe(true);
       }
     });
 
     /**
-      * 测试守卫保护自定义验证
-      */
-     it('应该验证守卫不能连续保护同一人', async () => {
-       // Mock previous protection of same target
-       vi.mocked(supabase.from).mockReturnValue({
-         select: vi.fn(() => ({
-           eq: vi.fn(() => ({
-             eq: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 order: vi.fn(() => ({
-                   limit: vi.fn().mockResolvedValue({
-                     data: [{ target_user_id: 'target1', round_number: 1 }]
-                   })
-                 }))
-               }))
-             }))
-           }))
-         }))
-       } as any);
+     * 测试守卫保护自定义验证
+     */
+    it('应该验证守卫不能连续保护同一人', async () => {
+      // Mock previous protection of same target
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                order: vi.fn(() => ({
+                  limit: vi.fn().mockResolvedValue({
+                    data: [{ target_user_id: 'target1', round_number: 1 }],
+                  }),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as any);
 
-      const customValidation = SKILL_VALIDATION_RULES.guard_protection.customValidation;
+      const customValidation =
+        SKILL_VALIDATION_RULES.guard_protection.customValidation;
       if (customValidation) {
         const result = await customValidation(
           'user1',
@@ -398,14 +412,15 @@ describe('SkillValidationRules', () => {
           eq: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: vi.fn().mockResolvedValue({
-                data: { role_status: 2 } // 濒死状态
-              })
-            }))
-          }))
-        }))
+                data: { role_status: 2 }, // 濒死状态
+              }),
+            })),
+          })),
+        })),
       } as any);
 
-      const customValidation = SKILL_VALIDATION_RULES.hunter_revenge.customValidation;
+      const customValidation =
+        SKILL_VALIDATION_RULES.hunter_revenge.customValidation;
       if (customValidation) {
         const result = await customValidation('user1', 'game1', {});
         expect(result).toBe(true);
@@ -427,11 +442,11 @@ describe('SkillValidationRules', () => {
           eq: vi.fn(() => ({
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
-                data: [{ round_number: 1 }, { round_number: 2 }] // 已使用2次
-              }))
-            }))
-          }))
-        }))
+                data: [{ round_number: 1 }, { round_number: 2 }], // 已使用2次
+              })),
+            })),
+          })),
+        })),
       } as any);
 
       const result = await validateSkillUnified(
@@ -447,36 +462,36 @@ describe('SkillValidationRules', () => {
     });
 
     /**
-      * 测试每回合使用次数限制
-      */
-     it('应该限制每回合的技能使用次数', async () => {
-       // Mock skill already used in current round
-       vi.mocked(supabase.from).mockImplementation((table: string) => {
-         if (table === 'skill_uses') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 eq: vi.fn(() => ({
-                   eq: vi.fn(() => ({
-                     data: [{ round_number: 1 }] // 当前回合已使用
-                   }))
-                 }))
-               }))
-             }))
-           };
-         } else if (table === 'game_states') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 single: vi.fn().mockResolvedValue({
-                   data: { current_round: 1 }
-                 })
-               }))
-             }))
-           };
-         }
-         return {} as any;
-       });
+     * 测试每回合使用次数限制
+     */
+    it('应该限制每回合的技能使用次数', async () => {
+      // Mock skill already used in current round
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'skill_uses') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    data: [{ round_number: 1 }], // 当前回合已使用
+                  })),
+                })),
+              })),
+            })),
+          };
+        } else if (table === 'game_states') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { current_round: 1 },
+                }),
+              })),
+            })),
+          };
+        }
+        return {} as any;
+      });
 
       const result = await validateSkillUnified(
         'werewolf_attack', // maxUsesPerRound: 1
@@ -504,11 +519,11 @@ describe('SkillValidationRules', () => {
           eq: vi.fn(() => ({
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
-                data: []
-              }))
-            }))
-          }))
-        }))
+                data: [],
+              })),
+            })),
+          })),
+        })),
       } as any);
 
       const result = await validateSkillUnified(
@@ -523,59 +538,63 @@ describe('SkillValidationRules', () => {
     });
 
     /**
-      * 测试数据库查询失败
-      */
-     it('应该处理数据库查询失败', async () => {
-       // Mock target validation to simulate database failure
-       const originalTargetValidation = SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi.fn().mockRejectedValue(new Error('Database error'));
+     * 测试数据库查询失败
+     */
+    it('应该处理数据库查询失败', async () => {
+      // Mock target validation to simulate database failure
+      const originalTargetValidation =
+        SKILL_VALIDATION_RULES.werewolf_attack.targetValidation;
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = vi
+        .fn()
+        .mockRejectedValue(new Error('Database error'));
 
-       // Mock skill usage limits validation
-       vi.mocked(supabase.from).mockImplementation((table: string) => {
-         if (table === 'skill_uses') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 eq: vi.fn(() => ({
-                   eq: vi.fn(() => ({
-                     data: []
-                   }))
-                 }))
-               }))
-             }))
-           };
-         } else if (table === 'game_states') {
-           return {
-             select: vi.fn(() => ({
-               eq: vi.fn(() => ({
-                 single: vi.fn().mockResolvedValue({
-                   data: { current_round: 1 }
-                 })
-               }))
-             }))
-           };
-         }
-         return {} as any;
-       });
+      // Mock skill usage limits validation
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'skill_uses') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    data: [],
+                  })),
+                })),
+              })),
+            })),
+          };
+        } else if (table === 'game_states') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn().mockResolvedValue({
+                  data: { current_round: 1 },
+                }),
+              })),
+            })),
+          };
+        }
+        return {} as any;
+      });
 
-       try {
-         const result = await validateSkillUnified(
-           'werewolf_attack',
-           'user1',
-           'game1',
-           3,
-           { targetUserId: 'target1' }
-         );
-         
-         // 如果没有抛出错误，应该返回无效结果
-         expect(result.valid).toBe(false);
-       } catch (error) {
-         // 如果抛出错误，这也是可以接受的
-         expect(error).toBeDefined();
-       }
+      try {
+        const result = await validateSkillUnified(
+          'werewolf_attack',
+          'user1',
+          'game1',
+          3,
+          { targetUserId: 'target1' }
+        );
 
-       // Restore original function
-       SKILL_VALIDATION_RULES.werewolf_attack.targetValidation = originalTargetValidation;
-     });
+        // 如果没有抛出错误，应该返回无效结果
+        expect(result.valid).toBe(false);
+      } catch (error) {
+        // 如果抛出错误，这也是可以接受的
+        expect(error).toBeDefined();
+      }
+
+      // Restore original function
+      SKILL_VALIDATION_RULES.werewolf_attack.targetValidation =
+        originalTargetValidation;
+    });
   });
 });

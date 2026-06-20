@@ -35,7 +35,7 @@ export const useSkillData = (gameStateId?: string) => {
   const [skillTargets, setSkillTargets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
-  
+
   const { toast } = useToast();
 
   // 统一数据获取函数
@@ -51,22 +51,24 @@ export const useSkillData = (gameStateId?: string) => {
           .select('*')
           .eq('game_state_id', gameStateId)
           .order('created_at', { ascending: false }),
-        
+
         supabase
           .from('skill_effects_queue')
           .select('*')
           .eq('game_state_id', gameStateId)
           .order('priority', { ascending: true })
           .order('execution_order', { ascending: true }),
-        
+
         supabase
           .from('standardized_skill_targets')
-          .select(`
+          .select(
+            `
             *,
             skill_uses!inner(game_state_id)
-          `)
+          `
+          )
           .eq('skill_uses.game_state_id', gameStateId)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
       ]);
 
       // 处理技能使用数据，添加中文名称和配置信息
@@ -76,7 +78,7 @@ export const useSkillData = (gameStateId?: string) => {
           return {
             ...use,
             chinese_name: config?.chineseName || use.skill_name,
-            skill_config: config
+            skill_config: config,
           } as EnhancedSkillUse;
         });
         setSkillUses(enhancedSkillUses);
@@ -118,6 +120,6 @@ export const useSkillData = (gameStateId?: string) => {
     setSkillTargets,
     loading,
     lastSyncTime,
-    fetchAllSkillData
+    fetchAllSkillData,
   };
 };

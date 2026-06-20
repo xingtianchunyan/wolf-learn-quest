@@ -1,13 +1,13 @@
 /**
  * 文件级注释：真实系统集成测试
- * 
+ *
  * 该文件实现了对现有错误处理和安全系统的集成测试，旨在：
  * - 验证MasterErrorHandler的功能
  * - 测试ComprehensiveSecurityAudit系统
  * - 验证EnhancedInputValidator功能
  * - 测试EnhancedPermissionSystem
  * - 验证SecurityAuditService功能
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -43,7 +43,7 @@ interface TestPermission {
 
 /**
  * 类级注释：模拟的技能错误类
- * 
+ *
  * 模拟SkillError的基本功能用于测试
  */
 class MockSkillError extends Error {
@@ -55,11 +55,7 @@ class MockSkillError extends Error {
   public readonly userId?: string;
   public readonly gameStateId?: string;
 
-  constructor(
-    message: string,
-    type: SkillErrorType,
-    details?: any
-  ) {
+  constructor(message: string, type: SkillErrorType, details?: any) {
     super(message);
     this.name = 'SkillError';
     this.type = type;
@@ -71,7 +67,7 @@ class MockSkillError extends Error {
 
 /**
  * 类级注释：模拟的错误处理器类
- * 
+ *
  * 模拟MasterErrorHandler的基本功能用于测试
  */
 class MockMasterErrorHandler {
@@ -85,7 +81,7 @@ class MockMasterErrorHandler {
     const errorRecord = {
       error,
       context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.errors.push(errorRecord);
@@ -94,7 +90,8 @@ class MockMasterErrorHandler {
     let category = 'unknown';
     if (error instanceof AppError) {
       if (error.code === ErrorCode.DATA_INVALID) category = 'validation';
-      else if (error.code === ErrorCode.PERMISSION_DENIED) category = 'permission';
+      else if (error.code === ErrorCode.PERMISSION_DENIED)
+        category = 'permission';
       else if (error.code === ErrorCode.NETWORK_ERROR) category = 'network';
     } else if (error instanceof MockSkillError) {
       category = 'skill';
@@ -104,12 +101,13 @@ class MockMasterErrorHandler {
       handled: true,
       errorId: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       userMessage: this.getUserFriendlyMessage(error),
-      shouldRetry: error instanceof AppError && error.code === ErrorCode.NETWORK_ERROR,
+      shouldRetry:
+        error instanceof AppError && error.code === ErrorCode.NETWORK_ERROR,
       retryCount: 0,
       severity: this.getSeverity(error),
       classification: { category },
       processingTime: Math.random() * 10,
-      recoverySuggestion: this.getRecoverySuggestion(error)
+      recoverySuggestion: this.getRecoverySuggestion(error),
     };
   }
 
@@ -194,7 +192,7 @@ class MockMasterErrorHandler {
 
 /**
  * 类级注释：模拟的输入验证器类
- * 
+ *
  * 模拟EnhancedInputValidator的基本功能用于测试
  */
 class MockInputValidator {
@@ -229,7 +227,7 @@ class MockInputValidator {
       isValid: errors.length === 0,
       errors,
       securityWarnings,
-      sanitizedData: this.sanitizeInput(input)
+      sanitizedData: this.sanitizeInput(input),
     };
   }
 
@@ -253,8 +251,18 @@ class MockInputValidator {
     }
 
     // 检查危险文件扩展名
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.sh', '.php', '.jsp', '.asp'];
-    const fileExtension = file.filename.toLowerCase().substring(file.filename.lastIndexOf('.'));
+    const dangerousExtensions = [
+      '.exe',
+      '.bat',
+      '.cmd',
+      '.sh',
+      '.php',
+      '.jsp',
+      '.asp',
+    ];
+    const fileExtension = file.filename
+      .toLowerCase()
+      .substring(file.filename.lastIndexOf('.'));
     if (dangerousExtensions.includes(fileExtension)) {
       errors.push('危险的文件类型');
       securityWarnings.push('危险文件扩展名检测');
@@ -264,7 +272,10 @@ class MockInputValidator {
       isValid: errors.length === 0,
       errors,
       securityWarnings,
-      sanitizedData: { ...file, filename: this.sanitizeFilename(file.filename) }
+      sanitizedData: {
+        ...file,
+        filename: this.sanitizeFilename(file.filename),
+      },
     };
   }
 
@@ -276,7 +287,7 @@ class MockInputValidator {
     const xssPatterns = [
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
       /javascript:/gi,
-      /on\w+\s*=/gi
+      /on\w+\s*=/gi,
     ];
     return xssPatterns.some(pattern => pattern.test(input));
   }
@@ -289,7 +300,7 @@ class MockInputValidator {
     const sqlPatterns = [
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)/gi,
       /(';|--;|\/\*|\*\/)/gi,
-      /(\bOR\b.*=.*\bOR\b)|(\bAND\b.*=.*\bAND\b)/gi
+      /(\bOR\b.*=.*\bOR\b)|(\bAND\b.*=.*\bAND\b)/gi,
     ];
     return sqlPatterns.some(pattern => pattern.test(input));
   }
@@ -327,7 +338,7 @@ class MockInputValidator {
 
 /**
  * 类级注释：模拟的权限系统类
- * 
+ *
  * 模拟EnhancedPermissionSystem的基本功能用于测试
  */
 class MockPermissionSystem {
@@ -338,14 +349,18 @@ class MockPermissionSystem {
    * 函数级注释：检查权限
    * 模拟权限检查功能
    */
-  async checkPermission(userId: string, permission: TestPermission, context: TestContext = {}) {
+  async checkPermission(
+    userId: string,
+    permission: TestPermission,
+    context: TestContext = {}
+  ) {
     const cacheKey = `${userId}-${permission.resource}-${permission.action}`;
-    
+
     // 检查缓存
     if (this.permissionCache.has(cacheKey)) {
       return {
         ...this.permissionCache.get(cacheKey),
-        fromCache: true
+        fromCache: true,
       };
     }
 
@@ -355,16 +370,28 @@ class MockPermissionSystem {
     let reason = '权限被拒绝';
 
     // 基本权限规则
-    if (permission.resource === 'user_profile' && permission.action === 'read') {
+    if (
+      permission.resource === 'user_profile' &&
+      permission.action === 'read'
+    ) {
       granted = true;
       reason = '用户可以读取自己的资料';
-    } else if (permission.resource === 'posts' && permission.action === 'create') {
+    } else if (
+      permission.resource === 'posts' &&
+      permission.action === 'create'
+    ) {
       granted = userRoles.includes('user') || userRoles.includes('editor');
       reason = granted ? '用户有创建文章的权限' : '需要用户或编辑权限';
-    } else if (permission.resource === 'admin_panel' && permission.action === 'access') {
+    } else if (
+      permission.resource === 'admin_panel' &&
+      permission.action === 'access'
+    ) {
       granted = userRoles.includes('admin');
       reason = granted ? '管理员权限' : '需要管理员权限';
-    } else if (permission.resource === 'content' && permission.action === 'publish') {
+    } else if (
+      permission.resource === 'content' &&
+      permission.action === 'publish'
+    ) {
       granted = userRoles.includes('editor') || userRoles.includes('admin');
       reason = granted ? '编辑权限' : '需要编辑或管理员权限';
     }
@@ -376,10 +403,12 @@ class MockPermissionSystem {
         userId,
         resource: permission.resource,
         action: permission.action,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       },
       conditions: permission.conditions,
-      inheritedFrom: granted ? userRoles.find(role => role !== 'user') : undefined
+      inheritedFrom: granted
+        ? userRoles.find(role => role !== 'user')
+        : undefined,
     };
 
     // 缓存结果
@@ -411,7 +440,7 @@ class MockPermissionSystem {
 
 /**
  * 类级注释：模拟的安全审计类
- * 
+ *
  * 模拟ComprehensiveSecurityAudit的基本功能用于测试
  */
 class MockSecurityAudit {
@@ -435,7 +464,7 @@ class MockSecurityAudit {
         evidence: { missingValidation: ['email', 'phone'] },
         impact: '可能导致数据完整性问题',
         recommendation: '为所有输入字段添加验证规则',
-        cweId: 'CWE-20'
+        cweId: 'CWE-20',
       });
       score -= 5;
     }
@@ -450,7 +479,7 @@ class MockSecurityAudit {
         evidence: { unprotectedEndpoints: ['/admin/users'] },
         impact: '可能导致权限提升攻击',
         recommendation: '为所有敏感操作添加权限检查',
-        cweId: 'CWE-862'
+        cweId: 'CWE-862',
       });
       score -= 10;
     }
@@ -465,7 +494,7 @@ class MockSecurityAudit {
         evidence: { weakTokenValidation: true },
         impact: '可能导致会话劫持',
         recommendation: '实施严格的令牌验证',
-        cweId: 'CWE-287'
+        cweId: 'CWE-287',
       });
       score -= 15;
     }
@@ -480,7 +509,7 @@ class MockSecurityAudit {
         evidence: { weakAlgorithms: ['MD5', 'SHA1'] },
         impact: '敏感数据可能被破解',
         recommendation: '使用强加密算法如SHA-256',
-        cweId: 'CWE-327'
+        cweId: 'CWE-327',
       });
       score -= 10;
     }
@@ -490,35 +519,44 @@ class MockSecurityAudit {
       category: 'INPUT_VALIDATION',
       priority: 'HIGH',
       description: '实施全面的输入验证策略',
-      implementation: '为所有用户输入添加验证规则和清理机制'
+      implementation: '为所有用户输入添加验证规则和清理机制',
     });
 
     recommendations.push({
       category: 'PERMISSION_CONTROL',
       priority: 'CRITICAL',
       description: '加强权限控制机制',
-      implementation: '实施基于角色的访问控制(RBAC)和最小权限原则'
+      implementation: '实施基于角色的访问控制(RBAC)和最小权限原则',
     });
 
     return {
       summary: {
         totalChecks: Object.keys(config).filter(key => config[key]).length,
-        criticalIssues: vulnerabilities.filter(v => v.severity === 'CRITICAL').length,
+        criticalIssues: vulnerabilities.filter(v => v.severity === 'CRITICAL')
+          .length,
         highIssues: vulnerabilities.filter(v => v.severity === 'HIGH').length,
-        mediumIssues: vulnerabilities.filter(v => v.severity === 'MEDIUM').length,
+        mediumIssues: vulnerabilities.filter(v => v.severity === 'MEDIUM')
+          .length,
         lowIssues: vulnerabilities.filter(v => v.severity === 'LOW').length,
-        securityLevel: score >= 90 ? 'EXCELLENT' : score >= 70 ? 'GOOD' : score >= 50 ? 'FAIR' : 'POOR'
+        securityLevel:
+          score >= 90
+            ? 'EXCELLENT'
+            : score >= 70
+              ? 'GOOD'
+              : score >= 50
+                ? 'FAIR'
+                : 'POOR',
       },
       vulnerabilities,
       recommendations,
-      score: Math.max(0, score)
+      score: Math.max(0, score),
     };
   }
 }
 
 /**
  * 类级注释：模拟的安全审计服务类
- * 
+ *
  * 模拟SecurityAuditService的基本功能用于测试
  */
 class MockSecurityAuditService {
@@ -552,7 +590,8 @@ class MockSecurityAuditService {
       isSecure: threats.length === 0,
       threats,
       recommendations,
-      riskLevel: threats.length === 0 ? 'LOW' : threats.length < 3 ? 'MEDIUM' : 'HIGH'
+      riskLevel:
+        threats.length === 0 ? 'LOW' : threats.length < 3 ? 'MEDIUM' : 'HIGH',
     };
   }
 
@@ -560,7 +599,11 @@ class MockSecurityAuditService {
    * 函数级注释：检查权限安全性
    * 模拟权限安全检查功能
    */
-  async checkPermissionSecurity(permission: TestPermission, context: TestContext, userId?: string) {
+  async checkPermissionSecurity(
+    permission: TestPermission,
+    context: TestContext,
+    userId?: string
+  ) {
     const securityIssues: string[] = [];
 
     // 检查权限安全性
@@ -568,13 +611,16 @@ class MockSecurityAuditService {
       securityIssues.push('缺少用户身份验证');
     }
 
-    if (permission.resource === 'sensitive_data' && !context.ipAddress?.startsWith('192.168.')) {
+    if (
+      permission.resource === 'sensitive_data' &&
+      !context.ipAddress?.startsWith('192.168.')
+    ) {
       securityIssues.push('敏感资源访问来自外部IP');
     }
 
     return {
       granted: securityIssues.length === 0,
-      securityIssues
+      securityIssues,
     };
   }
 
@@ -587,14 +633,14 @@ class MockSecurityAuditService {
       id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
       timestamp: Date.now(),
-      ...event
+      ...event,
     };
 
     this.securityEvents.push(securityEvent);
 
     return {
       eventId: securityEvent.id,
-      recorded: true
+      recorded: true,
     };
   }
 
@@ -609,7 +655,7 @@ class MockSecurityAuditService {
 
 /**
  * 类级注释：真实系统集成测试套件
- * 
+ *
  * 测试现有错误处理和安全系统的集成功能
  */
 describe('真实系统集成测试', () => {
@@ -631,7 +677,7 @@ describe('真实系统集成测试', () => {
       ipAddress: '192.168.1.100',
       userAgent: 'Mozilla/5.0 (Test Browser)',
       path: '/api/test',
-      method: 'POST'
+      method: 'POST',
     };
 
     mockErrorHandler = new MockMasterErrorHandler();
@@ -660,44 +706,53 @@ describe('真实系统集成测试', () => {
      * 函数级注释：测试AppError处理
      * 验证AppError的处理功能
      */
-     it('应该能够处理AppError', async () => {
-       const error = new AppError('测试验证错误', ErrorCode.DATA_INVALID);
-       
-       const result = await mockErrorHandler.handleError(error, testContext);
+    it('应该能够处理AppError', async () => {
+      const error = new AppError('测试验证错误', ErrorCode.DATA_INVALID);
 
-       expect(result.handled).toBe(true);
-       expect(result.errorId).toBeDefined();
-       expect(result.userMessage).toContain('验证');
-       expect(result.classification.category).toBe('validation');
-       expect(result.severity).toBe('medium');
-     });
+      const result = await mockErrorHandler.handleError(error, testContext);
 
-     /**
-      * 函数级注释：测试SkillError处理
-      * 验证SkillError的处理功能
-      */
-     it('应该能够处理SkillError', async () => {
-       const skillError = new MockSkillError(
-         '技能执行失败',
-         SkillErrorType.EXECUTION_ERROR,
-         { skillId: 'test-skill' }
-       );
+      expect(result.handled).toBe(true);
+      expect(result.errorId).toBeDefined();
+      expect(result.userMessage).toContain('验证');
+      expect(result.classification.category).toBe('validation');
+      expect(result.severity).toBe('medium');
+    });
 
-       const result = await mockErrorHandler.handleError(skillError, testContext);
+    /**
+     * 函数级注释：测试SkillError处理
+     * 验证SkillError的处理功能
+     */
+    it('应该能够处理SkillError', async () => {
+      const skillError = new MockSkillError(
+        '技能执行失败',
+        SkillErrorType.EXECUTION_ERROR,
+        { skillId: 'test-skill' }
+      );
 
-       expect(result.handled).toBe(true);
-       expect(result.classification.category).toBe('skill');
-       expect(result.userMessage).toContain('技能');
-     });
+      const result = await mockErrorHandler.handleError(
+        skillError,
+        testContext
+      );
+
+      expect(result.handled).toBe(true);
+      expect(result.classification.category).toBe('skill');
+      expect(result.userMessage).toContain('技能');
+    });
 
     /**
      * 函数级注释：测试网络错误重试
      * 验证网络错误的重试机制
      */
     it('应该能够处理网络错误并建议重试', async () => {
-      const networkError = new AppError('网络连接失败', ErrorCode.NETWORK_ERROR);
+      const networkError = new AppError(
+        '网络连接失败',
+        ErrorCode.NETWORK_ERROR
+      );
 
-      const result = await mockErrorHandler.handleError(networkError, testContext);
+      const result = await mockErrorHandler.handleError(
+        networkError,
+        testContext
+      );
 
       expect(result.handled).toBe(true);
       expect(result.shouldRetry).toBe(true);
@@ -718,7 +773,7 @@ describe('真实系统集成测试', () => {
       const validInput = {
         username: 'testuser',
         email: 'test@example.com',
-        message: '这是一条正常的消息'
+        message: '这是一条正常的消息',
       };
 
       const result = await mockInputValidator.validateInput(validInput);
@@ -735,7 +790,7 @@ describe('真实系统集成测试', () => {
     it('应该能够检测XSS攻击', async () => {
       const maliciousInput = {
         comment: '<script>alert("XSS")</script>',
-        title: 'javascript:alert("XSS")'
+        title: 'javascript:alert("XSS")',
       };
 
       const result = await mockInputValidator.validateInput(maliciousInput);
@@ -753,7 +808,7 @@ describe('真实系统集成测试', () => {
     it('应该能够检测SQL注入攻击', async () => {
       const sqlInjectionInput = {
         query: "'; DROP TABLE users; --",
-        filter: "1' OR '1'='1"
+        filter: "1' OR '1'='1",
       };
 
       const result = await mockInputValidator.validateInput(sqlInjectionInput);
@@ -771,12 +826,12 @@ describe('真实系统集成测试', () => {
       const validFile = {
         filename: 'image.jpg',
         size: 1024 * 1024,
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       };
 
       const result = await mockInputValidator.validateFileUpload(validFile, {
         allowedTypes: ['image/jpeg', 'image/png'],
-        maxSize: 5 * 1024 * 1024
+        maxSize: 5 * 1024 * 1024,
       });
 
       expect(result.isValid).toBe(true);
@@ -791,16 +846,21 @@ describe('真实系统集成测试', () => {
       const dangerousFile = {
         filename: 'malware.exe',
         size: 1024,
-        type: 'application/x-msdownload'
+        type: 'application/x-msdownload',
       };
 
-      const result = await mockInputValidator.validateFileUpload(dangerousFile, {
-        allowedTypes: ['image/jpeg', 'image/png'],
-        maxSize: 5 * 1024 * 1024
-      });
+      const result = await mockInputValidator.validateFileUpload(
+        dangerousFile,
+        {
+          allowedTypes: ['image/jpeg', 'image/png'],
+          maxSize: 5 * 1024 * 1024,
+        }
+      );
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('文件类型'))).toBe(true);
+      expect(result.errors.some(error => error.includes('文件类型'))).toBe(
+        true
+      );
       expect(result.securityWarnings.length).toBeGreaterThan(0);
     });
   });
@@ -816,7 +876,7 @@ describe('真实系统集成测试', () => {
     it('应该能够检查基本权限', async () => {
       const permission: TestPermission = {
         resource: 'user_profile',
-        action: 'read'
+        action: 'read',
       };
 
       const result = await mockPermissionSystem.checkPermission(
@@ -837,7 +897,7 @@ describe('真实系统集成测试', () => {
     it('应该能够拒绝未授权访问', async () => {
       const restrictedPermission: TestPermission = {
         resource: 'admin_panel',
-        action: 'access'
+        action: 'access',
       };
 
       const result = await mockPermissionSystem.checkPermission(
@@ -859,7 +919,7 @@ describe('真实系统集成测试', () => {
 
       const permission: TestPermission = {
         resource: 'content',
-        action: 'publish'
+        action: 'publish',
       };
 
       const result = await mockPermissionSystem.checkPermission(
@@ -879,7 +939,7 @@ describe('真实系统集成测试', () => {
     it('应该能够使用权限缓存', async () => {
       const permission: TestPermission = {
         resource: 'posts',
-        action: 'create'
+        action: 'create',
       };
 
       // 第一次检查
@@ -912,7 +972,7 @@ describe('真实系统集成测试', () => {
     it('应该能够执行安全审计', async () => {
       const auditResult = await mockSecurityAudit.performComprehensiveAudit({
         checkInputValidation: true,
-        checkPermissions: true
+        checkPermissions: true,
       });
 
       expect(auditResult.summary).toBeDefined();
@@ -929,12 +989,14 @@ describe('真实系统集成测试', () => {
     it('应该能够检测安全漏洞', async () => {
       const auditResult = await mockSecurityAudit.performComprehensiveAudit({
         checkAuthentication: true,
-        checkEncryption: true
+        checkEncryption: true,
       });
 
       expect(auditResult.vulnerabilities.length).toBeGreaterThan(0);
-      
-      const criticalVulns = auditResult.vulnerabilities.filter(v => v.severity === 'CRITICAL');
+
+      const criticalVulns = auditResult.vulnerabilities.filter(
+        v => v.severity === 'CRITICAL'
+      );
       expect(criticalVulns.length).toBeGreaterThan(0);
     });
 
@@ -945,11 +1007,11 @@ describe('真实系统集成测试', () => {
     it('应该能够生成安全建议', async () => {
       const auditResult = await mockSecurityAudit.performComprehensiveAudit({
         checkInputValidation: true,
-        checkPermissions: true
+        checkPermissions: true,
       });
 
       expect(auditResult.recommendations.length).toBeGreaterThan(0);
-      
+
       const recommendation = auditResult.recommendations[0];
       expect(recommendation.category).toBeDefined();
       expect(recommendation.priority).toBeDefined();
@@ -969,10 +1031,11 @@ describe('真实系统集成测试', () => {
     it('应该能够验证输入安全性', async () => {
       const safeInput = {
         username: 'testuser',
-        message: '正常消息'
+        message: '正常消息',
       };
 
-      const result = await mockSecurityAuditService.validateInputSecurity(safeInput);
+      const result =
+        await mockSecurityAuditService.validateInputSecurity(safeInput);
 
       expect(result.isSecure).toBe(true);
       expect(result.threats).toHaveLength(0);
@@ -986,10 +1049,11 @@ describe('真实系统集成测试', () => {
     it('应该能够检测安全威胁', async () => {
       const maliciousInput = {
         query: '<script>alert("XSS")</script>',
-        command: 'DROP TABLE users'
+        command: 'DROP TABLE users',
       };
 
-      const result = await mockSecurityAuditService.validateInputSecurity(maliciousInput);
+      const result =
+        await mockSecurityAuditService.validateInputSecurity(maliciousInput);
 
       expect(result.isSecure).toBe(false);
       expect(result.threats.length).toBeGreaterThan(0);
@@ -1004,7 +1068,7 @@ describe('真实系统集成测试', () => {
       const securityEvent = {
         type: 'SUSPICIOUS_ACTIVITY',
         description: '检测到可疑活动',
-        metadata: { ipAddress: testContext.ipAddress }
+        metadata: { ipAddress: testContext.ipAddress },
       };
 
       const result = await mockSecurityAuditService.recordSecurityEvent(
@@ -1034,8 +1098,8 @@ describe('真实系统集成测试', () => {
         action: 'create_post',
         content: {
           title: '测试文章',
-          body: '这是一篇测试文章'
-        }
+          body: '这是一篇测试文章',
+        },
       };
 
       // 1. 输入验证
@@ -1051,7 +1115,8 @@ describe('真实系统集成测试', () => {
       expect(permissionCheck.granted).toBe(true);
 
       // 3. 安全验证
-      const securityCheck = await mockSecurityAuditService.validateInputSecurity(testData);
+      const securityCheck =
+        await mockSecurityAuditService.validateInputSecurity(testData);
       expect(securityCheck.isSecure).toBe(true);
 
       // 4. 记录安全事件
@@ -1068,13 +1133,14 @@ describe('真实系统集成测试', () => {
      */
     it('应该能够集成错误处理和安全验证', async () => {
       const maliciousInput = {
-        comment: '<script>alert("XSS")</script>'
+        comment: '<script>alert("XSS")</script>',
       };
 
       try {
         // 安全验证
-        const securityResult = await mockInputValidator.validateInput(maliciousInput);
-        
+        const securityResult =
+          await mockInputValidator.validateInput(maliciousInput);
+
         if (!securityResult.isValid) {
           throw new AppError(
             `安全验证失败: ${securityResult.errors.join(', ')}`,
@@ -1083,8 +1149,11 @@ describe('真实系统集成测试', () => {
         }
       } catch (error) {
         // 错误处理
-        const errorResult = await mockErrorHandler.handleError(error, testContext);
-        
+        const errorResult = await mockErrorHandler.handleError(
+          error,
+          testContext
+        );
+
         expect(errorResult.handled).toBe(true);
         expect(errorResult.classification.category).toBe('validation');
         expect(errorResult.userMessage).toContain('验证');
@@ -1118,11 +1187,16 @@ describe('真实系统集成测试', () => {
                 );
               } else if (operationType === 2) {
                 // 错误处理
-                const error = new AppError(`测试错误 ${i}`, ErrorCode.UNKNOWN_ERROR);
+                const error = new AppError(
+                  `测试错误 ${i}`,
+                  ErrorCode.UNKNOWN_ERROR
+                );
                 await mockErrorHandler.handleError(error, testContext);
               } else {
                 // 安全审计
-                await mockSecurityAuditService.validateInputSecurity({ test: `data-${i}` });
+                await mockSecurityAuditService.validateInputSecurity({
+                  test: `data-${i}`,
+                });
               }
 
               return { success: true, operation: i };
@@ -1138,10 +1212,9 @@ describe('真实系统集成测试', () => {
       const duration = endTime - startTime;
 
       const successfulOperations = results.filter(r => r.success);
-      
+
       expect(successfulOperations.length).toBeGreaterThan(25); // 至少83%成功
       expect(duration).toBeLessThan(5000); // 应该在5秒内完成
-
     });
   });
 });

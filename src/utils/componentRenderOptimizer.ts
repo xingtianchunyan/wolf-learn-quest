@@ -4,7 +4,13 @@
  * 专门解决 EnhancedSkillSystem 等复杂组件的渲染性能问题
  */
 
-import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('render-optimizer');
@@ -49,7 +55,7 @@ class ComponentRenderOptimizer {
     debounceDelay: 300,
     throttleDelay: 100,
     maxRenderTime: 16, // 60fps
-    warningThreshold: 10
+    warningThreshold: 10,
   };
 
   private constructor() {}
@@ -75,7 +81,12 @@ class ComponentRenderOptimizer {
   /**
    * 记录渲染结束
    */
-  public endRender(componentName: string, startTime: number, propsChanged = false, stateChanged = false): void {
+  public endRender(
+    componentName: string,
+    startTime: number,
+    propsChanged = false,
+    stateChanged = false
+  ): void {
     if (!this.config.enableProfiling || startTime === 0) return;
 
     const endTime = performance.now();
@@ -91,7 +102,7 @@ class ComponentRenderOptimizer {
         totalRenderTime: 0,
         propsChanges: 0,
         stateChanges: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       this.renderMetrics.set(componentName, metrics);
     }
@@ -110,16 +121,18 @@ class ComponentRenderOptimizer {
       logger.warn('组件渲染时间过长', {
         componentName,
         renderTime,
-        threshold: this.config.maxRenderTime
+        threshold: this.config.maxRenderTime,
       });
     }
 
-    if (metrics.renderCount > this.config.warningThreshold && 
-        metrics.averageRenderTime > this.config.maxRenderTime) {
+    if (
+      metrics.renderCount > this.config.warningThreshold &&
+      metrics.averageRenderTime > this.config.maxRenderTime
+    ) {
       logger.warn('组件平均渲染时间过长', {
         componentName,
         averageRenderTime: metrics.averageRenderTime,
-        renderCount: metrics.renderCount
+        renderCount: metrics.renderCount,
       });
     }
 
@@ -127,7 +140,7 @@ class ComponentRenderOptimizer {
       componentName,
       renderTime,
       renderCount: metrics.renderCount,
-      averageRenderTime: metrics.averageRenderTime
+      averageRenderTime: metrics.averageRenderTime,
     });
   }
 
@@ -184,17 +197,27 @@ export function useRenderProfiler(componentName: string) {
     renderStartTime.current = renderOptimizer.startRender(componentName);
   }, [componentName]);
 
-  const endRender = useCallback((props?: any, state?: any) => {
-    const propsChanged = previousProps.current !== null && 
-                        JSON.stringify(previousProps.current) !== JSON.stringify(props);
-    const stateChanged = previousState.current !== null && 
-                        JSON.stringify(previousState.current) !== JSON.stringify(state);
+  const endRender = useCallback(
+    (props?: any, state?: any) => {
+      const propsChanged =
+        previousProps.current !== null &&
+        JSON.stringify(previousProps.current) !== JSON.stringify(props);
+      const stateChanged =
+        previousState.current !== null &&
+        JSON.stringify(previousState.current) !== JSON.stringify(state);
 
-    renderOptimizer.endRender(componentName, renderStartTime.current, propsChanged, stateChanged);
+      renderOptimizer.endRender(
+        componentName,
+        renderStartTime.current,
+        propsChanged,
+        stateChanged
+      );
 
-    previousProps.current = props;
-    previousState.current = state;
-  }, [componentName]);
+      previousProps.current = props;
+      previousState.current = state;
+    },
+    [componentName]
+  );
 
   // 自动开始渲染计时
   useEffect(() => {
@@ -216,15 +239,15 @@ export function useOptimizedMemo<T>(
     const startTime = performance.now();
     const result = factory();
     const endTime = performance.now();
-    
+
     if (componentName) {
       logger.debug('Memo 计算完成', {
         componentName,
         computeTime: endTime - startTime,
-        depsLength: deps?.length || 0
+        depsLength: deps?.length || 0,
       });
     }
-    
+
     return result;
   }, deps);
 
@@ -243,15 +266,15 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
     const startTime = performance.now();
     const result = callback(...args);
     const endTime = performance.now();
-    
+
     if (componentName) {
       logger.debug('Callback 执行完成', {
         componentName,
         executeTime: endTime - startTime,
-        argsLength: args.length
+        argsLength: args.length,
       });
     }
-    
+
     return result;
   }, deps) as T;
 }
@@ -288,10 +311,13 @@ export function useThrottle<T>(value: T, delay: number): T {
       setThrottledValue(value);
       lastExecuted.current = now;
     } else {
-      const timer = setTimeout(() => {
-        setThrottledValue(value);
-        lastExecuted.current = Date.now();
-      }, delay - (now - lastExecuted.current));
+      const timer = setTimeout(
+        () => {
+          setThrottledValue(value);
+          lastExecuted.current = Date.now();
+        },
+        delay - (now - lastExecuted.current)
+      );
 
       return () => clearTimeout(timer);
     }
@@ -312,7 +338,10 @@ export function useVirtualization<T>(
   const [scrollTop, setScrollTop] = useState(0);
 
   const visibleRange = useMemo(() => {
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    const startIndex = Math.max(
+      0,
+      Math.floor(scrollTop / itemHeight) - overscan
+    );
     const endIndex = Math.min(
       items.length - 1,
       Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
@@ -321,10 +350,12 @@ export function useVirtualization<T>(
   }, [scrollTop, itemHeight, containerHeight, items.length, overscan]);
 
   const visibleItems = useMemo(() => {
-    return items.slice(visibleRange.startIndex, visibleRange.endIndex + 1).map((item, index) => ({
-      item,
-      index: visibleRange.startIndex + index
-    }));
+    return items
+      .slice(visibleRange.startIndex, visibleRange.endIndex + 1)
+      .map((item, index) => ({
+        item,
+        index: visibleRange.startIndex + index,
+      }));
   }, [items, visibleRange]);
 
   const totalHeight = items.length * itemHeight;
@@ -338,7 +369,7 @@ export function useVirtualization<T>(
     visibleItems,
     totalHeight,
     offsetY,
-    handleScroll
+    handleScroll,
   };
 }
 
@@ -361,7 +392,7 @@ export function useLazyLoading<T>(
       setLoading(true);
       setError(null);
       const result = await loadFunction();
-      
+
       if (mounted.current) {
         setData(result);
       }
@@ -402,14 +433,14 @@ export function usePerformanceMonitor(componentName: string) {
     const now = Date.now();
     const timeSinceMount = now - mountTime.current;
     const timeSinceLastRender = now - lastRenderTime.current;
-    
+
     logger.debug('组件性能监控', {
       componentName,
       renderCount: renderCount.current,
       timeSinceMount,
-      timeSinceLastRender
+      timeSinceLastRender,
     });
-    
+
     lastRenderTime.current = now;
   });
 
@@ -420,7 +451,7 @@ export function usePerformanceMonitor(componentName: string) {
       renderCount: renderCount.current,
       mountTime: mountTime.current,
       timeSinceMount: now - mountTime.current,
-      timeSinceLastRender: now - lastRenderTime.current
+      timeSinceLastRender: now - lastRenderTime.current,
     };
   }, [componentName]);
 
@@ -435,9 +466,10 @@ export function withRenderOptimization<P extends object>(
   componentName?: string
 ) {
   const OptimizedComponent = React.memo((props: P) => {
-    const name = componentName || Component.displayName || Component.name || 'Unknown';
+    const name =
+      componentName || Component.displayName || Component.name || 'Unknown';
     const { startRender, endRender } = useRenderProfiler(name);
-    
+
     useEffect(() => {
       endRender(props);
     });
@@ -446,7 +478,7 @@ export function withRenderOptimization<P extends object>(
   });
 
   OptimizedComponent.displayName = `withRenderOptimization(${componentName || Component.displayName || Component.name})`;
-  
+
   return OptimizedComponent;
 }
 
@@ -462,7 +494,7 @@ export function useDeepCompareMemo<T>(
   if (!ref.current || !deepEqual(deps, ref.current.deps)) {
     ref.current = {
       deps,
-      value: factory()
+      value: factory(),
     };
   }
 
@@ -474,9 +506,9 @@ export function useDeepCompareMemo<T>(
  */
 function deepEqual(a: any, b: any): boolean {
   if (a === b) return true;
-  
+
   if (a == null || b == null) return false;
-  
+
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
@@ -484,20 +516,20 @@ function deepEqual(a: any, b: any): boolean {
     }
     return true;
   }
-  
+
   if (typeof a === 'object' && typeof b === 'object') {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
-    
+
     if (keysA.length !== keysB.length) return false;
-    
+
     for (const key of keysA) {
       if (!keysB.includes(key)) return false;
       if (!deepEqual(a[key], b[key])) return false;
     }
     return true;
   }
-  
+
   return false;
 }
 
@@ -511,10 +543,10 @@ export function useBatchedState<T>(initialState: T) {
 
   const batchedSetState = useCallback((updater: (prevState: T) => T) => {
     pendingUpdates.current.push(updater);
-    
+
     if (!updateScheduled.current) {
       updateScheduled.current = true;
-      
+
       // 使用 requestAnimationFrame 批量更新
       requestAnimationFrame(() => {
         setState(prevState => {
@@ -524,7 +556,7 @@ export function useBatchedState<T>(initialState: T) {
           }
           return newState;
         });
-        
+
         pendingUpdates.current = [];
         updateScheduled.current = false;
       });

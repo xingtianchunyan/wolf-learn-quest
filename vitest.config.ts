@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -19,15 +19,15 @@ export default defineConfig({
         'src/test/',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/types/**'
-      ]
+        '**/types/**',
+      ],
     },
     env: {
       DEV: 'true',
       JWT_SECRET: 'test-secret-do-not-use-in-production',
       VITE_SUPABASE_URL: 'https://test-project.supabase.co',
-      VITE_SUPABASE_ANON_KEY: 'test-anon-key-do-not-use-in-production'
-    }
+      VITE_SUPABASE_ANON_KEY: 'test-anon-key-do-not-use-in-production',
+    },
   },
   resolve: {
     alias: {
@@ -35,6 +35,6 @@ export default defineConfig({
     },
   },
   define: {
-    'import.meta.env.DEV': true
-  }
-})
+    'import.meta.env.DEV': true,
+  },
+});

@@ -102,7 +102,7 @@ export class MemoryLeakPrevention {
       memoryGrowthThreshold: 10 * 1024 * 1024, // 10MB
       subscriptionTimeout: 300000, // 5分钟
       maxSubscriptions: 100,
-      ...config
+      ...config,
     };
 
     this.startMemoryMonitoring();
@@ -113,7 +113,9 @@ export class MemoryLeakPrevention {
    * @param config 可选的配置参数
    * @returns 内存泄漏预防实例
    */
-  public static getInstance(config?: Partial<MemoryLeakDetectionConfig>): MemoryLeakPrevention {
+  public static getInstance(
+    config?: Partial<MemoryLeakDetectionConfig>
+  ): MemoryLeakPrevention {
     if (!MemoryLeakPrevention.instance) {
       MemoryLeakPrevention.instance = new MemoryLeakPrevention(config);
     }
@@ -131,49 +133,52 @@ export class MemoryLeakPrevention {
     /**
      * 函数级注释：注册订阅
      */
-    const registerSubscription = useCallback((
-      subscriptionId: string,
-      cleanup: () => void,
-      type: string = 'unknown'
-    ) => {
-      if (!this.config.enableSubscriptionLeakDetection) {
-        return cleanup;
-      }
+    const registerSubscription = useCallback(
+      (
+        subscriptionId: string,
+        cleanup: () => void,
+        type: string = 'unknown'
+      ) => {
+        if (!this.config.enableSubscriptionLeakDetection) {
+          return cleanup;
+        }
 
-      // 检查订阅数量限制
-      if (this.subscriptions.size >= this.config.maxSubscriptions) {
-        logger.warn('订阅数量超过限制，清理旧订阅', {
-          currentCount: this.subscriptions.size,
-          maxAllowed: this.config.maxSubscriptions
+        // 检查订阅数量限制
+        if (this.subscriptions.size >= this.config.maxSubscriptions) {
+          logger.warn('订阅数量超过限制，清理旧订阅', {
+            currentCount: this.subscriptions.size,
+            maxAllowed: this.config.maxSubscriptions,
+          });
+          this.cleanupOldSubscriptions();
+        }
+
+        const subscriptionInfo: SubscriptionInfo = {
+          id: subscriptionId,
+          createdAt: Date.now(),
+          lastUsed: Date.now(),
+          cleanup,
+          type,
+          componentName,
+        };
+
+        this.subscriptions.set(subscriptionId, subscriptionInfo);
+        componentSubscriptions.add(subscriptionId);
+
+        logger.debug('订阅已注册', {
+          subscriptionId,
+          componentName,
+          type,
+          totalSubscriptions: this.subscriptions.size,
         });
-        this.cleanupOldSubscriptions();
-      }
 
-      const subscriptionInfo: SubscriptionInfo = {
-        id: subscriptionId,
-        createdAt: Date.now(),
-        lastUsed: Date.now(),
-        cleanup,
-        type,
-        componentName
-      };
-
-      this.subscriptions.set(subscriptionId, subscriptionInfo);
-      componentSubscriptions.add(subscriptionId);
-
-      logger.debug('订阅已注册', {
-        subscriptionId,
-        componentName,
-        type,
-        totalSubscriptions: this.subscriptions.size
-      });
-
-      // 返回增强的清理函数
-      return () => {
-        this.unregisterSubscription(subscriptionId);
-        componentSubscriptions.delete(subscriptionId);
-      };
-    }, [componentName]);
+        // 返回增强的清理函数
+        return () => {
+          this.unregisterSubscription(subscriptionId);
+          componentSubscriptions.delete(subscriptionId);
+        };
+      },
+      [componentName]
+    );
 
     /**
      * 函数级注释：更新订阅使用时间
@@ -196,7 +201,7 @@ export class MemoryLeakPrevention {
 
       logger.info('组件订阅已清理', {
         componentName,
-        cleanedCount: componentSubscriptions.size
+        cleanedCount: componentSubscriptions.size,
       });
     }, [componentName]);
 
@@ -209,7 +214,7 @@ export class MemoryLeakPrevention {
       registerSubscription,
       updateSubscriptionUsage,
       cleanupComponentSubscriptions,
-      getActiveSubscriptionCount: () => componentSubscriptions.size
+      getActiveSubscriptionCount: () => componentSubscriptions.size,
     };
   }
 
@@ -224,47 +229,53 @@ export class MemoryLeakPrevention {
     /**
      * 函数级注释：注册DOM引用
      */
-    const registerDOMReference = useCallback(<T extends HTMLElement>(
-      elementType: string,
-      initialValue: T | null = null
-    ) => {
-      const refId = `${componentName}_${elementType}_${Date.now()}_${Math.random()}`;
-      const ref = useRef<T>(initialValue);
+    const registerDOMReference = useCallback(
+      <T extends HTMLElement>(
+        elementType: string,
+        initialValue: T | null = null
+      ) => {
+        const refId = `${componentName}_${elementType}_${Date.now()}_${Math.random()}`;
+        const ref = useRef<T>(initialValue);
 
-      if (this.config.enableDOMLeakDetection) {
-        const domInfo: DOMReferenceInfo = {
-          id: refId,
-          elementType,
-          createdAt: Date.now(),
-          isCleanedUp: false
-        };
+        if (this.config.enableDOMLeakDetection) {
+          const domInfo: DOMReferenceInfo = {
+            id: refId,
+            elementType,
+            createdAt: Date.now(),
+            isCleanedUp: false,
+          };
 
-        this.domReferences.set(refId, domInfo);
-        componentDOMRefs.add(refId);
+          this.domReferences.set(refId, domInfo);
+          componentDOMRefs.add(refId);
 
-        logger.debug('DOM引用已注册', {
-          refId,
-          elementType,
-          componentName
-        });
-      }
+          logger.debug('DOM引用已注册', {
+            refId,
+            elementType,
+            componentName,
+          });
+        }
 
-      return ref;
-    }, [componentName]);
+        return ref;
+      },
+      [componentName]
+    );
 
     /**
      * 函数级注释：清理DOM引用
      */
-    const cleanupDOMReference = useCallback((refId: string) => {
-      const domInfo = this.domReferences.get(refId);
-      if (domInfo && !domInfo.isCleanedUp) {
-        domInfo.isCleanedUp = true;
-        this.domReferences.delete(refId);
-        componentDOMRefs.delete(refId);
+    const cleanupDOMReference = useCallback(
+      (refId: string) => {
+        const domInfo = this.domReferences.get(refId);
+        if (domInfo && !domInfo.isCleanedUp) {
+          domInfo.isCleanedUp = true;
+          this.domReferences.delete(refId);
+          componentDOMRefs.delete(refId);
 
-        logger.debug('DOM引用已清理', { refId, componentName });
-      }
-    }, [componentName]);
+          logger.debug('DOM引用已清理', { refId, componentName });
+        }
+      },
+      [componentName]
+    );
 
     /**
      * 函数级注释：清理组件所有DOM引用
@@ -277,7 +288,7 @@ export class MemoryLeakPrevention {
 
       logger.info('组件DOM引用已清理', {
         componentName,
-        cleanedCount: componentDOMRefs.size
+        cleanedCount: componentDOMRefs.size,
       });
     }, [componentName, cleanupDOMReference]);
 
@@ -290,7 +301,7 @@ export class MemoryLeakPrevention {
       registerDOMReference,
       cleanupDOMReference,
       cleanupComponentDOMReferences,
-      getActiveDOMReferenceCount: () => componentDOMRefs.size
+      getActiveDOMReferenceCount: () => componentDOMRefs.size,
     };
   }
 
@@ -312,19 +323,19 @@ export class MemoryLeakPrevention {
     /**
      * 函数级注释：创建内存安全的状态
      */
-    const createMemorySafeState = useCallback(<T>(
-      initialValue: T,
-      cleanup?: (value: T) => void
-    ) => {
-      const [state, setState] = useState(initialValue);
+    const createMemorySafeState = useCallback(
+      <T>(initialValue: T, cleanup?: (value: T) => void) => {
+        const [state, setState] = useState(initialValue);
 
-      // 注册清理函数
-      if (cleanup) {
-        registerStateCleanup(() => cleanup(state));
-      }
+        // 注册清理函数
+        if (cleanup) {
+          registerStateCleanup(() => cleanup(state));
+        }
 
-      return [state, setState] as const;
-    }, [registerStateCleanup]);
+        return [state, setState] as const;
+      },
+      [registerStateCleanup]
+    );
 
     /**
      * 函数级注释：清理所有状态
@@ -336,7 +347,7 @@ export class MemoryLeakPrevention {
         } catch (error) {
           masterErrorHandler.handleError(error, {
             context: `${componentName}.stateCleanup`,
-            severity: 'low'
+            severity: 'low',
           });
         }
       });
@@ -353,7 +364,7 @@ export class MemoryLeakPrevention {
     return {
       createMemorySafeState,
       registerStateCleanup,
-      cleanupAllStates
+      cleanupAllStates,
     };
   }
 
@@ -369,7 +380,7 @@ export class MemoryLeakPrevention {
         masterErrorHandler.handleError(error, {
           context: 'MemoryLeakPrevention.unregisterSubscription',
           severity: 'low',
-          metadata: { subscriptionId }
+          metadata: { subscriptionId },
         });
       }
 
@@ -399,7 +410,7 @@ export class MemoryLeakPrevention {
     if (subscriptionsToCleanup.length > 0) {
       logger.info('旧订阅已清理', {
         cleanedCount: subscriptionsToCleanup.length,
-        remainingCount: this.subscriptions.size
+        remainingCount: this.subscriptions.size,
       });
     }
   }
@@ -417,7 +428,7 @@ export class MemoryLeakPrevention {
     }, this.config.memoryCheckInterval);
 
     logger.info('内存监控已启动', {
-      interval: this.config.memoryCheckInterval
+      interval: this.config.memoryCheckInterval,
     });
   }
 
@@ -447,7 +458,7 @@ export class MemoryLeakPrevention {
           currentUsage,
           previousUsage,
           growth,
-          threshold: this.config.memoryGrowthThreshold
+          threshold: this.config.memoryGrowthThreshold,
         });
       }
     }
@@ -469,7 +480,7 @@ export class MemoryLeakPrevention {
           subscriptionId: id,
           age,
           type: subscription.type,
-          componentName: subscription.componentName
+          componentName: subscription.componentName,
         });
       }
     });
@@ -483,7 +494,7 @@ export class MemoryLeakPrevention {
           logger.warn('检测到潜在DOM引用泄漏', {
             refId: id,
             age,
-            elementType: domInfo.elementType
+            elementType: domInfo.elementType,
           });
         }
       }
@@ -493,7 +504,7 @@ export class MemoryLeakPrevention {
       logger.warn('检测到潜在内存泄漏', {
         potentialLeaks,
         activeSubscriptions: this.subscriptions.size,
-        activeDOMReferences: this.domReferences.size
+        activeDOMReferences: this.domReferences.size,
       });
     }
   }
@@ -503,15 +514,15 @@ export class MemoryLeakPrevention {
    * @returns 内存使用统计
    */
   public getMemoryUsageStats(): MemoryUsageStats {
-    const currentUsage = ('memory' in performance) 
-      ? (performance as any).memory.usedJSHeapSize 
-      : 0;
-    
+    const currentUsage =
+      'memory' in performance ? (performance as any).memory.usedJSHeapSize : 0;
+
     const peakUsage = Math.max(...this.memoryHistory, currentUsage);
-    
-    const growthRate = this.memoryHistory.length >= 2
-      ? (currentUsage - this.memoryHistory[0]) / this.memoryHistory.length
-      : 0;
+
+    const growthRate =
+      this.memoryHistory.length >= 2
+        ? (currentUsage - this.memoryHistory[0]) / this.memoryHistory.length
+        : 0;
 
     const now = Date.now();
     const potentialLeaks = Array.from(this.subscriptions.values()).filter(
@@ -524,7 +535,7 @@ export class MemoryLeakPrevention {
       growthRate,
       activeSubscriptions: this.subscriptions.size,
       potentialLeaks,
-      lastCheckTime: now
+      lastCheckTime: now,
     };
   }
 
@@ -580,16 +591,18 @@ export const useMemoryLeakPrevention = (
     [config]
   );
 
-  const subscriptionManager = memoryManager.createMemorySafeSubscriptionManager(componentName);
+  const subscriptionManager =
+    memoryManager.createMemorySafeSubscriptionManager(componentName);
   const domManager = memoryManager.createMemorySafeDOMManager(componentName);
-  const stateManager = memoryManager.createMemorySafeStateManager(componentName);
+  const stateManager =
+    memoryManager.createMemorySafeStateManager(componentName);
 
   return {
     ...subscriptionManager,
     ...domManager,
     ...stateManager,
     getMemoryUsageStats: memoryManager.getMemoryUsageStats.bind(memoryManager),
-    forceCleanupAll: memoryManager.forceCleanupAll.bind(memoryManager)
+    forceCleanupAll: memoryManager.forceCleanupAll.bind(memoryManager),
   };
 };
 

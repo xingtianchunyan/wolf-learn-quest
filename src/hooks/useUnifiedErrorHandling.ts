@@ -6,17 +6,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createLogger } from '@/lib/logger';
-import { 
-  unifiedErrorManager, 
-  UnifiedErrorData, 
-  ErrorContext, 
+import {
+  unifiedErrorManager,
+  UnifiedErrorData,
+  ErrorContext,
   ErrorHandlingOptions,
-  ErrorHandlingResult 
+  ErrorHandlingResult,
 } from '@/utils/unifiedErrorManager';
-import { 
+import {
   enhancedUserNotificationSystem,
   NotificationType,
-  NotificationPosition 
+  NotificationPosition,
 } from '@/utils/enhancedUserNotificationSystem';
 import { ErrorSeverity } from '@/utils/unifiedErrorHandler';
 
@@ -56,25 +56,25 @@ export interface UseUnifiedErrorHandlingReturn {
     context?: Partial<ErrorContext>,
     options?: Partial<ErrorHandlingOptions>
   ) => Promise<ErrorHandlingResult>;
-  
+
   /** 包装异步函数 */
   wrapAsync: <T extends any[], R>(
     fn: (...args: T) => Promise<R>,
     context?: Partial<ErrorContext>
   ) => (...args: T) => Promise<R | null>;
-  
+
   /** 包装同步函数 */
   wrapSync: <T extends any[], R>(
     fn: (...args: T) => R,
     context?: Partial<ErrorContext>
   ) => (...args: T) => R | null;
-  
+
   /** 重试操作 */
   retry: <T>(
     operation: () => Promise<T>,
     options?: { maxRetries?: number; delay?: number }
   ) => Promise<T | null>;
-  
+
   /** 显示通知 */
   notify: {
     success: (message: string) => void;
@@ -83,7 +83,7 @@ export interface UseUnifiedErrorHandlingReturn {
     info: (message: string) => void;
     loading: (message: string) => void;
   };
-  
+
   /** 错误状态 */
   errorState: {
     /** 当前错误 */
@@ -100,13 +100,13 @@ export interface UseUnifiedErrorHandlingReturn {
       bySeverity: Record<ErrorSeverity, number>;
     };
   };
-  
+
   /** 清理错误状态 */
   clearError: () => void;
-  
+
   /** 清理所有错误 */
   clearAllErrors: () => void;
-  
+
   /** 获取错误恢复建议 */
   getRecoverySuggestion: (error?: UnifiedErrorData) => string;
 }
@@ -128,17 +128,19 @@ export function useUnifiedErrorHandling(
     enableErrorBoundary = true,
     recoveryStrategy = 'notify',
     maxRetries = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
   } = options;
 
   // 状态管理
-  const [currentError, setCurrentError] = useState<UnifiedErrorData | null>(null);
+  const [currentError, setCurrentError] = useState<UnifiedErrorData | null>(
+    null
+  );
   const [errorHistory, setErrorHistory] = useState<UnifiedErrorData[]>([]);
   const [errorStats, setErrorStats] = useState({
     total: 0,
     recent: 0,
     byType: {} as Record<string, number>,
-    bySeverity: {} as Record<ErrorSeverity, number>
+    bySeverity: {} as Record<ErrorSeverity, number>,
   });
 
   // 引用管理
@@ -154,193 +156,222 @@ export function useUnifiedErrorHandling(
   }, []);
 
   // 处理错误的主要方法
-  const handleError = useCallback(async (
-    error: any,
-    context: Partial<ErrorContext> = {},
-    options: Partial<ErrorHandlingOptions> = {}
-  ): Promise<ErrorHandlingResult> => {
-    try {
-      // 构建完整的错误上下文
-      const fullContext: ErrorContext = {
-        component: componentRef.current,
-        ...defaultContext,
-        ...context,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      };
+  const handleError = useCallback(
+    async (
+      error: any,
+      context: Partial<ErrorContext> = {},
+      options: Partial<ErrorHandlingOptions> = {}
+    ): Promise<ErrorHandlingResult> => {
+      try {
+        // 构建完整的错误上下文
+        const fullContext: ErrorContext = {
+          component: componentRef.current,
+          ...defaultContext,
+          ...context,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+        };
 
-      // 构建完整的处理选项
-      const fullOptions: ErrorHandlingOptions = {
-        showNotification: autoNotify,
-        recoveryStrategy,
-        autoRetry: true,
-        retryDelay,
-        ...defaultOptions,
-        ...options,
-        
-        // 错误回调
-        onError: (errorData: UnifiedErrorData) => {
-          if (mountedRef.current) {
-            setCurrentError(errorData);
-            setErrorHistory(prev => [errorData, ...prev.slice(0, 49)]); // 保留最近50个错误
-          }
-          
-          // 调用用户自定义回调
-          if (options.onError) {
-            options.onError(errorData);
-          }
-          
-          // 更新统计
-          updateErrorStats();
-        }
-      };
+        // 构建完整的处理选项
+        const fullOptions: ErrorHandlingOptions = {
+          showNotification: autoNotify,
+          recoveryStrategy,
+          autoRetry: true,
+          retryDelay,
+          ...defaultOptions,
+          ...options,
 
-      // 使用统一错误管理器处理错误
-      const result = await unifiedErrorManager.handleError(error, fullContext, fullOptions);
+          // 错误回调
+          onError: (errorData: UnifiedErrorData) => {
+            if (mountedRef.current) {
+              setCurrentError(errorData);
+              setErrorHistory(prev => [errorData, ...prev.slice(0, 49)]); // 保留最近50个错误
+            }
 
-      logger.debug('错误处理完成', {
-        component: componentRef.current,
-        errorId: result.errorId,
-        handled: result.handled
-      });
+            // 调用用户自定义回调
+            if (options.onError) {
+              options.onError(errorData);
+            }
 
-      return result;
+            // 更新统计
+            updateErrorStats();
+          },
+        };
 
-    } catch (handlingError) {
-      logger.error('错误处理失败', handlingError);
-      
-      // 返回默认结果
-      return {
-        handled: false,
-        errorId: 'unknown',
-        userMessage: '系统发生未知错误',
-        shouldRetry: false,
-        strategy: 'toast' as any,
-        severity: ErrorSeverity.HIGH
-      };
-    }
-  }, [
-    componentRef,
-    defaultContext,
-    defaultOptions,
-    autoNotify,
-    recoveryStrategy,
-    retryDelay,
-    updateErrorStats
-  ]);
+        // 使用统一错误管理器处理错误
+        const result = await unifiedErrorManager.handleError(
+          error,
+          fullContext,
+          fullOptions
+        );
+
+        logger.debug('错误处理完成', {
+          component: componentRef.current,
+          errorId: result.errorId,
+          handled: result.handled,
+        });
+
+        return result;
+      } catch (handlingError) {
+        logger.error('错误处理失败', handlingError);
+
+        // 返回默认结果
+        return {
+          handled: false,
+          errorId: 'unknown',
+          userMessage: '系统发生未知错误',
+          shouldRetry: false,
+          strategy: 'toast' as any,
+          severity: ErrorSeverity.HIGH,
+        };
+      }
+    },
+    [
+      componentRef,
+      defaultContext,
+      defaultOptions,
+      autoNotify,
+      recoveryStrategy,
+      retryDelay,
+      updateErrorStats,
+    ]
+  );
 
   // 包装异步函数
-  const wrapAsync = useCallback(<T extends any[], R>(
-    fn: (...args: T) => Promise<R>,
-    context: Partial<ErrorContext> = {}
-  ) => {
-    return async (...args: T): Promise<R | null> => {
-      try {
-        return await fn(...args);
-      } catch (error) {
-        await handleError(error, context);
-        return null;
-      }
-    };
-  }, [handleError]);
+  const wrapAsync = useCallback(
+    <T extends any[], R>(
+      fn: (...args: T) => Promise<R>,
+      context: Partial<ErrorContext> = {}
+    ) => {
+      return async (...args: T): Promise<R | null> => {
+        try {
+          return await fn(...args);
+        } catch (error) {
+          await handleError(error, context);
+          return null;
+        }
+      };
+    },
+    [handleError]
+  );
 
   // 包装同步函数
-  const wrapSync = useCallback(<T extends any[], R>(
-    fn: (...args: T) => R,
-    context: Partial<ErrorContext> = {}
-  ) => {
-    return (...args: T): R | null => {
-      try {
-        return fn(...args);
-      } catch (error) {
-        handleError(error, context);
-        return null;
-      }
-    };
-  }, [handleError]);
+  const wrapSync = useCallback(
+    <T extends any[], R>(
+      fn: (...args: T) => R,
+      context: Partial<ErrorContext> = {}
+    ) => {
+      return (...args: T): R | null => {
+        try {
+          return fn(...args);
+        } catch (error) {
+          handleError(error, context);
+          return null;
+        }
+      };
+    },
+    [handleError]
+  );
 
   // 重试操作
-  const retry = useCallback(async <T>(
-    operation: () => Promise<T>,
-    retryOptions: { maxRetries?: number; delay?: number } = {}
-  ): Promise<T | null> => {
-    const maxAttempts = retryOptions.maxRetries || maxRetries;
-    const delay = retryOptions.delay || retryDelay;
+  const retry = useCallback(
+    async <T>(
+      operation: () => Promise<T>,
+      retryOptions: { maxRetries?: number; delay?: number } = {}
+    ): Promise<T | null> => {
+      const maxAttempts = retryOptions.maxRetries || maxRetries;
+      const delay = retryOptions.delay || retryDelay;
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        if (attempt > 1) {
-          // 等待重试延迟
-          await new Promise(resolve => setTimeout(resolve, delay * attempt));
-        }
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          if (attempt > 1) {
+            // 等待重试延迟
+            await new Promise(resolve => setTimeout(resolve, delay * attempt));
+          }
 
-        const result = await operation();
-        
-        if (attempt > 1) {
-          // 重试成功，显示成功通知
-          enhancedUserNotificationSystem.success(
-            `操作重试成功（第${attempt}次尝试）`,
-            { position: notificationPosition }
-          );
-        }
-        
-        return result;
-        
-      } catch (error) {
-        if (attempt === maxAttempts) {
-          // 最后一次重试失败
-          await handleError(error, {
-            action: 'retry_failed',
-            metadata: { attempts: attempt, maxAttempts }
+          const result = await operation();
+
+          if (attempt > 1) {
+            // 重试成功，显示成功通知
+            enhancedUserNotificationSystem.success(
+              `操作重试成功（第${attempt}次尝试）`,
+              { position: notificationPosition }
+            );
+          }
+
+          return result;
+        } catch (error) {
+          if (attempt === maxAttempts) {
+            // 最后一次重试失败
+            await handleError(error, {
+              action: 'retry_failed',
+              metadata: { attempts: attempt, maxAttempts },
+            });
+            break;
+          }
+
+          // 记录重试失败
+          logger.warn('重试失败，继续尝试', {
+            component: componentRef.current,
+            attempt,
+            maxAttempts,
+            error: error instanceof Error ? error.message : String(error),
           });
-          break;
         }
-        
-        // 记录重试失败
-        logger.warn('重试失败，继续尝试', {
-          component: componentRef.current,
-          attempt,
-          maxAttempts,
-          error: error instanceof Error ? error.message : String(error)
-        });
       }
-    }
 
-    return null;
-  }, [handleError, maxRetries, retryDelay, notificationPosition]);
+      return null;
+    },
+    [handleError, maxRetries, retryDelay, notificationPosition]
+  );
 
   // 通知方法
   const notify = {
-    success: useCallback((message: string) => {
-      enhancedUserNotificationSystem.success(message, {
-        position: notificationPosition
-      });
-    }, [notificationPosition]),
+    success: useCallback(
+      (message: string) => {
+        enhancedUserNotificationSystem.success(message, {
+          position: notificationPosition,
+        });
+      },
+      [notificationPosition]
+    ),
 
-    error: useCallback((message: string) => {
-      enhancedUserNotificationSystem.error(message, {
-        position: notificationPosition
-      });
-    }, [notificationPosition]),
+    error: useCallback(
+      (message: string) => {
+        enhancedUserNotificationSystem.error(message, {
+          position: notificationPosition,
+        });
+      },
+      [notificationPosition]
+    ),
 
-    warning: useCallback((message: string) => {
-      enhancedUserNotificationSystem.warning(message, {
-        position: notificationPosition
-      });
-    }, [notificationPosition]),
+    warning: useCallback(
+      (message: string) => {
+        enhancedUserNotificationSystem.warning(message, {
+          position: notificationPosition,
+        });
+      },
+      [notificationPosition]
+    ),
 
-    info: useCallback((message: string) => {
-      enhancedUserNotificationSystem.info(message, {
-        position: notificationPosition
-      });
-    }, [notificationPosition]),
+    info: useCallback(
+      (message: string) => {
+        enhancedUserNotificationSystem.info(message, {
+          position: notificationPosition,
+        });
+      },
+      [notificationPosition]
+    ),
 
-    loading: useCallback((message: string) => {
-      enhancedUserNotificationSystem.loading(message, {
-        position: notificationPosition
-      });
-    }, [notificationPosition])
+    loading: useCallback(
+      (message: string) => {
+        enhancedUserNotificationSystem.loading(message, {
+          position: notificationPosition,
+        });
+      },
+      [notificationPosition]
+    ),
   };
 
   // 清理错误状态
@@ -356,26 +387,29 @@ export function useUnifiedErrorHandling(
       setCurrentError(null);
       setErrorHistory([]);
     }
-    
+
     // 清理通知
     enhancedUserNotificationSystem.closeAll();
-    
+
     // 清理错误管理器历史
     unifiedErrorManager.cleanupHistory();
-    
+
     updateErrorStats();
   }, [updateErrorStats]);
 
   // 获取错误恢复建议
-  const getRecoverySuggestion = useCallback((error?: UnifiedErrorData): string => {
-    const targetError = error || currentError;
-    
-    if (!targetError) {
-      return '暂无错误信息';
-    }
+  const getRecoverySuggestion = useCallback(
+    (error?: UnifiedErrorData): string => {
+      const targetError = error || currentError;
 
-    return targetError.actionSuggestion || '请稍后重试或联系技术支持';
-  }, [currentError]);
+      if (!targetError) {
+        return '暂无错误信息';
+      }
+
+      return targetError.actionSuggestion || '请稍后重试或联系技术支持';
+    },
+    [currentError]
+  );
 
   // 错误边界处理
   useEffect(() => {
@@ -384,7 +418,7 @@ export function useUnifiedErrorHandling(
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       handleError(event.reason, {
         action: 'unhandled_promise_rejection',
-        component: componentRef.current
+        component: componentRef.current,
       });
     };
 
@@ -395,8 +429,8 @@ export function useUnifiedErrorHandling(
         url: event.filename,
         metadata: {
           lineno: event.lineno,
-          colno: event.colno
-        }
+          colno: event.colno,
+        },
       });
     };
 
@@ -404,7 +438,10 @@ export function useUnifiedErrorHandling(
     window.addEventListener('error', handleError);
 
     return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener(
+        'unhandledrejection',
+        handleUnhandledRejection
+      );
       window.removeEventListener('error', handleError);
     };
   }, [enableErrorBoundary, handleError]);
@@ -437,11 +474,11 @@ export function useUnifiedErrorHandling(
       currentError,
       errorHistory,
       hasError: currentError !== null,
-      errorStats
+      errorStats,
     },
     clearError,
     clearAllErrors,
-    getRecoverySuggestion
+    getRecoverySuggestion,
   };
 }
 
@@ -454,19 +491,22 @@ export function useErrorBoundary(componentName?: string) {
     componentName: componentName || 'ErrorBoundary',
     autoNotify: true,
     enableErrorBoundary: false, // 避免重复监听
-    recoveryStrategy: 'notify'
+    recoveryStrategy: 'notify',
   });
 
-  const captureError = useCallback((error: Error, errorInfo?: any) => {
-    handleError(error, {
-      component: componentName || 'ErrorBoundary',
-      action: 'component_error_boundary',
-      metadata: {
-        errorInfo,
-        componentStack: errorInfo?.componentStack
-      }
-    });
-  }, [handleError, componentName]);
+  const captureError = useCallback(
+    (error: Error, errorInfo?: any) => {
+      handleError(error, {
+        component: componentName || 'ErrorBoundary',
+        action: 'component_error_boundary',
+        metadata: {
+          errorInfo,
+          componentStack: errorInfo?.componentStack,
+        },
+      });
+    },
+    [handleError, componentName]
+  );
 
   return { captureError };
 }
@@ -480,28 +520,34 @@ export function useAsyncErrorHandling(componentName?: string) {
     componentName: componentName || 'AsyncOperation',
     autoNotify: true,
     recoveryStrategy: 'notify',
-    maxRetries: 3
+    maxRetries: 3,
   });
 
-  const executeAsync = useCallback(async <T>(
-    operation: () => Promise<T>,
-    context?: Partial<ErrorContext>
-  ): Promise<T | null> => {
-    const wrappedOperation = wrapAsync(operation, context);
-    return await wrappedOperation();
-  }, [wrapAsync]);
+  const executeAsync = useCallback(
+    async <T>(
+      operation: () => Promise<T>,
+      context?: Partial<ErrorContext>
+    ): Promise<T | null> => {
+      const wrappedOperation = wrapAsync(operation, context);
+      return await wrappedOperation();
+    },
+    [wrapAsync]
+  );
 
-  const executeWithRetry = useCallback(async <T>(
-    operation: () => Promise<T>,
-    retryOptions?: { maxRetries?: number; delay?: number }
-  ): Promise<T | null> => {
-    return await retry(operation, retryOptions);
-  }, [retry]);
+  const executeWithRetry = useCallback(
+    async <T>(
+      operation: () => Promise<T>,
+      retryOptions?: { maxRetries?: number; delay?: number }
+    ): Promise<T | null> => {
+      return await retry(operation, retryOptions);
+    },
+    [retry]
+  );
 
   return {
     handleError,
     executeAsync,
-    executeWithRetry
+    executeWithRetry,
   };
 }
 
@@ -513,42 +559,45 @@ export function useFormErrorHandling(formName?: string) {
   const { handleError, notify } = useUnifiedErrorHandling({
     componentName: formName || 'Form',
     autoNotify: false, // 表单错误通常需要自定义处理
-    recoveryStrategy: 'notify'
+    recoveryStrategy: 'notify',
   });
 
-  const handleValidationError = useCallback((
-    fieldErrors: Record<string, string[]>,
-    generalError?: string
-  ) => {
-    // 显示字段错误
-    Object.entries(fieldErrors).forEach(([field, errors]) => {
-      errors.forEach(error => {
-        notify.error(`${field}: ${error}`);
+  const handleValidationError = useCallback(
+    (fieldErrors: Record<string, string[]>, generalError?: string) => {
+      // 显示字段错误
+      Object.entries(fieldErrors).forEach(([field, errors]) => {
+        errors.forEach(error => {
+          notify.error(`${field}: ${error}`);
+        });
       });
-    });
 
-    // 显示通用错误
-    if (generalError) {
-      notify.error(generalError);
-    }
+      // 显示通用错误
+      if (generalError) {
+        notify.error(generalError);
+      }
 
-    // 记录验证错误
-    handleError(new Error('表单验证失败'), {
-      action: 'form_validation',
-      metadata: { fieldErrors, generalError }
-    });
-  }, [handleError, notify]);
+      // 记录验证错误
+      handleError(new Error('表单验证失败'), {
+        action: 'form_validation',
+        metadata: { fieldErrors, generalError },
+      });
+    },
+    [handleError, notify]
+  );
 
-  const handleSubmitError = useCallback((error: any) => {
-    handleError(error, {
-      action: 'form_submit',
-      metadata: { formName }
-    });
-  }, [handleError, formName]);
+  const handleSubmitError = useCallback(
+    (error: any) => {
+      handleError(error, {
+        action: 'form_submit',
+        metadata: { formName },
+      });
+    },
+    [handleError, formName]
+  );
 
   return {
     handleValidationError,
     handleSubmitError,
-    notify
+    notify,
   };
 }

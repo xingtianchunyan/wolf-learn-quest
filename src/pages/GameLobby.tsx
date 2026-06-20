@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Brain, Plus, User, Users, Gavel, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -9,13 +15,13 @@ import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import PlayerInfoPanel from '@/components/lobby/PlayerInfoPanel';
 import LobbyActionButtons from '@/components/lobby/LobbyActionButtons';
 import RoomListTable from '@/components/lobby/RoomListTable';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoomCleanup } from '@/hooks/useRoomCleanup';
@@ -55,7 +61,12 @@ const GameLobby = () => {
 
   // Auto-redirect to player's room if they're already in one
   useEffect(() => {
-    if (!initializing && currentUser && !playerRoom.isLoading && playerRoom.roomDbId) {
+    if (
+      !initializing &&
+      currentUser &&
+      !playerRoom.isLoading &&
+      playerRoom.roomDbId
+    ) {
       navigate(`/room/${playerRoom.roomDbId}`);
     }
   }, [initializing, currentUser, playerRoom, navigate]);
@@ -97,7 +108,14 @@ const GameLobby = () => {
         navigate(`/room/${playerRoom.roomDbId}`);
       }
     }
-  }, [initializing, currentUser, playerRoom, playerRoom.roomDbId, judgeRoomId, navigate]);
+  }, [
+    initializing,
+    currentUser,
+    playerRoom,
+    playerRoom.roomDbId,
+    judgeRoomId,
+    navigate,
+  ]);
 
   // Initialize authentication and fetch data
   useEffect(() => {
@@ -121,7 +139,7 @@ const GameLobby = () => {
           event: '*',
           schema: 'public',
           table: 'rooms',
-          filter: `status=in.(waiting,active)`
+          filter: `status=in.(waiting,active)`,
         },
         () => {
           fetchRooms();
@@ -137,7 +155,7 @@ const GameLobby = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'room_players'
+          table: 'room_players',
         },
         () => {
           fetchRooms();
@@ -156,7 +174,8 @@ const GameLobby = () => {
     try {
       const { data, error } = await supabase
         .from('rooms')
-        .select(`
+        .select(
+          `
           id,
           room_id,
           max_players,
@@ -165,7 +184,8 @@ const GameLobby = () => {
           host_id,
           judge_user_id,
           users!rooms_host_id_fkey(player_name)
-        `)
+        `
+        )
         .in('status', ['waiting', 'active']);
 
       if (error) {
@@ -173,10 +193,9 @@ const GameLobby = () => {
         return;
       }
 
-
       // Get player counts for all waiting rooms in one call using SECURITY DEFINER function
-      const { data: playerCounts, error: playerCountError } = await supabase
-        .rpc('get_waiting_room_player_counts');
+      const { data: playerCounts, error: playerCountError } =
+        await supabase.rpc('get_waiting_room_player_counts');
 
       if (playerCountError) {
         console.error('Error fetching player counts:', playerCountError);
@@ -185,27 +204,33 @@ const GameLobby = () => {
       // Create a map for quick lookup of player counts
       const playerCountMap = new Map();
       if (playerCounts) {
-        playerCounts.forEach((item: { room_id: string; player_count: number }) => {
-          playerCountMap.set(item.room_id, Number(item.player_count));
-        });
+        playerCounts.forEach(
+          (item: { room_id: string; player_count: number }) => {
+            playerCountMap.set(item.room_id, Number(item.player_count));
+          }
+        );
       }
 
       // Get judge names and combine with player counts
       const roomsWithJudges = await Promise.all(
-        (data || []).map(async (room) => {
+        (data || []).map(async room => {
           let judgeName = null;
-          
+
           if (room.judge_user_id) {
-            const { data: judgeData } = await supabase
-              .rpc('get_public_user_profile', { p_user_id: room.judge_user_id });
-            
-            judgeName = Array.isArray(judgeData) && judgeData.length > 0 ? judgeData[0].player_name : null;
+            const { data: judgeData } = await supabase.rpc(
+              'get_public_user_profile',
+              { p_user_id: room.judge_user_id }
+            );
+
+            judgeName =
+              Array.isArray(judgeData) && judgeData.length > 0
+                ? judgeData[0].player_name
+                : null;
           }
 
           // Get player count from the map
           const playerCount = playerCountMap.get(room.id) || 0;
-          
-          
+
           return {
             id: room.id,
             roomId: room.room_id,
@@ -217,7 +242,7 @@ const GameLobby = () => {
             isPrivate: false,
             status: room.status,
             judgeUserId: room.judge_user_id,
-            judgeName
+            judgeName,
           };
         })
       );
@@ -234,9 +259,9 @@ const GameLobby = () => {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    
+
     const sequence = Math.floor(Math.random() * 99) + 1;
-    
+
     return `${year}/${month}/${day}-${String(sequence).padStart(2, '0')}`;
   };
 
@@ -244,10 +269,10 @@ const GameLobby = () => {
     if (!playerRoom.roomDbId) return;
 
     setIsLeavingRoom(true);
-    
+
     try {
       const success = await leaveCurrentRoom();
-      
+
       if (success) {
         toast({
           title: t('room_leave_success'),
@@ -259,7 +284,7 @@ const GameLobby = () => {
         toast({
           title: t('room_leave_failed'),
           description: t('room_leave_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -267,7 +292,7 @@ const GameLobby = () => {
       toast({
         title: t('room_leave_failed'),
         description: t('room_leave_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsLeavingRoom(false);
@@ -275,12 +300,11 @@ const GameLobby = () => {
   };
 
   const handleCreateRoom = async () => {
-    
     if (!currentUser) {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -289,17 +313,16 @@ const GameLobby = () => {
       toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     setIsCreatingRoom(true);
-    
+
     try {
       const roomId = generateRoomId();
-      
-      
+
       // Create room in database
       const { data: newRoom, error: roomError } = await supabase
         .from('rooms')
@@ -308,7 +331,7 @@ const GameLobby = () => {
           host_id: currentUser.id,
           max_players: 12,
           status: 'waiting',
-          human_judge: true
+          human_judge: true,
         })
         .select()
         .single();
@@ -318,11 +341,10 @@ const GameLobby = () => {
         toast({
           title: t('room_create_failed'),
           description: roomError.message || t('room_create_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
-
 
       // Add host as player to the room
       const { error: playerError } = await supabase
@@ -331,7 +353,7 @@ const GameLobby = () => {
           room_id: newRoom.id,
           user_id: currentUser.id,
           is_ready: false,
-          is_ai: false
+          is_ai: false,
         });
 
       if (playerError) {
@@ -339,7 +361,7 @@ const GameLobby = () => {
         toast({
           title: t('room_create_failed'),
           description: t('room_create_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
 
@@ -347,7 +369,7 @@ const GameLobby = () => {
         title: t('room_created'),
         description: t('room_created_desc'),
       });
-      
+
       // Navigate to the specific room
       navigate(`/room/${newRoom.id}`);
     } catch (error) {
@@ -355,7 +377,7 @@ const GameLobby = () => {
       toast({
         title: t('room_create_failed'),
         description: t('room_create_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsCreatingRoom(false);
@@ -363,12 +385,11 @@ const GameLobby = () => {
   };
 
   const handleCreateAIJudge = async () => {
-    
     if (!currentUser) {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -377,7 +398,7 @@ const GameLobby = () => {
       toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -386,8 +407,7 @@ const GameLobby = () => {
 
     try {
       const roomId = generateRoomId();
-      
-      
+
       // Create room with AI judge in database
       const { data: newRoom, error: roomError } = await supabase
         .from('rooms')
@@ -396,7 +416,7 @@ const GameLobby = () => {
           host_id: currentUser.id,
           max_players: 12,
           status: 'waiting',
-          human_judge: false
+          human_judge: false,
         })
         .select()
         .single();
@@ -406,11 +426,10 @@ const GameLobby = () => {
         toast({
           title: t('room_create_failed'),
           description: roomError.message || t('room_create_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
-
 
       // Add host as player to the room
       const { error: playerError } = await supabase
@@ -419,7 +438,7 @@ const GameLobby = () => {
           room_id: newRoom.id,
           user_id: currentUser.id,
           is_ready: false,
-          is_ai: false
+          is_ai: false,
         });
 
       if (playerError) {
@@ -427,7 +446,7 @@ const GameLobby = () => {
         toast({
           title: t('room_create_failed'),
           description: t('room_create_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
 
@@ -435,7 +454,7 @@ const GameLobby = () => {
         title: t('room_created'),
         description: t('room_created_desc'),
       });
-      
+
       // Navigate to the specific room
       navigate(`/room/${newRoom.id}`);
     } catch (error) {
@@ -443,7 +462,7 @@ const GameLobby = () => {
       toast({
         title: t('room_create_failed'),
         description: t('room_create_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsCreatingAIRoom(false);
@@ -455,7 +474,7 @@ const GameLobby = () => {
       toast({
         title: t('auth_required'),
         description: t('sign_in_required'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -464,13 +483,12 @@ const GameLobby = () => {
       toast({
         title: t('already_in_room'),
         description: t('leave_first'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     try {
-
       // 先检查房间是否还有空位
       const { data: roomData, error: roomError } = await supabase
         .from('rooms')
@@ -483,7 +501,7 @@ const GameLobby = () => {
         toast({
           title: t('room_join_failed'),
           description: t('room_join_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -494,31 +512,32 @@ const GameLobby = () => {
         .select('*', { count: 'exact', head: true })
         .eq('room_id', roomId);
 
-      if (currentPlayerCount && currentPlayerCount >= (roomData.max_players || 8)) {
+      if (
+        currentPlayerCount &&
+        currentPlayerCount >= (roomData.max_players || 8)
+      ) {
         toast({
           title: t('room_join_failed'),
           description: t('room_full'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
 
       // Add player to room
-      const { error } = await supabase
-        .from('room_players')
-        .insert({
-          room_id: roomId,
-          user_id: currentUser.id,
-          is_ready: false,
-          is_ai: false
-        });
+      const { error } = await supabase.from('room_players').insert({
+        room_id: roomId,
+        user_id: currentUser.id,
+        is_ready: false,
+        is_ai: false,
+      });
 
       if (error) {
         console.error('Error joining room:', error);
         toast({
           title: t('room_join_failed'),
           description: error.message || t('room_join_error'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -529,23 +548,22 @@ const GameLobby = () => {
       toast({
         title: t('room_join_failed'),
         description: t('room_join_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
-  
+
   const playAsJudge = async (roomId: string) => {
     if (!currentUser) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to play as judge",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'Please sign in to play as judge',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
-      
       // Update the room to set current user as judge
       const { error } = await supabase
         .from('rooms')
@@ -556,24 +574,24 @@ const GameLobby = () => {
       if (error) {
         console.error('Error setting judge:', error);
         toast({
-          title: "Failed to become judge",
-          description: "Another player may have already become the judge",
-          variant: "destructive",
+          title: 'Failed to become judge',
+          description: 'Another player may have already become the judge',
+          variant: 'destructive',
         });
         return;
       }
 
       // 直接导航到对应房间的法官页面
       navigate(`/room/${roomId}/judge`);
-      
+
       // Refresh room list to update UI
       fetchRooms();
     } catch (error) {
       console.error('Error playing as judge:', error);
       toast({
-        title: "Failed to join as judge",
-        description: "An unexpected error occurred",
-        variant: "destructive",
+        title: 'Failed to join as judge',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
       });
     }
   };
@@ -581,11 +599,11 @@ const GameLobby = () => {
   if (initializing || playerRoom.isLoading) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4"></div>
-              <p className="text-gray-400">{t('loading')}</p>
+        <div className='container mx-auto py-6 px-4'>
+          <div className='flex justify-center items-center h-64'>
+            <div className='text-center'>
+              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-4'></div>
+              <p className='text-gray-400'>{t('loading')}</p>
             </div>
           </div>
         </div>
@@ -595,10 +613,10 @@ const GameLobby = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className='container mx-auto py-6 px-4'>
+        <div className='flex flex-col lg:flex-row gap-6'>
           {/* Player Info or Auth Notice - Left Side */}
-          <div className="w-full lg:w-1/4">
+          <div className='w-full lg:w-1/4'>
             <PlayerInfoPanel
               currentUser={currentUser}
               playerRoom={playerRoom}
@@ -610,7 +628,7 @@ const GameLobby = () => {
           </div>
 
           {/* Main Content - Right Side */}
-          <div className="w-full lg:w-3/4">
+          <div className='w-full lg:w-3/4'>
             {/* Action Buttons Row */}
             <LobbyActionButtons
               handleCreateAIJudge={handleCreateAIJudge}

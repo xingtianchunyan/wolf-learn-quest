@@ -54,23 +54,27 @@ src/
 ### 本地开发
 
 1. 克隆项目
+
 ```bash
 git clone <repository-url>
 cd werewolf-game
 ```
 
 2. 安装依赖
+
 ```bash
 npm install
 ```
 
 3. 环境配置
+
 ```bash
 cp .env.example .env
 # 配置 Supabase 相关环境变量
 ```
 
 4. 启动开发服务器
+
 ```bash
 npm run dev
 ```
@@ -89,6 +93,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ### 生产环境部署
 
 1. **构建项目**
+
 ```bash
 npm run build
 ```

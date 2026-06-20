@@ -1,10 +1,13 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Sword, Eye, Ban } from 'lucide-react';
 import type { SkillEffects, RoleAttributes } from '@/utils/skillSystemHelpers';
-import { getSkillEffectTypes, getSkillTargetTypes, hasSpecialAbility } from '@/utils/skillSystemHelpers';
+import {
+  getSkillEffectTypes,
+  getSkillTargetTypes,
+  hasSpecialAbility,
+} from '@/utils/skillSystemHelpers';
 
 interface RoleSkillInfoProps {
   roleName: string;
@@ -17,18 +20,18 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
   roleName,
   skillEffects,
   roleAttributes,
-  className = ''
+  className = '',
 }) => {
   const getSkillIcon = (effectType: string) => {
     switch (effectType) {
       case 'attack':
-        return <Sword className="h-3 w-3" />;
+        return <Sword className='h-3 w-3' />;
       case 'protect':
-        return <Shield className="h-3 w-3" />;
+        return <Shield className='h-3 w-3' />;
       case 'check':
-        return <Eye className="h-3 w-3" />;
+        return <Eye className='h-3 w-3' />;
       case 'none':
-        return <Ban className="h-3 w-3" />;
+        return <Ban className='h-3 w-3' />;
       default:
         return null;
     }
@@ -50,27 +53,41 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
   };
 
   const getTargetTypeText = (targetTypes: string[]) => {
-    return targetTypes.map(type => {
-      switch (type) {
-        case 'single': return '单个目标';
-        case 'self': return '自己';
-        case 'multiple': return '多个目标';
-        case 'all': return '所有人';
-        default: return type;
-      }
-    }).join(', ');
+    return targetTypes
+      .map(type => {
+        switch (type) {
+          case 'single':
+            return '单个目标';
+          case 'self':
+            return '自己';
+          case 'multiple':
+            return '多个目标';
+          case 'all':
+            return '所有人';
+          default:
+            return type;
+        }
+      })
+      .join(', ');
   };
 
   const getPhaseText = (phases: string[]) => {
-    return phases.map(phase => {
-      switch (phase) {
-        case 'day': return '白天';
-        case 'evening': return '傍晚';
-        case 'night': return '夜晚';
-        case 'dawn': return '黎明';
-        default: return phase;
-      }
-    }).join(', ');
+    return phases
+      .map(phase => {
+        switch (phase) {
+          case 'day':
+            return '白天';
+          case 'evening':
+            return '傍晚';
+          case 'night':
+            return '夜晚';
+          case 'dawn':
+            return '黎明';
+          default:
+            return phase;
+        }
+      })
+      .join(', ');
   };
 
   const getFactionColor = (isWolfFaction: boolean) => {
@@ -82,43 +99,56 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
   }
 
   return (
-    <Card className={`bg-werewolf-dark/40 border-werewolf-purple/30 ${className}`}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-werewolf-purple flex items-center justify-between">
+    <Card
+      className={`bg-werewolf-dark/40 border-werewolf-purple/30 ${className}`}
+    >
+      <CardHeader className='pb-2'>
+        <CardTitle className='text-sm text-werewolf-purple flex items-center justify-between'>
           <span>{roleName} 技能信息</span>
           {roleAttributes && (
-            <Badge 
-              variant="outline" 
-              className={getFactionColor(roleAttributes.victory_condition.includes('狼人'))}
+            <Badge
+              variant='outline'
+              className={getFactionColor(
+                roleAttributes.victory_condition.includes('狼人')
+              )}
             >
-              {roleAttributes.victory_condition.includes('狼人') ? '狼人阵营' : '好人阵营'}
+              {roleAttributes.victory_condition.includes('狼人')
+                ? '狼人阵营'
+                : '好人阵营'}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className='space-y-3'>
         {skillEffects && (
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-1">
+          <div className='space-y-2'>
+            <div className='flex flex-wrap gap-1'>
               {getSkillEffectTypes(skillEffects).map((effectType, index) => (
-                <Badge 
+                <Badge
                   key={index}
-                  variant="outline"
+                  variant='outline'
                   className={`text-xs ${getSkillTypeColor(effectType)}`}
                 >
                   {getSkillIcon(effectType)}
-                  <span className="ml-1">
-                    {effectType === 'attack' ? '攻击' :
-                     effectType === 'protect' ? '保护' :
-                     effectType === 'check' ? '查看' :
-                     effectType === 'none' ? '无技能' : effectType}
+                  <span className='ml-1'>
+                    {effectType === 'attack'
+                      ? '攻击'
+                      : effectType === 'protect'
+                        ? '保护'
+                        : effectType === 'check'
+                          ? '查看'
+                          : effectType === 'none'
+                            ? '无技能'
+                            : effectType}
                   </span>
                 </Badge>
               ))}
             </div>
-            
-            <div className="text-xs text-gray-400 space-y-1">
-              <div>目标类型: {getTargetTypeText(getSkillTargetTypes(skillEffects))}</div>
+
+            <div className='text-xs text-gray-400 space-y-1'>
+              <div>
+                目标类型: {getTargetTypeText(getSkillTargetTypes(skillEffects))}
+              </div>
               <div>发动阶段: {getPhaseText(skillEffects.active_phases)}</div>
               <div>优先级: {skillEffects.priority}</div>
             </div>
@@ -126,13 +156,15 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
         )}
 
         {roleAttributes && roleAttributes.special_abilities.length > 0 && (
-          <div className="space-y-1">
-            <div className="text-xs font-medium text-werewolf-purple">特殊能力:</div>
+          <div className='space-y-1'>
+            <div className='text-xs font-medium text-werewolf-purple'>
+              特殊能力:
+            </div>
             {roleAttributes.special_abilities.map((ability, index) => (
-              <Badge 
+              <Badge
                 key={index}
-                variant="outline"
-                className="text-xs bg-purple-500/20 text-purple-400 border-purple-400"
+                variant='outline'
+                className='text-xs bg-purple-500/20 text-purple-400 border-purple-400'
               >
                 {ability}
               </Badge>

@@ -1,11 +1,11 @@
 /**
  * 游戏房间页面组件
- * 
+ *
  * 功能说明：
  * - 显示房间信息、玩家列表、角色选择和聊天功能
  * - 处理房间状态的实时更新
  * - 管理玩家的准备状态和角色选择
- * 
+ *
  * 修复说明：
  * - 修复房主ID和法官ID显示问题
  * - 使用 get_public_user_profile RPC 函数替代直接的外键关联查询
@@ -46,21 +46,32 @@ const GameRoom = () => {
     judgeName,
     isLoading,
     setRoomData,
-    setIsLoading
+    setIsLoading,
   } = useGameRoomData(id);
 
   const [isReady, setIsReady] = useState(false);
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
+    null
+  );
   const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
-  const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(null);
-  
+  const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(
+    null
+  );
+
   const { leaveCurrentRoom } = usePlayerRoom();
-  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(roomData?.id);
-  const { players, loading: playersLoading, updatePlayerReady, addAIPlayer } = usePlayersRealtime(roomData?.id);
+  const { roomData: realtimeRoomData, updateMaxPlayers } = useRoomRealtime(
+    roomData?.id
+  );
+  const {
+    players,
+    loading: playersLoading,
+    updatePlayerReady,
+    addAIPlayer,
+  } = usePlayersRealtime(roomData?.id);
   const { gameState } = useGameState(roomData?.id || '');
   // 游戏结束后自动迁移到新房间
   useRoomTransition(roomData?.id, gameState?.status);
-  
+
   // 监听游戏状态变化，当游戏开始时自动跳转
   useEffect(() => {
     if (gameState?.status === 'active' && roomData?.id) {
@@ -69,25 +80,33 @@ const GameRoom = () => {
   }, [gameState?.status, roomData?.id, navigate]);
 
   // 添加在线状态追踪
-  const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(roomData?.id, currentUser);
+  const { getOnlinePlayers, isPlayerOnline } = usePlayerPresence(
+    roomData?.id,
+    currentUser
+  );
   const onlinePlayersList = getOnlinePlayers();
   const onlinePlayers = onlinePlayersList.map(p => p.user_id);
-  
+
   // Get current max players from realtime data or fallback to local state
-  const currentMaxPlayers = realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
-  
+  const currentMaxPlayers =
+    realtimeRoomData?.maxPlayers || roomData?.maxPlayers || 6;
+
   // 使用角色选择 hook，传递 user_id 而不是 player_id
   const {
     canSelectRoles,
     allPlayersSelectedRoles,
     clearAllRoleSelections,
-    getCurrentPlayerSelection
-  } = useRoleSelection(roomData?.id || '', currentUserId, players.length, currentMaxPlayers);
-  
+    getCurrentPlayerSelection,
+  } = useRoleSelection(
+    roomData?.id || '',
+    currentUserId,
+    players.length,
+    currentMaxPlayers
+  );
+
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
-  
-  
+
   const allReady = players.every(player => player.isReady);
 
   // Add room cleanup functionality
@@ -120,7 +139,7 @@ const GameRoom = () => {
       fetchCurrentPlayerRecord();
     }
   }, [currentUserId, players.length, roomData?.id]);
-  
+
   // 初始化 previousMaxPlayers
   useEffect(() => {
     if (roomData && previousMaxPlayers === null) {
@@ -130,7 +149,10 @@ const GameRoom = () => {
 
   // 监听最大玩家数变化并重置角色选择
   useEffect(() => {
-    if (previousMaxPlayers !== null && previousMaxPlayers !== currentMaxPlayers) {
+    if (
+      previousMaxPlayers !== null &&
+      previousMaxPlayers !== currentMaxPlayers
+    ) {
       // 最大玩家数发生变化，清除所有角色选择
       const resetRoleSelections = async () => {
         const success = await clearAllRoleSelections();
@@ -143,7 +165,7 @@ const GameRoom = () => {
           });
         }
       };
-      
+
       resetRoleSelections();
     }
     setPreviousMaxPlayers(currentMaxPlayers);
@@ -152,25 +174,28 @@ const GameRoom = () => {
   const handleMaxPlayersChange = async (increment: number) => {
     if (!roomData || !currentUser) return;
 
-    const newMaxPlayers = Math.max(6, Math.min(12, currentMaxPlayers + increment));
-    
+    const newMaxPlayers = Math.max(
+      6,
+      Math.min(12, currentMaxPlayers + increment)
+    );
+
     if (newMaxPlayers === currentMaxPlayers) return;
 
     try {
       const success = await updateMaxPlayers(newMaxPlayers);
-      
+
       if (!success) {
         toast({
           title: t('error'),
           description: t('error_updating_players'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
 
       // Update local state for immediate feedback
       setRoomData({ ...roomData, maxPlayers: newMaxPlayers });
-      
+
       toast({
         title: t('max_players_updated'),
         description: `${t('max_players_set')} ${newMaxPlayers}`,
@@ -180,24 +205,24 @@ const GameRoom = () => {
       toast({
         title: t('error'),
         description: t('error_updating_players'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
-  
+
   const handleAddAIPlayer = async () => {
     if (players.length >= currentMaxPlayers) {
       toast({
         title: t('room_full'),
         description: t('room_is_full'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     try {
       const success = await addAIPlayer();
-      
+
       if (success) {
         toast({
           title: t('ai_player_added'),
@@ -207,7 +232,7 @@ const GameRoom = () => {
         toast({
           title: t('error'),
           description: t('failed_to_add_ai'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -215,7 +240,7 @@ const GameRoom = () => {
       toast({
         title: t('error'),
         description: t('failed_to_add_ai'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -228,7 +253,7 @@ const GameRoom = () => {
       toast({
         title: '无法准备',
         description: `需要等待房间人数达到${currentMaxPlayers}人`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -237,7 +262,7 @@ const GameRoom = () => {
       toast({
         title: '无法准备',
         description: '需要等待所有玩家选择角色',
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -247,27 +272,32 @@ const GameRoom = () => {
       toast({
         title: t('select_character_first'),
         description: '请先选择角色才能进入准备状态',
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     const newReadyState = !isReady;
-    
+
     try {
-      const success = await updatePlayerReady(currentPlayerRecord.id, newReadyState);
-      
+      const success = await updatePlayerReady(
+        currentPlayerRecord.id,
+        newReadyState
+      );
+
       if (success) {
         setIsReady(newReadyState);
         toast({
           title: newReadyState ? t('ready') : t('not_ready'),
-          description: newReadyState ? t('you_are_ready') : t('you_are_not_ready'),
+          description: newReadyState
+            ? t('you_are_ready')
+            : t('you_are_not_ready'),
         });
       } else {
         toast({
           title: t('error'),
           description: t('failed_to_update_status'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -275,7 +305,7 @@ const GameRoom = () => {
       toast({
         title: t('error'),
         description: t('failed_to_update_status'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -286,33 +316,33 @@ const GameRoom = () => {
       toast({
         title: t('cannot_change_character'),
         description: '请先取消准备状态才能更换角色',
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     setSelectedCharacter(characterId);
   };
-  
+
   const handleStartGame = () => {
     if (!allReady) {
       toast({
         title: t('cannot_start_game'),
         description: t('players_not_ready'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (!selectedCharacter) {
       toast({
         title: t('select_character'),
         description: t('select_character_desc'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     // 导航到游戏页面，传递房间ID
     navigate(`/room/${roomData.id}/game`);
   };
@@ -320,7 +350,7 @@ const GameRoom = () => {
   const handleLeaveRoom = async () => {
     try {
       const success = await leaveCurrentRoom();
-      
+
       if (success) {
         toast({
           title: t('left_room'),
@@ -331,7 +361,7 @@ const GameRoom = () => {
         toast({
           title: t('error'),
           description: t('leave_room_failed'),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -339,7 +369,7 @@ const GameRoom = () => {
       toast({
         title: t('error'),
         description: t('leave_room_failed'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -362,10 +392,10 @@ const GameRoom = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className='container mx-auto py-6 px-4 min-h-[calc(100vh-4rem)]'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
           {/* Left Column - Room Info & Players */}
-          <div className="lg:col-span-3">
+          <div className='lg:col-span-3'>
             <GameRoomSidebar
               roomData={roomData}
               judgeName={judgeName}
@@ -389,7 +419,7 @@ const GameRoom = () => {
           </div>
 
           {/* Middle Column - Character Selection */}
-          <div className="lg:col-span-5">
+          <div className='lg:col-span-5'>
             <RoleSelection
               maxPlayers={currentMaxPlayers}
               currentPlayerCount={players.length}
@@ -402,7 +432,7 @@ const GameRoom = () => {
           </div>
 
           {/* Right Column - Chat */}
-          <div className="lg:col-span-4 flex flex-col">
+          <div className='lg:col-span-4 flex flex-col'>
             <GameRoomChatPanel
               roomId={roomData?.id || null}
               currentUser={currentUser}

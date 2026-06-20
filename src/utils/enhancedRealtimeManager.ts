@@ -2,7 +2,7 @@
  * 文件级注释：增强的实时订阅管理器（内存优化版）
  * 解决实时订阅内存泄漏问题，提供智能连接管理和自动清理机制
  * 优化 Supabase 实时订阅的性能和稳定性，集成内存监控和智能清理
- * 
+ *
  * 内存优化策略：
  * 1. 严格的内存限制和监控
  * 2. 智能连接池管理
@@ -14,7 +14,10 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('enhanced-realtime-manager');
@@ -29,7 +32,7 @@ export enum SubscriptionStatus {
   DISCONNECTED = 'disconnected',
   ERROR = 'error',
   CLEANING = 'cleaning',
-  SUSPENDED = 'suspended' // 新增：暂停状态
+  SUSPENDED = 'suspended', // 新增：暂停状态
 }
 
 /**
@@ -37,8 +40,8 @@ export enum SubscriptionStatus {
  */
 export enum MemoryOptimizationLevel {
   CONSERVATIVE = 'conservative', // 保守模式
-  BALANCED = 'balanced',         // 平衡模式
-  AGGRESSIVE = 'aggressive'      // 激进模式
+  BALANCED = 'balanced', // 平衡模式
+  AGGRESSIVE = 'aggressive', // 激进模式
 }
 
 /**
@@ -102,12 +105,16 @@ export interface MemoryStats {
 /**
  * 订阅回调类型
  */
-export type SubscriptionCallback<T = any> = (payload: RealtimePostgresChangesPayload<T>) => void;
+export type SubscriptionCallback<T = any> = (
+  payload: RealtimePostgresChangesPayload<T>
+) => void;
 
 /**
  * 批处理回调类型
  */
-export type BatchCallback<T = any> = (payloads: RealtimePostgresChangesPayload<T>[]) => void;
+export type BatchCallback<T = any> = (
+  payloads: RealtimePostgresChangesPayload<T>[]
+) => void;
 
 /**
  * 增强的实时订阅管理器类（内存优化版）
@@ -117,8 +124,10 @@ class EnhancedRealtimeManager {
   private subscriptions: Map<string, SubscriptionInfo> = new Map();
   private callbacks: Map<string, SubscriptionCallback[]> = new Map();
   private batchCallbacks: Map<string, BatchCallback[]> = new Map();
-  private heartbeatTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
-  private reconnectTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private heartbeatTimers: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
+  private reconnectTimers: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
   private memoryCheckTimer: ReturnType<typeof setInterval> | null = null;
   private suspensionTimer: ReturnType<typeof setInterval> | null = null;
@@ -136,7 +145,8 @@ class EnhancedRealtimeManager {
   private readonly BATCH_TIMEOUT = 100; // 批处理超时（毫秒）
 
   // 内存优化配置
-  private memoryOptimizationLevel: MemoryOptimizationLevel = MemoryOptimizationLevel.BALANCED;
+  private memoryOptimizationLevel: MemoryOptimizationLevel =
+    MemoryOptimizationLevel.BALANCED;
   private cleanupCount = 0;
   private lastCleanupTime = Date.now();
 
@@ -160,7 +170,7 @@ class EnhancedRealtimeManager {
   public setMemoryOptimizationLevel(level: MemoryOptimizationLevel): void {
     this.memoryOptimizationLevel = level;
     logger.info('内存优化级别已更新', { level });
-    
+
     // 根据优化级别调整参数
     this.adjustOptimizationParameters();
   }
@@ -176,7 +186,7 @@ class EnhancedRealtimeManager {
     if (!this.canCreateSubscription()) {
       logger.warn('无法创建订阅：内存限制或订阅数量限制');
       this.performEmergencyCleanup();
-      
+
       if (!this.canCreateSubscription()) {
         throw new Error('内存不足，无法创建新订阅');
       }
@@ -190,8 +200,11 @@ class EnhancedRealtimeManager {
       const existingCallbacks = this.callbacks.get(subscriptionId) || [];
       existingCallbacks.push(callback);
       this.callbacks.set(subscriptionId, existingCallbacks);
-      
-      logger.debug('添加回调到现有订阅', { subscriptionId, callbackCount: existingCallbacks.length });
+
+      logger.debug('添加回调到现有订阅', {
+        subscriptionId,
+        callbackCount: existingCallbacks.length,
+      });
       return subscriptionId;
     }
 
@@ -214,7 +227,7 @@ class EnhancedRealtimeManager {
         batchTimeout: this.BATCH_TIMEOUT,
         schema: 'public',
         event: '*',
-        ...config
+        ...config,
       },
       status: SubscriptionStatus.IDLE,
       channel: null,
@@ -225,7 +238,7 @@ class EnhancedRealtimeManager {
       messageCount: 0,
       memoryUsage: 0,
       priority: config.priority || 'medium',
-      messageBuffer: []
+      messageBuffer: [],
     };
 
     this.subscriptions.set(subscriptionId, subscriptionInfo);
@@ -239,7 +252,10 @@ class EnhancedRealtimeManager {
       setTimeout(() => this.connect(subscriptionId), 100);
     }
 
-    logger.info('创建新订阅', { subscriptionId, priority: subscriptionInfo.priority });
+    logger.info('创建新订阅', {
+      subscriptionId,
+      priority: subscriptionInfo.priority,
+    });
     return subscriptionId;
   }
 
@@ -296,10 +312,10 @@ class EnhancedRealtimeManager {
 
     try {
       subscription.status = SubscriptionStatus.CONNECTING;
-      
+
       // 创建频道
       const channel = supabase.channel(subscription.channelName);
-      
+
       // 配置 postgres 变更监听
       channel.on(
         'postgres_changes',
@@ -307,15 +323,15 @@ class EnhancedRealtimeManager {
           event: subscription.config.event!,
           schema: subscription.config.schema!,
           table: subscription.config.table,
-          filter: subscription.config.filter
+          filter: subscription.config.filter,
         },
-        (payload) => {
+        payload => {
           this.handleMessage(subscriptionId, payload);
         }
       );
 
       // 监听频道状态
-      channel.on('system', {}, (payload) => {
+      channel.on('system', {}, payload => {
         this.handleSystemMessage(subscriptionId, payload);
       });
 
@@ -325,9 +341,9 @@ class EnhancedRealtimeManager {
           subscription.status = SubscriptionStatus.CONNECTED;
           subscription.reconnectAttempts = 0;
           subscription.lastActivity = Date.now();
-          
+
           logger.info('订阅连接成功', { subscriptionId });
-          
+
           // 启动心跳检测
           if (subscription.config.heartbeatInterval) {
             this.startHeartbeat(subscriptionId);
@@ -335,9 +351,9 @@ class EnhancedRealtimeManager {
         } else if (err) {
           subscription.status = SubscriptionStatus.ERROR;
           subscription.errorCount++;
-          
+
           logger.error('订阅连接失败', { subscriptionId, error: err });
-          
+
           // 尝试重连
           if (subscription.config.enableReconnect) {
             this.scheduleReconnect(subscriptionId);
@@ -346,13 +362,12 @@ class EnhancedRealtimeManager {
       });
 
       subscription.channel = channel;
-      
     } catch (error) {
       subscription.status = SubscriptionStatus.ERROR;
       subscription.errorCount++;
-      
+
       logger.error('创建订阅连接失败', { subscriptionId, error });
-      
+
       if (subscription.config.enableReconnect) {
         this.scheduleReconnect(subscriptionId);
       }
@@ -362,7 +377,10 @@ class EnhancedRealtimeManager {
   /**
    * 处理消息（批处理优化版）
    */
-  private handleMessage<T>(subscriptionId: string, payload: RealtimePostgresChangesPayload<T>): void {
+  private handleMessage<T>(
+    subscriptionId: string,
+    payload: RealtimePostgresChangesPayload<T>
+  ): void {
     const subscription = this.subscriptions.get(subscriptionId);
     if (!subscription) return;
 
@@ -375,7 +393,10 @@ class EnhancedRealtimeManager {
 
     // 检查内存限制
     if (subscription.memoryUsage > this.MAX_MEMORY_PER_SUBSCRIPTION) {
-      logger.warn('订阅内存使用超限', { subscriptionId, memoryUsage: subscription.memoryUsage });
+      logger.warn('订阅内存使用超限', {
+        subscriptionId,
+        memoryUsage: subscription.memoryUsage,
+      });
       this.optimizeSubscriptionMemory(subscriptionId);
     }
 
@@ -398,7 +419,10 @@ class EnhancedRealtimeManager {
   /**
    * 处理批处理消息
    */
-  private handleBatchMessage<T>(subscriptionId: string, payload: RealtimePostgresChangesPayload<T>): void {
+  private handleBatchMessage<T>(
+    subscriptionId: string,
+    payload: RealtimePostgresChangesPayload<T>
+  ): void {
     const subscription = this.subscriptions.get(subscriptionId);
     if (!subscription) return;
 
@@ -406,8 +430,9 @@ class EnhancedRealtimeManager {
     subscription.messageBuffer.push(payload);
 
     // 检查是否需要立即处理
-    const shouldFlush = 
-      subscription.messageBuffer.length >= (subscription.config.batchSize || 10) ||
+    const shouldFlush =
+      subscription.messageBuffer.length >=
+        (subscription.config.batchSize || 10) ||
       subscription.priority === 'high';
 
     if (shouldFlush) {
@@ -475,9 +500,9 @@ class EnhancedRealtimeManager {
     if (payload.type === 'system' && payload.message === 'channel_error') {
       subscription.status = SubscriptionStatus.ERROR;
       subscription.errorCount++;
-      
+
       logger.error('系统错误', { subscriptionId, payload });
-      
+
       if (subscription.config.enableReconnect) {
         this.scheduleReconnect(subscriptionId);
       }
@@ -492,12 +517,15 @@ class EnhancedRealtimeManager {
     if (!subscription || !subscription.config.heartbeatInterval) return;
 
     const timer = setInterval(() => {
-      if (subscription.channel && subscription.status === SubscriptionStatus.CONNECTED) {
+      if (
+        subscription.channel &&
+        subscription.status === SubscriptionStatus.CONNECTED
+      ) {
         // 发送心跳
         subscription.channel.send({
           type: 'heartbeat',
           event: 'ping',
-          payload: { timestamp: Date.now() }
+          payload: { timestamp: Date.now() },
         });
       }
     }, subscription.config.heartbeatInterval);
@@ -512,21 +540,30 @@ class EnhancedRealtimeManager {
     const subscription = this.subscriptions.get(subscriptionId);
     if (!subscription) return;
 
-    if (subscription.reconnectAttempts >= (subscription.config.maxReconnectAttempts || 2)) {
+    if (
+      subscription.reconnectAttempts >=
+      (subscription.config.maxReconnectAttempts || 2)
+    ) {
       logger.warn('重连次数已达上限', { subscriptionId });
       subscription.status = SubscriptionStatus.SUSPENDED;
       return;
     }
 
     subscription.reconnectAttempts++;
-    const delay = (subscription.config.reconnectDelay || 1000) * Math.pow(2, subscription.reconnectAttempts - 1);
+    const delay =
+      (subscription.config.reconnectDelay || 1000) *
+      Math.pow(2, subscription.reconnectAttempts - 1);
 
     const timer = setTimeout(() => {
       this.connect(subscriptionId);
     }, delay);
 
     this.reconnectTimers.set(subscriptionId, timer);
-    logger.info('安排重连', { subscriptionId, delay, attempt: subscription.reconnectAttempts });
+    logger.info('安排重连', {
+      subscriptionId,
+      delay,
+      attempt: subscription.reconnectAttempts,
+    });
   }
 
   /**
@@ -575,17 +612,17 @@ class EnhancedRealtimeManager {
 
     this.subscriptions.forEach((subscription, id) => {
       const idleTime = now - subscription.lastActivity;
-      
+
       // 清理空闲订阅
       if (idleTime > subscription.config.maxIdleTime!) {
         subscriptionsToClean.push(id);
       }
-      
+
       // 清理错误过多的订阅
       if (subscription.errorCount > 5) {
         subscriptionsToClean.push(id);
       }
-      
+
       // 清理内存使用过高的订阅
       if (subscription.memoryUsage > this.MAX_MEMORY_PER_SUBSCRIPTION * 1.5) {
         subscriptionsToClean.push(id);
@@ -606,11 +643,11 @@ class EnhancedRealtimeManager {
    */
   private checkMemoryUsage(): void {
     const stats = this.getMemoryStats();
-    
+
     if (stats.totalMemoryUsage > this.MAX_TOTAL_MEMORY) {
-      logger.warn('总内存使用超限，执行紧急清理', { 
+      logger.warn('总内存使用超限，执行紧急清理', {
         totalMemory: stats.totalMemoryUsage,
-        limit: this.MAX_TOTAL_MEMORY 
+        limit: this.MAX_TOTAL_MEMORY,
       });
       this.performEmergencyCleanup();
     }
@@ -630,9 +667,10 @@ class EnhancedRealtimeManager {
     this.subscriptions.forEach((subscription, id) => {
       if (subscription.status === SubscriptionStatus.SUSPENDED) {
         const suspendedTime = Date.now() - subscription.lastActivity;
-        
+
         // 如果暂停时间过长，直接清理
-        if (suspendedTime > 5 * 60 * 1000) { // 5分钟
+        if (suspendedTime > 5 * 60 * 1000) {
+          // 5分钟
           logger.info('清理长时间暂停的订阅', { subscriptionId: id });
           this.unsubscribe(id);
         }
@@ -647,17 +685,21 @@ class EnhancedRealtimeManager {
     logger.warn('执行紧急清理');
 
     // 按优先级排序，清理低优先级订阅
-    const subscriptionsByPriority = Array.from(this.subscriptions.entries())
-      .sort(([, a], [, b]) => {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      });
+    const subscriptionsByPriority = Array.from(
+      this.subscriptions.entries()
+    ).sort(([, a], [, b]) => {
+      const priorityOrder = { high: 3, medium: 2, low: 1 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
 
     // 清理最多一半的低优先级订阅
     const toClean = Math.ceil(subscriptionsByPriority.length * 0.5);
     for (let i = 0; i < toClean; i++) {
       const [id, subscription] = subscriptionsByPriority[i];
-      if (subscription.priority === 'low' || subscription.priority === 'medium') {
+      if (
+        subscription.priority === 'low' ||
+        subscription.priority === 'medium'
+      ) {
         this.unsubscribe(id);
       }
     }
@@ -718,7 +760,10 @@ class EnhancedRealtimeManager {
         // 激进模式：更严格的限制
         this.subscriptions.forEach((subscription, id) => {
           if (subscription.priority === 'low') {
-            subscription.config.maxIdleTime = Math.min(subscription.config.maxIdleTime || this.MAX_IDLE_TIME, 2 * 60 * 1000);
+            subscription.config.maxIdleTime = Math.min(
+              subscription.config.maxIdleTime || this.MAX_IDLE_TIME,
+              2 * 60 * 1000
+            );
           }
         });
         break;
@@ -738,15 +783,15 @@ class EnhancedRealtimeManager {
 
     this.subscriptions.forEach(subscription => {
       totalMemoryUsage += subscription.memoryUsage;
-      
+
       if (subscription.priority === 'high') {
         highPriorityCount++;
       }
-      
+
       if (now - subscription.lastActivity > subscription.config.maxIdleTime!) {
         idleCount++;
       }
-      
+
       if (subscription.status === SubscriptionStatus.SUSPENDED) {
         suspendedCount++;
       }
@@ -755,13 +800,16 @@ class EnhancedRealtimeManager {
     return {
       totalSubscriptions: this.subscriptions.size,
       totalMemoryUsage,
-      averageMemoryPerSubscription: this.subscriptions.size > 0 ? totalMemoryUsage / this.subscriptions.size : 0,
+      averageMemoryPerSubscription:
+        this.subscriptions.size > 0
+          ? totalMemoryUsage / this.subscriptions.size
+          : 0,
       highPrioritySubscriptions: highPriorityCount,
       idleSubscriptions: idleCount,
       suspendedSubscriptions: suspendedCount,
       memoryOptimizationLevel: this.memoryOptimizationLevel,
       lastCleanupTime: this.lastCleanupTime,
-      cleanupCount: this.cleanupCount
+      cleanupCount: this.cleanupCount,
     };
   }
 
@@ -770,7 +818,7 @@ class EnhancedRealtimeManager {
    */
   public getStats() {
     const subscriptions: Record<string, any> = {};
-    
+
     this.subscriptions.forEach((subscription, id) => {
       subscriptions[id] = {
         status: subscription.status,
@@ -779,14 +827,14 @@ class EnhancedRealtimeManager {
         memoryUsage: subscription.memoryUsage,
         priority: subscription.priority,
         lastActivity: subscription.lastActivity,
-        reconnectAttempts: subscription.reconnectAttempts
+        reconnectAttempts: subscription.reconnectAttempts,
       };
     });
 
     return {
       totalSubscriptions: this.subscriptions.size,
       subscriptions,
-      memoryStats: this.getMemoryStats()
+      memoryStats: this.getMemoryStats(),
     };
   }
 
@@ -828,7 +876,7 @@ class EnhancedRealtimeManager {
       config.table,
       config.schema || 'public',
       config.event || '*',
-      config.filter || 'all'
+      config.filter || 'all',
     ];
     return parts.join('_');
   }
@@ -853,7 +901,9 @@ export function useEnhancedRealtime<T = any>(
   deps: React.DependencyList = []
 ) {
   const subscriptionIdRef = useRef<string | null>(null);
-  const [status, setStatus] = useState<SubscriptionStatus>(SubscriptionStatus.IDLE);
+  const [status, setStatus] = useState<SubscriptionStatus>(
+    SubscriptionStatus.IDLE
+  );
   const callbackRef = useRef(callback);
   const configRef = useRef(config);
 
@@ -867,19 +917,26 @@ export function useEnhancedRealtime<T = any>(
     configRef.current = config;
   }, [config.table, config.filter, config.event]);
 
-  const memoizedCallback = useCallback((payload: RealtimePostgresChangesPayload<T>) => {
-    callbackRef.current(payload);
-  }, []);
+  const memoizedCallback = useCallback(
+    (payload: RealtimePostgresChangesPayload<T>) => {
+      callbackRef.current(payload);
+    },
+    []
+  );
 
   useEffect(() => {
     // 创建订阅
-    subscriptionIdRef.current = enhancedRealtimeManager.subscribe(configRef.current, memoizedCallback);
+    subscriptionIdRef.current = enhancedRealtimeManager.subscribe(
+      configRef.current,
+      memoizedCallback
+    );
 
     // 监听状态变化（降低检查频率）
     const checkStatus = () => {
       if (subscriptionIdRef.current) {
         const stats = enhancedRealtimeManager.getStats();
-        const subscriptionStats = stats.subscriptions[subscriptionIdRef.current];
+        const subscriptionStats =
+          stats.subscriptions[subscriptionIdRef.current];
         if (subscriptionStats) {
           setStatus(subscriptionStats.status);
         }
@@ -902,6 +959,7 @@ export function useEnhancedRealtime<T = any>(
     subscriptionId: subscriptionIdRef.current,
     stats: enhancedRealtimeManager.getStats(),
     memoryStats: enhancedRealtimeManager.getMemoryStats(),
-    optimizationLevel: enhancedRealtimeManager.getMemoryStats().memoryOptimizationLevel
+    optimizationLevel:
+      enhancedRealtimeManager.getMemoryStats().memoryOptimizationLevel,
   };
 }

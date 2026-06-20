@@ -12,7 +12,7 @@ import {
   PHASE_MAPPING,
   REVERSE_PHASE_MAPPING,
   type PhaseNumber,
-  type PhaseName
+  type PhaseName,
 } from '../phaseUtils';
 
 describe('phaseUtils', () => {

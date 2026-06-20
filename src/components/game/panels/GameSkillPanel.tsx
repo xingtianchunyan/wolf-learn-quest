@@ -2,7 +2,15 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Target, Clock, Zap, Shield, Search, Skull } from 'lucide-react';
+import {
+  Loader2,
+  Target,
+  Clock,
+  Zap,
+  Shield,
+  Search,
+  Skull,
+} from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
 import type { Tables } from '@/integrations/supabase/types';
@@ -50,15 +58,14 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   players,
   currentRound = 1,
   selectedTargetId,
-  onTargetSelect
+  onTargetSelect,
 }) => {
-
   const {
     skillUses,
     loading,
     useSkillEnhanced: useSkill,
     getUserSkillData,
-    canUseSkill: canUseSkillFromHook
+    canUseSkill: canUseSkillFromHook,
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
 
   // 获取技能配置
@@ -83,25 +90,32 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   // 获取可选择的目标玩家
   const availableTargets = useMemo(() => {
     if (!players) return [];
-    
+
     return players.filter(player => {
       // 排除自己
       if (player.userId === userId) return false;
-      
+
       // 排除已淘汰的玩家
-      if (player.status === 'eliminated' || player.roleStatus === 4) return false;
-      
+      if (player.status === 'eliminated' || player.roleStatus === 4)
+        return false;
+
       // 狼人夜袭技能的特殊限制：不能攻击其他狼人和白狼队友
-      if (skillConfig?.englishName === 'night_attack' && roleDesign?.role_name) {
+      if (
+        skillConfig?.englishName === 'night_attack' &&
+        roleDesign?.role_name
+      ) {
         const currentRoleName = roleDesign.role_name.toLowerCase();
-        if (currentRoleName.includes('werewolf') || currentRoleName.includes('狼人')) {
+        if (
+          currentRoleName.includes('werewolf') ||
+          currentRoleName.includes('狼人')
+        ) {
           // 需要获取目标玩家的角色信息来判断是否为狼人阵营
           // 这里暂时通过角色名判断，后续可以优化为通过roleStates获取
           // 由于我们没有直接访问其他玩家角色信息的权限，这个限制需要在服务端验证
           // 前端只做基础过滤，主要的验证在后端进行
         }
       }
-      
+
       return true;
     });
   }, [players, userId, skillConfig, roleDesign]);
@@ -130,77 +144,79 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
 
   if (!skillConfig) {
     return (
-      <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+      <Card className='bg-werewolf-card border-werewolf-purple/30 h-full'>
         <CardHeader>
           <CardTitle>技能面板</CardTitle>
         </CardHeader>
-        <CardContent className="h-full overflow-y-auto">
-          <p className="text-sm text-muted-foreground">没有可用的技能</p>
+        <CardContent className='h-full overflow-y-auto'>
+          <p className='text-sm text-muted-foreground'>没有可用的技能</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
+    <Card className='bg-werewolf-card border-werewolf-purple/30 h-full'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="w-4 h-4" />
+        <CardTitle className='flex items-center gap-2'>
+          <Target className='w-4 h-4' />
           技能面板
-          <Badge variant="outline" className="ml-auto">
+          <Badge variant='outline' className='ml-auto'>
             优先级: {skillConfig.priority}
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 h-full overflow-y-auto">
+      <CardContent className='space-y-4 h-full overflow-y-auto'>
         {/* 技能信息 */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-werewolf-purple">
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between'>
+            <span className='font-medium text-werewolf-purple'>
               {skillConfig.chineseName}
             </span>
-            <div className="flex gap-1">
+            <div className='flex gap-1'>
               {skillConfig.effectType.map((type, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge key={index} variant='secondary' className='text-xs'>
                   {type}
                 </Badge>
               ))}
             </div>
           </div>
-          
-          <p className="text-sm text-muted-foreground">
+
+          <p className='text-sm text-muted-foreground'>
             {roleDesign.skill_description}
           </p>
         </div>
 
         {/* 目标选择提示 */}
         {skillConfig.targetType === 'single' && availableTargets.length > 0 && (
-          <div className="bg-werewolf-dark/30 border border-werewolf-purple/20 rounded-lg p-3">
-            <p className="text-sm text-gray-300 mb-1">
-              <Target className="inline w-4 h-4 mr-1" />
+          <div className='bg-werewolf-dark/30 border border-werewolf-purple/20 rounded-lg p-3'>
+            <p className='text-sm text-gray-300 mb-1'>
+              <Target className='inline w-4 h-4 mr-1' />
               请在左侧玩家列表中点击选择目标玩家
             </p>
             {selectedTargetId && (
-              <p className="text-sm text-werewolf-purple">
-                已选择: {availableTargets.find(p => p.userId === selectedTargetId)?.name || '未知玩家'}
+              <p className='text-sm text-werewolf-purple'>
+                已选择:{' '}
+                {availableTargets.find(p => p.userId === selectedTargetId)
+                  ?.name || '未知玩家'}
               </p>
             )}
           </div>
         )}
 
         {/* 使用按钮 */}
-        <Button 
+        <Button
           onClick={handleUseSkill}
           disabled={
-            loading || 
-            !canUseSkill || 
+            loading ||
+            !canUseSkill ||
             (skillConfig.targetType === 'single' && !selectedTargetId)
           }
-          className="w-full bg-werewolf-purple hover:bg-werewolf-purple/80"
+          className='w-full bg-werewolf-purple hover:bg-werewolf-purple/80'
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className='w-4 h-4 mr-2 animate-spin' />
               使用中...
             </>
           ) : (
@@ -208,23 +224,28 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           )}
         </Button>
 
-
         {/* 当前效果 */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-300">当前效果</h4>
+        <div className='space-y-2'>
+          <h4 className='text-sm font-medium text-gray-300'>当前效果</h4>
           {userSkillData.targets.length > 0 ? (
-            <div className="space-y-2">
-              {userSkillData.targets.map((effect) => (
-                <div key={effect.id} className="flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded">
+            <div className='space-y-2'>
+              {userSkillData.targets.map(effect => (
+                <div
+                  key={effect.id}
+                  className='flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded'
+                >
                   <span>{effect.target_type}</span>
-                  <Badge variant={effect.is_active ? "default" : "secondary"} className="text-xs">
-                    {effect.is_active ? "生效中" : "已失效"}
+                  <Badge
+                    variant={effect.is_active ? 'default' : 'secondary'}
+                    className='text-xs'
+                  >
+                    {effect.is_active ? '生效中' : '已失效'}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">暂无活跃效果</p>
+            <p className='text-xs text-muted-foreground'>暂无活跃效果</p>
           )}
         </div>
       </CardContent>

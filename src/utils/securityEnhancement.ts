@@ -5,7 +5,10 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import { securityAuditService, SecurityEventType } from '@/services/securityAuditService';
+import {
+  securityAuditService,
+  SecurityEventType,
+} from '@/services/securityAuditService';
 
 const logger = createLogger('security-enhancement');
 
@@ -66,16 +69,16 @@ export class SecurityEnhancement {
   ): { allowed: boolean; remaining: number; resetTime: number } {
     const key = `${identifier}:${action}`;
     const now = Date.now();
-    
+
     let limiter = this.rateLimiters.get(key);
-    
+
     if (!limiter) {
       limiter = {
         key,
         requests: maxRequests,
         window: windowMs,
         lastReset: now,
-        count: 0
+        count: 0,
       };
       this.rateLimiters.set(key, limiter);
     }
@@ -89,31 +92,34 @@ export class SecurityEnhancement {
     // 检查是否超过限制
     if (limiter.count >= limiter.requests) {
       // 记录限制超出事件
-      securityAuditService.recordSecurityEvent(SecurityEventType.RATE_LIMIT_EXCEEDED, {
-        description: `请求限制超出: ${action}`,
-        metadata: {
-          identifier,
-          action,
-          currentCount: limiter.count,
-          limit: limiter.requests,
-          window: limiter.window
-        },
-        source: 'rate_limiter'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.RATE_LIMIT_EXCEEDED,
+        {
+          description: `请求限制超出: ${action}`,
+          metadata: {
+            identifier,
+            action,
+            currentCount: limiter.count,
+            limit: limiter.requests,
+            window: limiter.window,
+          },
+          source: 'rate_limiter',
+        }
+      );
 
       return {
         allowed: false,
         remaining: 0,
-        resetTime: limiter.lastReset + limiter.window
+        resetTime: limiter.lastReset + limiter.window,
       };
     }
 
     limiter.count++;
-    
+
     return {
       allowed: true,
       remaining: limiter.requests - limiter.count,
-      resetTime: limiter.lastReset + limiter.window
+      resetTime: limiter.lastReset + limiter.window,
     };
   }
 
@@ -129,11 +135,15 @@ export class SecurityEnhancement {
       userId,
       sessionId,
       expiry,
-      used: false
+      used: false,
     });
 
-    logger.debug('生成CSRF令牌', { userId, sessionId, token: token.substring(0, 8) + '...' });
-    
+    logger.debug('生成CSRF令牌', {
+      userId,
+      sessionId,
+      token: token.substring(0, 8) + '...',
+    });
+
     return token;
   }
 
@@ -148,20 +158,26 @@ export class SecurityEnhancement {
     const csrfToken = this.csrfTokens.get(token);
 
     if (!csrfToken) {
-      securityAuditService.recordSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
-        description: 'CSRF令牌不存在',
-        metadata: { token: token.substring(0, 8) + '...', userId, sessionId },
-        source: 'csrf_protection'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.SUSPICIOUS_ACTIVITY,
+        {
+          description: 'CSRF令牌不存在',
+          metadata: { token: token.substring(0, 8) + '...', userId, sessionId },
+          source: 'csrf_protection',
+        }
+      );
       return { valid: false, reason: '令牌不存在' };
     }
 
     if (csrfToken.used) {
-      securityAuditService.recordSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
-        description: 'CSRF令牌重复使用',
-        metadata: { token: token.substring(0, 8) + '...', userId, sessionId },
-        source: 'csrf_protection'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.SUSPICIOUS_ACTIVITY,
+        {
+          description: 'CSRF令牌重复使用',
+          metadata: { token: token.substring(0, 8) + '...', userId, sessionId },
+          source: 'csrf_protection',
+        }
+      );
       return { valid: false, reason: '令牌已使用' };
     }
 
@@ -171,23 +187,26 @@ export class SecurityEnhancement {
     }
 
     if (csrfToken.userId !== userId || csrfToken.sessionId !== sessionId) {
-      securityAuditService.recordSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
-        description: 'CSRF令牌用户不匹配',
-        metadata: { 
-          token: token.substring(0, 8) + '...', 
-          expectedUserId: csrfToken.userId,
-          actualUserId: userId,
-          expectedSessionId: csrfToken.sessionId,
-          actualSessionId: sessionId
-        },
-        source: 'csrf_protection'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.SUSPICIOUS_ACTIVITY,
+        {
+          description: 'CSRF令牌用户不匹配',
+          metadata: {
+            token: token.substring(0, 8) + '...',
+            expectedUserId: csrfToken.userId,
+            actualUserId: userId,
+            expectedSessionId: csrfToken.sessionId,
+            actualSessionId: sessionId,
+          },
+          source: 'csrf_protection',
+        }
+      );
       return { valid: false, reason: '令牌用户不匹配' };
     }
 
     // 标记令牌为已使用
     csrfToken.used = true;
-    
+
     return { valid: true };
   }
 
@@ -200,8 +219,9 @@ export class SecurityEnhancement {
     }
 
     // 移除危险的标签和属性
-    const dangerousTags = /<(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*>.*?<\/\1>|<(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*\/?>|<\/?(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*>/gi;
-    
+    const dangerousTags =
+      /<(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*>.*?<\/\1>|<(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*\/?>|<\/?(script|iframe|object|embed|form|input|textarea|select|button|link|meta|style)[^>]*>/gi;
+
     let sanitized = input.replace(dangerousTags, '');
 
     // 移除危险的事件处理器
@@ -213,7 +233,8 @@ export class SecurityEnhancement {
     sanitized = sanitized.replace(javascriptProtocol, '');
 
     // 移除data:协议（除了安全的图片格式）
-    const dataProtocol = /data:(?!image\/(png|jpg|jpeg|gif|svg\+xml))[^;,]+[;,]/gi;
+    const dataProtocol =
+      /data:(?!image\/(png|jpg|jpeg|gif|svg\+xml))[^;,]+[;,]/gi;
     sanitized = sanitized.replace(dataProtocol, '');
 
     return sanitized;
@@ -222,7 +243,10 @@ export class SecurityEnhancement {
   /**
    * SQL注入防护 - 检测潜在的SQL注入
    */
-  public detectSQLInjection(input: string): { detected: boolean; patterns: string[] } {
+  public detectSQLInjection(input: string): {
+    detected: boolean;
+    patterns: string[];
+  } {
     if (typeof input !== 'string') {
       return { detected: false, patterns: [] };
     }
@@ -233,7 +257,7 @@ export class SecurityEnhancement {
       /(\bOR\b|\bAND\b)\s+\w+\s*=\s*\w+/gi,
       /\b(UNION|SELECT)\b.*\b(FROM|WHERE)\b/gi,
       /'.*(\bOR\b|\bAND\b).*'/gi,
-      /\b(EXEC|EXECUTE)\b\s*\(/gi
+      /\b(EXEC|EXECUTE)\b\s*\(/gi,
     ];
 
     const detectedPatterns: string[] = [];
@@ -245,19 +269,22 @@ export class SecurityEnhancement {
     }
 
     if (detectedPatterns.length > 0) {
-      securityAuditService.recordSecurityEvent(SecurityEventType.SQL_INJECTION_ATTEMPT, {
-        description: 'SQL注入尝试检测',
-        metadata: {
-          input: input.substring(0, 200),
-          patterns: detectedPatterns
-        },
-        source: 'sql_injection_detector'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.SQL_INJECTION_ATTEMPT,
+        {
+          description: 'SQL注入尝试检测',
+          metadata: {
+            input: input.substring(0, 200),
+            patterns: detectedPatterns,
+          },
+          source: 'sql_injection_detector',
+        }
+      );
     }
 
     return {
       detected: detectedPatterns.length > 0,
-      patterns: detectedPatterns
+      patterns: detectedPatterns,
     };
   }
 
@@ -266,11 +293,11 @@ export class SecurityEnhancement {
    */
   public blockIP(ipAddress: string, reason: string): void {
     this.blockedIPs.add(ipAddress);
-    
+
     securityAuditService.recordSecurityEvent(SecurityEventType.ADMIN_ACTION, {
       description: `IP地址已封禁: ${ipAddress}`,
       metadata: { ipAddress, reason },
-      source: 'ip_blocker'
+      source: 'ip_blocker',
     });
 
     logger.warn('IP地址已封禁', { ipAddress, reason });
@@ -293,20 +320,23 @@ export class SecurityEnhancement {
   ): { blocked: boolean; count: number } {
     const key = `${identifier}:${activity}`;
     const currentCount = (this.suspiciousActivities.get(key) || 0) + 1;
-    
+
     this.suspiciousActivities.set(key, currentCount);
 
     if (currentCount >= threshold) {
-      securityAuditService.recordSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
-        description: `可疑活动阈值达到: ${activity}`,
-        metadata: {
-          identifier,
-          activity,
-          count: currentCount,
-          threshold
-        },
-        source: 'suspicious_activity_detector'
-      });
+      securityAuditService.recordSecurityEvent(
+        SecurityEventType.SUSPICIOUS_ACTIVITY,
+        {
+          description: `可疑活动阈值达到: ${activity}`,
+          metadata: {
+            identifier,
+            activity,
+            count: currentCount,
+            threshold,
+          },
+          source: 'suspicious_activity_detector',
+        }
+      );
 
       // 如果是IP地址，考虑封禁
       if (this.isValidIP(identifier)) {
@@ -324,7 +354,9 @@ export class SecurityEnhancement {
   private generateSecureToken(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join(
+      ''
+    );
   }
 
   /**
@@ -367,7 +399,7 @@ export class SecurityEnhancement {
         csrfTokens: this.csrfTokens.size,
         rateLimiters: this.rateLimiters.size,
         blockedIPs: this.blockedIPs.size,
-        suspiciousActivities: this.suspiciousActivities.size
+        suspiciousActivities: this.suspiciousActivities.size,
       });
     }, 300000); // 每5分钟清理一次
   }
@@ -385,7 +417,7 @@ export class SecurityEnhancement {
       rateLimiters: this.rateLimiters.size,
       csrfTokens: this.csrfTokens.size,
       blockedIPs: this.blockedIPs.size,
-      suspiciousActivities: this.suspiciousActivities.size
+      suspiciousActivities: this.suspiciousActivities.size,
     };
   }
 }
@@ -394,15 +426,29 @@ export class SecurityEnhancement {
 export const securityEnhancement = SecurityEnhancement.getInstance();
 
 // 导出便捷函数
-export const checkRateLimit = (identifier: string, action: string, maxRequests?: number, windowMs?: number) => {
-  return securityEnhancement.checkRateLimit(identifier, action, maxRequests, windowMs);
+export const checkRateLimit = (
+  identifier: string,
+  action: string,
+  maxRequests?: number,
+  windowMs?: number
+) => {
+  return securityEnhancement.checkRateLimit(
+    identifier,
+    action,
+    maxRequests,
+    windowMs
+  );
 };
 
 export const generateCSRFToken = (userId: string, sessionId: string) => {
   return securityEnhancement.generateCSRFToken(userId, sessionId);
 };
 
-export const validateCSRFToken = (token: string, userId: string, sessionId: string) => {
+export const validateCSRFToken = (
+  token: string,
+  userId: string,
+  sessionId: string
+) => {
   return securityEnhancement.validateCSRFToken(token, userId, sessionId);
 };
 

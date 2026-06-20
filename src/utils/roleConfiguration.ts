@@ -1,4 +1,3 @@
-
 export interface RoleCountConfig {
   roleName: string;
   count: number;
@@ -12,7 +11,9 @@ export interface ExpandedRole {
   roleDesignId?: string;
 }
 
-export const getRoleConfiguration = (playerCount: number): RoleCountConfig[] => {
+export const getRoleConfiguration = (
+  playerCount: number
+): RoleCountConfig[] => {
   const configs: Record<number, RoleCountConfig[]> = {
     6: [
       { roleName: 'werewolf', count: 2 },
@@ -93,36 +94,43 @@ export const expandRolesWithDesigns = (
 
   roleConfigs.forEach(role => {
     // 查找匹配的角色设计，优先匹配带序号的角色名
-    const baseDesigns = roleDesigns.filter(design => 
-      design.role_name === role.roleName || 
-      design.role_name.startsWith(`${role.roleName  }_`)
+    const baseDesigns = roleDesigns.filter(
+      design =>
+        design.role_name === role.roleName ||
+        design.role_name.startsWith(`${role.roleName}_`)
     );
-    
+
     // 如果没有找到带序号的设计，使用基础角色设计
-    const availableDesigns = baseDesigns.length > 0 ? baseDesigns : 
-      roleDesigns.filter(design => design.role_name === role.roleName);
-    
+    const availableDesigns =
+      baseDesigns.length > 0
+        ? baseDesigns
+        : roleDesigns.filter(design => design.role_name === role.roleName);
+
     for (let i = 1; i <= role.count; i++) {
       // 优先使用带序号的角色设计
       const numberedRoleName = `${role.roleName}_${i}`;
-      let roleDesign = roleDesigns.find(design => design.role_name === numberedRoleName);
-      
+      let roleDesign = roleDesigns.find(
+        design => design.role_name === numberedRoleName
+      );
+
       // 如果没有找到带序号的设计，使用基础角色设计
       if (!roleDesign) {
-        roleDesign = roleDesigns.find(design => design.role_name === role.roleName);
+        roleDesign = roleDesigns.find(
+          design => design.role_name === role.roleName
+        );
       }
-      
+
       // 如果仍然没有找到，跳过这个角色
       if (!roleDesign) {
         console.warn(`No role design found for ${role.roleName} instance ${i}`);
         continue;
       }
-      
+
       expandedRoles.push({
         roleName: role.roleName,
         instanceId: `${role.roleName}_${i}`,
         displayName: role.count > 1 ? `${role.roleName} ${i}` : role.roleName,
-        roleDesignId: roleDesign.id
+        roleDesignId: roleDesign.id,
       });
     }
   });

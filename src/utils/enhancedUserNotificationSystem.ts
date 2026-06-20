@@ -17,7 +17,7 @@ export enum NotificationType {
   ERROR = 'error',
   WARNING = 'warning',
   INFO = 'info',
-  LOADING = 'loading'
+  LOADING = 'loading',
 }
 
 /**
@@ -29,7 +29,7 @@ export enum NotificationPosition {
   TOP_CENTER = 'top-center',
   BOTTOM_RIGHT = 'bottom-right',
   BOTTOM_LEFT = 'bottom-left',
-  BOTTOM_CENTER = 'bottom-center'
+  BOTTOM_CENTER = 'bottom-center',
 }
 
 /**
@@ -136,7 +136,7 @@ export class EnhancedUserNotificationSystem {
     this.initializeQueue();
     this.initializeContainer();
     this.loadPersistedNotifications();
-    
+
     logger.info('增强的用户通知系统已初始化');
   }
 
@@ -145,7 +145,8 @@ export class EnhancedUserNotificationSystem {
    */
   public static getInstance(): EnhancedUserNotificationSystem {
     if (!EnhancedUserNotificationSystem.instance) {
-      EnhancedUserNotificationSystem.instance = new EnhancedUserNotificationSystem();
+      EnhancedUserNotificationSystem.instance =
+        new EnhancedUserNotificationSystem();
     }
     return EnhancedUserNotificationSystem.instance;
   }
@@ -158,28 +159,35 @@ export class EnhancedUserNotificationSystem {
   public show(config: NotificationConfig): NotificationInstance {
     const id = config.id || this.generateNotificationId();
     const notification = this.createNotification(id, config);
-    
+
     // 检查是否超过最大通知数量
     this.enforceMaxNotifications();
-    
+
     // 添加到队列
     this.queue.add(notification);
-    
+
     // 渲染通知
     this.renderNotification(notification);
-    
+
     // 设置自动关闭
     if (config.duration !== 0) {
-      this.scheduleAutoClose(notification, config.duration || this.defaultDuration);
+      this.scheduleAutoClose(
+        notification,
+        config.duration || this.defaultDuration
+      );
     }
-    
+
     // 持久化通知
     if (config.persistent) {
       this.persistNotification(notification);
     }
-    
-    logger.debug('显示通知', { id, type: config.type, message: config.message });
-    
+
+    logger.debug('显示通知', {
+      id,
+      type: config.type,
+      message: config.message,
+    });
+
     return notification;
   }
 
@@ -188,13 +196,16 @@ export class EnhancedUserNotificationSystem {
    * @param message - 消息内容
    * @param options - 额外选项
    */
-  public success(message: string, options: Partial<NotificationConfig> = {}): NotificationInstance {
+  public success(
+    message: string,
+    options: Partial<NotificationConfig> = {}
+  ): NotificationInstance {
     return this.show({
       type: NotificationType.SUCCESS,
       message,
       icon: '✅',
       duration: 3000,
-      ...options
+      ...options,
     });
   }
 
@@ -203,14 +214,17 @@ export class EnhancedUserNotificationSystem {
    * @param message - 消息内容
    * @param options - 额外选项
    */
-  public error(message: string, options: Partial<NotificationConfig> = {}): NotificationInstance {
+  public error(
+    message: string,
+    options: Partial<NotificationConfig> = {}
+  ): NotificationInstance {
     return this.show({
       type: NotificationType.ERROR,
       message,
       icon: '❌',
       duration: 7000,
       closable: true,
-      ...options
+      ...options,
     });
   }
 
@@ -219,13 +233,16 @@ export class EnhancedUserNotificationSystem {
    * @param message - 消息内容
    * @param options - 额外选项
    */
-  public warning(message: string, options: Partial<NotificationConfig> = {}): NotificationInstance {
+  public warning(
+    message: string,
+    options: Partial<NotificationConfig> = {}
+  ): NotificationInstance {
     return this.show({
       type: NotificationType.WARNING,
       message,
       icon: '⚠️',
       duration: 5000,
-      ...options
+      ...options,
     });
   }
 
@@ -234,13 +251,16 @@ export class EnhancedUserNotificationSystem {
    * @param message - 消息内容
    * @param options - 额外选项
    */
-  public info(message: string, options: Partial<NotificationConfig> = {}): NotificationInstance {
+  public info(
+    message: string,
+    options: Partial<NotificationConfig> = {}
+  ): NotificationInstance {
     return this.show({
       type: NotificationType.INFO,
       message,
       icon: 'ℹ️',
       duration: 4000,
-      ...options
+      ...options,
     });
   }
 
@@ -249,7 +269,10 @@ export class EnhancedUserNotificationSystem {
    * @param message - 消息内容
    * @param options - 额外选项
    */
-  public loading(message: string, options: Partial<NotificationConfig> = {}): NotificationInstance {
+  public loading(
+    message: string,
+    options: Partial<NotificationConfig> = {}
+  ): NotificationInstance {
     return this.show({
       type: NotificationType.LOADING,
       message,
@@ -257,7 +280,7 @@ export class EnhancedUserNotificationSystem {
       duration: 0, // 不自动关闭
       closable: false,
       showProgress: true,
-      ...options
+      ...options,
     });
   }
 
@@ -268,8 +291,8 @@ export class EnhancedUserNotificationSystem {
    * @param options - 额外选项
    */
   public showBySeverity(
-    message: string, 
-    severity: ErrorSeverity, 
+    message: string,
+    severity: ErrorSeverity,
     options: Partial<NotificationConfig> = {}
   ): NotificationInstance {
     switch (severity) {
@@ -279,33 +302,33 @@ export class EnhancedUserNotificationSystem {
           duration: 10000,
           persistent: true,
           priority: 10,
-          ...options
+          ...options,
         });
-      
+
       case ErrorSeverity.HIGH:
         return this.error(message, {
           title: '错误',
           duration: 7000,
           priority: 8,
-          ...options
+          ...options,
         });
-      
+
       case ErrorSeverity.MEDIUM:
         return this.warning(message, {
           title: '警告',
           duration: 5000,
           priority: 5,
-          ...options
+          ...options,
         });
-      
+
       case ErrorSeverity.LOW:
         return this.info(message, {
           title: '提示',
           duration: 3000,
           priority: 2,
-          ...options
+          ...options,
         });
-      
+
       default:
         return this.info(message, options);
     }
@@ -390,14 +413,15 @@ export class EnhancedUserNotificationSystem {
    * 清理已关闭的通知
    */
   public cleanup(): void {
-    const closedNotifications = Array.from(this.notifications.values())
-      .filter(notification => notification.closed);
-    
+    const closedNotifications = Array.from(this.notifications.values()).filter(
+      notification => notification.closed
+    );
+
     closedNotifications.forEach(notification => {
       this.notifications.delete(notification.id);
       this.queue.remove(notification.id);
     });
-    
+
     logger.debug('清理已关闭的通知', { count: closedNotifications.length });
   }
 
@@ -406,16 +430,20 @@ export class EnhancedUserNotificationSystem {
    */
   public getStats() {
     const notifications = Array.from(this.notifications.values());
-    const byType = notifications.reduce((acc, notification) => {
-      acc[notification.config.type] = (acc[notification.config.type] || 0) + 1;
-      return acc;
-    }, {} as Record<NotificationType, number>);
+    const byType = notifications.reduce(
+      (acc, notification) => {
+        acc[notification.config.type] =
+          (acc[notification.config.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<NotificationType, number>
+    );
 
     return {
       total: notifications.length,
       active: notifications.filter(n => !n.closed).length,
       byType,
-      persistent: notifications.filter(n => n.config.persistent).length
+      persistent: notifications.filter(n => n.config.persistent).length,
     };
   }
 
@@ -427,29 +455,29 @@ export class EnhancedUserNotificationSystem {
       add: (notification: NotificationInstance) => {
         this.notifications.set(notification.id, notification);
       },
-      
+
       remove: (id: string) => {
         this.notifications.delete(id);
       },
-      
+
       get: (id: string) => {
         return this.notifications.get(id);
       },
-      
+
       getAll: () => {
         return Array.from(this.notifications.values());
       },
-      
+
       clear: () => {
         this.notifications.clear();
       },
-      
+
       getByPosition: (position: NotificationPosition) => {
-        return Array.from(this.notifications.values())
-          .filter(notification => 
+        return Array.from(this.notifications.values()).filter(
+          notification =>
             (notification.config.position || this.defaultPosition) === position
-          );
-      }
+        );
+      },
     };
   }
 
@@ -458,8 +486,10 @@ export class EnhancedUserNotificationSystem {
    */
   private initializeContainer(): void {
     // 检查是否已存在容器
-    this.notificationContainer = document.getElementById('notification-container');
-    
+    this.notificationContainer = document.getElementById(
+      'notification-container'
+    );
+
     if (!this.notificationContainer) {
       this.notificationContainer = document.createElement('div');
       this.notificationContainer.id = 'notification-container';
@@ -479,42 +509,45 @@ export class EnhancedUserNotificationSystem {
   /**
    * 创建通知实例
    */
-  private createNotification(id: string, config: NotificationConfig): NotificationInstance {
+  private createNotification(
+    id: string,
+    config: NotificationConfig
+  ): NotificationInstance {
     const notification: NotificationInstance = {
       id,
       config: {
         position: this.defaultPosition,
         closable: true,
-        ...config
+        ...config,
       },
       createdAt: new Date(),
       shown: false,
       closed: false,
-      
+
       close: () => {
         if (!notification.closed) {
           notification.closed = true;
           this.removeNotificationElement(id);
-          
+
           if (config.onClose) {
             config.onClose();
           }
-          
+
           // 移除持久化
           if (config.persistent) {
             this.removePersistentNotification(id);
           }
-          
+
           logger.debug('关闭通知', { id });
         }
       },
-      
+
       update: (newConfig: Partial<NotificationConfig>) => {
         notification.config = { ...notification.config, ...newConfig };
         this.updateNotificationElement(notification);
-        
+
         logger.debug('更新通知', { id, config: newConfig });
-      }
+      },
     };
 
     return notification;
@@ -530,7 +563,7 @@ export class EnhancedUserNotificationSystem {
     const positionContainer = this.getOrCreatePositionContainer(
       notification.config.position || this.defaultPosition
     );
-    
+
     positionContainer.appendChild(element);
     notification.shown = true;
 
@@ -547,10 +580,12 @@ export class EnhancedUserNotificationSystem {
   /**
    * 创建通知元素
    */
-  private createNotificationElement(notification: NotificationInstance): HTMLElement {
+  private createNotificationElement(
+    notification: NotificationInstance
+  ): HTMLElement {
     const { config } = notification;
     const element = document.createElement('div');
-    
+
     element.id = `notification-${notification.id}`;
     element.className = `notification notification-${config.type} ${config.className || ''}`;
     element.style.cssText = `
@@ -574,21 +609,24 @@ export class EnhancedUserNotificationSystem {
 
     // 构建通知内容
     let content = '';
-    
+
     if (config.icon) {
       content += `<span class="notification-icon" style="margin-right: 8px; font-size: 16px;">${config.icon}</span>`;
     }
-    
+
     if (config.title) {
       content += `<div class="notification-title" style="font-weight: 600; margin-bottom: 4px;">${config.title}</div>`;
     }
-    
+
     content += `<div class="notification-message">${config.message}</div>`;
-    
+
     if (config.actions && config.actions.length > 0) {
-      content += '<div class="notification-actions" style="margin-top: 12px; display: flex; gap: 8px;">';
+      content +=
+        '<div class="notification-actions" style="margin-top: 12px; display: flex; gap: 8px;">';
       config.actions.forEach((action, index) => {
-        const buttonStyle = this.getActionButtonStyle(action.style || 'secondary');
+        const buttonStyle = this.getActionButtonStyle(
+          action.style || 'secondary'
+        );
         content += `
           <button 
             class="notification-action" 
@@ -601,7 +639,7 @@ export class EnhancedUserNotificationSystem {
       });
       content += '</div>';
     }
-    
+
     if (config.closable) {
       content += `
         <button 
@@ -624,7 +662,7 @@ export class EnhancedUserNotificationSystem {
         </button>
       `;
     }
-    
+
     if (config.showProgress) {
       content += `
         <div class="notification-progress" style="
@@ -646,7 +684,7 @@ export class EnhancedUserNotificationSystem {
         </div>
       `;
     }
-    
+
     element.innerHTML = content;
 
     // 绑定事件
@@ -658,11 +696,14 @@ export class EnhancedUserNotificationSystem {
   /**
    * 绑定通知事件
    */
-  private bindNotificationEvents(element: HTMLElement, notification: NotificationInstance): void {
+  private bindNotificationEvents(
+    element: HTMLElement,
+    notification: NotificationInstance
+  ): void {
     // 关闭按钮事件
     const closeButton = element.querySelector('.notification-close');
     if (closeButton) {
-      closeButton.addEventListener('click', (e) => {
+      closeButton.addEventListener('click', e => {
         e.stopPropagation();
         notification.close();
       });
@@ -671,14 +712,14 @@ export class EnhancedUserNotificationSystem {
     // 动作按钮事件
     const actionButtons = element.querySelectorAll('.notification-action');
     actionButtons.forEach((button, index) => {
-      button.addEventListener('click', async (e) => {
+      button.addEventListener('click', async e => {
         e.stopPropagation();
-        
+
         const action = notification.config.actions?.[index];
         if (action) {
           try {
             await action.action();
-            
+
             if (action.closeAfterAction !== false) {
               notification.close();
             }
@@ -693,23 +734,25 @@ export class EnhancedUserNotificationSystem {
   /**
    * 获取或创建位置容器
    */
-  private getOrCreatePositionContainer(position: NotificationPosition): HTMLElement {
+  private getOrCreatePositionContainer(
+    position: NotificationPosition
+  ): HTMLElement {
     if (!this.notificationContainer) {
       throw new Error('通知容器未初始化');
     }
 
     const containerId = `notification-position-${position}`;
     let container = document.getElementById(containerId);
-    
+
     if (!container) {
       container = document.createElement('div');
       container.id = containerId;
       container.className = `notification-position-container notification-${position}`;
       container.style.cssText = this.getPositionContainerStyle(position);
-      
+
       this.notificationContainer.appendChild(container);
     }
-    
+
     return container;
   }
 
@@ -733,11 +776,20 @@ export class EnhancedUserNotificationSystem {
       case NotificationPosition.TOP_CENTER:
         return baseStyle + 'top: 20px; left: 50%; transform: translateX(-50%);';
       case NotificationPosition.BOTTOM_RIGHT:
-        return baseStyle + 'bottom: 20px; right: 20px; flex-direction: column-reverse;';
+        return (
+          baseStyle +
+          'bottom: 20px; right: 20px; flex-direction: column-reverse;'
+        );
       case NotificationPosition.BOTTOM_LEFT:
-        return baseStyle + 'bottom: 20px; left: 20px; flex-direction: column-reverse;';
+        return (
+          baseStyle +
+          'bottom: 20px; left: 20px; flex-direction: column-reverse;'
+        );
       case NotificationPosition.BOTTOM_CENTER:
-        return baseStyle + 'bottom: 20px; left: 50%; transform: translateX(-50%); flex-direction: column-reverse;';
+        return (
+          baseStyle +
+          'bottom: 20px; left: 50%; transform: translateX(-50%); flex-direction: column-reverse;'
+        );
       default:
         return baseStyle + 'top: 20px; right: 20px;';
     }
@@ -752,7 +804,7 @@ export class EnhancedUserNotificationSystem {
       // 重新创建元素内容
       const newElement = this.createNotificationElement(notification);
       element.innerHTML = newElement.innerHTML;
-      
+
       // 重新绑定事件
       this.bindNotificationEvents(element, notification);
     }
@@ -765,7 +817,7 @@ export class EnhancedUserNotificationSystem {
     const element = document.getElementById(`notification-${id}`);
     if (element) {
       element.classList.add('notification-exit');
-      
+
       setTimeout(() => {
         element.remove();
       }, 300);
@@ -775,7 +827,10 @@ export class EnhancedUserNotificationSystem {
   /**
    * 安排自动关闭
    */
-  private scheduleAutoClose(notification: NotificationInstance, duration: number): void {
+  private scheduleAutoClose(
+    notification: NotificationInstance,
+    duration: number
+  ): void {
     setTimeout(() => {
       if (!notification.closed) {
         notification.close();
@@ -793,23 +848,25 @@ export class EnhancedUserNotificationSystem {
    */
   private updateProgress(notificationId: string, duration: number): void {
     const element = document.getElementById(`notification-${notificationId}`);
-    const progressBar = element?.querySelector('.notification-progress-bar') as HTMLElement;
-    
+    const progressBar = element?.querySelector(
+      '.notification-progress-bar'
+    ) as HTMLElement;
+
     if (progressBar) {
       const startTime = Date.now();
       const updateInterval = 100;
-      
+
       const updateProgress = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min((elapsed / duration) * 100, 100);
-        
+
         progressBar.style.width = `${progress}%`;
-        
+
         if (progress < 100) {
           setTimeout(updateProgress, updateInterval);
         }
       };
-      
+
       updateProgress();
     }
   }
@@ -822,7 +879,8 @@ export class EnhancedUserNotificationSystem {
       .filter(notification => !notification.closed)
       .sort((a, b) => {
         // 按优先级和创建时间排序
-        const priorityDiff = (b.config.priority || 0) - (a.config.priority || 0);
+        const priorityDiff =
+          (b.config.priority || 0) - (a.config.priority || 0);
         if (priorityDiff !== 0) return priorityDiff;
         return a.createdAt.getTime() - b.createdAt.getTime();
       });
@@ -843,10 +901,13 @@ export class EnhancedUserNotificationSystem {
       const persistedNotifications = this.getPersistedNotifications();
       persistedNotifications[notification.id] = {
         config: notification.config,
-        createdAt: notification.createdAt.toISOString()
+        createdAt: notification.createdAt.toISOString(),
       };
-      
-      localStorage.setItem('persistedNotifications', JSON.stringify(persistedNotifications));
+
+      localStorage.setItem(
+        'persistedNotifications',
+        JSON.stringify(persistedNotifications)
+      );
     } catch (error) {
       logger.error('持久化通知失败', error);
     }
@@ -859,8 +920,11 @@ export class EnhancedUserNotificationSystem {
     try {
       const persistedNotifications = this.getPersistedNotifications();
       delete persistedNotifications[id];
-      
-      localStorage.setItem('persistedNotifications', JSON.stringify(persistedNotifications));
+
+      localStorage.setItem(
+        'persistedNotifications',
+        JSON.stringify(persistedNotifications)
+      );
     } catch (error) {
       logger.error('移除持久化通知失败', error);
     }
@@ -885,20 +949,23 @@ export class EnhancedUserNotificationSystem {
   private loadPersistedNotifications(): void {
     try {
       const persistedNotifications = this.getPersistedNotifications();
-      
-      Object.entries(persistedNotifications).forEach(([id, data]: [string, any]) => {
-        // 检查通知是否过期（24小时）
-        const createdAt = new Date(data.createdAt);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursDiff < 24) {
-          this.show({ ...data.config, id });
-        } else {
-          // 清理过期的持久化通知
-          this.removePersistentNotification(id);
+
+      Object.entries(persistedNotifications).forEach(
+        ([id, data]: [string, any]) => {
+          // 检查通知是否过期（24小时）
+          const createdAt = new Date(data.createdAt);
+          const now = new Date();
+          const hoursDiff =
+            (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+          if (hoursDiff < 24) {
+            this.show({ ...data.config, id });
+          } else {
+            // 清理过期的持久化通知
+            this.removePersistentNotification(id);
+          }
         }
-      });
+      );
     } catch (error) {
       logger.error('加载持久化通知失败', error);
     }
@@ -916,12 +983,18 @@ export class EnhancedUserNotificationSystem {
    */
   private getNotificationBackground(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SUCCESS: return '#f0f9ff';
-      case NotificationType.ERROR: return '#fef2f2';
-      case NotificationType.WARNING: return '#fffbeb';
-      case NotificationType.INFO: return '#f0f9ff';
-      case NotificationType.LOADING: return '#f9fafb';
-      default: return '#ffffff';
+      case NotificationType.SUCCESS:
+        return '#f0f9ff';
+      case NotificationType.ERROR:
+        return '#fef2f2';
+      case NotificationType.WARNING:
+        return '#fffbeb';
+      case NotificationType.INFO:
+        return '#f0f9ff';
+      case NotificationType.LOADING:
+        return '#f9fafb';
+      default:
+        return '#ffffff';
     }
   }
 
@@ -930,12 +1003,18 @@ export class EnhancedUserNotificationSystem {
    */
   private getNotificationColor(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SUCCESS: return '#065f46';
-      case NotificationType.ERROR: return '#991b1b';
-      case NotificationType.WARNING: return '#92400e';
-      case NotificationType.INFO: return '#1e40af';
-      case NotificationType.LOADING: return '#374151';
-      default: return '#111827';
+      case NotificationType.SUCCESS:
+        return '#065f46';
+      case NotificationType.ERROR:
+        return '#991b1b';
+      case NotificationType.WARNING:
+        return '#92400e';
+      case NotificationType.INFO:
+        return '#1e40af';
+      case NotificationType.LOADING:
+        return '#374151';
+      default:
+        return '#111827';
     }
   }
 
@@ -944,19 +1023,27 @@ export class EnhancedUserNotificationSystem {
    */
   private getNotificationBorder(type: NotificationType): string {
     switch (type) {
-      case NotificationType.SUCCESS: return '#10b981';
-      case NotificationType.ERROR: return '#ef4444';
-      case NotificationType.WARNING: return '#f59e0b';
-      case NotificationType.INFO: return '#3b82f6';
-      case NotificationType.LOADING: return '#6b7280';
-      default: return '#d1d5db';
+      case NotificationType.SUCCESS:
+        return '#10b981';
+      case NotificationType.ERROR:
+        return '#ef4444';
+      case NotificationType.WARNING:
+        return '#f59e0b';
+      case NotificationType.INFO:
+        return '#3b82f6';
+      case NotificationType.LOADING:
+        return '#6b7280';
+      default:
+        return '#d1d5db';
     }
   }
 
   /**
    * 获取动作按钮样式
    */
-  private getActionButtonStyle(style: 'primary' | 'secondary' | 'danger'): string {
+  private getActionButtonStyle(
+    style: 'primary' | 'secondary' | 'danger'
+  ): string {
     const baseStyle = `
       padding: 6px 12px;
       border-radius: 4px;
@@ -969,24 +1056,33 @@ export class EnhancedUserNotificationSystem {
 
     switch (style) {
       case 'primary':
-        return baseStyle + `
+        return (
+          baseStyle +
+          `
           background: #3b82f6;
           color: white;
           border-color: #3b82f6;
-        `;
+        `
+        );
       case 'danger':
-        return baseStyle + `
+        return (
+          baseStyle +
+          `
           background: #ef4444;
           color: white;
           border-color: #ef4444;
-        `;
+        `
+        );
       case 'secondary':
       default:
-        return baseStyle + `
+        return (
+          baseStyle +
+          `
           background: transparent;
           color: currentColor;
           border-color: currentColor;
-        `;
+        `
+        );
     }
   }
 }
@@ -994,27 +1090,32 @@ export class EnhancedUserNotificationSystem {
 /**
  * 导出单例实例
  */
-export const enhancedUserNotificationSystem = EnhancedUserNotificationSystem.getInstance();
+export const enhancedUserNotificationSystem =
+  EnhancedUserNotificationSystem.getInstance();
 
 /**
  * 便捷的通知函数
  */
 export const notify = {
-  success: (message: string, options?: Partial<NotificationConfig>) => 
+  success: (message: string, options?: Partial<NotificationConfig>) =>
     enhancedUserNotificationSystem.success(message, options),
-  
-  error: (message: string, options?: Partial<NotificationConfig>) => 
+
+  error: (message: string, options?: Partial<NotificationConfig>) =>
     enhancedUserNotificationSystem.error(message, options),
-  
-  warning: (message: string, options?: Partial<NotificationConfig>) => 
+
+  warning: (message: string, options?: Partial<NotificationConfig>) =>
     enhancedUserNotificationSystem.warning(message, options),
-  
-  info: (message: string, options?: Partial<NotificationConfig>) => 
+
+  info: (message: string, options?: Partial<NotificationConfig>) =>
     enhancedUserNotificationSystem.info(message, options),
-  
-  loading: (message: string, options?: Partial<NotificationConfig>) => 
+
+  loading: (message: string, options?: Partial<NotificationConfig>) =>
     enhancedUserNotificationSystem.loading(message, options),
-  
-  bySeverity: (message: string, severity: ErrorSeverity, options?: Partial<NotificationConfig>) =>
-    enhancedUserNotificationSystem.showBySeverity(message, severity, options)
+
+  bySeverity: (
+    message: string,
+    severity: ErrorSeverity,
+    options?: Partial<NotificationConfig>
+  ) =>
+    enhancedUserNotificationSystem.showBySeverity(message, severity, options),
 };

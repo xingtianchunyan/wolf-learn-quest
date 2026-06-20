@@ -1,4 +1,3 @@
-
 // 技能效果管理工具函数
 
 export interface SkillEffectConfig {
@@ -17,20 +16,20 @@ export const SKILL_EFFECT_CONFIGS = {
     priority: 90,
     data: {
       effect_type: 'kill',
-      can_be_protected: true
-    }
+      can_be_protected: true,
+    },
   },
-  
+
   // 女巫毒药
   witch_poison: {
     type: 'elimination',
     priority: 85,
     data: {
       effect_type: 'poison',
-      can_be_protected: false
-    }
+      can_be_protected: false,
+    },
   },
-  
+
   // 女巫解药
   witch_antidote: {
     type: 'protection',
@@ -38,10 +37,10 @@ export const SKILL_EFFECT_CONFIGS = {
     duration: 86400, // 24小时
     data: {
       effect_type: 'heal',
-      protection_type: 'antidote'
-    }
+      protection_type: 'antidote',
+    },
   },
-  
+
   // 守卫保护
   guard_protect: {
     type: 'protection',
@@ -49,29 +48,29 @@ export const SKILL_EFFECT_CONFIGS = {
     duration: 43200, // 12小时
     data: {
       effect_type: 'guard',
-      protection_type: 'guard'
-    }
+      protection_type: 'guard',
+    },
   },
-  
+
   // 预言家查验
   seer_investigation: {
     type: 'investigation',
     priority: 70,
     data: {
       effect_type: 'identity_check',
-      reveal_faction: true
-    }
+      reveal_faction: true,
+    },
   },
-  
+
   // 猎人反击
   hunter_revenge: {
     type: 'elimination',
     priority: 100, // 最高优先级
     data: {
       effect_type: 'revenge_kill',
-      can_be_protected: false
-    }
-  }
+      can_be_protected: false,
+    },
+  },
 };
 
 // 创建技能效果
@@ -80,20 +79,21 @@ export const createSkillEffect = (
   targetUserId?: string,
   customData: any = {}
 ): SkillEffectConfig | null => {
-  const config = SKILL_EFFECT_CONFIGS[skillName as keyof typeof SKILL_EFFECT_CONFIGS];
-  
+  const config =
+    SKILL_EFFECT_CONFIGS[skillName as keyof typeof SKILL_EFFECT_CONFIGS];
+
   if (!config) {
     console.warn(`未找到技能 ${skillName} 的效果配置`);
     return null;
   }
-  
+
   return {
     ...config,
     data: {
       ...config.data,
       ...customData,
-      target_user_id: targetUserId
-    }
+      target_user_id: targetUserId,
+    },
   };
 };
 
@@ -103,34 +103,37 @@ export const checkEffectConflicts = (
 ): { conflicts: boolean; resolution: any } => {
   // 按优先级排序
   const sortedEffects = [...effects].sort((a, b) => b.priority - a.priority);
-  
+
   // 检查保护效果 vs 伤害效果
   const protectionEffects = sortedEffects.filter(e => e.type === 'protection');
-  const eliminationEffects = sortedEffects.filter(e => e.type === 'elimination');
-  
+  const eliminationEffects = sortedEffects.filter(
+    e => e.type === 'elimination'
+  );
+
   const conflicts: any[] = [];
-  
+
   eliminationEffects.forEach(elimination => {
     const targetId = elimination.data.target_user_id;
-    const protection = protectionEffects.find(p => 
-      p.data.target_user_id === targetId && 
-      p.priority >= elimination.priority &&
-      elimination.data.can_be_protected !== false
+    const protection = protectionEffects.find(
+      p =>
+        p.data.target_user_id === targetId &&
+        p.priority >= elimination.priority &&
+        elimination.data.can_be_protected !== false
     );
-    
+
     if (protection) {
       conflicts.push({
         type: 'protection_vs_elimination',
         protection,
         elimination,
-        resolution: 'protection_wins'
+        resolution: 'protection_wins',
       });
     }
   });
-  
+
   return {
     conflicts: conflicts.length > 0,
-    resolution: conflicts
+    resolution: conflicts,
   };
 };
 
@@ -139,31 +142,31 @@ export const resolveSkillEffects = (
   effects: SkillEffectConfig[]
 ): SkillEffectConfig[] => {
   const { conflicts, resolution } = checkEffectConflicts(effects);
-  
+
   if (!conflicts) {
     return effects;
   }
-  
+
   let resolvedEffects = [...effects];
-  
+
   resolution.forEach((conflict: any) => {
     if (conflict.resolution === 'protection_wins') {
       // 移除被保护的伤害效果
-      resolvedEffects = resolvedEffects.filter(e => 
-        e !== conflict.elimination
-      );
-      
+      resolvedEffects = resolvedEffects.filter(e => e !== conflict.elimination);
+
       // 保留保护效果
     }
   });
-  
+
   return resolvedEffects;
 };
 
 // 格式化技能效果描述
-export const formatSkillEffectDescription = (effect: SkillEffectConfig): string => {
+export const formatSkillEffectDescription = (
+  effect: SkillEffectConfig
+): string => {
   const { type, data } = effect;
-  
+
   switch (type) {
     case 'elimination':
       return `淘汰效果 (${data.effect_type})`;
@@ -186,7 +189,7 @@ export const calculateEffectDuration = (
   if (effect.duration) {
     return effect.duration;
   }
-  
+
   // 根据游戏阶段计算默认持续时间
   switch (effect.type) {
     case 'protection':
@@ -212,50 +215,55 @@ export const validateSkillConditions = (
   if (!userId || !gameState || !roleState) {
     return { valid: false, reason: '缺少必要的游戏信息' };
   }
-  
+
   // 角色状态验证
-  if (roleState.role_status !== 1) { // 必须是正常状态
+  if (roleState.role_status !== 1) {
+    // 必须是正常状态
     return { valid: false, reason: '角色状态不允许使用技能' };
   }
-  
+
   // 技能特定验证
   switch (skillName) {
     case 'werewolf_kill':
       if (!targetUserId) {
         return { valid: false, reason: '必须选择攻击目标' };
       }
-      if (gameState.current_phase !== 3) { // 必须是夜晚
+      if (gameState.current_phase !== 3) {
+        // 必须是夜晚
         return { valid: false, reason: '狼人只能在夜晚行动' };
       }
       break;
-      
+
     case 'seer_investigation':
       if (!targetUserId) {
         return { valid: false, reason: '必须选择调查目标' };
       }
-      if (gameState.current_phase !== 3) { // 必须是夜晚
+      if (gameState.current_phase !== 3) {
+        // 必须是夜晚
         return { valid: false, reason: '预言家只能在夜晚查验' };
       }
       break;
-      
+
     case 'guard_protect':
       if (!targetUserId) {
         return { valid: false, reason: '必须选择保护目标' };
       }
-      if (gameState.current_phase !== 3) { // 必须是夜晚
+      if (gameState.current_phase !== 3) {
+        // 必须是夜晚
         return { valid: false, reason: '守卫只能在夜晚保护' };
       }
       break;
-      
+
     case 'hunter_revenge':
       if (!targetUserId) {
         return { valid: false, reason: '必须选择反击目标' };
       }
-      if (roleState.role_status !== 2) { // 必须是濒死状态
+      if (roleState.role_status !== 2) {
+        // 必须是濒死状态
         return { valid: false, reason: '猎人只能在濒死时反击' };
       }
       break;
   }
-  
+
   return { valid: true };
 };

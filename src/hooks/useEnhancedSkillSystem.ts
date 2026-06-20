@@ -6,7 +6,10 @@
 import React from 'react';
 import { useSkillData, type EnhancedSkillUse } from './skill/useSkillData';
 import { useSkillRealtime } from './skill/useSkillRealtime';
-import { useSkillValidation, type SkillSuggestion } from './skill/useSkillValidation';
+import {
+  useSkillValidation,
+  type SkillSuggestion,
+} from './skill/useSkillValidation';
 import { useSkillStats, type SkillSystemStats } from './skill/useSkillStats';
 import { usePerformanceOptimization } from './usePerformanceOptimizationNew';
 import { useMemoryManager } from './useMemoryManager';
@@ -24,14 +27,14 @@ export const useEnhancedSkillSystem = (
     componentName: 'EnhancedSkillSystem',
     enableMemoryTracking: true,
     enableRenderTracking: true,
-    debounceTime: 100
+    debounceTime: 100,
   });
 
   // 内存管理
   const memoryManager = useMemoryManager({
     componentName: 'EnhancedSkillSystem',
     maxMemoryThreshold: 30, // 30MB
-    enableAutoCleanup: true
+    enableAutoCleanup: true,
   });
 
   // 智能缓存 - 技能配置数据
@@ -62,23 +65,25 @@ export const useEnhancedSkillSystem = (
       filter: gameStateId ? `game_state_id=eq.${gameStateId}` : undefined,
       event: '*',
       enableReconnect: true,
-      maxReconnectAttempts: 3
+      maxReconnectAttempts: 3,
     },
-    (payload) => {
+    payload => {
       // 使用性能优化的状态更新
-      performanceFixes.stateOptimizer('skillUses', payload, (newPayload) => {
+      performanceFixes.stateOptimizer('skillUses', payload, newPayload => {
         if (newPayload.new && typeof newPayload.new === 'object') {
           const newSkillUse = newPayload.new as EnhancedSkillUse;
-          
+
           if (newPayload.eventType === 'INSERT') {
             skillDataHook.setSkillUses(current => [newSkillUse, ...current]);
           } else if (newPayload.eventType === 'UPDATE') {
             skillDataHook.setSkillUses(current =>
-              current.map(su => su.id === newSkillUse.id ? newSkillUse : su)
+              current.map(su => (su.id === newSkillUse.id ? newSkillUse : su))
             );
           } else if (newPayload.eventType === 'DELETE' && newPayload.old) {
             skillDataHook.setSkillUses(current =>
-              current.filter(su => su.id !== (newPayload.old as EnhancedSkillUse).id)
+              current.filter(
+                su => su.id !== (newPayload.old as EnhancedSkillUse).id
+              )
             );
           }
         }
@@ -94,7 +99,7 @@ export const useEnhancedSkillSystem = (
       filter: gameStateId ? `game_state_id=eq.${gameStateId}` : undefined,
       event: '*',
       enableReconnect: true,
-      maxReconnectAttempts: 3
+      maxReconnectAttempts: 3,
     },
     () => {
       // 技能效果队列变化时重新获取数据
@@ -122,7 +127,7 @@ export const useEnhancedSkillSystem = (
 
     const cleanup = memoryManager.registerInterval(cacheMaintenanceInterval);
     performanceFixes.subscriptionManager.add(cleanup);
-    
+
     return cleanup;
   }, [memoryManager, performanceFixes]);
 
@@ -133,7 +138,7 @@ export const useEnhancedSkillSystem = (
         {
           key: `skill-uses-${gameStateId}`,
           fetcher: async () => skillDataHook.fetchAllSkillData(),
-          ttl: 2 * 60 * 1000 // 2分钟
+          ttl: 2 * 60 * 1000, // 2分钟
         },
         {
           key: `skill-targets-${gameStateId}`,
@@ -141,8 +146,8 @@ export const useEnhancedSkillSystem = (
             // 预加载技能目标数据
             return skillDataHook.skillTargets;
           },
-          ttl: 5 * 60 * 1000 // 5分钟
-        }
+          ttl: 5 * 60 * 1000, // 5分钟
+        },
       ]);
     }
   }, [gameStateId, performanceFixes.cacheManager, skillDataHook]);
@@ -170,10 +175,9 @@ export const useEnhancedSkillSystem = (
       )
     ),
     fetchAllSkillData: performanceFixes.renderOptimizer(
-      performance.createOptimizedCallback(
+      performance.createOptimizedCallback(skillDataHook.fetchAllSkillData, [
         skillDataHook.fetchAllSkillData,
-        [skillDataHook.fetchAllSkillData]
-      )
+      ])
     ),
 
     // 辅助功能
@@ -184,8 +188,10 @@ export const useEnhancedSkillSystem = (
 
     // 兼容性 - 保持原有接口
     useSkill: skillValidationHook.useSkillEnhanced,
-    getUserSkillUses: (targetUserId: string) => skillStatsHook.getUserSkillData(targetUserId).uses,
-    getUserSkillEffects: (targetUserId: string) => skillStatsHook.getUserSkillData(targetUserId).targets,
+    getUserSkillUses: (targetUserId: string) =>
+      skillStatsHook.getUserSkillData(targetUserId).uses,
+    getUserSkillEffects: (targetUserId: string) =>
+      skillStatsHook.getUserSkillData(targetUserId).targets,
     hasActiveEffect: skillStatsHook.hasActiveEffect,
 
     // 性能监控接口
@@ -193,21 +199,21 @@ export const useEnhancedSkillSystem = (
     getResourceStats: memoryManager.getResourceStats,
     getCacheStats: () => ({
       ...skillCache.getCacheStats(),
-      ...performanceFixes.getStats()
+      ...performanceFixes.getStats(),
     }),
     forceCleanup: memoryManager.forceCleanup,
 
     // 新增性能修复接口
     subscriptionStatus: {
       skillUses: skillUsesSubscription.status,
-      skillEffects: skillEffectsSubscription.status
+      skillEffects: skillEffectsSubscription.status,
     },
     performanceStats: performanceFixes.getStats(),
     optimizeCache: () => performanceFixes.cacheManager.invalidate(),
     resetPerformanceMetrics: () => {
       performance.resetMetrics();
       performanceFixes.getStats();
-    }
+    },
   };
 };
 

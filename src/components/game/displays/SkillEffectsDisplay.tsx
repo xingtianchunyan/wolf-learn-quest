@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,33 +15,36 @@ interface SkillEffectsDisplayProps {
 const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   roomId,
   gameStateId,
-  players
+  players,
 }) => {
   const {
     skillEffectsQueue,
     skillTargets,
-    loading: _loading
+    loading: _loading,
   } = useEnhancedSkillSystem(roomId, gameStateId);
 
   // 获取活跃的技能效果
   const _activeEffects = skillTargets.filter(target => target.is_active);
-  
+
   // 获取排队中的技能效果
-  const queuedEffects = skillEffectsQueue.filter(effect => 
-    effect.status === 'queued' || effect.status === 'processing'
+  const queuedEffects = skillEffectsQueue.filter(
+    effect => effect.status === 'queued' || effect.status === 'processing'
   );
 
   // 按目标用户分组效果
-  const _effectsByUser = _activeEffects.reduce((acc, effect) => {
-    const userId = effect.target_user_id;
-    if (!userId) return acc;
-    
-    if (!acc[userId]) {
-      acc[userId] = [];
-    }
-    acc[userId].push(effect);
-    return acc;
-  }, {} as Record<string, typeof _activeEffects>);
+  const _effectsByUser = _activeEffects.reduce(
+    (acc, effect) => {
+      const userId = effect.target_user_id;
+      if (!userId) return acc;
+
+      if (!acc[userId]) {
+        acc[userId] = [];
+      }
+      acc[userId].push(effect);
+      return acc;
+    },
+    {} as Record<string, typeof _activeEffects>
+  );
 
   const _getPlayerName = (userId: string) => {
     return players.find(p => p.userId === userId)?.name || '未知玩家';
@@ -50,22 +52,33 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
 
   const _getEffectColor = (effectType: string) => {
     switch (effectType) {
-      case 'protection': return 'bg-green-500';
-      case 'elimination': return 'bg-red-500';
-      case 'investigation': return 'bg-blue-500';
-      case 'status_change': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'protection':
+        return 'bg-green-500';
+      case 'elimination':
+        return 'bg-red-500';
+      case 'investigation':
+        return 'bg-blue-500';
+      case 'status_change':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'queued': return 'bg-yellow-500';
-      case 'processing': return 'bg-blue-500';
-      case 'completed': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      case 'cancelled': return 'bg-gray-500';
-      default: return 'bg-gray-400';
+      case 'queued':
+        return 'bg-yellow-500';
+      case 'processing':
+        return 'bg-blue-500';
+      case 'completed':
+        return 'bg-green-500';
+      case 'failed':
+        return 'bg-red-500';
+      case 'cancelled':
+        return 'bg-gray-500';
+      default:
+        return 'bg-gray-400';
     }
   };
 
@@ -73,73 +86,77 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
     const now = new Date().getTime();
     const end = new Date(endTime).getTime();
     const remaining = Math.max(0, end - now);
-    
+
     if (remaining === 0) return '已过期';
-    
+
     const minutes = Math.floor(remaining / (1000 * 60));
     const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-    
+
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const _getProgressPercentage = (startTime: string, endTime?: string) => {
     if (!endTime) return 100;
-    
+
     const start = new Date(startTime).getTime();
     const end = new Date(endTime).getTime();
     const now = new Date().getTime();
-    
+
     const total = end - start;
     const elapsed = now - start;
-    
+
     return Math.max(0, Math.min(100, (elapsed / total) * 100));
   };
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* 技能效果队列 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
+          <CardTitle className='flex items-center gap-2'>
+            <Clock className='w-4 h-4' />
             技能效果队列
             {queuedEffects.length > 0 && (
-              <Badge variant="secondary">{queuedEffects.length}</Badge>
+              <Badge variant='secondary'>{queuedEffects.length}</Badge>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {queuedEffects.length > 0 ? (
-            <div className="space-y-2">
+            <div className='space-y-2'>
               {queuedEffects
                 .sort((a, b) => a.priority - b.priority)
-                .map((effect) => (
-                <div 
-                  key={effect.id} 
-                  className="flex items-center justify-between p-3 border rounded"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
-                      <span className="font-medium">{effect.effect_type}</span>
+                .map(effect => (
+                  <div
+                    key={effect.id}
+                    className='flex items-center justify-between p-3 border rounded'
+                  >
+                    <div className='flex items-center gap-3'>
+                      <div className='flex items-center gap-2'>
+                        <Zap className='w-4 h-4' />
+                        <span className='font-medium'>
+                          {effect.effect_type}
+                        </span>
+                      </div>
+                      <Badge variant='outline'>优先级 {effect.priority}</Badge>
                     </div>
-                    <Badge variant="outline">优先级 {effect.priority}</Badge>
+                    <div className='flex items-center gap-2'>
+                      {effect.trigger_time && (
+                        <span className='text-sm text-muted-foreground'>
+                          {formatVoteTime(effect.trigger_time)}
+                        </span>
+                      )}
+                      <Badge className={getStatusColor(effect.status)}>
+                        {effect.status}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {effect.trigger_time && (
-                      <span className="text-sm text-muted-foreground">
-                        {formatVoteTime(effect.trigger_time)}
-                      </span>
-                    )}
-                    <Badge className={getStatusColor(effect.status)}>
-                      {effect.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">当前没有排队的技能效果</p>
+            <p className='text-sm text-muted-foreground'>
+              当前没有排队的技能效果
+            </p>
           )}
         </CardContent>
       </Card>

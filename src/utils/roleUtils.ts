@@ -11,26 +11,31 @@ import type { RoleDesign } from '@/hooks/useRoleDesigns';
  */
 export const normalizeRoleName = (roleName: string): string => {
   if (!roleName) return '';
-  
+
   const normalized = roleName.toLowerCase().trim();
-  
+
   // 标准化狼人角色名
   const roleMap: Record<string, string> = {
     'werewolf 1': 'werewolf_1',
-    'werewolf1': 'werewolf_1',
-    'werewolf 2': 'werewolf_2', 
-    'werewolf2': 'werewolf_2',
+    werewolf1: 'werewolf_1',
+    'werewolf 2': 'werewolf_2',
+    werewolf2: 'werewolf_2',
     'white wolf': 'whitewolf',
-    'white_wolf': 'whitewolf'
+    white_wolf: 'whitewolf',
   };
-  
+
   return roleMap[normalized] || normalized;
 };
 
 /**
  * 狼人阵营角色名列表（标准化后的名称）
  */
-export const WEREWOLF_ROLES = ['werewolf', 'werewolf_1', 'werewolf_2', 'whitewolf'] as const;
+export const WEREWOLF_ROLES = [
+  'werewolf',
+  'werewolf_1',
+  'werewolf_2',
+  'whitewolf',
+] as const;
 
 /**
  * 基于角色名判断是否为狼人角色
@@ -44,7 +49,9 @@ export const isWolfRoleName = (roleName: string): boolean => {
  * 基于RoleDesign的faction字段判断是否为狼人阵营
  * 优先使用数据库的faction字段
  */
-export const hasWolfFaction = (roleDesign: RoleDesign | null | undefined): boolean => {
+export const hasWolfFaction = (
+  roleDesign: RoleDesign | null | undefined
+): boolean => {
   if (!roleDesign) return false;
   // faction字段：true为狼人阵营，false为好人阵营
   return roleDesign.faction === true;
@@ -75,32 +82,32 @@ export const canSeeTargetRole = (
   targetRoleDesign?: any
 ): boolean => {
   if (!currentUserRole || !targetRole) return false;
-  
+
   const normalizedCurrentRole = normalizeRoleName(currentUserRole);
   const normalizedTargetRole = normalizeRoleName(targetRole);
-  
+
   // 优先使用数据库的faction字段判断
-  const isCurrentWolf = currentUserRoleDesign 
+  const isCurrentWolf = currentUserRoleDesign
     ? hasWolfFaction(currentUserRoleDesign)
     : isWolfRoleName(normalizedCurrentRole);
-  
+
   const isTargetWolf = targetRoleDesign
-    ? hasWolfFaction(targetRoleDesign) 
+    ? hasWolfFaction(targetRoleDesign)
     : isWolfRoleName(normalizedTargetRole);
-    
+
   const isCurrentDemon = isDemonRole(normalizedCurrentRole);
   const isTargetDemon = isDemonRole(normalizedTargetRole);
-  
+
   // 狼人阵营四个角色之间可以互相查看完整角色信息
   if (isCurrentWolf && isTargetWolf) {
     return true;
   }
-  
+
   // 恶魔可以看到所有狼人角色
   if (isCurrentDemon && (isTargetWolf || isTargetDemon)) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -110,10 +117,10 @@ export const canSeeTargetRole = (
  */
 export const mapChatChannelType = (uiChannelType: string): string => {
   const channelMap: Record<string, string> = {
-    'team': 'werewolf', // UI显示为team，但数据库存储为werewolf
-    'werewolf': 'werewolf' // 保持兼容
+    team: 'werewolf', // UI显示为team，但数据库存储为werewolf
+    werewolf: 'werewolf', // 保持兼容
   };
-  
+
   return channelMap[uiChannelType] || uiChannelType;
 };
 
@@ -122,10 +129,10 @@ export const mapChatChannelType = (uiChannelType: string): string => {
  */
 export const mapChatTypeToUI = (dbChatType: string): string => {
   const uiMap: Record<string, string> = {
-    'werewolf': 'team', // 数据库的werewolf在UI显示为team
-    'team': 'team' // 兼容历史数据
+    werewolf: 'team', // 数据库的werewolf在UI显示为team
+    team: 'team', // 兼容历史数据
   };
-  
+
   return uiMap[dbChatType] || dbChatType;
 };
 
@@ -148,12 +155,12 @@ export const canAccessWerewolfChannel = (
   roleDesign?: any
 ): boolean => {
   if (!roleName) return false;
-  
+
   // 优先使用数据库faction字段
   if (roleDesign) {
     return hasWolfFaction(roleDesign);
   }
-  
+
   // 后备方案：基于角色名判断
   return isWolfRoleName(roleName);
 };

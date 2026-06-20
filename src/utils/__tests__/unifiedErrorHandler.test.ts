@@ -13,7 +13,7 @@ import {
   createErrorWrapper,
   type UnifiedError,
   type ErrorContext,
-  type ErrorHandlingOptions
+  type ErrorHandlingOptions,
 } from '../unifiedErrorHandler';
 import { AppError, ErrorCode } from '../errorHandler';
 import { SkillErrorType, SkillError } from '../skillErrorHandler';
@@ -24,20 +24,20 @@ vi.mock('@/lib/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-    debug: vi.fn()
-  }))
+    debug: vi.fn(),
+  })),
 }));
 
 // Mock window object
 const mockWindow = {
   showToast: vi.fn(),
   showErrorModal: vi.fn(),
-  location: { href: '' }
+  location: { href: '' },
 };
 
 Object.defineProperty(global, 'window', {
   value: mockWindow,
-  writable: true
+  writable: true,
 });
 
 describe('UnifiedErrorHandler', () => {
@@ -60,7 +60,7 @@ describe('UnifiedErrorHandler', () => {
     it('应该返回同一个实例', () => {
       const instance1 = UnifiedErrorHandler.getInstance();
       const instance2 = UnifiedErrorHandler.getInstance();
-      
+
       expect(instance1).toBe(instance2);
       expect(instance1).toBe(unifiedErrorHandler);
     });
@@ -71,17 +71,19 @@ describe('UnifiedErrorHandler', () => {
      * 测试 AppError 处理
      */
     it('应该正确处理 AppError', async () => {
-      const appError = new AppError('测试错误', ErrorCode.DATA_NOT_FOUND, { test: 'data' });
+      const appError = new AppError('测试错误', ErrorCode.DATA_NOT_FOUND, {
+        test: 'data',
+      });
       const context: ErrorContext = {
         userId: 'test-user',
-        component: 'TestComponent'
+        component: 'TestComponent',
       };
 
       await handler.handleError(appError, context);
 
       const history = handler.getErrorHistory();
       expect(history).toHaveLength(1);
-      
+
       const unifiedError = history[0];
       expect(unifiedError.type).toBe('app');
       expect(unifiedError.code).toBe(ErrorCode.DATA_NOT_FOUND);
@@ -101,14 +103,14 @@ describe('UnifiedErrorHandler', () => {
         skillName: 'test_skill',
         userId: 'test-user',
         gameStateId: 'test-game',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       await handler.handleError(skillError);
 
       const history = handler.getErrorHistory();
       expect(history).toHaveLength(1);
-      
+
       const unifiedError = history[0];
       expect(unifiedError.type).toBe('skill');
       expect(unifiedError.code).toBe('SKILL_VALIDATION_FAILED');
@@ -128,7 +130,7 @@ describe('UnifiedErrorHandler', () => {
 
       const history = handler.getErrorHistory();
       expect(history).toHaveLength(1);
-      
+
       const unifiedError = history[0];
       expect(unifiedError.type).toBe('network');
       expect(unifiedError.code).toBe('NETWORK_ERROR');
@@ -147,7 +149,7 @@ describe('UnifiedErrorHandler', () => {
 
       const history = handler.getErrorHistory();
       expect(history).toHaveLength(1);
-      
+
       const unifiedError = history[0];
       expect(unifiedError.type).toBe('validation');
       expect(unifiedError.code).toBe('VALIDATION_ERROR');
@@ -165,7 +167,7 @@ describe('UnifiedErrorHandler', () => {
 
       const history = handler.getErrorHistory();
       expect(history).toHaveLength(1);
-      
+
       const unifiedError = history[0];
       expect(unifiedError.type).toBe('system');
       expect(unifiedError.code).toBe('UNKNOWN_ERROR');
@@ -179,13 +181,13 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确执行 Toast 策略', async () => {
       const error = new AppError('测试错误', ErrorCode.DATA_INVALID);
-      
+
       await handler.handleError(error, undefined, { showUserMessage: true });
 
       expect(mockWindow.showToast).toHaveBeenCalledWith({
         title: '提示',
         description: expect.any(String),
-        variant: 'default'
+        variant: 'default',
       });
     });
 
@@ -194,7 +196,7 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确执行静默策略', async () => {
       const error = new Error('Silent error');
-      
+
       // 模拟一个会触发静默策略的错误
       await handler.handleError(error, undefined, { showUserMessage: false });
 
@@ -208,7 +210,7 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确执行重定向策略', async () => {
       const authError = new AppError('认证失败', ErrorCode.AUTH_REQUIRED);
-      
+
       await handler.handleError(authError);
 
       // 检查是否设置了重定向URL
@@ -224,7 +226,7 @@ describe('UnifiedErrorHandler', () => {
     it('应该正确包装成功的异步函数', async () => {
       const successFn = vi.fn().mockResolvedValue('success');
       const onSuccess = vi.fn();
-      
+
       const wrappedFn = handler.wrapAsync(successFn, undefined, { onSuccess });
       const result = await wrappedFn('test');
 
@@ -240,7 +242,7 @@ describe('UnifiedErrorHandler', () => {
     it('应该正确包装失败的异步函数', async () => {
       const errorFn = vi.fn().mockRejectedValue(new Error('Async error'));
       const onError = vi.fn();
-      
+
       const wrappedFn = handler.wrapAsync(errorFn, undefined, { onError });
       const result = await wrappedFn('test');
 
@@ -258,7 +260,7 @@ describe('UnifiedErrorHandler', () => {
     it('应该正确包装成功的同步函数', () => {
       const successFn = vi.fn().mockReturnValue('success');
       const onSuccess = vi.fn();
-      
+
       const wrappedFn = handler.wrapSync(successFn, undefined, { onSuccess });
       const result = wrappedFn('test');
 
@@ -276,16 +278,16 @@ describe('UnifiedErrorHandler', () => {
         throw new Error('Sync error');
       });
       const onError = vi.fn();
-      
+
       const wrappedFn = handler.wrapSync(errorFn, undefined, { onError });
       const result = wrappedFn('test');
 
       expect(result).toBeNull();
       expect(errorFn).toHaveBeenCalledWith('test');
-      
+
       // 等待异步错误处理完成
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       expect(onError).toHaveBeenCalled();
       expect(handler.getErrorHistory()).toHaveLength(1);
     });
@@ -342,24 +344,28 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确统计错误信息', async () => {
       // 添加不同类型的错误
-      await handler.handleError(new AppError('App error 1', ErrorCode.DATA_NOT_FOUND));
-      await handler.handleError(new AppError('App error 2', ErrorCode.NETWORK_ERROR));
-      
+      await handler.handleError(
+        new AppError('App error 1', ErrorCode.DATA_NOT_FOUND)
+      );
+      await handler.handleError(
+        new AppError('App error 2', ErrorCode.NETWORK_ERROR)
+      );
+
       // 创建网络错误，确保能被正确识别
       const networkError = new Error('network request failed');
       networkError.name = 'NetworkError';
       await handler.handleError(networkError);
-      
+
       const skillError: SkillError = {
         type: SkillErrorType.VALIDATION_ERROR,
         code: 'SKILL_ERROR',
         message: 'Skill error',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       await handler.handleError(skillError);
 
       const stats = handler.getErrorStats();
-      
+
       expect(stats.total).toBe(4);
       expect(stats.byType.app).toBe(2);
       expect(stats.byType.network).toBe(1);
@@ -387,18 +393,18 @@ describe('UnifiedErrorHandler', () => {
         value: instance.testMethod,
         writable: true,
         enumerable: true,
-        configurable: true
+        configurable: true,
       };
-      
+
       withUnifiedErrorHandling({ component: 'TestClass' })(
-        TestClass.prototype, 
-        'testMethod', 
+        TestClass.prototype,
+        'testMethod',
         descriptor
       );
-      
+
       // 替换方法
       instance.testMethod = descriptor.value;
-      
+
       try {
         await instance.testMethod();
       } catch (error) {
@@ -423,9 +429,11 @@ describe('UnifiedErrorHandler', () => {
       const wrapper = createErrorWrapper(context, { logError: true });
 
       // 测试异步包装器
-      const asyncFn = vi.fn().mockRejectedValue(new Error('Wrapper async error'));
+      const asyncFn = vi
+        .fn()
+        .mockRejectedValue(new Error('Wrapper async error'));
       const wrappedAsync = wrapper.async(asyncFn);
-      
+
       const asyncResult = await wrappedAsync('test');
       expect(asyncResult).toBeNull();
       expect(asyncFn).toHaveBeenCalledWith('test');
@@ -435,7 +443,7 @@ describe('UnifiedErrorHandler', () => {
         throw new Error('Wrapper sync error');
       });
       const wrappedSync = wrapper.sync(syncFn);
-      
+
       const syncResult = wrappedSync('test');
       expect(syncResult).toBeNull();
       expect(syncFn).toHaveBeenCalledWith('test');
@@ -497,7 +505,10 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确识别可重试错误', async () => {
       const retryableError = new AppError('Retryable', ErrorCode.NETWORK_ERROR);
-      const nonRetryableError = new AppError('Non-retryable', ErrorCode.DATA_INVALID);
+      const nonRetryableError = new AppError(
+        'Non-retryable',
+        ErrorCode.DATA_INVALID
+      );
 
       await handler.handleError(retryableError);
       await handler.handleError(nonRetryableError);
@@ -531,7 +542,7 @@ describe('UnifiedErrorHandler', () => {
       // 添加一些错误到历史记录
       await handler.handleError(new Error('Test error 1'));
       await handler.handleError(new Error('Test error 2'));
-      
+
       expect(handler.getErrorHistory()).toHaveLength(2);
 
       // 执行清理
@@ -561,7 +572,7 @@ describe('UnifiedErrorHandler', () => {
      */
     it('应该正确处理空字符串错误消息', async () => {
       const emptyError = new Error('');
-      
+
       await handler.handleError(emptyError);
 
       const history = handler.getErrorHistory();
@@ -577,11 +588,13 @@ describe('UnifiedErrorHandler', () => {
       const problematicError = {
         get message() {
           throw new Error('Property access error');
-        }
+        },
       };
 
       // 这不应该导致程序崩溃
-      await expect(handler.handleError(problematicError)).resolves.not.toThrow();
+      await expect(
+        handler.handleError(problematicError)
+      ).resolves.not.toThrow();
     });
   });
 });

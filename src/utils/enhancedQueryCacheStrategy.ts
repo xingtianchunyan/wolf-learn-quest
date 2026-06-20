@@ -1,6 +1,6 @@
 /**
  * 文件级注释：增强的查询缓存策略优化系统
- * 
+ *
  * 该文件实现了一个全面的查询缓存策略优化系统，集成了：
  * - 智能缓存策略和自适应TTL
  * - 多级缓存架构（内存、本地存储、分布式）
@@ -8,7 +8,7 @@
  * - 实时性能监控和自动优化
  * - 内存管理和压缩优化
  * - 查询模式分析和优化建议
- * 
+ *
  * 主要特性：
  * - 自适应缓存策略
  * - 智能预加载机制
@@ -16,7 +16,7 @@
  * - 内存使用优化
  * - 查询模式识别
  * - 自动缓存调优
- * 
+ *
  * @author SOLO Coding
  * @version 2.0.0
  */
@@ -32,33 +32,33 @@ const logger = createLogger('enhanced-query-cache-strategy');
  * 缓存策略类型枚举
  */
 export enum EnhancedCacheStrategy {
-  ULTRA_AGGRESSIVE = 'ultra_aggressive',    // 超激进缓存
-  AGGRESSIVE = 'aggressive',                // 激进缓存
-  BALANCED = 'balanced',                    // 平衡缓存
-  CONSERVATIVE = 'conservative',            // 保守缓存
-  MEMORY_OPTIMIZED = 'memory_optimized',    // 内存优化
-  PERFORMANCE_FIRST = 'performance_first',  // 性能优先
-  ADAPTIVE_LEARNING = 'adaptive_learning'   // 自适应学习
+  ULTRA_AGGRESSIVE = 'ultra_aggressive', // 超激进缓存
+  AGGRESSIVE = 'aggressive', // 激进缓存
+  BALANCED = 'balanced', // 平衡缓存
+  CONSERVATIVE = 'conservative', // 保守缓存
+  MEMORY_OPTIMIZED = 'memory_optimized', // 内存优化
+  PERFORMANCE_FIRST = 'performance_first', // 性能优先
+  ADAPTIVE_LEARNING = 'adaptive_learning', // 自适应学习
 }
 
 /**
  * 查询优先级枚举
  */
 export enum QueryPriority {
-  CRITICAL = 'critical',      // 关键查询
-  HIGH = 'high',             // 高优先级
-  NORMAL = 'normal',         // 普通优先级
-  LOW = 'low',               // 低优先级
-  BACKGROUND = 'background'   // 后台查询
+  CRITICAL = 'critical', // 关键查询
+  HIGH = 'high', // 高优先级
+  NORMAL = 'normal', // 普通优先级
+  LOW = 'low', // 低优先级
+  BACKGROUND = 'background', // 后台查询
 }
 
 /**
  * 缓存层级枚举
  */
 export enum CacheLevel {
-  L1_MEMORY = 'l1_memory',           // L1内存缓存
-  L2_COMPRESSED = 'l2_compressed',   // L2压缩缓存
-  L3_PERSISTENT = 'l3_persistent'    // L3持久化缓存
+  L1_MEMORY = 'l1_memory', // L1内存缓存
+  L2_COMPRESSED = 'l2_compressed', // L2压缩缓存
+  L3_PERSISTENT = 'l3_persistent', // L3持久化缓存
 }
 
 /**
@@ -66,32 +66,32 @@ export enum CacheLevel {
  */
 export interface EnhancedCacheConfig {
   strategy: EnhancedCacheStrategy;
-  
+
   // TTL配置
   baseTTL: number;
   maxTTL: number;
   minTTL: number;
   adaptiveTTL: boolean;
-  
+
   // 性能配置
-  maxMemoryUsage: number;        // 最大内存使用（字节）
-  compressionThreshold: number;   // 压缩阈值（字节）
-  maxCacheSize: number;          // 最大缓存条目数
-  
+  maxMemoryUsage: number; // 最大内存使用（字节）
+  compressionThreshold: number; // 压缩阈值（字节）
+  maxCacheSize: number; // 最大缓存条目数
+
   // 预加载配置
   enablePreloading: boolean;
-  preloadThreshold: number;      // 预加载触发阈值
-  maxPreloadItems: number;       // 最大预加载项目数
-  preloadBatchSize: number;      // 预加载批次大小
-  
+  preloadThreshold: number; // 预加载触发阈值
+  maxPreloadItems: number; // 最大预加载项目数
+  preloadBatchSize: number; // 预加载批次大小
+
   // 智能优化配置
-  enableLearning: boolean;       // 启用机器学习优化
-  learningRate: number;          // 学习率
-  optimizationInterval: number;  // 优化间隔（毫秒）
-  
+  enableLearning: boolean; // 启用机器学习优化
+  learningRate: number; // 学习率
+  optimizationInterval: number; // 优化间隔（毫秒）
+
   // 监控配置
-  enableMetrics: boolean;        // 启用指标收集
-  metricsInterval: number;       // 指标收集间隔
+  enableMetrics: boolean; // 启用指标收集
+  metricsInterval: number; // 指标收集间隔
   alertThresholds: {
     hitRate: number;
     memoryUsage: number;
@@ -151,12 +151,12 @@ export interface PerformanceMetrics {
   preloadFailures: number;
   optimizationEvents: number;
   alertsTriggered: number;
-  
+
   // 分层统计
   l1Stats: CacheLevelStats;
   l2Stats: CacheLevelStats;
   l3Stats: CacheLevelStats;
-  
+
   // 时间序列数据
   hourlyStats: HourlyStats[];
   trends: TrendAnalysis;
@@ -213,7 +213,7 @@ export interface OptimizationRecommendation {
 
 /**
  * 类级注释：增强查询缓存策略优化器
- * 
+ *
  * 实现全面的查询缓存优化系统，提供：
  * - 多级缓存管理
  * - 智能策略选择
@@ -223,26 +223,26 @@ export interface OptimizationRecommendation {
  */
 export class EnhancedQueryCacheStrategy {
   private static instance: EnhancedQueryCacheStrategy;
-  
+
   // 核心组件
   private config: EnhancedCacheConfig;
   private queryOptimizer: QueryCacheOptimizer;
-  
+
   // 缓存层级
-  private l1Cache: Map<string, any> = new Map();           // 内存缓存
-  private l2Cache: Map<string, any> = new Map();           // 压缩缓存
-  private l3Cache: Map<string, any> = new Map();           // 持久化缓存
-  
+  private l1Cache: Map<string, any> = new Map(); // 内存缓存
+  private l2Cache: Map<string, any> = new Map(); // 压缩缓存
+  private l3Cache: Map<string, any> = new Map(); // 持久化缓存
+
   // 统计和监控
   private queryMetrics: Map<string, QueryMetrics> = new Map();
   private performanceMetrics: PerformanceMetrics;
   private hourlyStats: HourlyStats[] = [];
-  
+
   // 优化和学习
   private learningData: Map<string, any> = new Map();
   private optimizationHistory: any[] = [];
   private preloadQueue: Set<string> = new Set();
-  
+
   // 定时器
   private optimizationTimer: ReturnType<typeof setInterval> | null = null;
   private metricsTimer: ReturnType<typeof setInterval> | null = null;
@@ -255,39 +255,39 @@ export class EnhancedQueryCacheStrategy {
   private constructor(config?: Partial<EnhancedCacheConfig>) {
     this.config = {
       strategy: EnhancedCacheStrategy.ADAPTIVE_LEARNING,
-      
+
       // TTL配置
       baseTTL: 5 * 60 * 1000,
       maxTTL: 60 * 60 * 1000,
       minTTL: 30 * 1000,
       adaptiveTTL: true,
-      
+
       // 性能配置
-      maxMemoryUsage: 50 * 1024 * 1024,  // 50MB
-      compressionThreshold: 10 * 1024,    // 10KB
+      maxMemoryUsage: 50 * 1024 * 1024, // 50MB
+      compressionThreshold: 10 * 1024, // 10KB
       maxCacheSize: 2000,
-      
+
       // 预加载配置
       enablePreloading: true,
       preloadThreshold: 0.2,
       maxPreloadItems: 50,
       preloadBatchSize: 10,
-      
+
       // 智能优化配置
       enableLearning: true,
       learningRate: 0.1,
-      optimizationInterval: 5 * 60 * 1000,  // 5分钟
-      
+      optimizationInterval: 5 * 60 * 1000, // 5分钟
+
       // 监控配置
       enableMetrics: true,
-      metricsInterval: 30 * 1000,  // 30秒
+      metricsInterval: 30 * 1000, // 30秒
       alertThresholds: {
         hitRate: 0.7,
         memoryUsage: 0.8,
-        responseTime: 1000
+        responseTime: 1000,
       },
-      
-      ...config
+
+      ...config,
     };
 
     this.queryOptimizer = QueryCacheOptimizer.getInstance();
@@ -300,9 +300,13 @@ export class EnhancedQueryCacheStrategy {
   /**
    * 函数级注释：获取单例实例
    */
-  public static getInstance(config?: Partial<EnhancedCacheConfig>): EnhancedQueryCacheStrategy {
+  public static getInstance(
+    config?: Partial<EnhancedCacheConfig>
+  ): EnhancedQueryCacheStrategy {
     if (!EnhancedQueryCacheStrategy.instance) {
-      EnhancedQueryCacheStrategy.instance = new EnhancedQueryCacheStrategy(config);
+      EnhancedQueryCacheStrategy.instance = new EnhancedQueryCacheStrategy(
+        config
+      );
     }
     return EnhancedQueryCacheStrategy.instance;
   }
@@ -352,7 +356,10 @@ export class EnhancedQueryCacheStrategy {
    * 函数级注释：多级缓存获取
    * 从多级缓存中智能获取数据
    */
-  private async getFromMultiLevelCache<T>(key: string, preferredLevel: CacheLevel): Promise<T | null> {
+  private async getFromMultiLevelCache<T>(
+    key: string,
+    preferredLevel: CacheLevel
+  ): Promise<T | null> {
     // L1 内存缓存检查
     if (this.l1Cache.has(key)) {
       const entry = this.l1Cache.get(key);
@@ -419,34 +426,38 @@ export class EnhancedQueryCacheStrategy {
     const ttl = this.calculateIntelligentTTL(key, context);
 
     // 根据数据大小和访问模式决定存储策略
-    const storageStrategy = this.determineStorageStrategy(key, dataSize, context);
+    const storageStrategy = this.determineStorageStrategy(
+      key,
+      dataSize,
+      context
+    );
 
     switch (storageStrategy.level) {
       case CacheLevel.L1_MEMORY:
         this.storeInL1(key, data, ttl);
         break;
-      
+
       case CacheLevel.L2_COMPRESSED:
         this.storeInL2(key, data, ttl);
         break;
-      
+
       case CacheLevel.L3_PERSISTENT:
         this.storeInL3(key, data, ttl);
         break;
     }
 
     // 同时存储到优化查询缓存
-    await optimizedQueryCache.set(key, data, { 
-      ttl, 
+    await optimizedQueryCache.set(key, data, {
+      ttl,
       tags: context.tags,
-      priority: this.mapPriorityToNumber(context.priority)
+      priority: this.mapPriorityToNumber(context.priority),
     });
 
-    logger.debug('多级缓存存储完成', { 
-      key, 
-      level: storageStrategy.level, 
-      dataSize, 
-      ttl 
+    logger.debug('多级缓存存储完成', {
+      key,
+      level: storageStrategy.level,
+      dataSize,
+      ttl,
     });
   }
 
@@ -454,7 +465,10 @@ export class EnhancedQueryCacheStrategy {
    * 函数级注释：计算智能TTL
    * 基于多种因素计算最优TTL
    */
-  private calculateIntelligentTTL(key: string, context: EnhancedQueryContext): number {
+  private calculateIntelligentTTL(
+    key: string,
+    context: EnhancedQueryContext
+  ): number {
     if (!this.config.adaptiveTTL) {
       return context.customTTL || this.config.baseTTL;
     }
@@ -464,14 +478,19 @@ export class EnhancedQueryCacheStrategy {
 
     if (metrics) {
       // 基于命中率调整
-      const hitRateMultiplier = Math.max(0.5, Math.min(2.0, metrics.hitRate * 2));
+      const hitRateMultiplier = Math.max(
+        0.5,
+        Math.min(2.0, metrics.hitRate * 2)
+      );
       ttl *= hitRateMultiplier;
 
       // 基于访问频率调整
       const accessFrequency = this.calculateAccessFrequency(key);
-      if (accessFrequency > 10) { // 高频访问
+      if (accessFrequency > 10) {
+        // 高频访问
         ttl *= 1.5;
-      } else if (accessFrequency < 2) { // 低频访问
+      } else if (accessFrequency < 2) {
+        // 低频访问
         ttl *= 0.7;
       }
 
@@ -508,8 +527,8 @@ export class EnhancedQueryCacheStrategy {
    * 智能确定数据应该存储在哪个缓存级别
    */
   private determineStorageStrategy(
-    key: string, 
-    dataSize: number, 
+    key: string,
+    dataSize: number,
     context: EnhancedQueryContext
   ): { level: CacheLevel; compress: boolean } {
     const metrics = this.queryMetrics.get(key);
@@ -543,7 +562,7 @@ export class EnhancedQueryCacheStrategy {
       createdAt: Date.now(),
       expiresAt: Date.now() + ttl,
       accessCount: 1,
-      lastAccess: Date.now()
+      lastAccess: Date.now(),
     });
   }
 
@@ -552,14 +571,14 @@ export class EnhancedQueryCacheStrategy {
    */
   private storeInL2<T>(key: string, data: T, ttl: number): void {
     const compressedData = this.compress(data);
-    
+
     this.l2Cache.set(key, {
       data: compressedData,
       createdAt: Date.now(),
       expiresAt: Date.now() + ttl,
       accessCount: 1,
       lastAccess: Date.now(),
-      compressed: true
+      compressed: true,
     });
   }
 
@@ -572,7 +591,7 @@ export class EnhancedQueryCacheStrategy {
       createdAt: Date.now(),
       expiresAt: Date.now() + ttl * 2, // L3缓存TTL更长
       accessCount: 1,
-      lastAccess: Date.now()
+      lastAccess: Date.now(),
     });
   }
 
@@ -580,16 +599,23 @@ export class EnhancedQueryCacheStrategy {
    * 函数级注释：预测性预加载
    * 基于访问模式预测并预加载数据
    */
-  private async triggerPreloadIfNeeded(context: EnhancedQueryContext): Promise<void> {
-    if (!this.config.enablePreloading || this.preloadQueue.size >= this.config.maxPreloadItems) {
+  private async triggerPreloadIfNeeded(
+    context: EnhancedQueryContext
+  ): Promise<void> {
+    if (
+      !this.config.enablePreloading ||
+      this.preloadQueue.size >= this.config.maxPreloadItems
+    ) {
       return;
     }
 
     const predictions = this.generatePreloadPredictions(context.key);
-    
+
     for (const prediction of predictions) {
-      if (prediction.probability > this.config.preloadThreshold && 
-          !this.preloadQueue.has(prediction.key)) {
+      if (
+        prediction.probability > this.config.preloadThreshold &&
+        !this.preloadQueue.has(prediction.key)
+      ) {
         this.preloadQueue.add(prediction.key);
         this.schedulePreload(prediction);
       }
@@ -600,29 +626,41 @@ export class EnhancedQueryCacheStrategy {
    * 函数级注释：生成预加载预测
    * 基于机器学习算法生成预加载预测
    */
-  private generatePreloadPredictions(baseKey: string): Array<{ key: string; probability: number }> {
+  private generatePreloadPredictions(
+    baseKey: string
+  ): Array<{ key: string; probability: number }> {
     const predictions: Array<{ key: string; probability: number }> = [];
-    
+
     // 基于历史访问模式的简单预测算法
     const relatedKeys = this.findRelatedKeys(baseKey);
-    
+
     for (const relatedKey of relatedKeys) {
       const metrics = this.queryMetrics.get(relatedKey);
       if (metrics) {
-        const probability = this.calculatePreloadProbability(baseKey, relatedKey, metrics);
+        const probability = this.calculatePreloadProbability(
+          baseKey,
+          relatedKey,
+          metrics
+        );
         if (probability > 0.1) {
           predictions.push({ key: relatedKey, probability });
         }
       }
     }
 
-    return predictions.sort((a, b) => b.probability - a.probability).slice(0, 10);
+    return predictions
+      .sort((a, b) => b.probability - a.probability)
+      .slice(0, 10);
   }
 
   /**
    * 函数级注释：计算预加载概率
    */
-  private calculatePreloadProbability(baseKey: string, targetKey: string, metrics: QueryMetrics): number {
+  private calculatePreloadProbability(
+    baseKey: string,
+    targetKey: string,
+    metrics: QueryMetrics
+  ): number {
     // 简化的概率计算
     let probability = 0;
 
@@ -662,7 +700,7 @@ export class EnhancedQueryCacheStrategy {
 
     // 分析性能指标
     const recommendations = this.analyzePerformanceAndGenerateRecommendations();
-    
+
     // 应用优化建议
     for (const recommendation of recommendations) {
       if (recommendation.priority === 'high') {
@@ -672,18 +710,18 @@ export class EnhancedQueryCacheStrategy {
 
     // 清理过期缓存
     this.cleanupExpiredEntries();
-    
+
     // 优化内存使用
     this.optimizeMemoryUsage();
-    
+
     // 更新学习数据
     if (this.config.enableLearning) {
       this.updateLearningData();
     }
 
-    logger.info('缓存优化完成', { 
+    logger.info('缓存优化完成', {
       recommendations: recommendations.length,
-      memoryUsage: this.getCurrentMemoryUsage()
+      memoryUsage: this.getCurrentMemoryUsage(),
     });
   }
 
@@ -716,16 +754,37 @@ export class EnhancedQueryCacheStrategy {
       preloadFailures: 0,
       optimizationEvents: 0,
       alertsTriggered: 0,
-      l1Stats: { hits: 0, misses: 0, hitRate: 0, avgResponseTime: 0, memoryUsage: 0, itemCount: 0 },
-      l2Stats: { hits: 0, misses: 0, hitRate: 0, avgResponseTime: 0, memoryUsage: 0, itemCount: 0 },
-      l3Stats: { hits: 0, misses: 0, hitRate: 0, avgResponseTime: 0, memoryUsage: 0, itemCount: 0 },
+      l1Stats: {
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        avgResponseTime: 0,
+        memoryUsage: 0,
+        itemCount: 0,
+      },
+      l2Stats: {
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        avgResponseTime: 0,
+        memoryUsage: 0,
+        itemCount: 0,
+      },
+      l3Stats: {
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        avgResponseTime: 0,
+        memoryUsage: 0,
+        itemCount: 0,
+      },
       hourlyStats: [],
       trends: {
         hitRateTrend: 'stable',
         memoryTrend: 'stable',
         performanceTrend: 'stable',
-        recommendations: []
-      }
+        recommendations: [],
+      },
     };
   }
 
@@ -765,10 +824,13 @@ export class EnhancedQueryCacheStrategy {
   private calculateAccessFrequency(key: string): number {
     const metrics = this.queryMetrics.get(key);
     if (!metrics) return 0;
-    
+
     const timeWindow = 60 * 1000; // 1分钟
     const now = Date.now();
-    return metrics.totalRequests / Math.max(1, (now - (metrics.lastAccess - timeWindow)) / timeWindow);
+    return (
+      metrics.totalRequests /
+      Math.max(1, (now - (metrics.lastAccess - timeWindow)) / timeWindow)
+    );
   }
 
   private getCurrentMemoryUsage(): number {
@@ -791,21 +853,35 @@ export class EnhancedQueryCacheStrategy {
 
   private mapPriorityToNumber(priority: QueryPriority): number {
     switch (priority) {
-      case QueryPriority.CRITICAL: return 5;
-      case QueryPriority.HIGH: return 4;
-      case QueryPriority.NORMAL: return 3;
-      case QueryPriority.LOW: return 2;
-      case QueryPriority.BACKGROUND: return 1;
-      default: return 3;
+      case QueryPriority.CRITICAL:
+        return 5;
+      case QueryPriority.HIGH:
+        return 4;
+      case QueryPriority.NORMAL:
+        return 3;
+      case QueryPriority.LOW:
+        return 2;
+      case QueryPriority.BACKGROUND:
+        return 1;
+      default:
+        return 3;
     }
   }
 
   // 占位符方法，需要完整实现
-  private recordCacheHit(key: string, responseTime: number, level: CacheLevel): void {
+  private recordCacheHit(
+    key: string,
+    responseTime: number,
+    level: CacheLevel
+  ): void {
     // 实现缓存命中记录
   }
 
-  private recordCacheMiss(key: string, responseTime: number, level: CacheLevel): void {
+  private recordCacheMiss(
+    key: string,
+    responseTime: number,
+    level: CacheLevel
+  ): void {
     // 实现缓存未命中记录
   }
 
@@ -813,7 +889,12 @@ export class EnhancedQueryCacheStrategy {
     // 实现查询错误记录
   }
 
-  private updateQueryMetrics(key: string, context: EnhancedQueryContext, responseTime: number, result: any): void {
+  private updateQueryMetrics(
+    key: string,
+    context: EnhancedQueryContext,
+    responseTime: number,
+    result: any
+  ): void {
     // 实现查询指标更新
   }
 
@@ -830,7 +911,11 @@ export class EnhancedQueryCacheStrategy {
     return false;
   }
 
-  private storeInAppropriateLevel(key: string, data: any, preferredLevel: CacheLevel): void {
+  private storeInAppropriateLevel(
+    key: string,
+    data: any,
+    preferredLevel: CacheLevel
+  ): void {
     // 实现适当级别存储逻辑
   }
 
@@ -838,7 +923,10 @@ export class EnhancedQueryCacheStrategy {
     // 实现L1淘汰逻辑
   }
 
-  private schedulePreload(prediction: { key: string; probability: number }): void {
+  private schedulePreload(prediction: {
+    key: string;
+    probability: number;
+  }): void {
     // 实现预加载调度逻辑
   }
 
@@ -891,10 +979,14 @@ export class EnhancedQueryCacheStrategy {
  * 函数级注释：增强查询缓存策略Hook
  * React Hook，用于在组件中使用增强查询缓存策略
  */
-export function useEnhancedQueryCacheStrategy(config?: Partial<EnhancedCacheConfig>) {
+export function useEnhancedQueryCacheStrategy(
+  config?: Partial<EnhancedCacheConfig>
+) {
   const strategy = EnhancedQueryCacheStrategy.getInstance(config);
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
-  const [recommendations, setRecommendations] = useState<OptimizationRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<
+    OptimizationRecommendation[]
+  >([]);
 
   // 定期更新指标
   useEffect(() => {
@@ -910,7 +1002,10 @@ export function useEnhancedQueryCacheStrategy(config?: Partial<EnhancedCacheConf
   }, [strategy]);
 
   const executeQuery = useCallback(
-    async <T>(context: EnhancedQueryContext, queryFn: () => Promise<T>): Promise<T> => {
+    async <T>(
+      context: EnhancedQueryContext,
+      queryFn: () => Promise<T>
+    ): Promise<T> => {
       return strategy.executeQuery(context, queryFn);
     },
     [strategy]
@@ -921,9 +1016,11 @@ export function useEnhancedQueryCacheStrategy(config?: Partial<EnhancedCacheConf
     metrics,
     recommendations,
     getPerformanceMetrics: strategy.getPerformanceMetrics.bind(strategy),
-    getOptimizationRecommendations: strategy.getOptimizationRecommendations.bind(strategy)
+    getOptimizationRecommendations:
+      strategy.getOptimizationRecommendations.bind(strategy),
   };
 }
 
 // 导出单例实例
-export const enhancedQueryCacheStrategy = EnhancedQueryCacheStrategy.getInstance();
+export const enhancedQueryCacheStrategy =
+  EnhancedQueryCacheStrategy.getInstance();

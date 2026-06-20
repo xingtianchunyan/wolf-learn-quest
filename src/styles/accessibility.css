@@ -51,7 +51,9 @@
 .focus-indicators *:focus {
   outline: 3px solid hsl(var(--primary));
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 5px hsl(var(--primary));
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 5px hsl(var(--primary));
 }
 
 .focus-indicators button:focus,
@@ -76,18 +78,18 @@
 
 /* 大点击区域 */
 .large-click-areas button,
-.large-click-areas [role="button"],
-.large-click-areas input[type="checkbox"],
-.large-click-areas input[type="radio"] {
+.large-click-areas [role='button'],
+.large-click-areas input[type='checkbox'],
+.large-click-areas input[type='radio'] {
   min-height: 44px;
   min-width: 44px;
   padding: 8px 16px;
 }
 
 .extra-large-click-areas button,
-.extra-large-click-areas [role="button"],
-.extra-large-click-areas input[type="checkbox"],
-.extra-large-click-areas input[type="radio"] {
+.extra-large-click-areas [role='button'],
+.extra-large-click-areas input[type='checkbox'],
+.extra-large-click-areas input[type='radio'] {
   min-height: 56px;
   min-width: 56px;
   padding: 12px 24px;
@@ -146,9 +148,9 @@
 }
 
 /* 可访问的下拉菜单 */
-[role="menuitem"]:focus,
-[role="menuitemcheckbox"]:focus,
-[role="menuitemradio"]:focus {
+[role='menuitem']:focus,
+[role='menuitemcheckbox']:focus,
+[role='menuitemradio']:focus {
   background-color: hsl(var(--accent));
   color: hsl(var(--accent-foreground));
 }
@@ -182,19 +184,19 @@
 }
 
 /* 无障碍表格 */
-table[role="table"] {
+table[role='table'] {
   border-collapse: collapse;
   width: 100%;
 }
 
-table[role="table"] th,
-table[role="table"] td {
+table[role='table'] th,
+table[role='table'] td {
   border: 1px solid hsl(var(--border));
   padding: 8px;
   text-align: left;
 }
 
-table[role="table"] th {
+table[role='table'] th {
   background-color: hsl(var(--muted));
   font-weight: bold;
 }
@@ -223,13 +225,13 @@ table[role="table"] th {
 }
 
 /* 进度指示器增强 */
-[role="progressbar"] {
+[role='progressbar'] {
   background-color: hsl(var(--muted));
   border-radius: 4px;
   overflow: hidden;
 }
 
-[role="progressbar"]::before {
+[role='progressbar']::before {
   content: attr(aria-valuenow) '%';
   position: absolute;
   top: 50%;
@@ -241,28 +243,28 @@ table[role="table"] th {
 }
 
 /* 通知区域 */
-[role="alert"],
-[role="status"] {
+[role='alert'],
+[role='status'] {
   padding: 12px;
   border-radius: 4px;
   border: 2px solid;
   margin: 8px 0;
 }
 
-[role="alert"] {
+[role='alert'] {
   border-color: hsl(var(--destructive));
   background-color: hsl(var(--destructive) / 0.1);
   color: hsl(var(--destructive));
 }
 
-[role="status"] {
+[role='status'] {
   border-color: hsl(var(--primary));
   background-color: hsl(var(--primary) / 0.1);
   color: hsl(var(--primary));
 }
 
 /* 模态对话框增强 */
-[role="dialog"] {
+[role='dialog'] {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -277,7 +279,7 @@ table[role="table"] th {
   overflow: auto;
 }
 
-[role="dialog"] + .dialog-backdrop {
+[role='dialog'] + .dialog-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -285,7 +287,7 @@ table[role="table"] th {
 }
 
 /* 工具提示增强 */
-[role="tooltip"] {
+[role='tooltip'] {
   position: absolute;
   background: hsl(var(--popover));
   color: hsl(var(--popover-foreground));
@@ -299,12 +301,12 @@ table[role="table"] th {
 }
 
 /* 标签页增强 */
-[role="tablist"] {
+[role='tablist'] {
   display: flex;
   border-bottom: 2px solid hsl(var(--border));
 }
 
-[role="tab"] {
+[role='tab'] {
   padding: 8px 16px;
   border: none;
   background: none;
@@ -312,17 +314,17 @@ table[role="table"] th {
   border-bottom: 2px solid transparent;
 }
 
-[role="tab"][aria-selected="true"] {
+[role='tab'][aria-selected='true'] {
   border-bottom-color: hsl(var(--primary));
   color: hsl(var(--primary));
   font-weight: 500;
 }
 
-[role="tab"]:hover {
+[role='tab']:hover {
   background-color: hsl(var(--muted));
 }
 
-[role="tabpanel"] {
+[role='tabpanel'] {
   padding: 16px 0;
 }
 
@@ -346,15 +348,15 @@ table[role="table"] th {
   html {
     font-size: 18px;
   }
-  
+
   .large-click-areas button,
-  .large-click-areas [role="button"] {
+  .large-click-areas [role='button'] {
     min-height: 48px;
     min-width: 48px;
   }
-  
+
   .extra-large-click-areas button,
-  .extra-large-click-areas [role="button"] {
+  .extra-large-click-areas [role='button'] {
     min-height: 60px;
     min-width: 60px;
   }

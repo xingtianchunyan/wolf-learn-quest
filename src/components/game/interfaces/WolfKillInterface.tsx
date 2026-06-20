@@ -11,25 +11,27 @@ interface WolfKillInterfaceProps {
 
 const WolfKillInterface: React.FC<WolfKillInterfaceProps> = ({
   onKill,
-  availablePlayers
+  availablePlayers,
 }) => {
   return (
-    <Card className="bg-werewolf-dark/40 border-werewolf-purple/30">
+    <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Skull className="w-4 h-4 text-red-400" />
+        <CardTitle className='flex items-center gap-2'>
+          <Skull className='w-4 h-4 text-red-400' />
           狼人击杀
-          <Badge variant="outline" className="text-red-400">狼人技能</Badge>
+          <Badge variant='outline' className='text-red-400'>
+            狼人技能
+          </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className='space-y-2'>
         {availablePlayers.map(player => (
           <Button
             key={player.userId}
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onKill(player.userId)}
-            className="w-full justify-start text-red-400 border-red-400"
+            className='w-full justify-start text-red-400 border-red-400'
           >
             击杀 {player.name}
           </Button>

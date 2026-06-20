@@ -10,7 +10,7 @@ import {
   mapChatTypeToUI,
   getCompatibleChatTypes,
   canAccessWerewolfChannel,
-  WEREWOLF_ROLES
+  WEREWOLF_ROLES,
 } from '../roleUtils';
 
 describe('roleUtils', () => {
@@ -130,9 +130,18 @@ describe('roleUtils', () => {
     it('should prioritize RoleDesign faction over role name', () => {
       const wolfRoleDesign = { faction: true };
       const villagerRoleDesign = { faction: false };
-      
-      expect(canSeeTargetRole('villager', 'villager', wolfRoleDesign, wolfRoleDesign)).toBe(true);
-      expect(canSeeTargetRole('werewolf', 'werewolf', villagerRoleDesign, villagerRoleDesign)).toBe(false);
+
+      expect(
+        canSeeTargetRole('villager', 'villager', wolfRoleDesign, wolfRoleDesign)
+      ).toBe(true);
+      expect(
+        canSeeTargetRole(
+          'werewolf',
+          'werewolf',
+          villagerRoleDesign,
+          villagerRoleDesign
+        )
+      ).toBe(false);
     });
   });
 
@@ -193,9 +202,11 @@ describe('roleUtils', () => {
     it('should prioritize RoleDesign over role name', () => {
       const wolfRoleDesign = { faction: true };
       const villagerRoleDesign = { faction: false };
-      
+
       expect(canAccessWerewolfChannel('villager', wolfRoleDesign)).toBe(true);
-      expect(canAccessWerewolfChannel('werewolf', villagerRoleDesign)).toBe(false);
+      expect(canAccessWerewolfChannel('werewolf', villagerRoleDesign)).toBe(
+        false
+      );
     });
 
     it('should handle undefined role', () => {
@@ -205,7 +216,12 @@ describe('roleUtils', () => {
 
   describe('constants', () => {
     it('should have correct WEREWOLF_ROLES', () => {
-      expect(WEREWOLF_ROLES).toEqual(['werewolf', 'werewolf_1', 'werewolf_2', 'whitewolf']);
+      expect(WEREWOLF_ROLES).toEqual([
+        'werewolf',
+        'werewolf_1',
+        'werewolf_2',
+        'whitewolf',
+      ]);
     });
   });
 });

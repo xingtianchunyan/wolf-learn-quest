@@ -7,23 +7,23 @@ export enum ErrorCode {
   AUTH_REQUIRED = 'AUTH_REQUIRED',
   AUTH_FAILED = 'AUTH_FAILED',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
-  
+
   // 数据相关
   DATA_NOT_FOUND = 'DATA_NOT_FOUND',
   DATA_INVALID = 'DATA_INVALID',
   DATA_CONFLICT = 'DATA_CONFLICT',
-  
+
   // 网络相关
   NETWORK_ERROR = 'NETWORK_ERROR',
   API_ERROR = 'API_ERROR',
-  
+
   // 业务逻辑
   GAME_ERROR = 'GAME_ERROR',
   SKILL_ERROR = 'SKILL_ERROR',
   VOTE_ERROR = 'VOTE_ERROR',
-  
+
   // 系统错误
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 export class AppError extends Error {
@@ -59,7 +59,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.GAME_ERROR]: '游戏操作失败',
   [ErrorCode.SKILL_ERROR]: '技能使用失败',
   [ErrorCode.VOTE_ERROR]: '投票操作失败',
-  [ErrorCode.UNKNOWN_ERROR]: '未知错误'
+  [ErrorCode.UNKNOWN_ERROR]: '未知错误',
 };
 
 /**
@@ -69,20 +69,20 @@ export const getErrorMessage = (error: Error | AppError): string => {
   if (error instanceof AppError) {
     return ERROR_MESSAGES[error.code] || error.message;
   }
-  
+
   // Supabase 错误处理
   if (error.message.includes('JWT')) {
     return ERROR_MESSAGES[ErrorCode.AUTH_REQUIRED];
   }
-  
+
   if (error.message.includes('permission')) {
     return ERROR_MESSAGES[ErrorCode.PERMISSION_DENIED];
   }
-  
+
   if (error.message.includes('network') || error.message.includes('fetch')) {
     return ERROR_MESSAGES[ErrorCode.NETWORK_ERROR];
   }
-  
+
   return error.message || ERROR_MESSAGES[ErrorCode.UNKNOWN_ERROR];
 };
 
@@ -96,13 +96,13 @@ export const logError = (error: Error | AppError, context?: string): void => {
     details: error instanceof AppError ? error.details : undefined,
     context,
     timestamp: new Date().toISOString(),
-    stack: error.stack
+    stack: error.stack,
   };
-  
+
   if (process.env.NODE_ENV === 'development') {
     console.error('[Error]', errorInfo);
   }
-  
+
   // 在生产环境中，这里可以发送到错误监控服务
   // 例如 Sentry, LogRocket 等
 };
@@ -118,14 +118,15 @@ export const withErrorHandler = <T extends any[], R>(
     try {
       return await fn(...args);
     } catch (error) {
-      const appError = error instanceof AppError 
-        ? error 
-        : new AppError(
-            error instanceof Error ? error.message : 'Unknown error',
-            ErrorCode.UNKNOWN_ERROR,
-            error
-          );
-      
+      const appError =
+        error instanceof AppError
+          ? error
+          : new AppError(
+              error instanceof Error ? error.message : 'Unknown error',
+              ErrorCode.UNKNOWN_ERROR,
+              error
+            );
+
       logError(appError, context);
       throw appError;
     }
@@ -138,7 +139,9 @@ import React from 'react';
  * React 错误边界工具
  */
 
-export const createErrorBoundary = (fallbackComponent: React.ComponentType<{ error: Error }>) => {
+export const createErrorBoundary = (
+  fallbackComponent: React.ComponentType<{ error: Error }>
+) => {
   return class ErrorBoundary extends React.Component<
     { children: React.ReactNode },
     { hasError: boolean; error?: Error }
@@ -158,7 +161,9 @@ export const createErrorBoundary = (fallbackComponent: React.ComponentType<{ err
 
     render() {
       if (this.state.hasError && this.state.error) {
-        return React.createElement(fallbackComponent, { error: this.state.error });
+        return React.createElement(fallbackComponent, {
+          error: this.state.error,
+        });
       }
 
       return this.props.children;

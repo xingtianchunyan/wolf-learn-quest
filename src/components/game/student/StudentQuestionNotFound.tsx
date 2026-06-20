@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface StudentQuestionNotFoundProps {
@@ -12,13 +11,13 @@ const StudentQuestionNotFound: React.FC<StudentQuestionNotFoundProps> = ({
   roundNumber,
   phaseName,
   expectedQuestionIndex,
-  totalQuestions
+  totalQuestions,
 }) => {
   return (
-    <div className="text-center text-red-400 py-8">
-      <div className="p-4 bg-red-900/20 rounded-md border border-red-500/30">
-        <h3 className="font-semibold mb-2">题目加载失败</h3>
-        <p className="text-sm">
+    <div className='text-center text-red-400 py-8'>
+      <div className='p-4 bg-red-900/20 rounded-md border border-red-500/30'>
+        <h3 className='font-semibold mb-2'>题目加载失败</h3>
+        <p className='text-sm'>
           当前阶段（第{roundNumber}轮{phaseName}）的题目未找到。
           <br />
           期望题目序号：{expectedQuestionIndex + 1} (总题目数: {totalQuestions})

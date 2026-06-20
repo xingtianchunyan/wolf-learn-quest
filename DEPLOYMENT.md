@@ -6,22 +6,22 @@
 
 ## 一、本周修复摘要（P0 + 部分 P1）
 
-| 编号 | 修复项 | 状态 |
-|------|--------|------|
-| P0-1 | 补齐 7 个幻觉文件引用（`skillConfigs.ts`、`types/game.ts`、`ChatMessage.ts`、`ChatChannelSelector.ts`、`enhancedUserErrorInterface.ts`、`performanceCriticalFixes.ts`、`SkillSystemMonitor.tsx`） | ✅ |
-| P0-2 | `src/integrations/supabase/client.ts` 改为读取环境变量 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`，移除硬编码 Anon Key | ✅ |
-| P0-3 | 两个 Edge Function（`generate-questions`、`process-voting-result`）CORS 由通配符 `*` 改为白名单 | ✅ |
-| P0-4 | 从 `index.html` 移除 Lovable 第三方脚本 `cdn.gpteng.co/gptengineer.js` | ✅ |
-| P0-5 | 删除 3 个引用不存在模块（`performanceCriticalFixes`、`optimizedRenderingSystem`）的测试文件 | ✅ |
-| P0-6 | 整理 `package.json`：测试/构建依赖移到 `devDependencies`，版本号规范为 `1.0.0` | ✅ |
-| P0-7 | `Dockerfile` 中 `npm ci --only=production` 改为 `npm ci` | ✅ |
-| P0-8 | 构建验证通过：`npm ci && npm run build && npm run type-check && npm run lint` | ✅ |
-| P1-9 | 角色图片本地化：`public/lovable-uploads/*.png` 复制到 `public/images/roles/`，`useRoleDesigns.ts` 路径改为 `/images/roles/` | ✅ |
-| P1-10 | Keep-alive：Vite 配置中写入 `public/health` 为 `{"status":"ok"}` | ✅ |
-| P1-11 | 清理 `src/` 下约 120 处生产环境 `console.log`（保留 `console.error` / `console.warn` 用于排错） | ✅ |
-| P1-12 | 34 个文件中的 `NodeJS.Timeout` 全局替换为 `ReturnType<typeof setInterval>` | ✅ |
-| P1-13 | 删除死代码：`src/middleware/`、`netlify.toml`、`ecosystem.config.js`、`docker-compose.yml` | ✅ |
-| P1-14 | ESLint 配置精简：关闭与历史代码冲突的严格规则，保留基础安全规则 | ✅ |
+| 编号  | 修复项                                                                                                                                                                                            | 状态 |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| P0-1  | 补齐 7 个幻觉文件引用（`skillConfigs.ts`、`types/game.ts`、`ChatMessage.ts`、`ChatChannelSelector.ts`、`enhancedUserErrorInterface.ts`、`performanceCriticalFixes.ts`、`SkillSystemMonitor.tsx`） | ✅   |
+| P0-2  | `src/integrations/supabase/client.ts` 改为读取环境变量 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`，移除硬编码 Anon Key                                                                        | ✅   |
+| P0-3  | 两个 Edge Function（`generate-questions`、`process-voting-result`）CORS 由通配符 `*` 改为白名单                                                                                                   | ✅   |
+| P0-4  | 从 `index.html` 移除 Lovable 第三方脚本 `cdn.gpteng.co/gptengineer.js`                                                                                                                            | ✅   |
+| P0-5  | 删除 3 个引用不存在模块（`performanceCriticalFixes`、`optimizedRenderingSystem`）的测试文件                                                                                                       | ✅   |
+| P0-6  | 整理 `package.json`：测试/构建依赖移到 `devDependencies`，版本号规范为 `1.0.0`                                                                                                                    | ✅   |
+| P0-7  | `Dockerfile` 中 `npm ci --only=production` 改为 `npm ci`                                                                                                                                          | ✅   |
+| P0-8  | 构建验证通过：`npm ci && npm run build && npm run type-check && npm run lint`                                                                                                                     | ✅   |
+| P1-9  | 角色图片本地化：`public/lovable-uploads/*.png` 复制到 `public/images/roles/`，`useRoleDesigns.ts` 路径改为 `/images/roles/`                                                                       | ✅   |
+| P1-10 | Keep-alive：Vite 配置中写入 `public/health` 为 `{"status":"ok"}`                                                                                                                                  | ✅   |
+| P1-11 | 清理 `src/` 下约 120 处生产环境 `console.log`（保留 `console.error` / `console.warn` 用于排错）                                                                                                   | ✅   |
+| P1-12 | 34 个文件中的 `NodeJS.Timeout` 全局替换为 `ReturnType<typeof setInterval>`                                                                                                                        | ✅   |
+| P1-13 | 删除死代码：`src/middleware/`、`netlify.toml`、`ecosystem.config.js`、`docker-compose.yml`                                                                                                        | ✅   |
+| P1-14 | ESLint 配置精简：关闭与历史代码冲突的严格规则，保留基础安全规则                                                                                                                                   | ✅   |
 
 ---
 
@@ -48,9 +48,9 @@ npm run build
 
 在 **Vercel Dashboard → Project Settings → Environment Variables** 中添加：
 
-| 变量名 | 来源 | 说明 |
-|--------|------|------|
-| `VITE_SUPABASE_URL` | Supabase Project Settings → API → Project URL | 必需 |
+| 变量名                   | 来源                                                               | 说明 |
+| ------------------------ | ------------------------------------------------------------------ | ---- |
+| `VITE_SUPABASE_URL`      | Supabase Project Settings → API → Project URL                      | 必需 |
 | `VITE_SUPABASE_ANON_KEY` | Supabase Project Settings → API → Project API keys → `anon public` | 必需 |
 
 > 注意：Vite 打包时只会把以 `VITE_` 开头的环境变量注入到前端代码中，因此 key 名必须保持 `VITE_SUPABASE_*`。
@@ -72,7 +72,7 @@ npm run build
 const ALLOWED_ORIGINS = [
   'https://wolf-learn-quest.vercel.app',
   'http://localhost:5173',
-  'http://localhost:8080'
+  'http://localhost:8080',
 ];
 ```
 
@@ -112,12 +112,12 @@ supabase functions deploy process-voting-result
 
 Vercel 通常会自动识别 Vite 项目，请检查以下设置：
 
-| 设置项 | 值 |
-|--------|-----|
-| Framework Preset | Vite |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Install Command | `npm ci` |
+| 设置项           | 值              |
+| ---------------- | --------------- |
+| Framework Preset | Vite            |
+| Build Command    | `npm run build` |
+| Output Directory | `dist`          |
+| Install Command  | `npm ci`        |
 
 ### 5.3 环境变量
 
@@ -183,31 +183,31 @@ Vercel Hobby 和 Supabase Free 都会因无流量进入休眠：
 
 ### 8.2 第二周建议任务
 
-| 优先级 | 任务 |
-|--------|------|
-| P1 | 合并重复的错误处理系统（`unifiedErrorHandler.ts` vs `unifiedErrorSystem.ts`） |
-| P1 | 修复/重写 `useVotingSystem` 与 `unifiedErrorSystem` 相关测试 |
-| P1 | 接入真 AI 玩家与法官逻辑（当前为占位实现） |
-| P1 | 实现 PDF 导出功能 |
-| P2 | 按路由做 code-splitting，优化首屏加载 |
-| P2 | 收紧 ESLint 规则并逐文件修复 |
-| P2 | 接入 Sentry / LogRocket 做线上错误监控 |
-| P2 | 补充 E2E 测试（Playwright） |
+| 优先级 | 任务                                                                          |
+| ------ | ----------------------------------------------------------------------------- |
+| P1     | 合并重复的错误处理系统（`unifiedErrorHandler.ts` vs `unifiedErrorSystem.ts`） |
+| P1     | 修复/重写 `useVotingSystem` 与 `unifiedErrorSystem` 相关测试                  |
+| P1     | 接入真 AI 玩家与法官逻辑（当前为占位实现）                                    |
+| P1     | 实现 PDF 导出功能                                                             |
+| P2     | 按路由做 code-splitting，优化首屏加载                                         |
+| P2     | 收紧 ESLint 规则并逐文件修复                                                  |
+| P2     | 接入 Sentry / LogRocket 做线上错误监控                                        |
+| P2     | 补充 E2E 测试（Playwright）                                                   |
 
 ---
 
 ## 九、关键文件索引
 
-| 文件 | 说明 |
-|------|------|
-| `src/integrations/supabase/client.ts` | Supabase 客户端，环境变量驱动 |
-| `supabase/functions/generate-questions/index.ts` | 题目生成 Edge Function |
-| `supabase/functions/process-voting-result/index.ts` | 投票结果处理 Edge Function |
-| `package.json` | 依赖与脚本 |
-| `Dockerfile` | 容器构建 |
-| `public/images/roles/` | 角色图片本地目录 |
-| `vite.config.ts` | Vite 配置，含 `public/health` 生成插件 |
-| `eslint.config.js` | ESLint 配置 |
+| 文件                                                | 说明                                   |
+| --------------------------------------------------- | -------------------------------------- |
+| `src/integrations/supabase/client.ts`               | Supabase 客户端，环境变量驱动          |
+| `supabase/functions/generate-questions/index.ts`    | 题目生成 Edge Function                 |
+| `supabase/functions/process-voting-result/index.ts` | 投票结果处理 Edge Function             |
+| `package.json`                                      | 依赖与脚本                             |
+| `Dockerfile`                                        | 容器构建                               |
+| `public/images/roles/`                              | 角色图片本地目录                       |
+| `vite.config.ts`                                    | Vite 配置，含 `public/health` 生成插件 |
+| `eslint.config.js`                                  | ESLint 配置                            |
 
 ---
 
@@ -222,4 +222,4 @@ Vercel Hobby 和 Supabase Free 都会因无流量进入休眠：
 
 ---
 
-*文档生成时间：2026-06-19*
+_文档生成时间：2026-06-19_

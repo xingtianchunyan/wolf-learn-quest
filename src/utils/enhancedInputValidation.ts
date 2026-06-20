@@ -1,20 +1,20 @@
 /**
  * 文件级注释：增强输入验证系统
- * 
+ *
  * 该文件实现了一个全面的输入验证系统，旨在：
  * - 提供多层输入验证和清理
  * - 防护XSS、SQL注入等安全威胁
  * - 支持自定义验证规则和模式
  * - 实现智能数据类型检测和转换
  * - 提供详细的验证错误信息
- * 
+ *
  * 主要功能：
  * - 数据类型验证
  * - 格式验证（邮箱、电话、URL等）
  * - 安全过滤和清理
  * - 文件上传验证
  * - 自定义验证规则
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -41,7 +41,7 @@ export enum ValidationRuleType {
   CUSTOM = 'custom',
   FILE = 'file',
   ARRAY = 'array',
-  OBJECT = 'object'
+  OBJECT = 'object',
 }
 
 /**
@@ -60,7 +60,7 @@ export enum DataType {
   ARRAY = 'array',
   OBJECT = 'object',
   FILE = 'file',
-  JSON = 'json'
+  JSON = 'json',
 }
 
 /**
@@ -77,7 +77,10 @@ export interface ValidationRule {
   /** 是否必需 */
   required?: boolean;
   /** 自定义验证函数 */
-  validator?: (value: any, context?: ValidationContext) => boolean | Promise<boolean>;
+  validator?: (
+    value: any,
+    context?: ValidationContext
+  ) => boolean | Promise<boolean>;
 }
 
 /**
@@ -132,7 +135,10 @@ export interface ValidationConfig {
     strictMode?: boolean;
   };
   /** 自定义验证器 */
-  customValidators?: Record<string, (value: any, context?: ValidationContext) => boolean | Promise<boolean>>;
+  customValidators?: Record<
+    string,
+    (value: any, context?: ValidationContext) => boolean | Promise<boolean>
+  >;
 }
 
 /**
@@ -228,7 +234,7 @@ export interface FileValidationConfig {
 
 /**
  * 类级注释：增强输入验证器
- * 
+ *
  * 实现全面的输入验证，提供：
  * - 多层验证机制
  * - 安全过滤清理
@@ -251,7 +257,7 @@ export class EnhancedInputValidator {
   private constructor() {
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.globalErrorMonitor = GlobalErrorMonitor.getInstance();
-    
+
     this.initializeSecurityPatterns();
     this.initializeCustomValidators();
     this.startCacheCleanup();
@@ -286,7 +292,7 @@ export class EnhancedInputValidator {
       /<meta\b[^>]*>/gi,
       /expression\s*\(/gi,
       /url\s*\(/gi,
-      /@import/gi
+      /@import/gi,
     ]);
 
     // SQL注入模式
@@ -298,19 +304,19 @@ export class EnhancedInputValidator {
       /(\b(SLEEP|BENCHMARK|WAITFOR)\b)/gi,
       /(\b(CHAR|ASCII|SUBSTRING|LENGTH|USER|DATABASE|VERSION)\b)/gi,
       /(UNION\s+(ALL\s+)?SELECT)/gi,
-      /(INTO\s+(OUT|DUMP)FILE)/gi
+      /(INTO\s+(OUT|DUMP)FILE)/gi,
     ]);
 
     // 路径遍历模式
     this.securityPatterns.set('path_traversal', [
       /\.\.\//g,
-      /\.\.\\/, 
+      /\.\.\\/,
       /%2e%2e%2f/gi,
       /%2e%2e%5c/gi,
       /\.\.%2f/gi,
       /\.\.%5c/gi,
       /\.\.\\/g,
-      /\.\.%255c/gi
+      /\.\.%255c/gi,
     ]);
 
     // 命令注入模式
@@ -319,14 +325,14 @@ export class EnhancedInputValidator {
       /(nc|netcat|wget|curl|ping|nslookup|dig)/gi,
       /(rm|del|format|fdisk)/gi,
       /(cat|type|more|less|head|tail)/gi,
-      /(chmod|chown|sudo|su)/gi
+      /(chmod|chown|sudo|su)/gi,
     ]);
 
     // LDAP注入模式
     this.securityPatterns.set('ldap_injection', [
       /(\*|\(|\)|\\|\/|\||&)/g,
       /(objectClass=\*)/gi,
-      /(cn=\*)/gi
+      /(cn=\*)/gi,
     ]);
   }
 
@@ -338,7 +344,8 @@ export class EnhancedInputValidator {
     // 中国身份证验证
     this.customValidators.set('chinese_id_card', (value: string) => {
       if (!value || typeof value !== 'string') return false;
-      const pattern = /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+      const pattern =
+        /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
       return pattern.test(value);
     });
 
@@ -353,7 +360,8 @@ export class EnhancedInputValidator {
     this.customValidators.set('strong_password', (value: string) => {
       if (!value || typeof value !== 'string') return false;
       // 至少8位，包含大小写字母、数字和特殊字符
-      const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const pattern =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       return pattern.test(value);
     });
 
@@ -387,11 +395,11 @@ export class EnhancedInputValidator {
     config: ValidationConfig | FieldValidationConfig[]
   ): Promise<ValidationResult> {
     const startTime = Date.now();
-    
+
     try {
       // 标准化配置
       const normalizedConfig = this.normalizeConfig(config);
-      
+
       // 检查缓存
       const cacheKey = this.generateCacheKey(data, normalizedConfig);
       const cachedResult = this.validationCache.get(cacheKey);
@@ -401,37 +409,39 @@ export class EnhancedInputValidator {
 
       // 执行验证
       const result = await this.performValidation(data, normalizedConfig);
-      
+
       // 计算验证时间
       result.stats.validationTime = Date.now() - startTime;
-      
+
       // 缓存结果
       this.cacheResult(cacheKey, result);
-      
+
       return result;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
         context: 'input_validation',
-        data: this.sanitizeDataForLogging(data)
+        data: this.sanitizeDataForLogging(data),
       });
-      
+
       return {
         isValid: false,
         sanitizedData: null,
-        errors: [{
-          field: 'root',
-          type: ValidationRuleType.CUSTOM,
-          message: '验证过程中发生错误',
-          value: data,
-          path: []
-        }],
+        errors: [
+          {
+            field: 'root',
+            type: ValidationRuleType.CUSTOM,
+            message: '验证过程中发生错误',
+            value: data,
+            path: [],
+          },
+        ],
         warnings: [],
         stats: {
           fieldsValidated: 0,
           rulesApplied: 0,
           fieldsSanitized: 0,
-          validationTime: Date.now() - startTime
-        }
+          validationTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -440,11 +450,13 @@ export class EnhancedInputValidator {
    * 函数级注释：标准化配置
    * 将不同格式的配置标准化为统一格式
    */
-  private normalizeConfig(config: ValidationConfig | FieldValidationConfig[]): ValidationConfig {
+  private normalizeConfig(
+    config: ValidationConfig | FieldValidationConfig[]
+  ): ValidationConfig {
     if (Array.isArray(config)) {
       return {
         fields: config,
-        global: {}
+        global: {},
       };
     }
     return config;
@@ -454,7 +466,10 @@ export class EnhancedInputValidator {
    * 函数级注释：执行验证
    * 执行实际的验证逻辑
    */
-  private async performValidation(data: any, config: ValidationConfig): Promise<ValidationResult> {
+  private async performValidation(
+    data: any,
+    config: ValidationConfig
+  ): Promise<ValidationResult> {
     const result: ValidationResult = {
       isValid: true,
       sanitizedData: {},
@@ -464,8 +479,8 @@ export class EnhancedInputValidator {
         fieldsValidated: 0,
         rulesApplied: 0,
         fieldsSanitized: 0,
-        validationTime: 0
-      }
+        validationTime: 0,
+      },
     };
 
     const context: ValidationContext = {
@@ -473,11 +488,14 @@ export class EnhancedInputValidator {
       data,
       config,
       path: [],
-      depth: 0
+      depth: 0,
     };
 
     // 全局安全检查
-    if (config.global?.enableXSSProtection || config.global?.enableSQLInjectionProtection) {
+    if (
+      config.global?.enableXSSProtection ||
+      config.global?.enableSQLInjectionProtection
+    ) {
       await this.performSecurityValidation(data, result, config);
     }
 
@@ -485,24 +503,36 @@ export class EnhancedInputValidator {
     for (const fieldConfig of config.fields) {
       context.fieldName = fieldConfig.name;
       context.path = [fieldConfig.name];
-      
+
       const fieldValue = this.getFieldValue(data, fieldConfig.name);
-      const fieldResult = await this.validateField(fieldValue, fieldConfig, context);
-      
+      const fieldResult = await this.validateField(
+        fieldValue,
+        fieldConfig,
+        context
+      );
+
       // 合并结果
       result.errors.push(...fieldResult.errors);
       result.warnings.push(...fieldResult.warnings);
       result.stats.fieldsValidated++;
       result.stats.rulesApplied += fieldConfig.rules.length;
-      
+
       // 设置清理后的值
       if (fieldResult.sanitizedValue !== undefined) {
-        this.setFieldValue(result.sanitizedData, fieldConfig.name, fieldResult.sanitizedValue);
+        this.setFieldValue(
+          result.sanitizedData,
+          fieldConfig.name,
+          fieldResult.sanitizedValue
+        );
         result.stats.fieldsSanitized++;
       } else if (fieldValue !== undefined) {
         this.setFieldValue(result.sanitizedData, fieldConfig.name, fieldValue);
       } else if (fieldConfig.defaultValue !== undefined) {
-        this.setFieldValue(result.sanitizedData, fieldConfig.name, fieldConfig.defaultValue);
+        this.setFieldValue(
+          result.sanitizedData,
+          fieldConfig.name,
+          fieldConfig.defaultValue
+        );
       }
     }
 
@@ -525,7 +555,7 @@ export class EnhancedInputValidator {
     config: ValidationConfig
   ) {
     const flattenedData = this.flattenObject(data);
-    
+
     for (const [path, value] of Object.entries(flattenedData)) {
       if (typeof value === 'string') {
         // XSS检测
@@ -535,18 +565,21 @@ export class EnhancedInputValidator {
             type: ValidationRuleType.CUSTOM,
             message: '检测到XSS攻击模式',
             value,
-            path: path.split('.')
+            path: path.split('.'),
           });
         }
 
         // SQL注入检测
-        if (config.global?.enableSQLInjectionProtection && this.detectSQLInjection(value)) {
+        if (
+          config.global?.enableSQLInjectionProtection &&
+          this.detectSQLInjection(value)
+        ) {
           result.errors.push({
             field: path,
             type: ValidationRuleType.CUSTOM,
             message: '检测到SQL注入攻击模式',
             value,
-            path: path.split('.')
+            path: path.split('.'),
           });
         }
 
@@ -557,7 +590,7 @@ export class EnhancedInputValidator {
             type: ValidationRuleType.CUSTOM,
             message: '检测到路径遍历攻击模式',
             value,
-            path: path.split('.')
+            path: path.split('.'),
           });
         }
 
@@ -568,7 +601,7 @@ export class EnhancedInputValidator {
             type: ValidationRuleType.CUSTOM,
             message: '检测到命令注入攻击模式',
             value,
-            path: path.split('.')
+            path: path.split('.'),
           });
         }
       }
@@ -593,13 +626,16 @@ export class EnhancedInputValidator {
     let sanitizedValue = value;
 
     // 检查必需字段
-    if (config.required && (value === undefined || value === null || value === '')) {
+    if (
+      config.required &&
+      (value === undefined || value === null || value === '')
+    ) {
       errors.push({
         field: config.name,
         type: ValidationRuleType.REQUIRED,
         message: `字段 ${config.name} 是必需的`,
         value,
-        path: context.path
+        path: context.path,
       });
       return { errors, warnings };
     }
@@ -610,7 +646,11 @@ export class EnhancedInputValidator {
     }
 
     // 数据类型验证和转换
-    const typeResult = await this.validateAndConvertType(value, config.type, context);
+    const typeResult = await this.validateAndConvertType(
+      value,
+      config.type,
+      context
+    );
     if (typeResult.error) {
       errors.push(typeResult.error);
       return { errors, warnings };
@@ -619,7 +659,11 @@ export class EnhancedInputValidator {
 
     // 应用验证规则
     for (const rule of config.rules) {
-      const ruleResult = await this.applyValidationRule(sanitizedValue, rule, context);
+      const ruleResult = await this.applyValidationRule(
+        sanitizedValue,
+        rule,
+        context
+      );
       if (ruleResult.error) {
         errors.push(ruleResult.error);
       }
@@ -633,7 +677,10 @@ export class EnhancedInputValidator {
 
     // 应用清理
     if (config.sanitize !== false && typeof sanitizedValue === 'string') {
-      sanitizedValue = this.sanitizeString(sanitizedValue, context.config.global);
+      sanitizedValue = this.sanitizeString(
+        sanitizedValue,
+        context.config.global
+      );
     }
 
     // 应用自定义清理器
@@ -664,7 +711,7 @@ export class EnhancedInputValidator {
       switch (type) {
         case DataType.STRING:
           return { convertedValue: String(value) };
-          
+
         case DataType.NUMBER:
           const num = Number(value);
           if (isNaN(num)) {
@@ -675,12 +722,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.TYPE,
                 message: '必须是有效的数字',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: num };
-          
+
         case DataType.INTEGER:
           const int = parseInt(value, 10);
           if (isNaN(int) || int !== Number(value)) {
@@ -691,12 +738,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.TYPE,
                 message: '必须是有效的整数',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: int };
-          
+
         case DataType.BOOLEAN:
           if (typeof value === 'boolean') {
             return { convertedValue: value };
@@ -717,10 +764,10 @@ export class EnhancedInputValidator {
               type: ValidationRuleType.TYPE,
               message: '必须是有效的布尔值',
               value,
-              path: context.path
-            }
+              path: context.path,
+            },
           };
-          
+
         case DataType.DATE:
           const date = new Date(value);
           if (isNaN(date.getTime())) {
@@ -731,12 +778,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.TYPE,
                 message: '必须是有效的日期',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: date };
-          
+
         case DataType.EMAIL:
           if (typeof value !== 'string' || !validator.isEmail(value)) {
             return {
@@ -746,12 +793,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.EMAIL,
                 message: '必须是有效的邮箱地址',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: value.toLowerCase() };
-          
+
         case DataType.URL:
           if (typeof value !== 'string' || !validator.isURL(value)) {
             return {
@@ -761,14 +808,17 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.URL,
                 message: '必须是有效的URL',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: value };
-          
+
         case DataType.PHONE:
-          if (typeof value !== 'string' || !validator.isMobilePhone(value, 'any')) {
+          if (
+            typeof value !== 'string' ||
+            !validator.isMobilePhone(value, 'any')
+          ) {
             return {
               convertedValue: value,
               error: {
@@ -776,12 +826,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.PHONE,
                 message: '必须是有效的手机号码',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: value };
-          
+
         case DataType.ARRAY:
           if (!Array.isArray(value)) {
             return {
@@ -791,14 +841,18 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.TYPE,
                 message: '必须是数组',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: value };
-          
+
         case DataType.OBJECT:
-          if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+          if (
+            typeof value !== 'object' ||
+            value === null ||
+            Array.isArray(value)
+          ) {
             return {
               convertedValue: value,
               error: {
@@ -806,12 +860,12 @@ export class EnhancedInputValidator {
                 type: ValidationRuleType.TYPE,
                 message: '必须是对象',
                 value,
-                path: context.path
-              }
+                path: context.path,
+              },
             };
           }
           return { convertedValue: value };
-          
+
         case DataType.JSON:
           if (typeof value === 'string') {
             try {
@@ -825,13 +879,13 @@ export class EnhancedInputValidator {
                   type: ValidationRuleType.TYPE,
                   message: '必须是有效的JSON字符串',
                   value,
-                  path: context.path
-                }
+                  path: context.path,
+                },
               };
             }
           }
           return { convertedValue: value };
-          
+
         default:
           return { convertedValue: value };
       }
@@ -843,8 +897,8 @@ export class EnhancedInputValidator {
           type: ValidationRuleType.TYPE,
           message: `类型转换失败: ${error.message}`,
           value,
-          path: context.path
-        }
+          path: context.path,
+        },
       };
     }
   }
@@ -866,25 +920,25 @@ export class EnhancedInputValidator {
       switch (rule.type) {
         case ValidationRuleType.LENGTH:
           return this.validateLength(value, rule, context);
-          
+
         case ValidationRuleType.RANGE:
           return this.validateRange(value, rule, context);
-          
+
         case ValidationRuleType.PATTERN:
           return this.validatePattern(value, rule, context);
-          
+
         case ValidationRuleType.CUSTOM:
           return await this.validateCustom(value, rule, context);
-          
+
         case ValidationRuleType.FILE:
           return await this.validateFile(value, rule, context);
-          
+
         case ValidationRuleType.ARRAY:
           return await this.validateArray(value, rule, context);
-          
+
         case ValidationRuleType.OBJECT:
           return await this.validateObject(value, rule, context);
-          
+
         default:
           return {};
       }
@@ -896,8 +950,8 @@ export class EnhancedInputValidator {
           message: rule.message || `验证规则执行失败: ${error.message}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
   }
@@ -924,8 +978,8 @@ export class EnhancedInputValidator {
           message: '长度验证只适用于字符串或数组',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -937,8 +991,8 @@ export class EnhancedInputValidator {
           message: rule.message || `长度不能少于 ${min}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -950,8 +1004,8 @@ export class EnhancedInputValidator {
           message: rule.message || `长度不能超过 ${max}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -968,7 +1022,7 @@ export class EnhancedInputValidator {
     context: ValidationContext
   ): { error?: ValidationError; warning?: string } {
     const { min, max } = rule.params || {};
-    
+
     if (typeof value !== 'number') {
       return {
         error: {
@@ -977,8 +1031,8 @@ export class EnhancedInputValidator {
           message: '范围验证只适用于数字',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -990,8 +1044,8 @@ export class EnhancedInputValidator {
           message: rule.message || `值不能小于 ${min}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1003,8 +1057,8 @@ export class EnhancedInputValidator {
           message: rule.message || `值不能大于 ${max}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1028,8 +1082,8 @@ export class EnhancedInputValidator {
           message: '模式验证只适用于字符串',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1042,8 +1096,8 @@ export class EnhancedInputValidator {
           message: rule.message || '格式不正确',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1060,7 +1114,7 @@ export class EnhancedInputValidator {
     context: ValidationContext
   ): Promise<{ error?: ValidationError; warning?: string }> {
     let validator = rule.validator;
-    
+
     // 如果没有提供验证器，尝试从注册的验证器中查找
     if (!validator && rule.params?.validatorName) {
       validator = this.customValidators.get(rule.params.validatorName);
@@ -1074,8 +1128,8 @@ export class EnhancedInputValidator {
           message: '自定义验证器未找到',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1089,8 +1143,8 @@ export class EnhancedInputValidator {
             message: rule.message || '自定义验证失败',
             value,
             path: context.path,
-            ruleParams: rule.params
-          }
+            ruleParams: rule.params,
+          },
         };
       }
     } catch (error) {
@@ -1101,8 +1155,8 @@ export class EnhancedInputValidator {
           message: `自定义验证器执行失败: ${error.message}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1119,7 +1173,7 @@ export class EnhancedInputValidator {
     context: ValidationContext
   ): Promise<{ error?: ValidationError; warning?: string }> {
     const config: FileValidationConfig = rule.params;
-    
+
     if (!value || typeof value !== 'object') {
       return {
         error: {
@@ -1128,8 +1182,8 @@ export class EnhancedInputValidator {
           message: '无效的文件对象',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1142,8 +1196,8 @@ export class EnhancedInputValidator {
           message: `文件大小不能超过 ${this.formatFileSize(config.maxSize)}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1155,8 +1209,8 @@ export class EnhancedInputValidator {
           message: `文件大小不能小于 ${this.formatFileSize(config.minSize)}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1171,8 +1225,8 @@ export class EnhancedInputValidator {
             message: `不支持的文件类型，允许的类型: ${config.allowedTypes.join(', ')}`,
             value,
             path: context.path,
-            ruleParams: rule.params
-          }
+            ruleParams: rule.params,
+          },
         };
       }
     }
@@ -1187,8 +1241,8 @@ export class EnhancedInputValidator {
             message: `不支持的MIME类型，允许的类型: ${config.allowedMimeTypes.join(', ')}`,
             value,
             path: context.path,
-            ruleParams: rule.params
-          }
+            ruleParams: rule.params,
+          },
         };
       }
     }
@@ -1213,12 +1267,13 @@ export class EnhancedInputValidator {
           message: '必须是数组',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
-    const { maxLength, minLength, elementType, elementRules } = rule.params || {};
+    const { maxLength, minLength, elementType, elementRules } =
+      rule.params || {};
 
     // 检查数组长度
     if (maxLength !== undefined && value.length > maxLength) {
@@ -1229,8 +1284,8 @@ export class EnhancedInputValidator {
           message: `数组长度不能超过 ${maxLength}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1242,8 +1297,8 @@ export class EnhancedInputValidator {
           message: `数组长度不能少于 ${minLength}`,
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1253,11 +1308,15 @@ export class EnhancedInputValidator {
         const elementContext = {
           ...context,
           fieldName: `${context.fieldName}[${i}]`,
-          path: [...context.path, i.toString()]
+          path: [...context.path, i.toString()],
         };
 
         if (elementType) {
-          const typeResult = await this.validateAndConvertType(value[i], elementType, elementContext);
+          const typeResult = await this.validateAndConvertType(
+            value[i],
+            elementType,
+            elementContext
+          );
           if (typeResult.error) {
             return { error: typeResult.error };
           }
@@ -1265,7 +1324,11 @@ export class EnhancedInputValidator {
 
         if (elementRules) {
           for (const elementRule of elementRules) {
-            const ruleResult = await this.applyValidationRule(value[i], elementRule, elementContext);
+            const ruleResult = await this.applyValidationRule(
+              value[i],
+              elementRule,
+              elementContext
+            );
             if (ruleResult.error) {
               return { error: ruleResult.error };
             }
@@ -1294,8 +1357,8 @@ export class EnhancedInputValidator {
           message: '必须是对象',
           value,
           path: context.path,
-          ruleParams: rule.params
-        }
+          ruleParams: rule.params,
+        },
       };
     }
 
@@ -1312,8 +1375,8 @@ export class EnhancedInputValidator {
               message: `缺少必需属性: ${requiredProp}`,
               value,
               path: context.path,
-              ruleParams: rule.params
-            }
+              ruleParams: rule.params,
+            },
           };
         }
       }
@@ -1326,10 +1389,14 @@ export class EnhancedInputValidator {
           const propContext = {
             ...context,
             fieldName: `${context.fieldName}.${propName}`,
-            path: [...context.path, propName]
+            path: [...context.path, propName],
           };
 
-          const propResult = await this.validateField(value[propName], propConfig as FieldValidationConfig, propContext);
+          const propResult = await this.validateField(
+            value[propName],
+            propConfig as FieldValidationConfig,
+            propContext
+          );
           if (propResult.errors.length > 0) {
             return { error: propResult.errors[0] };
           }
@@ -1349,8 +1416,8 @@ export class EnhancedInputValidator {
               message: `不允许的属性: ${propName}`,
               value,
               path: context.path,
-              ruleParams: rule.params
-            }
+              ruleParams: rule.params,
+            },
           };
         }
       }
@@ -1363,14 +1430,17 @@ export class EnhancedInputValidator {
    * 函数级注释：清理字符串
    * 清理字符串中的危险内容
    */
-  private sanitizeString(value: string, globalConfig?: ValidationConfig['global']): string {
+  private sanitizeString(
+    value: string,
+    globalConfig?: ValidationConfig['global']
+  ): string {
     let sanitized = value;
 
     // XSS防护
     if (globalConfig?.enableXSSProtection !== false) {
       sanitized = DOMPurify.sanitize(sanitized, {
         ALLOWED_TAGS: [],
-        ALLOWED_ATTR: []
+        ALLOWED_ATTR: [],
       });
     }
 
@@ -1492,7 +1562,11 @@ export class EnhancedInputValidator {
     for (const [key, value] of Object.entries(obj)) {
       const newKey = prefix ? `${prefix}.${key}` : key;
 
-      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      if (
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value)
+      ) {
         Object.assign(flattened, this.flattenObject(value, newKey));
       } else {
         flattened[newKey] = value;
@@ -1506,7 +1580,11 @@ export class EnhancedInputValidator {
    * 函数级注释：验证严格模式
    * 在严格模式下验证额外的约束
    */
-  private validateStrictMode(data: any, config: ValidationConfig, result: ValidationResult) {
+  private validateStrictMode(
+    data: any,
+    config: ValidationConfig,
+    result: ValidationResult
+  ) {
     const definedFields = new Set(config.fields.map(f => f.name));
     const dataFields = new Set(Object.keys(data));
 
@@ -1563,7 +1641,7 @@ export class EnhancedInputValidator {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // 转换为32位整数
     }
     return hash.toString(36);
@@ -1598,14 +1676,20 @@ export class EnhancedInputValidator {
    * 清理数据中的敏感信息用于日志记录
    */
   private sanitizeDataForLogging(data: any): any {
-    const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
-    
+    const sensitiveFields = [
+      'password',
+      'token',
+      'secret',
+      'key',
+      'authorization',
+    ];
+
     if (typeof data !== 'object' || data === null) {
       return data;
     }
 
     const sanitized = { ...data };
-    
+
     for (const field of sensitiveFields) {
       if (field in sanitized) {
         sanitized[field] = '[REDACTED]';
@@ -1620,9 +1704,12 @@ export class EnhancedInputValidator {
    * 启动定期缓存清理任务
    */
   private startCacheCleanup() {
-    setInterval(() => {
-      this.cleanupExpiredCache();
-    }, 10 * 60 * 1000); // 每10分钟清理一次
+    setInterval(
+      () => {
+        this.cleanupExpiredCache();
+      },
+      10 * 60 * 1000
+    ); // 每10分钟清理一次
   }
 
   /**
@@ -1643,7 +1730,10 @@ export class EnhancedInputValidator {
    */
   public registerCustomValidator(
     name: string,
-    validator: (value: any, context?: ValidationContext) => boolean | Promise<boolean>
+    validator: (
+      value: any,
+      context?: ValidationContext
+    ) => boolean | Promise<boolean>
   ) {
     this.customValidators.set(name, validator);
   }
@@ -1656,7 +1746,7 @@ export class EnhancedInputValidator {
     return {
       cacheSize: this.validationCache.size,
       customValidators: this.customValidators.size,
-      securityPatterns: Array.from(this.securityPatterns.keys())
+      securityPatterns: Array.from(this.securityPatterns.keys()),
     };
   }
 }

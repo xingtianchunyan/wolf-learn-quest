@@ -1,6 +1,9 @@
 // 技能系统缓存管理
 import { SkillConfig } from '@/utils/skillMappingConfig';
-import { StandardizedSkillUse, StandardizedSkillTarget } from '@/utils/skillDataStandardizer';
+import {
+  StandardizedSkillUse,
+  StandardizedSkillTarget,
+} from '@/utils/skillDataStandardizer';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('skill-system-cache');
@@ -27,13 +30,13 @@ class SkillSystemCache {
     missCount: 0,
     totalSize: 0,
     hitRate: 0,
-    lastCleanup: null
+    lastCleanup: null,
   };
-  
+
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5分钟
   private readonly MAX_CACHE_SIZE = 1000;
   private readonly CLEANUP_INTERVAL = 60 * 1000; // 1分钟清理一次
-  
+
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
@@ -63,9 +66,11 @@ class SkillSystemCache {
    */
   private updateStats() {
     this.stats.totalSize = this.cache.size;
-    this.stats.hitRate = this.stats.hitCount + this.stats.missCount > 0 
-      ? (this.stats.hitCount / (this.stats.hitCount + this.stats.missCount)) * 100 
-      : 0;
+    this.stats.hitRate =
+      this.stats.hitCount + this.stats.missCount > 0
+        ? (this.stats.hitCount / (this.stats.hitCount + this.stats.missCount)) *
+          100
+        : 0;
   }
 
   /**
@@ -81,12 +86,12 @@ class SkillSystemCache {
       data,
       timestamp: Date.now(),
       expiresAt: Date.now() + ttl,
-      key
+      key,
     };
 
     this.cache.set(key, entry);
     this.updateStats();
-    
+
     logger.debug('缓存设置', { key, ttl, size: this.cache.size });
   }
 
@@ -95,7 +100,7 @@ class SkillSystemCache {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.stats.missCount++;
       this.updateStats();
@@ -136,7 +141,7 @@ class SkillSystemCache {
       missCount: 0,
       totalSize: 0,
       hitRate: 0,
-      lastCleanup: new Date()
+      lastCleanup: new Date(),
     };
     logger.info('缓存已清空');
   }
@@ -147,7 +152,7 @@ class SkillSystemCache {
   cleanup(): number {
     const initialSize = this.cache.size;
     const _now = Date.now();
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {
         this.cache.delete(key);
@@ -157,11 +162,14 @@ class SkillSystemCache {
     const cleanedCount = initialSize - this.cache.size;
     this.stats.lastCleanup = new Date();
     this.updateStats();
-    
+
     if (cleanedCount > 0) {
-      logger.info('缓存清理完成', { cleanedCount, remainingSize: this.cache.size });
+      logger.info('缓存清理完成', {
+        cleanedCount,
+        remainingSize: this.cache.size,
+      });
     }
-    
+
     return cleanedCount;
   }
 
@@ -232,7 +240,11 @@ class SkillSystemCache {
   /**
    * 缓存用户技能使用记录
    */
-  cacheUserSkillUses(userId: string, gameStateId: string, uses: StandardizedSkillUse[]): void {
+  cacheUserSkillUses(
+    userId: string,
+    gameStateId: string,
+    uses: StandardizedSkillUse[]
+  ): void {
     const key = this.generateKey('user_skill_uses', { userId, gameStateId });
     this.set(key, uses, 2 * 60 * 1000); // 2分钟
   }
@@ -240,7 +252,10 @@ class SkillSystemCache {
   /**
    * 获取用户技能使用记录缓存
    */
-  getUserSkillUses(userId: string, gameStateId: string): StandardizedSkillUse[] | null {
+  getUserSkillUses(
+    userId: string,
+    gameStateId: string
+  ): StandardizedSkillUse[] | null {
     const key = this.generateKey('user_skill_uses', { userId, gameStateId });
     return this.get<StandardizedSkillUse[]>(key);
   }
@@ -248,7 +263,10 @@ class SkillSystemCache {
   /**
    * 缓存技能效果
    */
-  cacheSkillEffects(gameStateId: string, effects: StandardizedSkillTarget[]): void {
+  cacheSkillEffects(
+    gameStateId: string,
+    effects: StandardizedSkillTarget[]
+  ): void {
     const key = this.generateKey('skill_effects', { gameStateId });
     this.set(key, effects, 1 * 60 * 1000); // 1分钟
   }
@@ -265,12 +283,16 @@ class SkillSystemCache {
    * 缓存技能验证结果
    */
   cacheSkillValidation(
-    userId: string, 
-    skillName: string, 
-    gameStateId: string, 
+    userId: string,
+    skillName: string,
+    gameStateId: string,
     validation: { isValid: boolean; reason?: string }
   ): void {
-    const key = this.generateKey('skill_validation', { userId, skillName, gameStateId });
+    const key = this.generateKey('skill_validation', {
+      userId,
+      skillName,
+      gameStateId,
+    });
     this.set(key, validation, 30 * 1000); // 30秒
   }
 
@@ -278,11 +300,15 @@ class SkillSystemCache {
    * 获取技能验证结果缓存
    */
   getSkillValidation(
-    userId: string, 
-    skillName: string, 
+    userId: string,
+    skillName: string,
     gameStateId: string
   ): { isValid: boolean; reason?: string } | null {
-    const key = this.generateKey('skill_validation', { userId, skillName, gameStateId });
+    const key = this.generateKey('skill_validation', {
+      userId,
+      skillName,
+      gameStateId,
+    });
     return this.get<{ isValid: boolean; reason?: string }>(key);
   }
 
@@ -291,7 +317,7 @@ class SkillSystemCache {
    */
   clearGameStateCache(gameStateId: string): void {
     const keysToDelete: string[] = [];
-    
+
     for (const key of this.cache.keys()) {
       if (key.includes(gameStateId)) {
         keysToDelete.push(key);
@@ -300,8 +326,11 @@ class SkillSystemCache {
 
     keysToDelete.forEach(key => this.cache.delete(key));
     this.updateStats();
-    
-    logger.info('清除游戏状态缓存', { gameStateId, clearedCount: keysToDelete.length });
+
+    logger.info('清除游戏状态缓存', {
+      gameStateId,
+      clearedCount: keysToDelete.length,
+    });
   }
 
   /**
@@ -309,7 +338,7 @@ class SkillSystemCache {
    */
   clearUserCache(userId: string): void {
     const keysToDelete: string[] = [];
-    
+
     for (const key of this.cache.keys()) {
       if (key.includes(userId)) {
         keysToDelete.push(key);
@@ -318,7 +347,7 @@ class SkillSystemCache {
 
     keysToDelete.forEach(key => this.cache.delete(key));
     this.updateStats();
-    
+
     logger.info('清除用户缓存', { userId, clearedCount: keysToDelete.length });
   }
 }
@@ -332,6 +361,6 @@ export const useSkillSystemCache = () => {
     cache: skillSystemCache,
     stats: skillSystemCache.getStats(),
     clear: () => skillSystemCache.clear(),
-    cleanup: () => skillSystemCache.cleanup()
+    cleanup: () => skillSystemCache.cleanup(),
   };
 };

@@ -5,7 +5,11 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import { comprehensiveSecurityAudit, SecurityAuditResult, AuditConfig } from '@/utils/comprehensiveSecurityAudit';
+import {
+  comprehensiveSecurityAudit,
+  SecurityAuditResult,
+  AuditConfig,
+} from '@/utils/comprehensiveSecurityAudit';
 import { MasterErrorHandler } from '@/utils/masterErrorHandler';
 import { SECURITY_CONFIG } from '@/config/security.config';
 
@@ -40,7 +44,11 @@ export interface SecurityScheduleConfig {
  */
 export interface SecurityEvent {
   id: string;
-  type: 'vulnerability_detected' | 'threat_detected' | 'policy_violation' | 'anomaly_detected';
+  type:
+    | 'vulnerability_detected'
+    | 'threat_detected'
+    | 'policy_violation'
+    | 'anomaly_detected';
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
   source: string;
@@ -70,7 +78,7 @@ export interface ThreatDetectionResult {
 
 /**
  * 类级注释：自动化安全服务
- * 
+ *
  * 提供全面的自动化安全监控和响应功能：
  * - 定期安全审计
  * - 实时威胁检测
@@ -83,7 +91,8 @@ export class AutomatedSecurityService {
   private masterErrorHandler: MasterErrorHandler;
   private config: SecurityScheduleConfig;
   private isRunning: boolean = false;
-  private scheduledChecks: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private scheduledChecks: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
   private securityEvents: SecurityEvent[] = [];
   private lastAuditResult: SecurityAuditResult | null = null;
   private checkCounter: number = 0;
@@ -143,15 +152,14 @@ export class AutomatedSecurityService {
       this.startRealTimeMonitoring();
 
       logger.info('自动化安全服务启动成功');
-
     } catch (error) {
       const errorMessage = `启动自动化安全服务失败: ${error instanceof Error ? error.message : String(error)}`;
       logger.error(errorMessage, error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'start_automated_security_service',
         component: 'AutomatedSecurityService',
-        severity: 'high'
+        severity: 'high',
       });
 
       throw new Error(errorMessage);
@@ -179,15 +187,14 @@ export class AutomatedSecurityService {
 
       this.isRunning = false;
       logger.info('自动化安全服务已停止');
-
     } catch (error) {
       const errorMessage = `停止自动化安全服务失败: ${error instanceof Error ? error.message : String(error)}`;
       logger.error(errorMessage, error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'stop_automated_security_service',
         component: 'AutomatedSecurityService',
-        severity: 'medium'
+        severity: 'medium',
       });
 
       throw new Error(errorMessage);
@@ -207,10 +214,11 @@ export class AutomatedSecurityService {
         includeRuntimeAnalysis: true,
         includePenetrationTesting: false,
         includeComplianceCheck: false,
-        depth: 'basic'
+        depth: 'basic',
       };
 
-      const result = await comprehensiveSecurityAudit.performComprehensiveAudit(auditConfig);
+      const result =
+        await comprehensiveSecurityAudit.performComprehensiveAudit(auditConfig);
       this.lastAuditResult = result;
 
       // 处理检查结果
@@ -219,16 +227,15 @@ export class AutomatedSecurityService {
       logger.info('基础安全检查完成', {
         score: result.overallScore,
         vulnerabilities: result.vulnerabilities.length,
-        riskLevel: result.riskLevel
+        riskLevel: result.riskLevel,
       });
-
     } catch (error) {
       logger.error('基础安全检查失败', error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'perform_basic_security_check',
         component: 'AutomatedSecurityService',
-        severity: 'medium'
+        severity: 'medium',
       });
     }
   }
@@ -246,10 +253,11 @@ export class AutomatedSecurityService {
         includeRuntimeAnalysis: true,
         includePenetrationTesting: false,
         includeComplianceCheck: true,
-        depth: 'comprehensive'
+        depth: 'comprehensive',
       };
 
-      const result = await comprehensiveSecurityAudit.performComprehensiveAudit(auditConfig);
+      const result =
+        await comprehensiveSecurityAudit.performComprehensiveAudit(auditConfig);
       this.lastAuditResult = result;
 
       // 处理检查结果
@@ -261,16 +269,15 @@ export class AutomatedSecurityService {
       logger.info('深度安全扫描完成', {
         score: result.overallScore,
         vulnerabilities: result.vulnerabilities.length,
-        riskLevel: result.riskLevel
+        riskLevel: result.riskLevel,
       });
-
     } catch (error) {
       logger.error('深度安全扫描失败', error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'perform_deep_security_scan',
         component: 'AutomatedSecurityService',
-        severity: 'high'
+        severity: 'high',
       });
     }
   }
@@ -280,7 +287,10 @@ export class AutomatedSecurityService {
    * @param result - 安全审计结果
    * @param scanType - 扫描类型
    */
-  private async processAuditResult(result: SecurityAuditResult, scanType: string): Promise<void> {
+  private async processAuditResult(
+    result: SecurityAuditResult,
+    scanType: string
+  ): Promise<void> {
     try {
       // 记录安全事件
       for (const vulnerability of result.vulnerabilities) {
@@ -293,7 +303,7 @@ export class AutomatedSecurityService {
           description: vulnerability.title,
           details: vulnerability,
           resolved: false,
-          actions: []
+          actions: [],
         };
 
         this.securityEvents.push(event);
@@ -313,14 +323,13 @@ export class AutomatedSecurityService {
       if (result.riskLevel === 'critical') {
         await this.handleCriticalRisk(result);
       }
-
     } catch (error) {
       logger.error('处理审计结果失败', error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'process_audit_result',
         component: 'AutomatedSecurityService',
-        severity: 'medium'
+        severity: 'medium',
       });
     }
   }
@@ -337,7 +346,7 @@ export class AutomatedSecurityService {
 
       this.checkCounter++;
       logger.debug(`执行定期安全检查 #${this.checkCounter}`);
-      
+
       await this.performBasicSecurityCheck();
     }, this.config.interval);
 
@@ -369,10 +378,10 @@ export class AutomatedSecurityService {
   private startRealTimeMonitoring(): void {
     // 监控配置变更
     this.monitorConfigurationChanges();
-    
+
     // 监控异常活动
     this.monitorAnomalousActivity();
-    
+
     // 监控系统资源
     this.monitorSystemResources();
 
@@ -414,7 +423,7 @@ export class AutomatedSecurityService {
     try {
       logger.warn('检测到关键安全风险', {
         score: result.overallScore,
-        criticalVulnerabilities: result.summary.criticalCount
+        criticalVulnerabilities: result.summary.criticalCount,
       });
 
       // 创建关键风险事件
@@ -427,7 +436,7 @@ export class AutomatedSecurityService {
         description: '检测到关键安全风险',
         details: result,
         resolved: false,
-        actions: ['immediate_notification', 'security_team_alert']
+        actions: ['immediate_notification', 'security_team_alert'],
       };
 
       this.securityEvents.push(event);
@@ -437,14 +446,13 @@ export class AutomatedSecurityService {
 
       // 执行紧急响应措施
       await this.executeEmergencyResponse(result);
-
     } catch (error) {
       logger.error('处理关键风险失败', error);
-      
+
       await this.masterErrorHandler.handleError(error as Error, {
         operation: 'handle_critical_risk',
         component: 'AutomatedSecurityService',
-        severity: 'critical'
+        severity: 'critical',
       });
     }
   }
@@ -453,7 +461,9 @@ export class AutomatedSecurityService {
    * 函数级注释：执行紧急响应
    * @param result - 安全审计结果
    */
-  private async executeEmergencyResponse(result: SecurityAuditResult): Promise<void> {
+  private async executeEmergencyResponse(
+    result: SecurityAuditResult
+  ): Promise<void> {
     try {
       logger.info('执行紧急安全响应');
 
@@ -464,7 +474,6 @@ export class AutomatedSecurityService {
         logger.info(`执行紧急措施: ${action}`);
         // 这里可以实现具体的响应逻辑
       }
-
     } catch (error) {
       logger.error('执行紧急响应失败', error);
     }
@@ -474,14 +483,18 @@ export class AutomatedSecurityService {
    * 函数级注释：生成安全报告
    * @param result - 安全审计结果
    */
-  private async generateSecurityReport(result: SecurityAuditResult): Promise<void> {
+  private async generateSecurityReport(
+    result: SecurityAuditResult
+  ): Promise<void> {
     try {
       const reportPath = `security_reports/audit_${result.auditId}.html`;
-      const reportContent = comprehensiveSecurityAudit.exportReport(result, 'html');
+      const reportContent = comprehensiveSecurityAudit.exportReport(
+        result,
+        'html'
+      );
 
       // 这里可以实现报告保存逻辑
       logger.info('安全报告已生成', { reportPath, auditId: result.auditId });
-
     } catch (error) {
       logger.error('生成安全报告失败', error);
     }
@@ -497,7 +510,10 @@ export class AutomatedSecurityService {
         return;
       }
 
-      if (this.config.notifications.criticalOnly && event.severity !== 'critical') {
+      if (
+        this.config.notifications.criticalOnly &&
+        event.severity !== 'critical'
+      ) {
         return;
       }
 
@@ -516,7 +532,6 @@ export class AutomatedSecurityService {
             break;
         }
       }
-
     } catch (error) {
       logger.error('发送通知失败', error);
     }
@@ -546,10 +561,10 @@ export class AutomatedSecurityService {
    */
   private shouldAutoFix(event: SecurityEvent): boolean {
     const autoFixLevels = {
-      'none': [],
-      'low': ['low'],
-      'medium': ['low', 'medium'],
-      'high': ['low', 'medium', 'high']
+      none: [],
+      low: ['low'],
+      medium: ['low', 'medium'],
+      high: ['low', 'medium', 'high'],
     };
 
     return autoFixLevels[this.config.autoFixLevel].includes(event.severity);
@@ -572,7 +587,6 @@ export class AutomatedSecurityService {
       event.actions.push('auto_fix_attempted');
 
       logger.info('自动修复完成', { eventId: event.id });
-
     } catch (error) {
       logger.error('自动修复失败', error);
       event.actions.push('auto_fix_failed');
@@ -584,13 +598,15 @@ export class AutomatedSecurityService {
    * @param severity - 漏洞严重级别
    * @returns 事件严重级别
    */
-  private mapVulnerabilitySeverity(severity: string): 'low' | 'medium' | 'high' | 'critical' {
+  private mapVulnerabilitySeverity(
+    severity: string
+  ): 'low' | 'medium' | 'high' | 'critical' {
     const mapping: Record<string, 'low' | 'medium' | 'high' | 'critical'> = {
-      'info': 'low',
-      'low': 'low',
-      'medium': 'medium',
-      'high': 'high',
-      'critical': 'critical'
+      info: 'low',
+      low: 'low',
+      medium: 'medium',
+      high: 'high',
+      critical: 'critical',
     };
 
     return mapping[severity] || 'medium';
@@ -618,9 +634,13 @@ export class AutomatedSecurityService {
       autoFixLevel: 'low',
       notifications: {
         enabled: SECURITY_CONFIG.monitoring.realTimeAlerts,
-        channels: SECURITY_CONFIG.monitoring.alertChannels as ('log' | 'email' | 'webhook')[],
-        criticalOnly: false
-      }
+        channels: SECURITY_CONFIG.monitoring.alertChannels as (
+          | 'log'
+          | 'email'
+          | 'webhook'
+        )[],
+        criticalOnly: false,
+      },
     };
   }
 
@@ -640,7 +660,7 @@ export class AutomatedSecurityService {
       config: this.config,
       lastAuditResult: this.lastAuditResult,
       eventCount: this.securityEvents.length,
-      checkCounter: this.checkCounter
+      checkCounter: this.checkCounter,
     };
   }
 
@@ -672,7 +692,10 @@ export class AutomatedSecurityService {
       }
     }
 
-    return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return events.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   }
 
   /**
@@ -689,8 +712,4 @@ export class AutomatedSecurityService {
 export const automatedSecurityService = AutomatedSecurityService.getInstance();
 
 // 导出类型
-export type {
-  SecurityScheduleConfig,
-  SecurityEvent,
-  ThreatDetectionResult
-};
+export type { SecurityScheduleConfig, SecurityEvent, ThreatDetectionResult };

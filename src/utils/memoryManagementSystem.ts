@@ -80,7 +80,10 @@ class MemoryManagementSystem {
   private componentMemory: Map<string, ComponentMemoryInfo> = new Map();
   private memoryHistory: MemoryUsage[] = [];
   private timers: Set<ReturnType<typeof setInterval>> = new Set();
-  private eventListeners: Map<string, { element: EventTarget; event: string; handler: EventListener }> = new Map();
+  private eventListeners: Map<
+    string,
+    { element: EventTarget; event: string; handler: EventListener }
+  > = new Map();
   private config: MemoryConfig = {
     maxMemoryUsage: 500 * 1024 * 1024, // 500MB
     leakDetectionInterval: 30 * 1000, // 30秒
@@ -90,7 +93,7 @@ class MemoryManagementSystem {
     enableLeakDetection: true,
     enablePerformanceMonitoring: true,
     warningThreshold: 300 * 1024 * 1024, // 300MB
-    criticalThreshold: 450 * 1024 * 1024 // 450MB
+    criticalThreshold: 450 * 1024 * 1024, // 450MB
   };
   private monitoringTimer?: ReturnType<typeof setInterval>;
   private cleanupTimer?: ReturnType<typeof setInterval>;
@@ -126,7 +129,7 @@ class MemoryManagementSystem {
       createdAt: Date.now(),
       lastActivity: Date.now(),
       isActive: true,
-      cleanup
+      cleanup,
     };
 
     this.subscriptions.set(id, subscription);
@@ -136,7 +139,7 @@ class MemoryManagementSystem {
       id,
       type,
       component,
-      totalSubscriptions: this.subscriptions.size
+      totalSubscriptions: this.subscriptions.size,
     });
   }
 
@@ -164,7 +167,7 @@ class MemoryManagementSystem {
     logger.debug('订阅已取消注册', {
       id,
       component: subscription.component,
-      duration: Date.now() - subscription.createdAt
+      duration: Date.now() - subscription.createdAt,
     });
 
     return true;
@@ -183,20 +186,26 @@ class MemoryManagementSystem {
   /**
    * 注册定时器
    */
-  public registerTimer(timer: ReturnType<typeof setInterval>, component: string): void {
+  public registerTimer(
+    timer: ReturnType<typeof setInterval>,
+    component: string
+  ): void {
     this.timers.add(timer);
     this.updateComponentMemory(component, 'timer', 1);
 
     logger.debug('定时器已注册', {
       component,
-      totalTimers: this.timers.size
+      totalTimers: this.timers.size,
     });
   }
 
   /**
    * 取消注册定时器
    */
-  public unregisterTimer(timer: ReturnType<typeof setInterval>, component: string): boolean {
+  public unregisterTimer(
+    timer: ReturnType<typeof setInterval>,
+    component: string
+  ): boolean {
     const removed = this.timers.delete(timer);
     if (removed) {
       clearTimeout(timer);
@@ -204,7 +213,7 @@ class MemoryManagementSystem {
 
       logger.debug('定时器已取消注册', {
         component,
-        totalTimers: this.timers.size
+        totalTimers: this.timers.size,
       });
     }
     return removed;
@@ -227,7 +236,7 @@ class MemoryManagementSystem {
       id,
       event,
       component,
-      totalListeners: this.eventListeners.size
+      totalListeners: this.eventListeners.size,
     });
   }
 
@@ -248,7 +257,7 @@ class MemoryManagementSystem {
       logger.debug('事件监听器已取消注册', {
         id,
         event: listener.event,
-        component
+        component,
       });
 
       return true;
@@ -279,7 +288,7 @@ class MemoryManagementSystem {
       used,
       total,
       percentage: total > 0 ? (used / total) * 100 : 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // 保存历史记录
@@ -314,15 +323,21 @@ class MemoryManagementSystem {
     const now = Date.now();
     for (const [id, subscription] of this.subscriptions.entries()) {
       if (now - subscription.lastActivity > this.config.subscriptionTimeout) {
-        suspiciousObjects.push(`Inactive subscription: ${id} (${subscription.type})`);
-        recommendations.push(`清理长时间未活动的订阅: ${subscription.component}`);
+        suspiciousObjects.push(
+          `Inactive subscription: ${id} (${subscription.type})`
+        );
+        recommendations.push(
+          `清理长时间未活动的订阅: ${subscription.component}`
+        );
       }
     }
 
     // 检查组件内存使用
     for (const [name, info] of this.componentMemory.entries()) {
       if (info.subscriptions > 10) {
-        suspiciousObjects.push(`High subscription count: ${name} (${info.subscriptions})`);
+        suspiciousObjects.push(
+          `High subscription count: ${name} (${info.subscriptions})`
+        );
         recommendations.push(`优化组件 ${name} 的订阅管理`);
       }
       if (info.timers > 5) {
@@ -337,7 +352,8 @@ class MemoryManagementSystem {
       severity = 'critical';
     } else if (currentUsage.used > this.config.warningThreshold) {
       severity = 'high';
-    } else if (growthRate > 1024 * 1024) { // 1MB/s
+    } else if (growthRate > 1024 * 1024) {
+      // 1MB/s
       severity = 'medium';
     }
 
@@ -353,7 +369,7 @@ class MemoryManagementSystem {
       growthRate,
       suspiciousObjects,
       recommendations,
-      severity
+      severity,
     };
   }
 
@@ -376,7 +392,10 @@ class MemoryManagementSystem {
     for (const [id, listener] of this.eventListeners.entries()) {
       try {
         // 检查元素是否还在DOM中
-        if (listener.element instanceof Element && !document.contains(listener.element)) {
+        if (
+          listener.element instanceof Element &&
+          !document.contains(listener.element)
+        ) {
           this.eventListeners.delete(id);
           cleanedCount++;
         }
@@ -396,7 +415,7 @@ class MemoryManagementSystem {
       cleanedCount,
       remainingSubscriptions: this.subscriptions.size,
       remainingListeners: this.eventListeners.size,
-      remainingTimers: this.timers.size
+      remainingTimers: this.timers.size,
     });
   }
 
@@ -404,7 +423,9 @@ class MemoryManagementSystem {
    * 获取组件内存统计
    */
   public getComponentMemoryStats(): ComponentMemoryInfo[] {
-    return Array.from(this.componentMemory.values()).sort((a, b) => b.memoryUsage - a.memoryUsage);
+    return Array.from(this.componentMemory.values()).sort(
+      (a, b) => b.memoryUsage - a.memoryUsage
+    );
   }
 
   /**
@@ -422,7 +443,7 @@ class MemoryManagementSystem {
       active: 0,
       inactive: 0,
       byType: {} as Record<string, number>,
-      byComponent: {} as Record<string, number>
+      byComponent: {} as Record<string, number>,
     };
 
     const now = Date.now();
@@ -433,8 +454,10 @@ class MemoryManagementSystem {
         stats.inactive++;
       }
 
-      stats.byType[subscription.type] = (stats.byType[subscription.type] || 0) + 1;
-      stats.byComponent[subscription.component] = (stats.byComponent[subscription.component] || 0) + 1;
+      stats.byType[subscription.type] =
+        (stats.byType[subscription.type] || 0) + 1;
+      stats.byComponent[subscription.component] =
+        (stats.byComponent[subscription.component] || 0) + 1;
     }
 
     return stats;
@@ -464,7 +487,7 @@ class MemoryManagementSystem {
         subscriptions: 0,
         timers: 0,
         eventListeners: 0,
-        lastUpdate: Date.now()
+        lastUpdate: Date.now(),
       };
       this.componentMemory.set(component, info);
     }
@@ -516,12 +539,12 @@ class MemoryManagementSystem {
     if (this.config.enablePerformanceMonitoring) {
       this.monitoringTimer = setInterval(() => {
         const usage = this.getCurrentMemoryUsage();
-        
+
         if (usage.used > this.config.warningThreshold) {
           logger.warn('内存使用超过警告阈值', {
             used: usage.used,
             percentage: usage.percentage,
-            threshold: this.config.warningThreshold
+            threshold: this.config.warningThreshold,
           });
         }
 
@@ -529,8 +552,11 @@ class MemoryManagementSystem {
           const leakDetection = this.detectMemoryLeaks();
           if (leakDetection.isLeaking) {
             logger.error('检测到内存泄漏', leakDetection);
-            
-            if (this.config.enableAutoCleanup && leakDetection.severity !== 'low') {
+
+            if (
+              this.config.enableAutoCleanup &&
+              leakDetection.severity !== 'low'
+            ) {
               this.performCleanup();
             }
           }
@@ -550,21 +576,21 @@ class MemoryManagementSystem {
    */
   private setupGlobalErrorHandling(): void {
     // 监听未捕获的Promise拒绝
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       logger.error('未处理的Promise拒绝', {
         reason: event.reason,
-        promise: event.promise
+        promise: event.promise,
       });
     });
 
     // 监听全局错误
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       logger.error('全局错误', {
         message: event.message,
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
-        error: event.error
+        error: event.error,
       });
     });
   }
@@ -574,7 +600,7 @@ class MemoryManagementSystem {
    */
   public updateConfig(newConfig: Partial<MemoryConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // 重启监控
     if (this.monitoringTimer) {
       clearInterval(this.monitoringTimer);
@@ -582,9 +608,9 @@ class MemoryManagementSystem {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     this.startMonitoring();
-    
+
     logger.info('内存管理配置已更新', this.config);
   }
 
@@ -647,31 +673,42 @@ export function useMemoryManagement(componentName: string) {
   const listenerIds = useRef<Set<string>>(new Set());
 
   // 注册订阅
-  const registerSubscription = useCallback((
-    id: string,
-    type: string,
-    cleanup?: () => void
-  ) => {
-    memoryManager.registerSubscription(id, type, componentName, cleanup);
-    subscriptionIds.current.add(id);
-  }, [componentName]);
+  const registerSubscription = useCallback(
+    (id: string, type: string, cleanup?: () => void) => {
+      memoryManager.registerSubscription(id, type, componentName, cleanup);
+      subscriptionIds.current.add(id);
+    },
+    [componentName]
+  );
 
   // 注册定时器
-  const registerTimer = useCallback((timer: ReturnType<typeof setInterval>) => {
-    memoryManager.registerTimer(timer, componentName);
-    timerIds.current.add(timer);
-  }, [componentName]);
+  const registerTimer = useCallback(
+    (timer: ReturnType<typeof setInterval>) => {
+      memoryManager.registerTimer(timer, componentName);
+      timerIds.current.add(timer);
+    },
+    [componentName]
+  );
 
   // 注册事件监听器
-  const registerEventListener = useCallback((
-    id: string,
-    element: EventTarget,
-    event: string,
-    handler: EventListener
-  ) => {
-    memoryManager.registerEventListener(id, element, event, handler, componentName);
-    listenerIds.current.add(id);
-  }, [componentName]);
+  const registerEventListener = useCallback(
+    (
+      id: string,
+      element: EventTarget,
+      event: string,
+      handler: EventListener
+    ) => {
+      memoryManager.registerEventListener(
+        id,
+        element,
+        event,
+        handler,
+        componentName
+      );
+      listenerIds.current.add(id);
+    },
+    [componentName]
+  );
 
   // 组件卸载时清理
   useEffect(() => {
@@ -697,7 +734,8 @@ export function useMemoryManagement(componentName: string) {
     registerSubscription,
     registerTimer,
     registerEventListener,
-    updateSubscriptionActivity: memoryManager.updateSubscriptionActivity.bind(memoryManager)
+    updateSubscriptionActivity:
+      memoryManager.updateSubscriptionActivity.bind(memoryManager),
   };
 }
 
@@ -706,7 +744,8 @@ export function useMemoryManagement(componentName: string) {
  */
 export function useMemoryMonitor() {
   const [memoryUsage, setMemoryUsage] = useState<MemoryUsage | null>(null);
-  const [leakDetection, setLeakDetection] = useState<MemoryLeakDetection | null>(null);
+  const [leakDetection, setLeakDetection] =
+    useState<MemoryLeakDetection | null>(null);
 
   useEffect(() => {
     const updateMemoryInfo = () => {
@@ -729,6 +768,6 @@ export function useMemoryMonitor() {
     leakDetection,
     performCleanup,
     componentStats: memoryManager.getComponentMemoryStats(),
-    subscriptionStats: memoryManager.getSubscriptionStats()
+    subscriptionStats: memoryManager.getSubscriptionStats(),
   };
 }

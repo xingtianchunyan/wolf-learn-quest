@@ -15,9 +15,9 @@ export interface DyingStatusResolution {
  * 濒死状态解除类型
  */
 export enum DyingResolutionType {
-  PROTECTED = 'protected',       // 获得保护：解除濒死状态，恢复为正常状态
+  PROTECTED = 'protected', // 获得保护：解除濒死状态，恢复为正常状态
   ANSWER_CORRECT = 'answer_correct', // 答题正确：转为虚弱状态
-  ANSWER_WRONG = 'answer_wrong'      // 答题错误：转为淘汰状态
+  ANSWER_WRONG = 'answer_wrong', // 答题错误：转为淘汰状态
 }
 
 /**
@@ -29,12 +29,14 @@ export class DyingStatusService {
    * @param resolution 解除配置
    * @returns 是否成功解除
    */
-  static async resolveDyingStatus(resolution: DyingStatusResolution): Promise<boolean> {
+  static async resolveDyingStatus(
+    resolution: DyingStatusResolution
+  ): Promise<boolean> {
     try {
       const { data, error } = await supabase.rpc('resolve_dying_status', {
         p_user_id: resolution.userId,
         p_game_state_id: resolution.gameStateId,
-        p_resolution_type: resolution.resolutionType
+        p_resolution_type: resolution.resolutionType,
       });
 
       if (error) {
@@ -58,14 +60,16 @@ export class DyingStatusService {
     try {
       const { data, error } = await supabase
         .from('role_states')
-        .select(`
+        .select(
+          `
           *,
           users:user_id (
             user_id,
             player_name,
             avatar_url
           )
-        `)
+        `
+        )
         .eq('room_id', roomId)
         .eq('role_status', 2); // 濒死状态
 
@@ -87,7 +91,10 @@ export class DyingStatusService {
    * @param gameStateId 游戏状态ID
    * @returns 是否濒死状态
    */
-  static async isPlayerDying(userId: string, gameStateId: string): Promise<boolean> {
+  static async isPlayerDying(
+    userId: string,
+    gameStateId: string
+  ): Promise<boolean> {
     try {
       const { data, error } = await supabase
         .from('role_states')
@@ -114,11 +121,14 @@ export class DyingStatusService {
    * @param gameStateId 游戏状态ID
    * @returns 是否成功
    */
-  static async resolveByProtection(userId: string, gameStateId: string): Promise<boolean> {
+  static async resolveByProtection(
+    userId: string,
+    gameStateId: string
+  ): Promise<boolean> {
     return this.resolveDyingStatus({
       userId,
       gameStateId,
-      resolutionType: DyingResolutionType.PROTECTED
+      resolutionType: DyingResolutionType.PROTECTED,
     });
   }
 
@@ -129,11 +139,17 @@ export class DyingStatusService {
    * @param isCorrect 答题是否正确
    * @returns 是否成功
    */
-  static async resolveByAnswer(userId: string, gameStateId: string, isCorrect: boolean): Promise<boolean> {
+  static async resolveByAnswer(
+    userId: string,
+    gameStateId: string,
+    isCorrect: boolean
+  ): Promise<boolean> {
     return this.resolveDyingStatus({
       userId,
       gameStateId,
-      resolutionType: isCorrect ? DyingResolutionType.ANSWER_CORRECT : DyingResolutionType.ANSWER_WRONG
+      resolutionType: isCorrect
+        ? DyingResolutionType.ANSWER_CORRECT
+        : DyingResolutionType.ANSWER_WRONG,
     });
   }
 }

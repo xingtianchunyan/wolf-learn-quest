@@ -40,7 +40,7 @@ class MonitoringService {
     responseTime: 1000, // 1秒
     errorRate: 0.05, // 5%
     memoryUsage: 100 * 1024 * 1024, // 100MB
-    skillUsageRate: 100 // 每秒100次
+    skillUsageRate: 100, // 每秒100次
   };
 
   /**
@@ -49,7 +49,7 @@ class MonitoringService {
   recordMetric(metric: PerformanceMetric): void {
     this.metrics.push({
       ...metric,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // 限制存储的指标数量
@@ -74,10 +74,13 @@ class MonitoringService {
         if (metric.value > this.ALERT_THRESHOLDS.responseTime) {
           alert = {
             id: `alert-${Date.now()}`,
-            severity: metric.value > this.ALERT_THRESHOLDS.responseTime * 2 ? 'critical' : 'warning',
+            severity:
+              metric.value > this.ALERT_THRESHOLDS.responseTime * 2
+                ? 'critical'
+                : 'warning',
             message: `响应时间过长: ${metric.value}ms`,
             timestamp: Date.now(),
-            resolved: false
+            resolved: false,
           };
         }
         break;
@@ -89,7 +92,7 @@ class MonitoringService {
             severity: 'warning',
             message: `内存使用过高: ${(metric.value / 1024 / 1024).toFixed(2)}MB`,
             timestamp: Date.now(),
-            resolved: false
+            resolved: false,
           };
         }
         break;
@@ -101,7 +104,7 @@ class MonitoringService {
             severity: 'error',
             message: `错误率过高: ${(metric.value * 100).toFixed(2)}%`,
             timestamp: Date.now(),
-            resolved: false
+            resolved: false,
           };
         }
         break;
@@ -121,28 +124,38 @@ class MonitoringService {
     const recentMetrics = this.metrics.filter(m => now - m.timestamp < 60000); // 最近1分钟
 
     // 计算平均响应时间
-    const responseTimeMetrics = recentMetrics.filter(m => m.name === 'response_time');
-    const avgResponseTime = responseTimeMetrics.length > 0
-      ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) / responseTimeMetrics.length
-      : 0;
+    const responseTimeMetrics = recentMetrics.filter(
+      m => m.name === 'response_time'
+    );
+    const avgResponseTime =
+      responseTimeMetrics.length > 0
+        ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) /
+          responseTimeMetrics.length
+        : 0;
 
     // 计算错误率
     const errorMetrics = recentMetrics.filter(m => m.name === 'error');
-    const totalRequests = recentMetrics.filter(m => m.name === 'request').length;
-    const errorRate = totalRequests > 0 ? errorMetrics.length / totalRequests : 0;
+    const totalRequests = recentMetrics.filter(
+      m => m.name === 'request'
+    ).length;
+    const errorRate =
+      totalRequests > 0 ? errorMetrics.length / totalRequests : 0;
 
     // 获取活跃用户数
     const activeUsers = await this.getActiveUserCount();
 
     // 计算技能使用率
-    const skillUsageMetrics = recentMetrics.filter(m => m.name === 'skill_usage');
+    const skillUsageMetrics = recentMetrics.filter(
+      m => m.name === 'skill_usage'
+    );
     const skillUsageRate = skillUsageMetrics.length / 60; // 每秒
 
     // 获取内存使用
     const memoryMetrics = recentMetrics.filter(m => m.name === 'memory_usage');
-    const currentMemory = memoryMetrics.length > 0
-      ? memoryMetrics[memoryMetrics.length - 1].value
-      : 0;
+    const currentMemory =
+      memoryMetrics.length > 0
+        ? memoryMetrics[memoryMetrics.length - 1].value
+        : 0;
 
     // 确定系统状态
     let status: SystemHealth['status'] = 'healthy';
@@ -150,7 +163,9 @@ class MonitoringService {
 
     if (activeAlerts.some(a => a.severity === 'critical')) {
       status = 'critical';
-    } else if (activeAlerts.some(a => a.severity === 'error' || a.severity === 'warning')) {
+    } else if (
+      activeAlerts.some(a => a.severity === 'error' || a.severity === 'warning')
+    ) {
       status = 'warning';
     }
 
@@ -161,9 +176,9 @@ class MonitoringService {
         errorRate,
         activeUsers,
         skillUsageRate,
-        memoryUsage: currentMemory
+        memoryUsage: currentMemory,
       },
-      alerts: activeAlerts
+      alerts: activeAlerts,
     };
   }
 
@@ -236,7 +251,9 @@ class MonitoringService {
   cleanup(maxAge: number = 3600000): void {
     const now = Date.now();
     this.metrics = this.metrics.filter(m => now - m.timestamp < maxAge);
-    this.alerts = this.alerts.filter(a => !a.resolved && now - a.timestamp < maxAge);
+    this.alerts = this.alerts.filter(
+      a => !a.resolved && now - a.timestamp < maxAge
+    );
     logger.debug('清理旧监控数据完成');
   }
 
@@ -258,15 +275,22 @@ class MonitoringService {
     };
   } {
     const now = Date.now();
-    const recentMetrics = this.metrics.filter(m => now - m.timestamp < timeRange);
+    const recentMetrics = this.metrics.filter(
+      m => now - m.timestamp < timeRange
+    );
 
-    const responseTimeMetrics = recentMetrics.filter(m => m.name === 'response_time');
-    const avgResponseTime = responseTimeMetrics.length > 0
-      ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) / responseTimeMetrics.length
-      : 0;
-    const maxResponseTime = responseTimeMetrics.length > 0
-      ? Math.max(...responseTimeMetrics.map(m => m.value))
-      : 0;
+    const responseTimeMetrics = recentMetrics.filter(
+      m => m.name === 'response_time'
+    );
+    const avgResponseTime =
+      responseTimeMetrics.length > 0
+        ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) /
+          responseTimeMetrics.length
+        : 0;
+    const maxResponseTime =
+      responseTimeMetrics.length > 0
+        ? Math.max(...responseTimeMetrics.map(m => m.value))
+        : 0;
 
     const errorMetrics = recentMetrics.filter(m => m.name === 'error');
     const alertMetrics = this.alerts.filter(a => now - a.timestamp < timeRange);
@@ -277,13 +301,17 @@ class MonitoringService {
         avgResponseTime,
         maxResponseTime,
         totalErrors: errorMetrics.length,
-        totalAlerts: alertMetrics.length
+        totalAlerts: alertMetrics.length,
       },
       trends: {
         responseTime: responseTimeMetrics.map(m => m.value),
-        memoryUsage: recentMetrics.filter(m => m.name === 'memory_usage').map(m => m.value),
-        skillUsage: recentMetrics.filter(m => m.name === 'skill_usage').map(m => m.value)
-      }
+        memoryUsage: recentMetrics
+          .filter(m => m.name === 'memory_usage')
+          .map(m => m.value),
+        skillUsage: recentMetrics
+          .filter(m => m.name === 'skill_usage')
+          .map(m => m.value),
+      },
     };
   }
 }

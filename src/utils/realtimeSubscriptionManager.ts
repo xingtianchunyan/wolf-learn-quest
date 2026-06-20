@@ -1,6 +1,6 @@
 /**
  * 文件级注释：实时订阅内存管理系统
- * 
+ *
  * 该文件实现了一个全面的实时订阅管理系统，专门解决：
  * - 订阅内存泄漏问题
  * - 重复订阅管理
@@ -8,7 +8,7 @@
  * - 内存使用优化
  * - 连接池管理
  * - 自动重连机制
- * 
+ *
  * 主要功能：
  * - 智能订阅池管理
  * - 内存泄漏检测和预防
@@ -16,7 +16,7 @@
  * - 批量订阅优化
  * - 连接状态监控
  * - 自动清理机制
- * 
+ *
  * @author SOLO Coding
  * @version 3.0.0
  */
@@ -69,7 +69,12 @@ export interface SubscriptionConfig {
  */
 export interface SubscriptionState {
   id: string;
-  status: 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting';
+  status:
+    | 'connecting'
+    | 'connected'
+    | 'disconnected'
+    | 'error'
+    | 'reconnecting';
   connection: any;
   lastActivity: number;
   reconnectAttempts: number;
@@ -115,7 +120,13 @@ export interface MemoryMonitorConfig {
  * 接口注释：订阅事件
  */
 export interface SubscriptionEvent {
-  type: 'connect' | 'disconnect' | 'message' | 'error' | 'reconnect' | 'cleanup';
+  type:
+    | 'connect'
+    | 'disconnect'
+    | 'message'
+    | 'error'
+    | 'reconnect'
+    | 'cleanup';
   subscriptionId: string;
   timestamp: number;
   data?: any;
@@ -124,7 +135,7 @@ export interface SubscriptionEvent {
 
 /**
  * 类级注释：实时订阅管理器
- * 
+ *
  * 实现全面的订阅生命周期管理，包含：
  * - 订阅池管理和优化
  * - 内存泄漏检测和预防
@@ -153,7 +164,7 @@ export class RealtimeSubscriptionManager {
       warningThreshold: 50 * 1024 * 1024, // 50MB
       criticalThreshold: 100 * 1024 * 1024, // 100MB
       autoCleanup: true,
-      gcThreshold: 80 * 1024 * 1024 // 80MB
+      gcThreshold: 80 * 1024 * 1024, // 80MB
     };
 
     this.stats = {
@@ -165,7 +176,7 @@ export class RealtimeSubscriptionManager {
       connectionsByType: {},
       connectionsByPriority: {},
       averageLatency: 0,
-      uptime: Date.now()
+      uptime: Date.now(),
     };
 
     this.startMemoryMonitoring();
@@ -225,7 +236,7 @@ export class RealtimeSubscriptionManager {
         errorCount: 0,
         createdAt: Date.now(),
         listeners: new Set([onMessage]),
-        buffer: []
+        buffer: [],
       };
 
       this.subscriptions.set(config.id, state);
@@ -240,13 +251,13 @@ export class RealtimeSubscriptionManager {
       this.emitEvent({
         type: 'connect',
         subscriptionId: config.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
-      logger.info('订阅创建成功', { 
-        id: config.id, 
+      logger.info('订阅创建成功', {
+        id: config.id,
         type: config.type,
-        priority: config.priority 
+        priority: config.priority,
       });
 
       return config.id;
@@ -295,17 +306,19 @@ export class RealtimeSubscriptionManager {
       if (config.buffer.enabled) {
         this.startBufferFlush(config, state);
       }
-
     } catch (error) {
       state.status = 'error';
       state.errorCount++;
-      
+
       if (onError) {
         onError(error as Error);
       }
 
       // 尝试重连
-      if (config.reconnect.enabled && state.reconnectAttempts < config.reconnect.maxAttempts) {
+      if (
+        config.reconnect.enabled &&
+        state.reconnectAttempts < config.reconnect.maxAttempts
+      ) {
         this.scheduleReconnect(config, state, onError);
       }
 
@@ -324,17 +337,17 @@ export class RealtimeSubscriptionManager {
     return new Promise((resolve, reject) => {
       try {
         const ws = new WebSocket(config.endpoint);
-        
+
         ws.onopen = () => {
           state.connection = ws;
           resolve();
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = event => {
           this.handleMessage(config, state, event.data);
         };
 
-        ws.onerror = (error) => {
+        ws.onerror = error => {
           const err = new Error(`WebSocket错误: ${error}`);
           this.handleError(config, state, err, onError);
           reject(err);
@@ -352,7 +365,6 @@ export class RealtimeSubscriptionManager {
             reject(new Error('WebSocket连接超时'));
           }
         }, config.timeout);
-
       } catch (error) {
         reject(error);
       }
@@ -370,17 +382,17 @@ export class RealtimeSubscriptionManager {
     return new Promise((resolve, reject) => {
       try {
         const eventSource = new EventSource(config.endpoint);
-        
+
         eventSource.onopen = () => {
           state.connection = eventSource;
           resolve();
         };
 
-        eventSource.onmessage = (event) => {
+        eventSource.onmessage = event => {
           this.handleMessage(config, state, event.data);
         };
 
-        eventSource.onerror = (error) => {
+        eventSource.onerror = error => {
           const err = new Error(`SSE错误: ${error}`);
           this.handleError(config, state, err, onError);
           reject(err);
@@ -393,7 +405,6 @@ export class RealtimeSubscriptionManager {
             reject(new Error('SSE连接超时'));
           }
         }, config.timeout);
-
       } catch (error) {
         reject(error);
       }
@@ -448,7 +459,11 @@ export class RealtimeSubscriptionManager {
   /**
    * 函数级注释：处理消息
    */
-  private handleMessage(config: SubscriptionConfig, state: SubscriptionState, data: any): void {
+  private handleMessage(
+    config: SubscriptionConfig,
+    state: SubscriptionState,
+    data: any
+  ): void {
     try {
       state.lastActivity = Date.now();
       state.messageCount++;
@@ -461,7 +476,7 @@ export class RealtimeSubscriptionManager {
       if (config.buffer.enabled) {
         state.buffer.push({
           data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
 
         if (state.buffer.length > config.buffer.maxSize) {
@@ -474,7 +489,10 @@ export class RealtimeSubscriptionManager {
         try {
           listener(data);
         } catch (error) {
-          logger.error('消息监听器执行失败', { error, subscriptionId: state.id });
+          logger.error('消息监听器执行失败', {
+            error,
+            subscriptionId: state.id,
+          });
         }
       });
 
@@ -483,19 +501,18 @@ export class RealtimeSubscriptionManager {
         type: 'message',
         subscriptionId: state.id,
         timestamp: Date.now(),
-        data
+        data,
       });
 
       // 检查内存使用
       if (state.memoryUsage > config.memoryLimit) {
-        logger.warn('订阅内存使用超限', { 
-          subscriptionId: state.id, 
+        logger.warn('订阅内存使用超限', {
+          subscriptionId: state.id,
           usage: state.memoryUsage,
-          limit: config.memoryLimit 
+          limit: config.memoryLimit,
         });
         this.cleanupSubscriptionMemory(state.id);
       }
-
     } catch (error) {
       logger.error('消息处理失败', { error, subscriptionId: state.id });
     }
@@ -513,10 +530,10 @@ export class RealtimeSubscriptionManager {
     state.errorCount++;
     state.status = 'error';
 
-    logger.error('订阅错误', { 
-      error, 
+    logger.error('订阅错误', {
+      error,
       subscriptionId: state.id,
-      errorCount: state.errorCount 
+      errorCount: state.errorCount,
     });
 
     if (onError) {
@@ -528,11 +545,14 @@ export class RealtimeSubscriptionManager {
       type: 'error',
       subscriptionId: state.id,
       timestamp: Date.now(),
-      error
+      error,
     });
 
     // 尝试重连
-    if (config.reconnect.enabled && state.reconnectAttempts < config.reconnect.maxAttempts) {
+    if (
+      config.reconnect.enabled &&
+      state.reconnectAttempts < config.reconnect.maxAttempts
+    ) {
       this.scheduleReconnect(config, state, onError);
     }
   }
@@ -553,11 +573,15 @@ export class RealtimeSubscriptionManager {
     this.emitEvent({
       type: 'disconnect',
       subscriptionId: state.id,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // 尝试重连
-    if (config.reconnect.enabled && state.reconnectAttempts < config.reconnect.maxAttempts && !this.isShuttingDown) {
+    if (
+      config.reconnect.enabled &&
+      state.reconnectAttempts < config.reconnect.maxAttempts &&
+      !this.isShuttingDown
+    ) {
       this.scheduleReconnect(config, state, onError);
     }
   }
@@ -578,33 +602,32 @@ export class RealtimeSubscriptionManager {
       delay *= Math.pow(2, state.reconnectAttempts - 1);
     }
 
-    logger.info('调度重连', { 
+    logger.info('调度重连', {
       subscriptionId: state.id,
       attempt: state.reconnectAttempts,
-      delay 
+      delay,
     });
 
     state.reconnectTimer = setTimeout(async () => {
       try {
         await this.establishConnection(config, state, onError);
-        
+
         // 触发事件
         this.emitEvent({
           type: 'reconnect',
           subscriptionId: state.id,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
 
-        logger.info('重连成功', { 
+        logger.info('重连成功', {
           subscriptionId: state.id,
-          attempts: state.reconnectAttempts 
+          attempts: state.reconnectAttempts,
         });
-
       } catch (error) {
-        logger.error('重连失败', { 
-          error, 
+        logger.error('重连失败', {
+          error,
           subscriptionId: state.id,
-          attempts: state.reconnectAttempts 
+          attempts: state.reconnectAttempts,
         });
       }
     }, delay);
@@ -613,7 +636,10 @@ export class RealtimeSubscriptionManager {
   /**
    * 函数级注释：启动心跳
    */
-  private startHeartbeat(config: SubscriptionConfig, state: SubscriptionState): void {
+  private startHeartbeat(
+    config: SubscriptionConfig,
+    state: SubscriptionState
+  ): void {
     if (state.heartbeatTimer) {
       clearInterval(state.heartbeatTimer);
     }
@@ -622,7 +648,10 @@ export class RealtimeSubscriptionManager {
       if (state.status === 'connected' && state.connection) {
         try {
           // 发送心跳包
-          if (config.type === 'websocket' && state.connection.readyState === WebSocket.OPEN) {
+          if (
+            config.type === 'websocket' &&
+            state.connection.readyState === WebSocket.OPEN
+          ) {
             state.connection.send(JSON.stringify({ type: 'ping' }));
           }
         } catch (error) {
@@ -635,7 +664,10 @@ export class RealtimeSubscriptionManager {
   /**
    * 函数级注释：启动缓冲区刷新
    */
-  private startBufferFlush(config: SubscriptionConfig, state: SubscriptionState): void {
+  private startBufferFlush(
+    config: SubscriptionConfig,
+    state: SubscriptionState
+  ): void {
     if (state.flushTimer) {
       clearInterval(state.flushTimer);
     }
@@ -643,9 +675,9 @@ export class RealtimeSubscriptionManager {
     state.flushTimer = setInterval(() => {
       if (state.buffer.length > 0) {
         // 清理过期的缓冲消息
-        const cutoffTime = Date.now() - (config.buffer.flushInterval * 2);
+        const cutoffTime = Date.now() - config.buffer.flushInterval * 2;
         state.buffer = state.buffer.filter(item => item.timestamp > cutoffTime);
-        
+
         // 更新内存使用估算
         const bufferSize = state.buffer.reduce((size, item) => {
           return size + JSON.stringify(item.data).length * 2;
@@ -702,11 +734,10 @@ export class RealtimeSubscriptionManager {
       this.emitEvent({
         type: 'cleanup',
         subscriptionId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       logger.info('订阅已移除', { subscriptionId });
-
     } catch (error) {
       logger.error('移除订阅失败', { error, subscriptionId });
     }
@@ -721,16 +752,16 @@ export class RealtimeSubscriptionManager {
 
     // 清理缓冲区
     state.buffer = state.buffer.slice(-Math.floor(state.buffer.length / 2));
-    
+
     // 重新计算内存使用
     const bufferSize = state.buffer.reduce((size, item) => {
       return size + JSON.stringify(item.data).length * 2;
     }, 0);
     state.memoryUsage = bufferSize;
 
-    logger.info('订阅内存已清理', { 
-      subscriptionId, 
-      newMemoryUsage: state.memoryUsage 
+    logger.info('订阅内存已清理', {
+      subscriptionId,
+      newMemoryUsage: state.memoryUsage,
     });
   }
 
@@ -745,13 +776,13 @@ export class RealtimeSubscriptionManager {
 
       if (totalMemory > this.memoryMonitor.criticalThreshold) {
         logger.error('内存使用达到临界阈值', { totalMemory });
-        
+
         if (this.memoryMonitor.autoCleanup) {
           this.performEmergencyCleanup();
         }
       } else if (totalMemory > this.memoryMonitor.warningThreshold) {
         logger.warn('内存使用超过警告阈值', { totalMemory });
-        
+
         if (this.memoryMonitor.autoCleanup) {
           this.performGentleCleanup();
         }
@@ -761,7 +792,6 @@ export class RealtimeSubscriptionManager {
       if (totalMemory > this.memoryMonitor.gcThreshold && window.gc) {
         window.gc();
       }
-
     }, this.memoryMonitor.checkInterval);
   }
 
@@ -772,12 +802,13 @@ export class RealtimeSubscriptionManager {
     logger.info('执行紧急内存清理');
 
     // 按优先级排序，优先清理低优先级订阅
-    const subscriptions = Array.from(this.subscriptions.entries())
-      .sort(([, a], [, b]) => {
+    const subscriptions = Array.from(this.subscriptions.entries()).sort(
+      ([, a], [, b]) => {
         const priorityOrder = { low: 0, medium: 1, high: 2 };
         // 这里需要从配置中获取优先级，简化处理
         return a.memoryUsage - b.memoryUsage; // 按内存使用排序
-      });
+      }
+    );
 
     // 清理内存使用最高的25%订阅
     const cleanupCount = Math.ceil(subscriptions.length * 0.25);
@@ -819,21 +850,24 @@ export class RealtimeSubscriptionManager {
 
     this.subscriptions.forEach((state, subscriptionId) => {
       // 清理长时间不活跃的订阅
-      if (now - state.lastActivity > inactiveThreshold && state.status === 'disconnected') {
+      if (
+        now - state.lastActivity > inactiveThreshold &&
+        state.status === 'disconnected'
+      ) {
         logger.info('清理不活跃订阅', { subscriptionId });
         this.removeSubscription(subscriptionId);
       }
 
       // 清理过期的缓冲区消息
       if (state.buffer.length > 0) {
-        const cutoffTime = now - (10 * 60 * 1000); // 10分钟
+        const cutoffTime = now - 10 * 60 * 1000; // 10分钟
         const originalLength = state.buffer.length;
         state.buffer = state.buffer.filter(item => item.timestamp > cutoffTime);
-        
+
         if (state.buffer.length < originalLength) {
-          logger.debug('清理过期缓冲消息', { 
-            subscriptionId, 
-            removed: originalLength - state.buffer.length 
+          logger.debug('清理过期缓冲消息', {
+            subscriptionId,
+            removed: originalLength - state.buffer.length,
           });
         }
       }
@@ -847,8 +881,10 @@ export class RealtimeSubscriptionManager {
    * 函数级注释：获取总内存使用量
    */
   private getTotalMemoryUsage(): number {
-    return Array.from(this.subscriptions.values())
-      .reduce((total, state) => total + state.memoryUsage, 0);
+    return Array.from(this.subscriptions.values()).reduce(
+      (total, state) => total + state.memoryUsage,
+      0
+    );
   }
 
   /**
@@ -856,12 +892,20 @@ export class RealtimeSubscriptionManager {
    */
   private updateStats(): void {
     const subscriptions = Array.from(this.subscriptions.values());
-    
+
     this.stats.totalSubscriptions = subscriptions.length;
-    this.stats.activeSubscriptions = subscriptions.filter(s => s.status === 'connected').length;
+    this.stats.activeSubscriptions = subscriptions.filter(
+      s => s.status === 'connected'
+    ).length;
     this.stats.totalMemoryUsage = this.getTotalMemoryUsage();
-    this.stats.totalMessages = subscriptions.reduce((sum, s) => sum + s.messageCount, 0);
-    this.stats.totalErrors = subscriptions.reduce((sum, s) => sum + s.errorCount, 0);
+    this.stats.totalMessages = subscriptions.reduce(
+      (sum, s) => sum + s.messageCount,
+      0
+    );
+    this.stats.totalErrors = subscriptions.reduce(
+      (sum, s) => sum + s.errorCount,
+      0
+    );
 
     // 按类型统计（这里简化处理，实际需要从配置中获取）
     this.stats.connectionsByType = {};
@@ -915,7 +959,9 @@ export class RealtimeSubscriptionManager {
   /**
    * 函数级注释：获取订阅状态
    */
-  public getSubscriptionState(subscriptionId: string): SubscriptionState | null {
+  public getSubscriptionState(
+    subscriptionId: string
+  ): SubscriptionState | null {
     return this.subscriptions.get(subscriptionId) || null;
   }
 
@@ -932,7 +978,7 @@ export class RealtimeSubscriptionManager {
    */
   public shutdown(): void {
     if (this.isShuttingDown) return;
-    
+
     this.isShuttingDown = true;
     logger.info('开始关闭订阅管理器');
 
@@ -956,19 +1002,35 @@ export class RealtimeSubscriptionManager {
 }
 
 // 导出单例实例
-export const realtimeSubscriptionManager = RealtimeSubscriptionManager.getInstance();
+export const realtimeSubscriptionManager =
+  RealtimeSubscriptionManager.getInstance();
 
 /**
  * 函数级注释：React Hook - 使用实时订阅管理器
  */
 export function useRealtimeSubscriptionManager() {
   return {
-    createSubscription: realtimeSubscriptionManager.createSubscription.bind(realtimeSubscriptionManager),
-    removeSubscription: realtimeSubscriptionManager.removeSubscription.bind(realtimeSubscriptionManager),
-    getStats: realtimeSubscriptionManager.getStats.bind(realtimeSubscriptionManager),
-    getSubscriptionState: realtimeSubscriptionManager.getSubscriptionState.bind(realtimeSubscriptionManager),
-    addEventListener: realtimeSubscriptionManager.addEventListener.bind(realtimeSubscriptionManager),
-    removeEventListener: realtimeSubscriptionManager.removeEventListener.bind(realtimeSubscriptionManager),
-    updateMemoryMonitorConfig: realtimeSubscriptionManager.updateMemoryMonitorConfig.bind(realtimeSubscriptionManager)
+    createSubscription: realtimeSubscriptionManager.createSubscription.bind(
+      realtimeSubscriptionManager
+    ),
+    removeSubscription: realtimeSubscriptionManager.removeSubscription.bind(
+      realtimeSubscriptionManager
+    ),
+    getStats: realtimeSubscriptionManager.getStats.bind(
+      realtimeSubscriptionManager
+    ),
+    getSubscriptionState: realtimeSubscriptionManager.getSubscriptionState.bind(
+      realtimeSubscriptionManager
+    ),
+    addEventListener: realtimeSubscriptionManager.addEventListener.bind(
+      realtimeSubscriptionManager
+    ),
+    removeEventListener: realtimeSubscriptionManager.removeEventListener.bind(
+      realtimeSubscriptionManager
+    ),
+    updateMemoryMonitorConfig:
+      realtimeSubscriptionManager.updateMemoryMonitorConfig.bind(
+        realtimeSubscriptionManager
+      ),
   };
 }

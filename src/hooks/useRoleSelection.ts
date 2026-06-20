@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
@@ -18,7 +17,12 @@ interface RoleSelection {
   };
 }
 
-export const useRoleSelection = (roomId: string, currentUserId: string | null, currentPlayerCount: number, maxPlayers: number) => {
+export const useRoleSelection = (
+  roomId: string,
+  currentUserId: string | null,
+  currentPlayerCount: number,
+  maxPlayers: number
+) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
   const { roleDesigns } = useRoleDesigns();
@@ -31,7 +35,8 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
       try {
         const { data, error } = await supabase
           .from('role_selections')
-          .select(`
+          .select(
+            `
             *,
             role_design:role_id (
               id,
@@ -39,7 +44,8 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
               faction,
               role_description
             )
-          `)
+          `
+          )
           .eq('room_id', roomId);
 
         if (error) {
@@ -66,9 +72,9 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
           event: '*',
           schema: 'public',
           table: 'role_selections',
-          filter: `room_id=eq.${roomId}`
+          filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
+        payload => {
           fetchRoleSelections();
         }
       )
@@ -105,13 +111,11 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     if (!currentUserId || !roomId) return false;
 
     try {
-      const { error } = await supabase
-        .from('role_selections')
-        .upsert({
-          room_id: roomId,
-          user_id: currentUserId,
-          role_id: roleDesignId // 现在使用 role_design 的 uuid
-        });
+      const { error } = await supabase.from('role_selections').upsert({
+        room_id: roomId,
+        user_id: currentUserId,
+        role_id: roleDesignId, // 现在使用 role_design 的 uuid
+      });
 
       if (error) {
         console.error('Error selecting role:', error);
@@ -148,12 +152,16 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
   };
 
   const getSelectedRoleByUser = (userId: string) => {
-    const selection = roleSelections.find(selection => selection.user_id === userId);
-    return selection ? {
-      roleId: selection.role_id,
-      roleName: selection.role_design?.role_name || '未知角色',
-      roleDesign: selection.role_design
-    } : null;
+    const selection = roleSelections.find(
+      selection => selection.user_id === userId
+    );
+    return selection
+      ? {
+          roleId: selection.role_id,
+          roleName: selection.role_design?.role_name || '未知角色',
+          roleDesign: selection.role_design,
+        }
+      : null;
   };
 
   const isRoleSelected = (roleDesignId: string) => {
@@ -185,6 +193,6 @@ export const useRoleSelection = (roomId: string, currentUserId: string | null, c
     getCurrentPlayerSelection,
     canSelectRoles,
     allPlayersSelectedRoles,
-    clearAllRoleSelections
+    clearAllRoleSelections,
   };
 };

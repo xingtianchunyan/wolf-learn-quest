@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Loader2, Zap, Shield, Heart } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Loader2,
+  Zap,
+  Shield,
+  Heart,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Toast } from '@/components/ui/toast';
@@ -19,7 +27,12 @@ export interface FeedbackMessage {
 interface OperationFeedbackProps {
   messages: FeedbackMessage[];
   onDismiss: (id: string) => void;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center';
+  position?:
+    | 'top-right'
+    | 'top-left'
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'top-center';
 }
 
 const iconMap = {
@@ -27,14 +40,14 @@ const iconMap = {
   error: XCircle,
   warning: AlertCircle,
   info: AlertCircle,
-  loading: Loader2
+  loading: Loader2,
 };
 
 const skillIconMap = {
   vigil: Shield,
   night_attack: Zap,
   magic_potion: Heart,
-  default: Zap
+  default: Zap,
 };
 
 const colorMap = {
@@ -42,26 +55,27 @@ const colorMap = {
   error: 'border-red-500 bg-red-50 text-red-800',
   warning: 'border-yellow-500 bg-yellow-50 text-yellow-800',
   info: 'border-blue-500 bg-blue-50 text-blue-800',
-  loading: 'border-blue-500 bg-blue-50 text-blue-800'
+  loading: 'border-blue-500 bg-blue-50 text-blue-800',
 };
 
 const OperationFeedback: React.FC<OperationFeedbackProps> = ({
   messages,
   onDismiss,
-  position = 'top-right'
+  position = 'top-right',
 }) => {
-  const [visibleMessages, setVisibleMessages] = useState<FeedbackMessage[]>(messages);
+  const [visibleMessages, setVisibleMessages] =
+    useState<FeedbackMessage[]>(messages);
 
   useEffect(() => {
     setVisibleMessages(messages);
-    
+
     // 自动消失逻辑
     messages.forEach(message => {
       if (message.type !== 'loading' && message.duration !== 0) {
         const timeout = setTimeout(() => {
           onDismiss(message.id);
         }, message.duration || 5000);
-        
+
         return () => clearTimeout(timeout);
       }
     });
@@ -86,12 +100,17 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
 
   const renderIcon = (message: FeedbackMessage) => {
     const Icon = iconMap[message.type];
-    const SkillIcon = message.skillType ? skillIconMap[message.skillType as keyof typeof skillIconMap] || skillIconMap.default : null;
-    
+    const SkillIcon = message.skillType
+      ? skillIconMap[message.skillType as keyof typeof skillIconMap] ||
+        skillIconMap.default
+      : null;
+
     return (
-      <div className="flex items-center gap-2">
-        {SkillIcon && <SkillIcon className="w-4 h-4" />}
-        <Icon className={`w-5 h-5 ${message.type === 'loading' ? 'animate-spin' : ''}`} />
+      <div className='flex items-center gap-2'>
+        {SkillIcon && <SkillIcon className='w-4 h-4' />}
+        <Icon
+          className={`w-5 h-5 ${message.type === 'loading' ? 'animate-spin' : ''}`}
+        />
       </div>
     );
   };
@@ -99,9 +118,17 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
   const renderFeedbackCard = (message: FeedbackMessage) => (
     <motion.div
       key={message.id}
-      initial={{ opacity: 0, x: position.includes('right') ? 300 : -300, scale: 0.9 }}
+      initial={{
+        opacity: 0,
+        x: position.includes('right') ? 300 : -300,
+        scale: 0.9,
+      }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: position.includes('right') ? 300 : -300, scale: 0.9 }}
+      exit={{
+        opacity: 0,
+        x: position.includes('right') ? 300 : -300,
+        scale: 0.9,
+      }}
       className={`
         min-w-80 max-w-md p-4 rounded-lg border-l-4 shadow-lg backdrop-blur-sm
         ${colorMap[message.type]}
@@ -111,40 +138,38 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
       whileHover={{ scale: 1.02 }}
       layout
     >
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5">
-          {renderIcon(message)}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-sm">{message.title}</h4>
+      <div className='flex items-start gap-3'>
+        <div className='flex-shrink-0 mt-0.5'>{renderIcon(message)}</div>
+
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center justify-between'>
+            <h4 className='font-semibold text-sm'>{message.title}</h4>
             {message.type !== 'loading' && (
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   onDismiss(message.id);
                 }}
-                className="text-current opacity-50 hover:opacity-100 transition-opacity"
-                aria-label="关闭"
+                className='text-current opacity-50 hover:opacity-100 transition-opacity'
+                aria-label='关闭'
               >
                 ×
               </button>
             )}
           </div>
-          
+
           {message.description && (
-            <p className="text-xs mt-1 opacity-80">{message.description}</p>
+            <p className='text-xs mt-1 opacity-80'>{message.description}</p>
           )}
-          
+
           {message.action && (
-            <p className="text-xs mt-2 font-medium">{message.action}</p>
+            <p className='text-xs mt-2 font-medium'>{message.action}</p>
           )}
-          
+
           {typeof message.progress === 'number' && (
-            <div className="mt-2">
-              <Progress value={message.progress} className="h-1" />
-              <span className="text-xs opacity-70">{message.progress}%</span>
+            <div className='mt-2'>
+              <Progress value={message.progress} className='h-1' />
+              <span className='text-xs opacity-70'>{message.progress}%</span>
             </div>
           )}
         </div>
@@ -154,8 +179,8 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
 
   return (
     <div className={getPositionClasses()}>
-      <div className="space-y-2">
-        <AnimatePresence mode="popLayout">
+      <div className='space-y-2'>
+        <AnimatePresence mode='popLayout'>
           {visibleMessages.map(renderFeedbackCard)}
         </AnimatePresence>
       </div>
@@ -174,9 +199,9 @@ export const useOperationFeedback = () => {
   };
 
   const updateMessage = (id: string, updates: Partial<FeedbackMessage>) => {
-    setMessages(prev => prev.map(msg => 
-      msg.id === id ? { ...msg, ...updates } : msg
-    ));
+    setMessages(prev =>
+      prev.map(msg => (msg.id === id ? { ...msg, ...updates } : msg))
+    );
   };
 
   const removeMessage = (id: string) => {
@@ -188,23 +213,31 @@ export const useOperationFeedback = () => {
   };
 
   // 预设的反馈类型
-  const showSuccess = (title: string, description?: string, skillType?: string) => {
+  const showSuccess = (
+    title: string,
+    description?: string,
+    skillType?: string
+  ) => {
     return addMessage({
       type: 'success',
       title,
       description,
       skillType,
-      duration: 4000
+      duration: 4000,
     });
   };
 
-  const showError = (title: string, description?: string, skillType?: string) => {
+  const showError = (
+    title: string,
+    description?: string,
+    skillType?: string
+  ) => {
     return addMessage({
       type: 'error',
       title,
       description,
       skillType,
-      duration: 6000
+      duration: 6000,
     });
   };
 
@@ -213,7 +246,7 @@ export const useOperationFeedback = () => {
       type: 'warning',
       title,
       description,
-      duration: 5000
+      duration: 5000,
     });
   };
 
@@ -222,17 +255,21 @@ export const useOperationFeedback = () => {
       type: 'info',
       title,
       description,
-      duration: 4000
+      duration: 4000,
     });
   };
 
-  const showLoading = (title: string, description?: string, progress?: number) => {
+  const showLoading = (
+    title: string,
+    description?: string,
+    progress?: number
+  ) => {
     return addMessage({
       type: 'loading',
       title,
       description,
       progress,
-      duration: 0 // 不自动消失
+      duration: 0, // 不自动消失
     });
   };
 
@@ -274,7 +311,7 @@ export const useOperationFeedback = () => {
     showLoading,
     showSkillSuccess,
     showSkillError,
-    showSkillConflict
+    showSkillConflict,
   };
 };
 

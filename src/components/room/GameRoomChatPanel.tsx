@@ -10,7 +10,7 @@ interface GameRoomChatPanelProps {
 export const GameRoomChatPanel: React.FC<GameRoomChatPanelProps> = ({
   roomId,
   currentUser,
-  title
+  title,
 }) => {
   return (
     <MultiChannelChat
@@ -18,7 +18,7 @@ export const GameRoomChatPanel: React.FC<GameRoomChatPanelProps> = ({
       currentUser={currentUser}
       isGameRoom={true}
       title={title}
-      height="100%"
+      height='100%'
     />
   );
 };

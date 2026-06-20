@@ -24,7 +24,8 @@ export const useAutoProcessDayVote = (
       if (gameState.currentPhase !== 2) return;
 
       const processKey = `${gameState.id}-${gameState.currentRound}-evening`;
-      if (processingRef.current || lastProcessedKeyRef.current === processKey) return;
+      if (processingRef.current || lastProcessedKeyRef.current === processKey)
+        return;
 
       processingRef.current = true;
       try {
@@ -58,7 +59,9 @@ export const useAutoProcessDayVote = (
           return;
         }
         if (existingResults && existingResults.length > 0) {
-          const allCompleted = existingResults.every(r => r.processing_status === 'completed');
+          const allCompleted = existingResults.every(
+            r => r.processing_status === 'completed'
+          );
           if (allCompleted) {
             lastProcessedKeyRef.current = processKey;
             return;
@@ -66,9 +69,12 @@ export const useAutoProcessDayVote = (
         }
 
         // 3) Calculate voting results (idempotent but we avoid re-run if already processed)
-        const { error: calcErr } = await supabase.rpc('calculate_voting_results', {
-          p_voting_session_id: session.id,
-        });
+        const { error: calcErr } = await supabase.rpc(
+          'calculate_voting_results',
+          {
+            p_voting_session_id: session.id,
+          }
+        );
         if (calcErr) {
           console.error('计算投票结果失败:', calcErr);
           return;
@@ -90,9 +96,12 @@ export const useAutoProcessDayVote = (
 
         for (const r of results) {
           if (r.processing_status !== 'completed') {
-            const { error: procErr } = await supabase.rpc('process_voting_result', {
-              p_voting_result_id: r.id,
-            });
+            const { error: procErr } = await supabase.rpc(
+              'process_voting_result',
+              {
+                p_voting_result_id: r.id,
+              }
+            );
             if (procErr) {
               console.error('处理投票结果失败:', procErr);
             }
@@ -100,7 +109,10 @@ export const useAutoProcessDayVote = (
         }
 
         lastProcessedKeyRef.current = processKey;
-        toast({ title: '投票结果已自动处理', description: '已根据规则更新玩家状态' });
+        toast({
+          title: '投票结果已自动处理',
+          description: '已根据规则更新玩家状态',
+        });
       } catch (e) {
         console.error('自动处理投票结果时出错:', e);
       } finally {

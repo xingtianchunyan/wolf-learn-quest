@@ -4,7 +4,7 @@ import {
   checkSkillSpecificRestrictions,
   validateSkillUsage,
   getSkillUsageHint,
-  type SkillUseRecord
+  type SkillUseRecord,
 } from '../skillUsageRestrictions';
 
 describe('skillUsageRestrictions', () => {
@@ -17,16 +17,11 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'magic_potion',
           round_number: 1,
           phase: 'night',
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ];
 
-      const result = checkNightSkillRestriction(
-        'witch',
-        3,
-        1,
-        userSkillUses
-      );
+      const result = checkNightSkillRestriction('witch', 3, 1, userSkillUses);
 
       expect(result.canUse).toBe(true);
       expect(result.reason).toContain('女巫');
@@ -40,8 +35,8 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'night_attack',
           round_number: 1,
           phase: 'night',
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ];
 
       const result = checkNightSkillRestriction(
@@ -76,8 +71,8 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'magic_potion',
           round_number: 1,
           phase: 'night',
-          created_at: new Date().toISOString()
-        } as SkillUseRecord & { potionType: string }
+          created_at: new Date().toISOString(),
+        } as SkillUseRecord & { potionType: string },
       ];
 
       // 设置第一次使用为保护类型
@@ -102,8 +97,8 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'dying_shot',
           round_number: 1,
           phase: 'day',
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ];
 
       const result = checkSkillSpecificRestrictions(
@@ -124,8 +119,8 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'self_destruct',
           round_number: 1,
           phase: 'day',
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ];
 
       const result = checkSkillSpecificRestrictions(
@@ -141,13 +136,7 @@ describe('skillUsageRestrictions', () => {
 
   describe('validateSkillUsage', () => {
     it('应该综合验证技能使用限制', () => {
-      const result = validateSkillUsage(
-        'werewolf',
-        'night_attack',
-        3,
-        1,
-        []
-      );
+      const result = validateSkillUsage('werewolf', 'night_attack', 3, 1, []);
 
       expect(result.canUse).toBe(true);
     });
@@ -160,8 +149,8 @@ describe('skillUsageRestrictions', () => {
           skill_name: 'night_attack',
           round_number: 1,
           phase: 'night',
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ];
 
       const result = validateSkillUsage(
@@ -179,23 +168,23 @@ describe('skillUsageRestrictions', () => {
   describe('getSkillUsageHint', () => {
     it('应该为女巫提供特殊提示', () => {
       const hint = getSkillUsageHint('witch', 'magic_potion', 3);
-      
+
       expect(hint).toContain('女巫');
       expect(hint).toContain('多次');
     });
 
     it('应该为非女巫角色提供夜晚限制提示', () => {
       const hint = getSkillUsageHint('werewolf', 'night_attack', 3);
-      
+
       expect(hint).toContain('夜晚');
       expect(hint).toContain('一次');
     });
 
     it('应该为特殊技能提供专属提示', () => {
       const hints = {
-        'dying_shot': getSkillUsageHint('hunter', 'dying_shot', 1),
-        'magic_potion': getSkillUsageHint('witch', 'magic_potion', 1),
-        'self_destruct': getSkillUsageHint('whitewolf', 'self_destruct', 1)
+        dying_shot: getSkillUsageHint('hunter', 'dying_shot', 1),
+        magic_potion: getSkillUsageHint('witch', 'magic_potion', 1),
+        self_destruct: getSkillUsageHint('whitewolf', 'self_destruct', 1),
       };
 
       expect(hints.dying_shot).toContain('濒死');

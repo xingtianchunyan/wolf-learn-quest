@@ -28,11 +28,13 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   currentRound,
   currentPhase,
   isJudge,
-  onConflictResolved
+  onConflictResolved,
 }) => {
   const [conflicts, setConflicts] = useState<SkillConflict[]>([]);
   const [loading, setLoading] = useState(false);
-  const [processingConflictId, setProcessingConflictId] = useState<string | null>(null);
+  const [processingConflictId, setProcessingConflictId] = useState<
+    string | null
+  >(null);
 
   // 获取技能冲突记录
   useEffect(() => {
@@ -65,14 +67,14 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
           table: 'skill_conflicts',
           filter: `game_state_id=eq.${gameStateId}`,
         },
-        (payload) => {
+        payload => {
           if (payload.new && typeof payload.new === 'object') {
             const newConflict = payload.new as SkillConflict;
             if (payload.eventType === 'INSERT') {
               setConflicts(current => [newConflict, ...current]);
             } else if (payload.eventType === 'UPDATE') {
               setConflicts(current =>
-                current.map(c => c.id === newConflict.id ? newConflict : c)
+                current.map(c => (c.id === newConflict.id ? newConflict : c))
               );
             }
           }
@@ -92,7 +94,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
       const { data, error } = await supabase.rpc('detect_skill_conflicts', {
         p_game_state_id: gameStateId,
         p_round_number: currentRound,
-        p_phase: toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+        p_phase: toPhaseName(currentPhase as 1 | 2 | 3 | 4),
       });
 
       if (error) {
@@ -108,14 +110,17 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   };
 
   // 手动解决冲突
-  const resolveConflict = async (conflictId: string, resolvedSkillId: string) => {
+  const resolveConflict = async (
+    conflictId: string,
+    resolvedSkillId: string
+  ) => {
     setProcessingConflictId(conflictId);
     try {
       const { error } = await supabase
         .from('skill_conflicts')
-        .update({ 
+        .update({
           resolved_skill_id: resolvedSkillId,
-          resolution_rule: 'manual'
+          resolution_rule: 'manual',
         })
         .eq('id', conflictId);
 
@@ -153,33 +158,35 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   };
 
   const currentPhaseConflicts = conflicts.filter(
-    c => c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+    c =>
+      c.round_number === currentRound &&
+      c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
   );
 
   return (
-    <Card className="bg-werewolf-card border-werewolf-purple/30">
+    <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between text-werewolf-purple">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
+        <CardTitle className='flex items-center justify-between text-werewolf-purple'>
+          <div className='flex items-center gap-2'>
+            <AlertTriangle className='w-5 h-5' />
             技能冲突解决
           </div>
           {isJudge && (
             <Button
               onClick={detectConflicts}
               disabled={loading}
-              size="sm"
-              variant="outline"
-              className="border-werewolf-purple/30 hover:bg-werewolf-purple/20"
+              size='sm'
+              variant='outline'
+              className='border-werewolf-purple/30 hover:bg-werewolf-purple/20'
             >
               {loading ? (
                 <>
-                  <Clock className="w-4 h-4 mr-2 animate-spin" />
+                  <Clock className='w-4 h-4 mr-2 animate-spin' />
                   检测中...
                 </>
               ) : (
                 <>
-                  <Zap className="w-4 h-4 mr-2" />
+                  <Zap className='w-4 h-4 mr-2' />
                   检测冲突
                 </>
               )}
@@ -187,34 +194,46 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className='space-y-4'>
         {/* 当前回合冲突 */}
         {currentPhaseConflicts.length > 0 ? (
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-yellow-400 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              当前回合冲突 (第{currentRound}轮 - {toPhaseName(currentPhase as 1 | 2 | 3 | 4)})
+          <div className='space-y-3'>
+            <h4 className='text-sm font-medium text-yellow-400 flex items-center gap-2'>
+              <AlertTriangle className='w-4 h-4' />
+              当前回合冲突 (第{currentRound}轮 -{' '}
+              {toPhaseName(currentPhase as 1 | 2 | 3 | 4)})
             </h4>
-            
+
             {currentPhaseConflicts.map(conflict => (
-              <Card key={conflict.id} className="bg-yellow-500/10 border-yellow-500/30">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="border-yellow-500 text-yellow-400">
+              <Card
+                key={conflict.id}
+                className='bg-yellow-500/10 border-yellow-500/30'
+              >
+                <CardContent className='p-4 space-y-3'>
+                  <div className='flex items-center justify-between'>
+                    <Badge
+                      variant='outline'
+                      className='border-yellow-500 text-yellow-400'
+                    >
                       冲突 #{conflict.id.slice(-8)}
                     </Badge>
-                    <Badge variant="secondary">
+                    <Badge variant='secondary'>
                       {getResolutionRuleText(conflict.resolution_rule)}
                     </Badge>
                   </div>
 
                   {/* 冲突技能列表 */}
-                  <div className="space-y-2">
-                    <h5 className="text-xs font-medium text-gray-300">冲突技能:</h5>
-                    <ScrollArea className="h-32">
-                      <div className="space-y-2">
-                        {(Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills : []).map((skill: ConflictingSkill, index: number) => (
-                          <div 
+                  <div className='space-y-2'>
+                    <h5 className='text-xs font-medium text-gray-300'>
+                      冲突技能:
+                    </h5>
+                    <ScrollArea className='h-32'>
+                      <div className='space-y-2'>
+                        {(Array.isArray(conflict.conflicting_skills)
+                          ? conflict.conflicting_skills
+                          : []
+                        ).map((skill: ConflictingSkill, index: number) => (
+                          <div
                             key={index}
                             className={`p-2 rounded border transition-all ${
                               skill.skill_use_id === conflict.resolved_skill_id
@@ -222,34 +241,44 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                                 : 'bg-werewolf-dark/50 border-werewolf-purple/30'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Target className="w-3 h-3" />
-                                <span className="text-xs font-medium">
+                            <div className='flex items-center justify-between'>
+                              <div className='flex items-center gap-2'>
+                                <Target className='w-3 h-3' />
+                                <span className='text-xs font-medium'>
                                   {skill.skill_name}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-xs ${getPriorityColor(skill.priority)}`}>
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className={`text-xs ${getPriorityColor(skill.priority)}`}
+                                >
                                   优先级: {skill.priority}
                                 </span>
-                                {skill.skill_use_id === conflict.resolved_skill_id && (
-                                  <Badge variant="default" className="text-xs">
+                                {skill.skill_use_id ===
+                                  conflict.resolved_skill_id && (
+                                  <Badge variant='default' className='text-xs'>
                                     已选中
                                   </Badge>
                                 )}
                               </div>
                             </div>
-                            
+
                             {isJudge && !conflict.resolved_skill_id && (
                               <Button
-                                onClick={() => resolveConflict(conflict.id, skill.skill_use_id)}
+                                onClick={() =>
+                                  resolveConflict(
+                                    conflict.id,
+                                    skill.skill_use_id
+                                  )
+                                }
                                 disabled={processingConflictId === conflict.id}
-                                size="sm"
-                                variant="outline"
-                                className="mt-2 w-full text-xs"
+                                size='sm'
+                                variant='outline'
+                                className='mt-2 w-full text-xs'
                               >
-                                {processingConflictId === conflict.id ? '处理中...' : '选择此技能'}
+                                {processingConflictId === conflict.id
+                                  ? '处理中...'
+                                  : '选择此技能'}
                               </Button>
                             )}
                           </div>
@@ -259,8 +288,8 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                   </div>
 
                   {conflict.resolved_skill_id && (
-                    <div className="flex items-center gap-2 text-green-400 text-xs">
-                      <Shield className="w-3 h-3" />
+                    <div className='flex items-center gap-2 text-green-400 text-xs'>
+                      <Shield className='w-3 h-3' />
                       冲突已解决
                     </div>
                   )}
@@ -269,35 +298,57 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
             ))}
           </div>
         ) : (
-          <div className="text-center py-4">
-            <Shield className="w-8 h-8 mx-auto mb-2 text-green-400" />
-            <p className="text-sm text-green-400">当前回合无技能冲突</p>
+          <div className='text-center py-4'>
+            <Shield className='w-8 h-8 mx-auto mb-2 text-green-400' />
+            <p className='text-sm text-green-400'>当前回合无技能冲突</p>
           </div>
         )}
 
-        <Separator className="bg-werewolf-purple/30" />
+        <Separator className='bg-werewolf-purple/30' />
 
         {/* 历史冲突 */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-werewolf-purple">历史冲突记录</h4>
-          <ScrollArea className="h-32">
-            <div className="space-y-1">
-               {conflicts.filter(c => !(c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4))).length > 0 ? (
+        <div className='space-y-2'>
+          <h4 className='text-sm font-medium text-werewolf-purple'>
+            历史冲突记录
+          </h4>
+          <ScrollArea className='h-32'>
+            <div className='space-y-1'>
+              {conflicts.filter(
+                c =>
+                  !(
+                    c.round_number === currentRound &&
+                    c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+                  )
+              ).length > 0 ? (
                 conflicts
-                  .filter(c => !(c.round_number === currentRound && c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)))
+                  .filter(
+                    c =>
+                      !(
+                        c.round_number === currentRound &&
+                        c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+                      )
+                  )
                   .slice(0, 5)
                   .map(conflict => (
-                    <div key={conflict.id} className="flex items-center justify-between p-2 bg-werewolf-dark/30 rounded text-xs">
-                      <span className="text-gray-300">
+                    <div
+                      key={conflict.id}
+                      className='flex items-center justify-between p-2 bg-werewolf-dark/30 rounded text-xs'
+                    >
+                      <span className='text-gray-300'>
                         第{conflict.round_number}轮 - {conflict.phase}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {(Array.isArray(conflict.conflicting_skills) ? conflict.conflicting_skills.length : 0)} 个冲突
+                      <div className='flex items-center gap-2'>
+                        <Badge variant='outline' className='text-xs'>
+                          {Array.isArray(conflict.conflicting_skills)
+                            ? conflict.conflicting_skills.length
+                            : 0}{' '}
+                          个冲突
                         </Badge>
-                        <Badge 
-                          variant={conflict.resolved_skill_id ? 'default' : 'secondary'}
-                          className="text-xs"
+                        <Badge
+                          variant={
+                            conflict.resolved_skill_id ? 'default' : 'secondary'
+                          }
+                          className='text-xs'
                         >
                           {conflict.resolved_skill_id ? '已解决' : '未解决'}
                         </Badge>
@@ -305,16 +356,20 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                     </div>
                   ))
               ) : (
-                <p className="text-xs text-gray-400 text-center py-2">暂无历史冲突记录</p>
+                <p className='text-xs text-gray-400 text-center py-2'>
+                  暂无历史冲突记录
+                </p>
               )}
             </div>
           </ScrollArea>
         </div>
 
         {/* 冲突解决说明 */}
-        <div className="bg-werewolf-dark/30 p-3 rounded-lg">
-          <h5 className="text-xs font-medium text-werewolf-purple mb-2">冲突解决规则</h5>
-          <div className="text-xs text-gray-400 space-y-1">
+        <div className='bg-werewolf-dark/30 p-3 rounded-lg'>
+          <h5 className='text-xs font-medium text-werewolf-purple mb-2'>
+            冲突解决规则
+          </h5>
+          <div className='text-xs text-gray-400 space-y-1'>
             <p>• 优先级低的技能优先执行（数字越小优先级越高）</p>
             <p>• 相同优先级时按技能类型解决冲突</p>
             <p>• 法官可以手动选择执行的技能</p>

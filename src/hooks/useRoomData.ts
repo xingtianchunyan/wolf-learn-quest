@@ -21,7 +21,11 @@ export const useRoomData = (roomId: string | undefined): UseRoomDataReturn => {
   const [roomLoading, setRoomLoading] = useState(true);
 
   const { players, loading: playersLoading } = usePlayersRealtime(roomId || '');
-  const { gameState, gameSettings, loading: gameStateLoading } = useGameState(roomId || '');
+  const {
+    gameState,
+    gameSettings,
+    loading: gameStateLoading,
+  } = useGameState(roomId || '');
   const { roleStates, loading: roleStatesLoading } = useRoleStates(roomId);
 
   useEffect(() => {
@@ -59,9 +63,9 @@ export const useRoomData = (roomId: string | undefined): UseRoomDataReturn => {
           event: '*',
           schema: 'public',
           table: 'rooms',
-          filter: `id=eq.${roomId}`
+          filter: `id=eq.${roomId}`,
         },
-        (payload) => {
+        payload => {
           if (payload.new && typeof payload.new === 'object') {
             setRoom(payload.new as Room);
           }
@@ -74,7 +78,8 @@ export const useRoomData = (roomId: string | undefined): UseRoomDataReturn => {
     };
   }, [roomId]);
 
-  const loading = roomLoading || playersLoading || gameStateLoading || roleStatesLoading;
+  const loading =
+    roomLoading || playersLoading || gameStateLoading || roleStatesLoading;
 
   return {
     room,
@@ -82,6 +87,6 @@ export const useRoomData = (roomId: string | undefined): UseRoomDataReturn => {
     gameState,
     gameSettings,
     roleStates,
-    loading
+    loading,
   };
 };

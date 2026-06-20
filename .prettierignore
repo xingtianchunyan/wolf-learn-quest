@@ -69,3 +69,4 @@ Dockerfile*
 vercel.json
 netlify.toml
 ecosystem.config.js
+deployment.config.js

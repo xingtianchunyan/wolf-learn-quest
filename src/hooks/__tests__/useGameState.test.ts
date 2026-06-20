@@ -4,22 +4,26 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useGameState, type GameState, type GameSettings } from '../useGameState';
+import {
+  useGameState,
+  type GameState,
+  type GameSettings,
+} from '../useGameState';
 import { supabase } from '@/integrations/supabase/client';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client');
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn()
-  })
+    toast: vi.fn(),
+  }),
 }));
 vi.mock('@/providers/AuthProvider', () => ({
   useAuth: () => ({
     requireAuth: vi.fn(),
     user: { id: 'test-user-id' },
-    loading: false
-  })
+    loading: false,
+  }),
 }));
 
 describe('useGameState', () => {
@@ -37,7 +41,7 @@ describe('useGameState', () => {
     totalPausedDuration: 0,
     autoAdvance: true,
     phaseDuration: 3600,
-    createdAt: '2024-01-01T00:00:00Z'
+    createdAt: '2024-01-01T00:00:00Z',
   };
 
   const mockGameSettings: GameSettings = {
@@ -47,16 +51,16 @@ describe('useGameState', () => {
     dayDuration: 300,
     eveningDuration: 180,
     nightDuration: 240,
-    dawnDuration: 120
+    dawnDuration: 120,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock supabase methods
     const mockChannel = {
       on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn().mockReturnValue(Promise.resolve())
+      subscribe: vi.fn().mockReturnValue(Promise.resolve()),
     };
 
     vi.mocked(supabase.channel).mockReturnValue(mockChannel);
@@ -77,7 +81,7 @@ describe('useGameState', () => {
         const mockQuery = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn()
+          maybeSingle: vi.fn(),
         };
 
         if (table === 'game_states') {
@@ -95,9 +99,9 @@ describe('useGameState', () => {
               total_paused_duration: mockGameState.totalPausedDuration,
               auto_advance: mockGameState.autoAdvance,
               phase_duration: mockGameState.phaseDuration,
-              created_at: mockGameState.createdAt
+              created_at: mockGameState.createdAt,
             },
-            error: null
+            error: null,
           });
         } else if (table === 'game_settings') {
           mockQuery.maybeSingle.mockResolvedValue({
@@ -108,9 +112,9 @@ describe('useGameState', () => {
               day_duration: mockGameSettings.dayDuration,
               evening_duration: mockGameSettings.eveningDuration,
               night_duration: mockGameSettings.nightDuration,
-              dawn_duration: mockGameSettings.dawnDuration
+              dawn_duration: mockGameSettings.dawnDuration,
             },
-            error: null
+            error: null,
           });
         }
 
@@ -154,8 +158,8 @@ describe('useGameState', () => {
         eq: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({
           data: null,
-          error: { code: 'PGRST301', message: 'Database error' }
-        })
+          error: { code: 'PGRST301', message: 'Database error' },
+        }),
       }));
 
       // 执行测试
@@ -187,7 +191,7 @@ describe('useGameState', () => {
           }
           return mockChannel;
         }),
-        subscribe: vi.fn()
+        subscribe: vi.fn(),
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
@@ -196,7 +200,7 @@ describe('useGameState', () => {
       vi.mocked(supabase.from).mockImplementation(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       }));
 
       // 执行测试
@@ -211,14 +215,14 @@ describe('useGameState', () => {
       const updatedGameState = {
         ...mockGameState,
         current_phase: 1, // 更新阶段
-        current_round: 2  // 更新回合
+        current_round: 2, // 更新回合
       };
 
       if (gameStateCallback) {
         gameStateCallback({
           new: updatedGameState,
           old: null,
-          eventType: 'UPDATE'
+          eventType: 'UPDATE',
         });
       }
 
@@ -243,7 +247,7 @@ describe('useGameState', () => {
           }
           return mockChannel;
         }),
-        subscribe: vi.fn()
+        subscribe: vi.fn(),
       };
 
       vi.mocked(supabase.channel).mockReturnValue(mockChannel);
@@ -252,7 +256,7 @@ describe('useGameState', () => {
       vi.mocked(supabase.from).mockImplementation(() => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       }));
 
       // 执行测试
@@ -267,14 +271,14 @@ describe('useGameState', () => {
       const updatedGameSettings = {
         ...mockGameSettings,
         day_duration: 600, // 更新白天持续时间
-        is_auto_advance: false // 更新自动推进设置
+        is_auto_advance: false, // 更新自动推进设置
       };
 
       if (gameSettingsCallback) {
         gameSettingsCallback({
           new: updatedGameSettings,
           old: null,
-          eventType: 'UPDATE'
+          eventType: 'UPDATE',
         });
       }
 
@@ -293,7 +297,7 @@ describe('useGameState', () => {
     it('应该正确计算阶段剩余时间', async () => {
       // 设置当前时间
       const now = new Date('2024-01-01T00:30:00Z').getTime();
-      
+
       // 模拟Date构造函数和Date.now()
       const originalDate = global.Date;
       global.Date = class extends Date {
@@ -304,13 +308,16 @@ describe('useGameState', () => {
             super(...args);
           }
         }
-        
+
         static now() {
           return now;
         }
-        
+
         getTime() {
-          if (arguments.length === 0 && this.toISOString() === new originalDate(now).toISOString()) {
+          if (
+            arguments.length === 0 &&
+            this.toISOString() === new originalDate(now).toISOString()
+          ) {
             return now;
           }
           return super.getTime();
@@ -321,23 +328,23 @@ describe('useGameState', () => {
       const gameStateWithEndTime = {
         ...mockGameState,
         phaseEndTime: '2024-01-01T01:00:00Z',
-        isPaused: false
+        isPaused: false,
       };
 
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         const mockQuery = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn()
+          maybeSingle: vi.fn(),
         };
 
         if (table === 'game_states') {
           mockQuery.maybeSingle.mockResolvedValue({
             data: {
               ...gameStateWithEndTime,
-              phase_end_time: gameStateWithEndTime.phaseEndTime
+              phase_end_time: gameStateWithEndTime.phaseEndTime,
             },
-            error: null
+            error: null,
           });
         } else {
           mockQuery.maybeSingle.mockResolvedValue({ data: null, error: null });
@@ -356,7 +363,7 @@ describe('useGameState', () => {
 
       // 验证剩余时间计算（30分钟 = 1800秒）
       expect(result.current.timeRemaining).toBe(1800);
-      
+
       // 恢复原始Date
       global.Date = originalDate;
     });
@@ -369,14 +376,14 @@ describe('useGameState', () => {
       const pausedGameState = {
         ...mockGameState,
         isPaused: true,
-        phaseEndTime: '2024-01-01T01:00:00Z'
+        phaseEndTime: '2024-01-01T01:00:00Z',
       };
 
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         const mockQuery = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn()
+          maybeSingle: vi.fn(),
         };
 
         if (table === 'game_states') {
@@ -384,9 +391,9 @@ describe('useGameState', () => {
             data: {
               ...pausedGameState,
               is_paused: pausedGameState.isPaused,
-              phase_end_time: pausedGameState.phaseEndTime
+              phase_end_time: pausedGameState.phaseEndTime,
             },
-            error: null
+            error: null,
           });
         } else {
           mockQuery.maybeSingle.mockResolvedValue({ data: null, error: null });
@@ -414,23 +421,23 @@ describe('useGameState', () => {
       // Mock game state without end time
       const gameStateWithoutEndTime = {
         ...mockGameState,
-        phaseEndTime: null
+        phaseEndTime: null,
       };
 
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         const mockQuery = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn()
+          maybeSingle: vi.fn(),
         };
 
         if (table === 'game_states') {
           mockQuery.maybeSingle.mockResolvedValue({
             data: {
               ...gameStateWithoutEndTime,
-              phase_end_time: null
+              phase_end_time: null,
             },
-            error: null
+            error: null,
           });
         } else {
           mockQuery.maybeSingle.mockResolvedValue({ data: null, error: null });

@@ -10,13 +10,17 @@ export enum RoleStatus {
   NORMAL = 1,
   DYING = 2,
   WEAK = 3,
-  ELIMINATED = 4
+  ELIMINATED = 4,
 }
 
 /**
  * 技能使用限制类型
  */
-export type SkillUsageLimit = 'unlimited' | 'once_per_game' | 'once_per_round' | number;
+export type SkillUsageLimit =
+  | 'unlimited'
+  | 'once_per_game'
+  | 'once_per_round'
+  | number;
 
 /**
  * 技能目标类型
@@ -26,13 +30,13 @@ export type SkillTargetType = 'none' | 'single' | 'multiple' | 'self' | 'all';
 /**
  * 技能效果类型
  */
-export type SkillEffectType = 
-  | 'passive' 
-  | 'elimination' 
-  | 'protection' 
-  | 'investigation' 
-  | 'manipulation' 
-  | 'healing' 
+export type SkillEffectType =
+  | 'passive'
+  | 'elimination'
+  | 'protection'
+  | 'investigation'
+  | 'manipulation'
+  | 'healing'
   | 'status_change';
 
 /**
@@ -361,7 +365,7 @@ export enum SkillErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   PERMISSION_ERROR = 'PERMISSION_ERROR',
   CONFIG_ERROR = 'CONFIG_ERROR',
-  CONFLICT_ERROR = 'CONFLICT_ERROR'
+  CONFLICT_ERROR = 'CONFLICT_ERROR',
 }
 
 /**
@@ -394,9 +398,11 @@ export interface SkillError {
 export function isRoleSkillUsageState(
   state: RoleSkillUsageState | LegacySkillUsageState
 ): state is RoleSkillUsageState {
-  return typeof state === 'object' && 
-         state !== null && 
-         !('total' in state && 'remaining' in state);
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    !('total' in state && 'remaining' in state)
+  );
 }
 
 /**
@@ -405,33 +411,39 @@ export function isRoleSkillUsageState(
 export function isLegacySkillUsageState(
   state: RoleSkillUsageState | LegacySkillUsageState
 ): state is LegacySkillUsageState {
-  return typeof state === 'object' && 
-         state !== null && 
-         'total' in state && 
-         'remaining' in state;
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    'total' in state &&
+    'remaining' in state
+  );
 }
 
 /**
  * 类型守卫：检查是否为有效的角色状态
  */
 export function isValidRoleStatus(status: unknown): status is RoleStatus {
-  return typeof status === 'number' && 
-         Object.values(RoleStatus).includes(status as RoleStatus);
+  return (
+    typeof status === 'number' &&
+    Object.values(RoleStatus).includes(status as RoleStatus)
+  );
 }
 
 /**
  * 类型守卫：检查是否为有效的游戏阶段
  */
 export function isValidGamePhase(phase: unknown): phase is GamePhase {
-  return typeof phase === 'string' && 
-         ['day', 'evening', 'night', 'dawn'].includes(phase);
+  return (
+    typeof phase === 'string' &&
+    ['day', 'evening', 'night', 'dawn'].includes(phase)
+  );
 }
 
 /**
  * 默认技能配置映射
  */
 export const DEFAULT_SKILL_CONFIGS: Record<string, SkillConfig> = {
-  'Sleep': {
+  Sleep: {
     id: 'villager_sleep',
     chineseName: '睡觉',
     englishName: 'Sleep',
@@ -442,9 +454,9 @@ export const DEFAULT_SKILL_CONFIGS: Record<string, SkillConfig> = {
     targetType: 'none',
     effectType: ['passive'],
     isPassive: true,
-    conflictsWith: []
+    conflictsWith: [],
   },
-  'night_attack': {
+  night_attack: {
     id: 'werewolf_attack',
     chineseName: '夜袭',
     englishName: 'night_attack',
@@ -455,9 +467,9 @@ export const DEFAULT_SKILL_CONFIGS: Record<string, SkillConfig> = {
     targetType: 'single',
     effectType: ['elimination'],
     isPassive: false,
-    conflictsWith: []
+    conflictsWith: [],
   },
-  'prophecy': {
+  prophecy: {
     id: 'seer_prophecy',
     chineseName: '占卜',
     englishName: 'prophecy',
@@ -468,9 +480,9 @@ export const DEFAULT_SKILL_CONFIGS: Record<string, SkillConfig> = {
     targetType: 'single',
     effectType: ['investigation'],
     isPassive: false,
-    conflictsWith: []
+    conflictsWith: [],
   },
-  'magic_potion': {
+  magic_potion: {
     id: 'witch_potion',
     chineseName: '魔药',
     englishName: 'magic_potion',
@@ -481,8 +493,8 @@ export const DEFAULT_SKILL_CONFIGS: Record<string, SkillConfig> = {
     targetType: 'single',
     effectType: ['protection', 'elimination'],
     isPassive: false,
-    conflictsWith: []
-  }
+    conflictsWith: [],
+  },
 };
 
 export default {
@@ -492,5 +504,5 @@ export default {
   isLegacySkillUsageState,
   isValidRoleStatus,
   isValidGamePhase,
-  DEFAULT_SKILL_CONFIGS
+  DEFAULT_SKILL_CONFIGS,
 };

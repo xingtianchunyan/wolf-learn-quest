@@ -2,7 +2,11 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SystemAnnouncementData {
-  type: 'skill_usage' | 'status_change' | 'hunter_broadcast' | 'whitewolf_broadcast';
+  type:
+    | 'skill_usage'
+    | 'status_change'
+    | 'hunter_broadcast'
+    | 'whitewolf_broadcast';
   actorUserId: string;
   actorName: string;
   actorRole: string;
@@ -30,27 +34,33 @@ export class SystemAnnouncementService {
   /**
    * 创建技能使用公告
    */
-  static async createSkillUsageAnnouncement(data: SystemAnnouncementData): Promise<boolean> {
+  static async createSkillUsageAnnouncement(
+    data: SystemAnnouncementData
+  ): Promise<boolean> {
     const message = this.formatSkillUsageMessage(data);
     const visibility = this.getSkillUsageVisibility(data);
-    
+
     return this.sendAnnouncementMessage(message, data.roomId, visibility, data);
   }
 
   /**
    * 创建状态变更公告
    */
-  static async createStatusChangeAnnouncement(data: SystemAnnouncementData): Promise<boolean> {
+  static async createStatusChangeAnnouncement(
+    data: SystemAnnouncementData
+  ): Promise<boolean> {
     const message = this.formatStatusChangeMessage(data);
     const visibility = this.getStatusChangeVisibility(data);
-    
+
     return this.sendAnnouncementMessage(message, data.roomId, visibility, data);
   }
 
   /**
    * 创建猎人濒死广播
    */
-  static async createHunterDeathBroadcast(data: SystemAnnouncementData): Promise<boolean> {
+  static async createHunterDeathBroadcast(
+    data: SystemAnnouncementData
+  ): Promise<boolean> {
     const message = `【重要公告】${data.actorName}(${data.actorRole})进入濒死状态，身份公开！可在40秒内使用濒死击毙技能！`;
     const visibility: AnnouncementVisibility = {
       isVisibleToJudge: true,
@@ -58,16 +68,18 @@ export class SystemAnnouncementService {
       isVisibleToTarget: false,
       isVisibleToWerewolves: false,
       isVisibleToRescuers: false,
-      isVisibleToAll: true // 向所有玩家广播
+      isVisibleToAll: true, // 向所有玩家广播
     };
-    
+
     return this.sendAnnouncementMessage(message, data.roomId, visibility, data);
   }
 
   /**
    * 创建白狼自爆广播
    */
-  static async createWhiteWolfDestructBroadcast(data: SystemAnnouncementData): Promise<boolean> {
+  static async createWhiteWolfDestructBroadcast(
+    data: SystemAnnouncementData
+  ): Promise<boolean> {
     const message = `【紧急公告】${data.actorName}(${data.actorRole})使用白爆技能，目标：${data.targetName}(${data.targetRole})！双方身份公开！`;
     const visibility: AnnouncementVisibility = {
       isVisibleToJudge: true,
@@ -75,9 +87,9 @@ export class SystemAnnouncementService {
       isVisibleToTarget: true,
       isVisibleToWerewolves: false,
       isVisibleToRescuers: false,
-      isVisibleToAll: true // 向所有玩家广播
+      isVisibleToAll: true, // 向所有玩家广播
     };
-    
+
     return this.sendAnnouncementMessage(message, data.roomId, visibility, data);
   }
 
@@ -85,8 +97,15 @@ export class SystemAnnouncementService {
    * 格式化技能使用消息
    */
   private static formatSkillUsageMessage(data: SystemAnnouncementData): string {
-    const { actorName, actorRole, skillName, skillType, targetName, targetRole } = data;
-    
+    const {
+      actorName,
+      actorRole,
+      skillName,
+      skillType,
+      targetName,
+      targetRole,
+    } = data;
+
     if (targetName && targetRole) {
       return `${actorName}-${actorRole}，使用${skillName}-${skillType}，目标${targetName}-${targetRole}`;
     } else {
@@ -97,9 +116,11 @@ export class SystemAnnouncementService {
   /**
    * 格式化状态变更消息
    */
-  private static formatStatusChangeMessage(data: SystemAnnouncementData): string {
+  private static formatStatusChangeMessage(
+    data: SystemAnnouncementData
+  ): string {
     const { targetName, targetRole, skillName, skillType, finalStatus } = data;
-    
+
     if (skillName && skillType) {
       return `${targetName}-${targetRole}，被${skillName}-${skillType}，最终判定变为-${finalStatus}状态`;
     } else {
@@ -110,9 +131,11 @@ export class SystemAnnouncementService {
   /**
    * 获取技能使用公告的可见性规则
    */
-  private static getSkillUsageVisibility(data: SystemAnnouncementData): AnnouncementVisibility {
+  private static getSkillUsageVisibility(
+    data: SystemAnnouncementData
+  ): AnnouncementVisibility {
     const { skillType } = data;
-    
+
     // 狼人攻击技能的特殊可见性规则
     if (skillType === '攻击') {
       return {
@@ -120,11 +143,11 @@ export class SystemAnnouncementService {
         isVisibleToActor: true,
         isVisibleToTarget: false,
         isVisibleToWerewolves: true, // 狼人系角色可见
-        isVisibleToRescuers: true,   // 女巫、暗夜术士可见
-        isVisibleToAll: false
+        isVisibleToRescuers: true, // 女巫、暗夜术士可见
+        isVisibleToAll: false,
       };
     }
-    
+
     // 其他技能默认只对法官和使用者可见
     return {
       isVisibleToJudge: true,
@@ -132,16 +155,18 @@ export class SystemAnnouncementService {
       isVisibleToTarget: false,
       isVisibleToWerewolves: false,
       isVisibleToRescuers: false,
-      isVisibleToAll: false
+      isVisibleToAll: false,
     };
   }
 
   /**
    * 获取状态变更公告的可见性规则
    */
-  private static getStatusChangeVisibility(data: SystemAnnouncementData): AnnouncementVisibility {
+  private static getStatusChangeVisibility(
+    data: SystemAnnouncementData
+  ): AnnouncementVisibility {
     const { targetRole, finalStatus } = data;
-    
+
     // 猎人状态变更的特殊规则
     if (targetRole === 'hunter' && finalStatus === '濒死') {
       return {
@@ -150,10 +175,10 @@ export class SystemAnnouncementService {
         isVisibleToTarget: true, // 猎人自己可见
         isVisibleToWerewolves: false,
         isVisibleToRescuers: false,
-        isVisibleToAll: false
+        isVisibleToAll: false,
       };
     }
-    
+
     // 默认状态变更只对法官可见
     return {
       isVisibleToJudge: true,
@@ -161,7 +186,7 @@ export class SystemAnnouncementService {
       isVisibleToTarget: false,
       isVisibleToWerewolves: false,
       isVisibleToRescuers: false,
-      isVisibleToAll: false
+      isVisibleToAll: false,
     };
   }
 
@@ -169,27 +194,25 @@ export class SystemAnnouncementService {
    * 发送公告消息到数据库
    */
   private static async sendAnnouncementMessage(
-    message: string, 
-    roomId: string, 
+    message: string,
+    roomId: string,
     visibility: AnnouncementVisibility,
     data: SystemAnnouncementData
   ): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert({
-          room_id: roomId,
-          sender_id: 'system', // 系统消息
-          message,
-          chat_type: 'system',
-          game_round: data.gameRound,
-          game_phase: data.gamePhase,
-          metadata: {
-            announcement_type: data.type,
-            visibility,
-            data
-          }
-        });
+      const { error } = await supabase.from('chat_messages').insert({
+        room_id: roomId,
+        sender_id: 'system', // 系统消息
+        message,
+        chat_type: 'system',
+        game_round: data.gameRound,
+        game_phase: data.gamePhase,
+        metadata: {
+          announcement_type: data.type,
+          visibility,
+          data,
+        },
+      });
 
       if (error) {
         console.error('Error sending system announcement:', error);
@@ -207,8 +230,8 @@ export class SystemAnnouncementService {
    * 检查用户是否可以查看特定公告
    */
   static async canUserViewAnnouncement(
-    userId: string, 
-    userRole: string, 
+    userId: string,
+    userRole: string,
     visibility: AnnouncementVisibility,
     announcementData: SystemAnnouncementData
   ): Promise<boolean> {
@@ -220,7 +243,7 @@ export class SystemAnnouncementService {
         .select('judge_user_id')
         .eq('id', announcementData.roomId)
         .single();
-      
+
       if (!error && room?.judge_user_id === userId) {
         return true;
       }
@@ -232,22 +255,34 @@ export class SystemAnnouncementService {
     }
 
     // 使用者可见
-    if (visibility.isVisibleToActor && userId === announcementData.actorUserId) {
+    if (
+      visibility.isVisibleToActor &&
+      userId === announcementData.actorUserId
+    ) {
       return true;
     }
 
     // 目标可见
-    if (visibility.isVisibleToTarget && userId === announcementData.targetUserId) {
+    if (
+      visibility.isVisibleToTarget &&
+      userId === announcementData.targetUserId
+    ) {
       return true;
     }
 
     // 狼人可见
-    if (visibility.isVisibleToWerewolves && ['werewolf', 'whitewolf', 'demon'].includes(userRole)) {
+    if (
+      visibility.isVisibleToWerewolves &&
+      ['werewolf', 'whitewolf', 'demon'].includes(userRole)
+    ) {
       return true;
     }
 
     // 施救者可见
-    if (visibility.isVisibleToRescuers && ['witch', 'warlock'].includes(userRole)) {
+    if (
+      visibility.isVisibleToRescuers &&
+      ['witch', 'warlock'].includes(userRole)
+    ) {
       return true;
     }
 

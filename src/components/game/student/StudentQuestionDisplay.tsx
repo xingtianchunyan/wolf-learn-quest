@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface Question {
@@ -29,7 +28,7 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
   hasSubmitted,
   loading,
   timeIsUp,
-  onOptionClick
+  onOptionClick,
 }) => {
   const getOptionLabel = (index: number) => {
     return ['A', 'B', 'C', 'D'][index - 1];
@@ -37,41 +36,52 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
 
   const getOptionText = (optionNumber: number) => {
     switch (optionNumber) {
-      case 1: return currentQuestion.option_a;
-      case 2: return currentQuestion.option_b;
-      case 3: return currentQuestion.option_c;
-      case 4: return currentQuestion.option_d;
-      default: return '';
+      case 1:
+        return currentQuestion.option_a;
+      case 2:
+        return currentQuestion.option_b;
+      case 3:
+        return currentQuestion.option_c;
+      case 4:
+        return currentQuestion.option_d;
+      default:
+        return '';
     }
   };
 
   return (
     <>
       {/* 题目题干 */}
-      <div className="p-4 bg-werewolf-dark/40 rounded-md">
-        <h3 className="font-semibold text-werewolf-purple mb-2">题目</h3>
-        <p className="text-gray-300 leading-relaxed">{currentQuestion.question}</p>
+      <div className='p-4 bg-werewolf-dark/40 rounded-md'>
+        <h3 className='font-semibold text-werewolf-purple mb-2'>题目</h3>
+        <p className='text-gray-300 leading-relaxed'>
+          {currentQuestion.question}
+        </p>
         {currentQuestion.category && (
-          <div className="mt-2 text-xs text-gray-500">
+          <div className='mt-2 text-xs text-gray-500'>
             类别: {currentQuestion.category}
           </div>
         )}
         {currentQuestion.difficulty && (
-          <div className="mt-1 text-xs text-gray-500">
+          <div className='mt-1 text-xs text-gray-500'>
             难度: {currentQuestion.difficulty}/10
           </div>
         )}
       </div>
 
       {/* 选项列表 */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-werewolf-purple">选项</h3>
-        {[1, 2, 3, 4].map((optionNum) => {
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-werewolf-purple'>选项</h3>
+        {[1, 2, 3, 4].map(optionNum => {
           const optionText = getOptionText(optionNum);
           const isSelected = selectedOption === optionNum;
-          const isCorrect = hasSubmitted && optionNum === currentQuestion.correct_option;
-          const isWrong = hasSubmitted && isSelected && optionNum !== currentQuestion.correct_option;
-          
+          const isCorrect =
+            hasSubmitted && optionNum === currentQuestion.correct_option;
+          const isWrong =
+            hasSubmitted &&
+            isSelected &&
+            optionNum !== currentQuestion.correct_option;
+
           return (
             <button
               key={optionNum}
@@ -81,15 +91,15 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
                 isCorrect && hasSubmitted
                   ? 'bg-green-500/20 border-green-500 text-green-300'
                   : isWrong
-                  ? 'bg-red-500/20 border-red-500 text-red-300'
-                  : isSelected
-                  ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
-                  : hasSubmitted || timeIsUp
-                  ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
-                  : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
+                    ? 'bg-red-500/20 border-red-500 text-red-300'
+                    : isSelected
+                      ? 'bg-werewolf-purple/20 border-werewolf-purple text-werewolf-purple'
+                      : hasSubmitted || timeIsUp
+                        ? 'bg-werewolf-dark/40 border-gray-600 text-gray-500 cursor-not-allowed'
+                        : 'bg-werewolf-dark/40 border-gray-600 text-gray-300 hover:bg-werewolf-purple/10 hover:border-werewolf-purple/50'
               }`}
             >
-              <span className="font-semibold mr-2">
+              <span className='font-semibold mr-2'>
                 {getOptionLabel(optionNum)}.
               </span>
               {optionText}
@@ -100,27 +110,27 @@ const StudentQuestionDisplay: React.FC<StudentQuestionDisplayProps> = ({
 
       {/* 答案状态提示 */}
       {hasSubmitted && (
-        <div className="text-center">
-          <div className="text-green-400 font-medium mb-2">
-            答案已提交
-          </div>
+        <div className='text-center'>
+          <div className='text-green-400 font-medium mb-2'>答案已提交</div>
           {currentQuestion.explanation && (
-            <div className="p-3 bg-blue-900/20 rounded-md border border-blue-500/30">
-              <h4 className="font-semibold text-blue-300 mb-1">解释</h4>
-              <p className="text-sm text-gray-300">{currentQuestion.explanation}</p>
+            <div className='p-3 bg-blue-900/20 rounded-md border border-blue-500/30'>
+              <h4 className='font-semibold text-blue-300 mb-1'>解释</h4>
+              <p className='text-sm text-gray-300'>
+                {currentQuestion.explanation}
+              </p>
             </div>
           )}
         </div>
       )}
-      
+
       {timeIsUp && !hasSubmitted && (
-        <div className="text-center text-red-400 font-medium">
+        <div className='text-center text-red-400 font-medium'>
           答题时间已结束，无法提交答案
         </div>
       )}
 
       {loading && (
-        <div className="text-center text-yellow-400 font-medium">
+        <div className='text-center text-yellow-400 font-medium'>
           正在提交答案...
         </div>
       )}

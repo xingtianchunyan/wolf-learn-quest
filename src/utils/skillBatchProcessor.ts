@@ -48,21 +48,23 @@ export class SkillBatchProcessor {
   /**
    * 添加操作到批处理队列
    */
-  public addOperation(operation: Omit<BatchOperation, 'id' | 'timestamp'>): Promise<any> {
+  public addOperation(
+    operation: Omit<BatchOperation, 'id' | 'timestamp'>
+  ): Promise<any> {
     const batchOperation: BatchOperation = {
       ...operation,
       id: this.generateOperationId(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.operationQueue.push(batchOperation);
-    
+
     // 按优先级排序
     this.operationQueue.sort((a, b) => a.priority - b.priority);
 
-    logger.debug('添加批处理操作', { 
-      type: operation.type, 
-      queueSize: this.operationQueue.length 
+    logger.debug('添加批处理操作', {
+      type: operation.type,
+      queueSize: this.operationQueue.length,
     });
 
     // 如果队列达到批大小或等待时间过长，立即处理
@@ -73,7 +75,9 @@ export class SkillBatchProcessor {
     // 返回一个Promise，可以等待处理完成
     return new Promise((resolve, reject) => {
       const checkResult = () => {
-        const processed = !this.operationQueue.find(op => op.id === batchOperation.id);
+        const processed = !this.operationQueue.find(
+          op => op.id === batchOperation.id
+        );
         if (processed) {
           resolve(true);
         } else {
@@ -98,7 +102,8 @@ export class SkillBatchProcessor {
     const now = Date.now();
     return (
       this.operationQueue.length >= this.batchSize ||
-      (this.operationQueue.length > 0 && now - this.lastProcessTime > this.maxWaitTime)
+      (this.operationQueue.length > 0 &&
+        now - this.lastProcessTime > this.maxWaitTime)
     );
   }
 
@@ -147,19 +152,18 @@ export class SkillBatchProcessor {
       const duration = Date.now() - startTime;
       this.lastProcessTime = Date.now();
 
-      logger.debug('批处理完成', { 
+      logger.debug('批处理完成', {
         processed: currentBatch.length - errors.length,
         errors: errors.length,
-        duration 
+        duration,
       });
 
       return {
         success: errors.length === 0,
         processed: currentBatch.length - errors.length,
         errors,
-        duration
+        duration,
       };
-
     } catch (error) {
       logger.error('批处理执行失败', error);
       currentBatch.forEach(op => {
@@ -170,7 +174,7 @@ export class SkillBatchProcessor {
         success: false,
         processed: 0,
         errors,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     } finally {
       this.processing = false;
@@ -180,21 +184,26 @@ export class SkillBatchProcessor {
   /**
    * 按类型分组操作
    */
-  private groupOperationsByType(operations: BatchOperation[]): Record<string, BatchOperation[]> {
-    return operations.reduce((groups, operation) => {
-      if (!groups[operation.type]) {
-        groups[operation.type] = [];
-      }
-      groups[operation.type].push(operation);
-      return groups;
-    }, {} as Record<string, BatchOperation[]>);
+  private groupOperationsByType(
+    operations: BatchOperation[]
+  ): Record<string, BatchOperation[]> {
+    return operations.reduce(
+      (groups, operation) => {
+        if (!groups[operation.type]) {
+          groups[operation.type] = [];
+        }
+        groups[operation.type].push(operation);
+        return groups;
+      },
+      {} as Record<string, BatchOperation[]>
+    );
   }
 
   /**
    * 按类型批量处理操作
    */
   private async processBatchByType(
-    type: BatchOperation['type'], 
+    type: BatchOperation['type'],
     operations: BatchOperation[]
   ): Promise<void> {
     switch (type) {
@@ -218,15 +227,15 @@ export class SkillBatchProcessor {
   /**
    * 批量处理技能使用
    */
-  private async batchProcessSkillUses(operations: BatchOperation[]): Promise<void> {
+  private async batchProcessSkillUses(
+    operations: BatchOperation[]
+  ): Promise<void> {
     const skillUses = operations.map(op => ({
       ...op.data,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     }));
 
-    const { error } = await supabase
-      .from('skill_uses')
-      .insert(skillUses);
+    const { error } = await supabase.from('skill_uses').insert(skillUses);
 
     if (error) {
       throw error;
@@ -238,28 +247,35 @@ export class SkillBatchProcessor {
   /**
    * 批量处理效果更新
    */
-  private async batchProcessEffectUpdates(operations: BatchOperation[]): Promise<void> {
+  private async batchProcessEffectUpdates(
+    operations: BatchOperation[]
+  ): Promise<void> {
     // 按游戏状态分组
-    const byGameState = operations.reduce((groups, op) => {
-      if (!groups[op.gameStateId]) {
-        groups[op.gameStateId] = [];
-      }
-      groups[op.gameStateId].push(op);
-      return groups;
-    }, {} as Record<string, BatchOperation[]>);
+    const byGameState = operations.reduce(
+      (groups, op) => {
+        if (!groups[op.gameStateId]) {
+          groups[op.gameStateId] = [];
+        }
+        groups[op.gameStateId].push(op);
+        return groups;
+      },
+      {} as Record<string, BatchOperation[]>
+    );
 
     // 批量更新每个游戏状态的效果
     for (const [gameStateId, ops] of Object.entries(byGameState)) {
       const updates = ops.map(op => op.data);
-      
+
       // 使用批量更新标准化技能目标表
       try {
         const { error } = await supabase
           .from('standardized_skill_targets')
-          .upsert(updates.map(update => ({
-            ...update,
-            updated_at: new Date().toISOString()
-          })));
+          .upsert(
+            updates.map(update => ({
+              ...update,
+              updated_at: new Date().toISOString(),
+            }))
+          );
 
         if (error) {
           logger.error('批量更新技能效果失败', error);
@@ -273,9 +289,11 @@ export class SkillBatchProcessor {
   /**
    * 批量处理状态同步
    */
-  private async batchProcessStateSyncs(operations: BatchOperation[]): Promise<void> {
+  private async batchProcessStateSyncs(
+    operations: BatchOperation[]
+  ): Promise<void> {
     // 状态同步通常是读操作，可以并行处理
-    const promises = operations.map(async (op) => {
+    const promises = operations.map(async op => {
       try {
         const { data, error } = await supabase
           .from('role_states')
@@ -284,7 +302,7 @@ export class SkillBatchProcessor {
           .eq('user_id', op.userId);
 
         if (error) throw error;
-        
+
         // 更新本地状态或缓存
         if (op.data.callback) {
           op.data.callback(data);
@@ -300,35 +318,42 @@ export class SkillBatchProcessor {
   /**
    * 批量处理验证检查
    */
-  private async batchProcessValidations(operations: BatchOperation[]): Promise<void> {
+  private async batchProcessValidations(
+    operations: BatchOperation[]
+  ): Promise<void> {
     // 验证检查可以批量处理，减少数据库调用
-    const validationGroups = operations.reduce((groups, op) => {
-      const key = `${op.gameStateId}_${op.data.skillName}`;
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(op);
-      return groups;
-    }, {} as Record<string, BatchOperation[]>);
+    const validationGroups = operations.reduce(
+      (groups, op) => {
+        const key = `${op.gameStateId}_${op.data.skillName}`;
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push(op);
+        return groups;
+      },
+      {} as Record<string, BatchOperation[]>
+    );
 
     for (const [key, ops] of Object.entries(validationGroups)) {
       try {
         const userIds = ops.map(op => op.userId).filter(Boolean);
-        
+
         // 批量查询角色状态进行验证
         const { data, error } = await supabase
           .from('role_states')
-          .select(`
+          .select(
+            `
             *,
             role_design!inner(*)
-          `)
+          `
+          )
           .eq('game_state_id', ops[0].gameStateId)
           .in('user_id', userIds);
 
         if (error) throw error;
 
         // 处理验证结果
-        ops.forEach((op) => {
+        ops.forEach(op => {
           if (op.data.callback && data) {
             const userRoleState = data.find(rs => rs.user_id === op.userId);
             op.data.callback(userRoleState);
@@ -349,7 +374,7 @@ export class SkillBatchProcessor {
       processing: this.processing,
       lastProcessTime: this.lastProcessTime,
       batchSize: this.batchSize,
-      batchInterval: this.batchInterval
+      batchInterval: this.batchInterval,
     };
   }
 
@@ -372,7 +397,7 @@ export class SkillBatchProcessor {
     if (config.batchSize) this.batchSize = config.batchSize;
     if (config.batchInterval) this.batchInterval = config.batchInterval;
     if (config.maxWaitTime) this.maxWaitTime = config.maxWaitTime;
-    
+
     logger.debug('批处理配置已更新', config);
   }
 }

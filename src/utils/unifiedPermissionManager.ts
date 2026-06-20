@@ -1,6 +1,6 @@
 /**
  * 文件级注释：统一权限管理系统
- * 
+ *
  * 该文件实现了一个全面的统一权限管理系统，集成和扩展现有权限功能：
  * - 统一权限接口和管理
  * - 高级RBAC实现
@@ -8,7 +8,7 @@
  * - 权限策略引擎
  * - 实时权限监控
  * - 权限分析和优化
- * 
+ *
  * 主要特性：
  * - 多层权限架构
  * - 智能权限推荐
@@ -16,13 +16,13 @@
  * - 自动权限清理
  * - 权限性能优化
  * - 全面审计追踪
- * 
+ *
  * @author SOLO Coding
  * @version 2.0.0
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { 
+import {
   EnhancedPermissionSystem,
   Permission,
   Role,
@@ -30,7 +30,7 @@ import {
   ResourceType,
   PermissionContext,
   PermissionCheckResult,
-  PermissionAuditLog
+  PermissionAuditLog,
 } from './enhancedPermissionSystem';
 import { MasterErrorHandler } from './masterErrorHandler';
 import { GlobalErrorMonitor } from './globalErrorMonitor';
@@ -42,40 +42,40 @@ const logger = createLogger('unified-permission-manager');
  * 权限策略类型枚举
  */
 export enum PermissionPolicyType {
-  ALLOW_ALL = 'allow_all',           // 允许所有
-  DENY_ALL = 'deny_all',             // 拒绝所有
-  WHITELIST = 'whitelist',           // 白名单
-  BLACKLIST = 'blacklist',           // 黑名单
-  CONDITIONAL = 'conditional',       // 条件权限
-  TIME_BASED = 'time_based',         // 基于时间
+  ALLOW_ALL = 'allow_all', // 允许所有
+  DENY_ALL = 'deny_all', // 拒绝所有
+  WHITELIST = 'whitelist', // 白名单
+  BLACKLIST = 'blacklist', // 黑名单
+  CONDITIONAL = 'conditional', // 条件权限
+  TIME_BASED = 'time_based', // 基于时间
   LOCATION_BASED = 'location_based', // 基于位置
-  ROLE_BASED = 'role_based'          // 基于角色
+  ROLE_BASED = 'role_based', // 基于角色
 }
 
 /**
  * 权限操作类型枚举
  */
 export enum PermissionOperation {
-  GRANT = 'grant',                   // 授予
-  REVOKE = 'revoke',                 // 撤销
-  INHERIT = 'inherit',               // 继承
-  DELEGATE = 'delegate',             // 委托
-  ESCALATE = 'escalate',             // 提升
-  RESTRICT = 'restrict',             // 限制
-  SUSPEND = 'suspend',               // 暂停
-  RESTORE = 'restore'                // 恢复
+  GRANT = 'grant', // 授予
+  REVOKE = 'revoke', // 撤销
+  INHERIT = 'inherit', // 继承
+  DELEGATE = 'delegate', // 委托
+  ESCALATE = 'escalate', // 提升
+  RESTRICT = 'restrict', // 限制
+  SUSPEND = 'suspend', // 暂停
+  RESTORE = 'restore', // 恢复
 }
 
 /**
  * 权限状态枚举
  */
 export enum PermissionStatus {
-  ACTIVE = 'active',                 // 激活
-  INACTIVE = 'inactive',             // 未激活
-  SUSPENDED = 'suspended',           // 暂停
-  EXPIRED = 'expired',               // 过期
-  PENDING = 'pending',               // 待审批
-  DENIED = 'denied'                  // 拒绝
+  ACTIVE = 'active', // 激活
+  INACTIVE = 'inactive', // 未激活
+  SUSPENDED = 'suspended', // 暂停
+  EXPIRED = 'expired', // 过期
+  PENDING = 'pending', // 待审批
+  DENIED = 'denied', // 拒绝
 }
 
 /**
@@ -101,7 +101,15 @@ export interface PermissionPolicy {
 export interface PolicyCondition {
   id: string;
   type: 'user' | 'role' | 'resource' | 'time' | 'location' | 'custom';
-  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'contains' | 'matches' | 'greater_than' | 'less_than';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'in'
+    | 'not_in'
+    | 'contains'
+    | 'matches'
+    | 'greater_than'
+    | 'less_than';
   field: string;
   value: any;
   description?: string;
@@ -169,7 +177,7 @@ export interface PermissionStatistics {
   totalRoles: number;
   totalPermissions: number;
   totalPolicies: number;
-  
+
   // 用户统计
   userStats: {
     activeUsers: number;
@@ -177,7 +185,7 @@ export interface PermissionStatistics {
     suspendedUsers: number;
     averagePermissionsPerUser: number;
   };
-  
+
   // 角色统计
   roleStats: {
     systemRoles: number;
@@ -185,7 +193,7 @@ export interface PermissionStatistics {
     averagePermissionsPerRole: number;
     roleUsage: Map<string, number>;
   };
-  
+
   // 权限统计
   permissionStats: {
     byType: Map<PermissionType, number>;
@@ -193,7 +201,7 @@ export interface PermissionStatistics {
     mostUsed: Array<{ permission: string; usage: number }>;
     leastUsed: Array<{ permission: string; usage: number }>;
   };
-  
+
   // 性能统计
   performanceStats: {
     averageCheckTime: number;
@@ -214,7 +222,7 @@ export interface UnifiedPermissionConfig {
     maxSize: number;
     cleanupInterval: number;
   };
-  
+
   // 审计配置
   audit: {
     enabled: boolean;
@@ -222,7 +230,7 @@ export interface UnifiedPermissionConfig {
     retentionDays: number;
     enableRealTimeAlerts: boolean;
   };
-  
+
   // 策略配置
   policy: {
     enablePolicyEngine: boolean;
@@ -230,7 +238,7 @@ export interface UnifiedPermissionConfig {
     enableConflictDetection: boolean;
     enableAutoOptimization: boolean;
   };
-  
+
   // 分析配置
   analysis: {
     enableAutoAnalysis: boolean;
@@ -238,7 +246,7 @@ export interface UnifiedPermissionConfig {
     enableRecommendations: boolean;
     enableRiskDetection: boolean;
   };
-  
+
   // 性能配置
   performance: {
     enableParallelChecks: boolean;
@@ -253,7 +261,13 @@ export interface UnifiedPermissionConfig {
  */
 export interface PermissionEvent {
   id: string;
-  type: 'permission_granted' | 'permission_revoked' | 'role_assigned' | 'role_removed' | 'policy_applied' | 'security_violation';
+  type:
+    | 'permission_granted'
+    | 'permission_revoked'
+    | 'role_assigned'
+    | 'role_removed'
+    | 'policy_applied'
+    | 'security_violation';
   userId: string;
   targetId: string; // 权限ID、角色ID等
   details: Record<string, any>;
@@ -264,7 +278,7 @@ export interface PermissionEvent {
 
 /**
  * 类级注释：统一权限管理器
- * 
+ *
  * 实现全面的权限管理系统，提供：
  * - 统一权限接口
  * - 高级RBAC功能
@@ -274,26 +288,31 @@ export interface PermissionEvent {
  */
 export class UnifiedPermissionManager {
   private static instance: UnifiedPermissionManager;
-  
+
   // 核心组件
   private enhancedPermissionSystem: EnhancedPermissionSystem;
   private masterErrorHandler: MasterErrorHandler;
   private globalErrorMonitor: GlobalErrorMonitor;
-  
+
   // 配置和状态
   private config: UnifiedPermissionConfig;
   private statistics: PermissionStatistics;
-  
+
   // 策略和规则
   private policies: Map<string, PermissionPolicy> = new Map();
   private permissionRequests: Map<string, PermissionRequest> = new Map();
   private permissionAnalyses: Map<string, PermissionAnalysis> = new Map();
-  
+
   // 缓存和监控
-  private permissionCache: Map<string, { result: boolean; timestamp: number }> = new Map();
+  private permissionCache: Map<string, { result: boolean; timestamp: number }> =
+    new Map();
   private eventHistory: PermissionEvent[] = [];
-  private performanceMetrics: Array<{ operation: string; duration: number; timestamp: number }> = [];
-  
+  private performanceMetrics: Array<{
+    operation: string;
+    duration: number;
+    timestamp: number;
+  }> = [];
+
   // 定时器
   private cacheCleanupTimer: ReturnType<typeof setInterval> | null = null;
   private analysisTimer: ReturnType<typeof setInterval> | null = null;
@@ -310,44 +329,44 @@ export class UnifiedPermissionManager {
         enabled: true,
         ttl: 300000, // 5分钟
         maxSize: 10000,
-        cleanupInterval: 60000 // 1分钟
+        cleanupInterval: 60000, // 1分钟
       },
-      
+
       audit: {
         enabled: true,
         logLevel: 'detailed',
         retentionDays: 90,
-        enableRealTimeAlerts: true
+        enableRealTimeAlerts: true,
       },
-      
+
       policy: {
         enablePolicyEngine: true,
         defaultPolicy: PermissionPolicyType.DENY_ALL,
         enableConflictDetection: true,
-        enableAutoOptimization: true
+        enableAutoOptimization: true,
       },
-      
+
       analysis: {
         enableAutoAnalysis: true,
         analysisInterval: 3600000, // 1小时
         enableRecommendations: true,
-        enableRiskDetection: true
+        enableRiskDetection: true,
       },
-      
+
       performance: {
         enableParallelChecks: true,
         maxConcurrentChecks: 10,
         enableBatchOperations: true,
-        optimizationLevel: 'advanced'
+        optimizationLevel: 'advanced',
       },
-      
-      ...config
+
+      ...config,
     };
 
     this.enhancedPermissionSystem = EnhancedPermissionSystem.getInstance();
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.globalErrorMonitor = GlobalErrorMonitor.getInstance();
-    
+
     this.initializeStatistics();
     this.initializeDefaultPolicies();
     this.startMonitoring();
@@ -357,7 +376,9 @@ export class UnifiedPermissionManager {
   /**
    * 函数级注释：获取单例实例
    */
-  public static getInstance(config?: Partial<UnifiedPermissionConfig>): UnifiedPermissionManager {
+  public static getInstance(
+    config?: Partial<UnifiedPermissionConfig>
+  ): UnifiedPermissionManager {
     if (!UnifiedPermissionManager.instance) {
       UnifiedPermissionManager.instance = new UnifiedPermissionManager(config);
     }
@@ -375,21 +396,33 @@ export class UnifiedPermissionManager {
     context?: Partial<PermissionContext>
   ): Promise<boolean> {
     const startTime = performance.now();
-    
+
     try {
       // 检查缓存
       if (this.config.cache.enabled) {
-        const cacheKey = this.generateCacheKey(userId, permissionName, resourceId);
+        const cacheKey = this.generateCacheKey(
+          userId,
+          permissionName,
+          resourceId
+        );
         const cached = this.permissionCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < this.config.cache.ttl) {
-          this.recordPerformanceMetric('cache_hit', performance.now() - startTime);
+          this.recordPerformanceMetric(
+            'cache_hit',
+            performance.now() - startTime
+          );
           return cached.result;
         }
       }
 
       // 执行权限检查
-      const result = await this.performPermissionCheck(userId, permissionName, resourceId, context);
-      
+      const result = await this.performPermissionCheck(
+        userId,
+        permissionName,
+        resourceId,
+        context
+      );
+
       // 缓存结果
       if (this.config.cache.enabled) {
         this.cachePermissionResult(userId, permissionName, resourceId, result);
@@ -402,17 +435,22 @@ export class UnifiedPermissionManager {
         targetId: permissionName,
         details: { resourceId, result },
         source: 'unified_permission_manager',
-        severity: 'info'
+        severity: 'info',
       });
 
       // 记录性能指标
-      this.recordPerformanceMetric('permission_check', performance.now() - startTime);
-      
-      return result;
+      this.recordPerformanceMetric(
+        'permission_check',
+        performance.now() - startTime
+      );
 
+      return result;
     } catch (error) {
       this.handlePermissionError(error, userId, permissionName, resourceId);
-      this.recordPerformanceMetric('permission_error', performance.now() - startTime);
+      this.recordPerformanceMetric(
+        'permission_error',
+        performance.now() - startTime
+      );
       return false;
     }
   }
@@ -430,7 +468,7 @@ export class UnifiedPermissionManager {
     }>
   ): Promise<Array<{ request: any; result: boolean }>> {
     const startTime = performance.now();
-    
+
     try {
       if (this.config.performance.enableParallelChecks) {
         return this.checkPermissionsParallel(requests);
@@ -438,10 +476,16 @@ export class UnifiedPermissionManager {
         return this.checkPermissionsSequential(requests);
       }
     } catch (error) {
-      logger.error('批量权限检查失败', { error, requestCount: requests.length });
+      logger.error('批量权限检查失败', {
+        error,
+        requestCount: requests.length,
+      });
       return requests.map(request => ({ request, result: false }));
     } finally {
-      this.recordPerformanceMetric('batch_permission_check', performance.now() - startTime);
+      this.recordPerformanceMetric(
+        'batch_permission_check',
+        performance.now() - startTime
+      );
     }
   }
 
@@ -462,24 +506,36 @@ export class UnifiedPermissionManager {
   ): Promise<boolean> {
     try {
       // 检查授权者权限
-      const canGrant = await this.checkPermission(grantedBy, 'permission.grant');
+      const canGrant = await this.checkPermission(
+        grantedBy,
+        'permission.grant'
+      );
       if (!canGrant) {
         throw new Error('授权者没有授予权限的权限');
       }
 
       // 应用策略检查
-      const policyResult = await this.applyPolicies(userId, permissionName, 'grant');
+      const policyResult = await this.applyPolicies(
+        userId,
+        permissionName,
+        'grant'
+      );
       if (!policyResult.allowed) {
         throw new Error(`策略阻止授权: ${policyResult.reason}`);
       }
 
       // 执行授权
-      const success = await this.performGrantPermission(userId, permissionName, grantedBy, options);
-      
+      const success = await this.performGrantPermission(
+        userId,
+        permissionName,
+        grantedBy,
+        options
+      );
+
       if (success) {
         // 清除相关缓存
         this.invalidateUserCache(userId);
-        
+
         // 记录审计日志
         this.recordAuditLog({
           action: 'grant',
@@ -487,7 +543,7 @@ export class UnifiedPermissionManager {
           permissionId: permissionName,
           operatorId: grantedBy,
           result: 'success',
-          reason: options?.reason
+          reason: options?.reason,
         });
 
         // 记录事件
@@ -497,12 +553,11 @@ export class UnifiedPermissionManager {
           targetId: permissionName,
           details: { grantedBy, options },
           source: 'unified_permission_manager',
-          severity: 'info'
+          severity: 'info',
         });
       }
 
       return success;
-
     } catch (error) {
       this.handlePermissionError(error, userId, permissionName);
       return false;
@@ -521,24 +576,36 @@ export class UnifiedPermissionManager {
   ): Promise<boolean> {
     try {
       // 检查撤销者权限
-      const canRevoke = await this.checkPermission(revokedBy, 'permission.revoke');
+      const canRevoke = await this.checkPermission(
+        revokedBy,
+        'permission.revoke'
+      );
       if (!canRevoke) {
         throw new Error('撤销者没有撤销权限的权限');
       }
 
       // 应用策略检查
-      const policyResult = await this.applyPolicies(userId, permissionName, 'revoke');
+      const policyResult = await this.applyPolicies(
+        userId,
+        permissionName,
+        'revoke'
+      );
       if (!policyResult.allowed) {
         throw new Error(`策略阻止撤销: ${policyResult.reason}`);
       }
 
       // 执行撤销
-      const success = await this.performRevokePermission(userId, permissionName, revokedBy, reason);
-      
+      const success = await this.performRevokePermission(
+        userId,
+        permissionName,
+        revokedBy,
+        reason
+      );
+
       if (success) {
         // 清除相关缓存
         this.invalidateUserCache(userId);
-        
+
         // 记录审计日志
         this.recordAuditLog({
           action: 'revoke',
@@ -546,7 +613,7 @@ export class UnifiedPermissionManager {
           permissionId: permissionName,
           operatorId: revokedBy,
           result: 'success',
-          reason
+          reason,
         });
 
         // 记录事件
@@ -556,12 +623,11 @@ export class UnifiedPermissionManager {
           targetId: permissionName,
           details: { revokedBy, reason },
           source: 'unified_permission_manager',
-          severity: 'warning'
+          severity: 'warning',
         });
       }
 
       return success;
-
     } catch (error) {
       this.handlePermissionError(error, userId, permissionName);
       return false;
@@ -572,22 +638,26 @@ export class UnifiedPermissionManager {
    * 函数级注释：分析用户权限
    * 分析用户的权限使用情况和安全风险
    */
-  public async analyzeUserPermissions(userId: string): Promise<PermissionAnalysis> {
+  public async analyzeUserPermissions(
+    userId: string
+  ): Promise<PermissionAnalysis> {
     try {
       // 检查缓存
       const cached = this.permissionAnalyses.get(userId);
-      if (cached && Date.now() - cached.lastAnalyzed < this.config.analysis.analysisInterval) {
+      if (
+        cached &&
+        Date.now() - cached.lastAnalyzed < this.config.analysis.analysisInterval
+      ) {
         return cached;
       }
 
       // 执行分析
       const analysis = await this.performPermissionAnalysis(userId);
-      
+
       // 缓存结果
       this.permissionAnalyses.set(userId, analysis);
-      
-      return analysis;
 
+      return analysis;
     } catch (error) {
       logger.error('权限分析失败', { error, userId });
       throw error;
@@ -622,7 +692,7 @@ export class UnifiedPermissionManager {
         id: policyId,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        createdBy
+        createdBy,
       };
 
       this.policies.set(policyId, newPolicy);
@@ -634,11 +704,10 @@ export class UnifiedPermissionManager {
         targetId: policyId,
         details: { policy: newPolicy },
         source: 'unified_permission_manager',
-        severity: 'info'
+        severity: 'info',
       });
 
       return policyId;
-
     } catch (error) {
       logger.error('创建策略失败', { error, policy });
       throw error;
@@ -650,7 +719,7 @@ export class UnifiedPermissionManager {
    */
   public updateConfig(newConfig: Partial<UnifiedPermissionConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // 重启相关服务
     if (newConfig.cache || newConfig.analysis) {
       this.restartServices();
@@ -695,7 +764,11 @@ export class UnifiedPermissionManager {
 
     // 应用策略引擎
     if (this.config.policy.enablePolicyEngine) {
-      const policyResult = await this.applyPolicies(userId, permissionName, 'check');
+      const policyResult = await this.applyPolicies(
+        userId,
+        permissionName,
+        'check'
+      );
       if (!policyResult.allowed) {
         return false;
       }
@@ -719,7 +792,12 @@ export class UnifiedPermissionManager {
       .sort((a, b) => b.priority - a.priority);
 
     for (const policy of applicablePolicies) {
-      const result = await this.evaluatePolicy(policy, userId, permissionName, operation);
+      const result = await this.evaluatePolicy(
+        policy,
+        userId,
+        permissionName,
+        operation
+      );
       if (result.applicable) {
         return { allowed: result.allowed, reason: result.reason };
       }
@@ -741,7 +819,12 @@ export class UnifiedPermissionManager {
   ): Promise<{ applicable: boolean; allowed: boolean; reason?: string }> {
     // 检查策略条件
     for (const condition of policy.conditions) {
-      const conditionMet = await this.evaluateCondition(condition, userId, permissionName, operation);
+      const conditionMet = await this.evaluateCondition(
+        condition,
+        userId,
+        permissionName,
+        operation
+      );
       if (!conditionMet) {
         return { applicable: false, allowed: false };
       }
@@ -754,9 +837,15 @@ export class UnifiedPermissionManager {
       case PermissionPolicyType.DENY_ALL:
         return { applicable: true, allowed: false, reason: '策略拒绝访问' };
       case PermissionPolicyType.WHITELIST:
-        return { applicable: true, allowed: this.isInWhitelist(policy, permissionName) };
+        return {
+          applicable: true,
+          allowed: this.isInWhitelist(policy, permissionName),
+        };
       case PermissionPolicyType.BLACKLIST:
-        return { applicable: true, allowed: !this.isInBlacklist(policy, permissionName) };
+        return {
+          applicable: true,
+          allowed: !this.isInBlacklist(policy, permissionName),
+        };
       default:
         return { applicable: false, allowed: false };
     }
@@ -785,7 +874,12 @@ export class UnifiedPermissionManager {
       case 'location':
         return this.evaluateLocationCondition(condition, userId);
       case 'custom':
-        return this.evaluateCustomCondition(condition, userId, permissionName, operation);
+        return this.evaluateCustomCondition(
+          condition,
+          userId,
+          permissionName,
+          operation
+        );
       default:
         return false;
     }
@@ -805,11 +899,11 @@ export class UnifiedPermissionManager {
   ): Promise<Array<{ request: any; result: boolean }>> {
     const maxConcurrent = this.config.performance.maxConcurrentChecks;
     const results: Array<{ request: any; result: boolean }> = [];
-    
+
     // 分批处理
     for (let i = 0; i < requests.length; i += maxConcurrent) {
       const batch = requests.slice(i, i + maxConcurrent);
-      const batchPromises = batch.map(async (request) => {
+      const batchPromises = batch.map(async request => {
         try {
           const result = await this.checkPermission(
             request.userId,
@@ -824,8 +918,8 @@ export class UnifiedPermissionManager {
       });
 
       const batchResults = await Promise.allSettled(batchPromises);
-      
-      batchResults.forEach((result) => {
+
+      batchResults.forEach(result => {
         if (result.status === 'fulfilled') {
           results.push(result.value);
         } else {
@@ -833,7 +927,7 @@ export class UnifiedPermissionManager {
         }
       });
     }
-    
+
     return results;
   }
 
@@ -850,7 +944,7 @@ export class UnifiedPermissionManager {
     }>
   ): Promise<Array<{ request: any; result: boolean }>> {
     const results: Array<{ request: any; result: boolean }> = [];
-    
+
     for (const request of requests) {
       try {
         const result = await this.checkPermission(
@@ -864,7 +958,7 @@ export class UnifiedPermissionManager {
         results.push({ request, result: false });
       }
     }
-    
+
     return results;
   }
 
@@ -872,35 +966,49 @@ export class UnifiedPermissionManager {
    * 函数级注释：执行权限分析
    * 分析用户权限的详细信息
    */
-  private async performPermissionAnalysis(userId: string): Promise<PermissionAnalysis> {
+  private async performPermissionAnalysis(
+    userId: string
+  ): Promise<PermissionAnalysis> {
     // 获取用户所有权限
     const userPermissions = await this.getUserAllPermissions(userId);
-    
+
     // 分析未使用的权限
-    const unusedPermissions = await this.findUnusedPermissions(userId, userPermissions);
-    
+    const unusedPermissions = await this.findUnusedPermissions(
+      userId,
+      userPermissions
+    );
+
     // 检测权限冲突
-    const conflictingPermissions = await this.detectPermissionConflicts(userPermissions);
-    
+    const conflictingPermissions =
+      await this.detectPermissionConflicts(userPermissions);
+
     // 生成推荐权限
-    const recommendedPermissions = await this.generatePermissionRecommendations(userId);
-    
+    const recommendedPermissions =
+      await this.generatePermissionRecommendations(userId);
+
     // 检测安全风险
-    const securityRisks = await this.detectSecurityRisks(userId, userPermissions);
-    
+    const securityRisks = await this.detectSecurityRisks(
+      userId,
+      userPermissions
+    );
+
     // 生成优化建议
-    const optimizationSuggestions = await this.generateOptimizationSuggestions(userId, userPermissions);
+    const optimizationSuggestions = await this.generateOptimizationSuggestions(
+      userId,
+      userPermissions
+    );
 
     return {
       userId,
       totalPermissions: userPermissions.length,
-      activePermissions: userPermissions.filter(p => this.isPermissionActive(p)).length,
+      activePermissions: userPermissions.filter(p => this.isPermissionActive(p))
+        .length,
       unusedPermissions,
       conflictingPermissions,
       recommendedPermissions,
       securityRisks,
       optimizationSuggestions,
-      lastAnalyzed: Date.now()
+      lastAnalyzed: Date.now(),
     };
   }
 
@@ -915,64 +1023,71 @@ export class UnifiedPermissionManager {
         activeUsers: 0,
         inactiveUsers: 0,
         suspendedUsers: 0,
-        averagePermissionsPerUser: 0
+        averagePermissionsPerUser: 0,
       },
       roleStats: {
         systemRoles: 0,
         customRoles: 0,
         averagePermissionsPerRole: 0,
-        roleUsage: new Map()
+        roleUsage: new Map(),
       },
       permissionStats: {
         byType: new Map(),
         byResource: new Map(),
         mostUsed: [],
-        leastUsed: []
+        leastUsed: [],
       },
       performanceStats: {
         averageCheckTime: 0,
         cacheHitRate: 0,
         totalChecks: 0,
-        failedChecks: 0
-      }
+        failedChecks: 0,
+      },
     };
   }
 
   private initializeDefaultPolicies(): void {
     // 创建默认策略
-    const defaultPolicies: Omit<PermissionPolicy, 'id' | 'createdAt' | 'updatedAt'>[] = [
+    const defaultPolicies: Omit<
+      PermissionPolicy,
+      'id' | 'createdAt' | 'updatedAt'
+    >[] = [
       {
         name: 'system_admin_policy',
         description: '系统管理员策略',
         type: PermissionPolicyType.ALLOW_ALL,
         priority: 100,
-        conditions: [{
-          id: 'admin_role_condition',
-          type: 'role',
-          operator: 'equals',
-          field: 'role',
-          value: 'admin'
-        }],
+        conditions: [
+          {
+            id: 'admin_role_condition',
+            type: 'role',
+            operator: 'equals',
+            field: 'role',
+            value: 'admin',
+          },
+        ],
         actions: [],
         isActive: true,
-        createdBy: 'system'
+        createdBy: 'system',
       },
       {
         name: 'guest_restriction_policy',
         description: '访客限制策略',
         type: PermissionPolicyType.BLACKLIST,
         priority: 90,
-        conditions: [{
-          id: 'guest_role_condition',
-          type: 'role',
-          operator: 'equals',
-          field: 'role',
-          value: 'guest'
-        }],
+        conditions: [
+          {
+            id: 'guest_role_condition',
+            type: 'role',
+            operator: 'equals',
+            field: 'role',
+            value: 'guest',
+          },
+        ],
         actions: [],
         isActive: true,
-        createdBy: 'system'
-      }
+        createdBy: 'system',
+      },
     ];
 
     defaultPolicies.forEach(policyData => {
@@ -980,7 +1095,7 @@ export class UnifiedPermissionManager {
         ...policyData,
         id: this.generatePolicyId(),
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.policies.set(policy.id, policy);
     });
@@ -1044,14 +1159,23 @@ export class UnifiedPermissionManager {
   }
 
   // 更多辅助方法的占位符实现...
-  private generateCacheKey(userId: string, permissionName: string, resourceId?: string): string {
+  private generateCacheKey(
+    userId: string,
+    permissionName: string,
+    resourceId?: string
+  ): string {
     return `${userId}:${permissionName}:${resourceId || 'global'}`;
   }
 
-  private cachePermissionResult(userId: string, permissionName: string, resourceId: string | undefined, result: boolean): void {
+  private cachePermissionResult(
+    userId: string,
+    permissionName: string,
+    resourceId: string | undefined,
+    result: boolean
+  ): void {
     const cacheKey = this.generateCacheKey(userId, permissionName, resourceId);
     this.permissionCache.set(cacheKey, { result, timestamp: Date.now() });
-    
+
     // 限制缓存大小
     if (this.permissionCache.size > this.config.cache.maxSize) {
       const firstKey = this.permissionCache.keys().next().value;
@@ -1067,15 +1191,17 @@ export class UnifiedPermissionManager {
     }
   }
 
-  private recordPermissionEvent(event: Omit<PermissionEvent, 'id' | 'timestamp'>): void {
+  private recordPermissionEvent(
+    event: Omit<PermissionEvent, 'id' | 'timestamp'>
+  ): void {
     const fullEvent: PermissionEvent = {
       ...event,
       id: this.generateEventId(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     this.eventHistory.push(fullEvent);
-    
+
     // 保持最近1000条事件
     if (this.eventHistory.length > 1000) {
       this.eventHistory.splice(0, this.eventHistory.length - 1000);
@@ -1086,25 +1212,32 @@ export class UnifiedPermissionManager {
     this.performanceMetrics.push({
       operation,
       duration,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
+
     // 保持最近1000条记录
     if (this.performanceMetrics.length > 1000) {
       this.performanceMetrics.splice(0, this.performanceMetrics.length - 1000);
     }
   }
 
-  private handlePermissionError(error: any, userId: string, permissionName: string, resourceId?: string): void {
+  private handlePermissionError(
+    error: any,
+    userId: string,
+    permissionName: string,
+    resourceId?: string
+  ): void {
     this.masterErrorHandler.handleError(error, {
       context: 'unified_permission_manager',
       userId,
       permissionName,
-      resourceId
+      resourceId,
     });
   }
 
-  private recordAuditLog(log: Omit<PermissionAuditLog, 'id' | 'timestamp' | 'context'>): void {
+  private recordAuditLog(
+    log: Omit<PermissionAuditLog, 'id' | 'timestamp' | 'context'>
+  ): void {
     // 简化的审计日志记录
     logger.info('权限操作审计', log);
   }
@@ -1128,27 +1261,42 @@ export class UnifiedPermissionManager {
   }
 
   // 更多方法的占位符实现...
-  private isInWhitelist(policy: PermissionPolicy, permissionName: string): boolean {
+  private isInWhitelist(
+    policy: PermissionPolicy,
+    permissionName: string
+  ): boolean {
     // 简化实现
     return true;
   }
 
-  private isInBlacklist(policy: PermissionPolicy, permissionName: string): boolean {
+  private isInBlacklist(
+    policy: PermissionPolicy,
+    permissionName: string
+  ): boolean {
     // 简化实现
     return false;
   }
 
-  private evaluateUserCondition(condition: PolicyCondition, userId: string): boolean {
+  private evaluateUserCondition(
+    condition: PolicyCondition,
+    userId: string
+  ): boolean {
     // 简化实现
     return true;
   }
 
-  private evaluateRoleCondition(condition: PolicyCondition, userId: string): boolean {
+  private evaluateRoleCondition(
+    condition: PolicyCondition,
+    userId: string
+  ): boolean {
     // 简化实现
     return true;
   }
 
-  private evaluateResourceCondition(condition: PolicyCondition, permissionName: string): boolean {
+  private evaluateResourceCondition(
+    condition: PolicyCondition,
+    permissionName: string
+  ): boolean {
     // 简化实现
     return true;
   }
@@ -1158,22 +1306,40 @@ export class UnifiedPermissionManager {
     return true;
   }
 
-  private evaluateLocationCondition(condition: PolicyCondition, userId: string): boolean {
+  private evaluateLocationCondition(
+    condition: PolicyCondition,
+    userId: string
+  ): boolean {
     // 简化实现
     return true;
   }
 
-  private evaluateCustomCondition(condition: PolicyCondition, userId: string, permissionName: string, operation: string): boolean {
+  private evaluateCustomCondition(
+    condition: PolicyCondition,
+    userId: string,
+    permissionName: string,
+    operation: string
+  ): boolean {
     // 简化实现
     return true;
   }
 
-  private async performGrantPermission(userId: string, permissionName: string, grantedBy: string, options?: any): Promise<boolean> {
+  private async performGrantPermission(
+    userId: string,
+    permissionName: string,
+    grantedBy: string,
+    options?: any
+  ): Promise<boolean> {
     // 简化实现
     return true;
   }
 
-  private async performRevokePermission(userId: string, permissionName: string, revokedBy: string, reason?: string): Promise<boolean> {
+  private async performRevokePermission(
+    userId: string,
+    permissionName: string,
+    revokedBy: string,
+    reason?: string
+  ): Promise<boolean> {
     // 简化实现
     return true;
   }
@@ -1183,27 +1349,49 @@ export class UnifiedPermissionManager {
     return [];
   }
 
-  private async findUnusedPermissions(userId: string, permissions: string[]): Promise<string[]> {
+  private async findUnusedPermissions(
+    userId: string,
+    permissions: string[]
+  ): Promise<string[]> {
     // 简化实现
     return [];
   }
 
-  private async detectPermissionConflicts(permissions: string[]): Promise<Array<{ permission1: string; permission2: string; conflict: string }>> {
+  private async detectPermissionConflicts(
+    permissions: string[]
+  ): Promise<
+    Array<{ permission1: string; permission2: string; conflict: string }>
+  > {
     // 简化实现
     return [];
   }
 
-  private async generatePermissionRecommendations(userId: string): Promise<string[]> {
+  private async generatePermissionRecommendations(
+    userId: string
+  ): Promise<string[]> {
     // 简化实现
     return [];
   }
 
-  private async detectSecurityRisks(userId: string, permissions: string[]): Promise<Array<{ type: string; severity: 'low' | 'medium' | 'high' | 'critical'; description: string; recommendation: string }>> {
+  private async detectSecurityRisks(
+    userId: string,
+    permissions: string[]
+  ): Promise<
+    Array<{
+      type: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      description: string;
+      recommendation: string;
+    }>
+  > {
     // 简化实现
     return [];
   }
 
-  private async generateOptimizationSuggestions(userId: string, permissions: string[]): Promise<string[]> {
+  private async generateOptimizationSuggestions(
+    userId: string,
+    permissions: string[]
+  ): Promise<string[]> {
     // 简化实现
     return [];
   }
@@ -1239,9 +1427,13 @@ export class UnifiedPermissionManager {
  * 函数级注释：统一权限管理Hook
  * React Hook，用于在组件中使用统一权限管理器
  */
-export function useUnifiedPermissionManager(config?: Partial<UnifiedPermissionConfig>) {
+export function useUnifiedPermissionManager(
+  config?: Partial<UnifiedPermissionConfig>
+) {
   const manager = UnifiedPermissionManager.getInstance(config);
-  const [statistics, setStatistics] = useState<PermissionStatistics | null>(null);
+  const [statistics, setStatistics] = useState<PermissionStatistics | null>(
+    null
+  );
 
   useEffect(() => {
     const updateStatistics = () => {
@@ -1258,29 +1450,66 @@ export function useUnifiedPermissionManager(config?: Partial<UnifiedPermissionCo
   }, [manager]);
 
   const checkPermission = useCallback(
-    async (userId: string, permissionName: string, resourceId?: string, context?: Partial<PermissionContext>): Promise<boolean> => {
-      return manager.checkPermission(userId, permissionName, resourceId, context);
+    async (
+      userId: string,
+      permissionName: string,
+      resourceId?: string,
+      context?: Partial<PermissionContext>
+    ): Promise<boolean> => {
+      return manager.checkPermission(
+        userId,
+        permissionName,
+        resourceId,
+        context
+      );
     },
     [manager]
   );
 
   const checkPermissionsBatch = useCallback(
-    async (requests: Array<{ userId: string; permissionName: string; resourceId?: string; context?: Partial<PermissionContext> }>): Promise<Array<{ request: any; result: boolean }>> => {
+    async (
+      requests: Array<{
+        userId: string;
+        permissionName: string;
+        resourceId?: string;
+        context?: Partial<PermissionContext>;
+      }>
+    ): Promise<Array<{ request: any; result: boolean }>> => {
       return manager.checkPermissionsBatch(requests);
     },
     [manager]
   );
 
   const grantPermission = useCallback(
-    async (userId: string, permissionName: string, grantedBy: string, options?: any): Promise<boolean> => {
-      return manager.grantPermission(userId, permissionName, grantedBy, options);
+    async (
+      userId: string,
+      permissionName: string,
+      grantedBy: string,
+      options?: any
+    ): Promise<boolean> => {
+      return manager.grantPermission(
+        userId,
+        permissionName,
+        grantedBy,
+        options
+      );
     },
     [manager]
   );
 
   const revokePermission = useCallback(
-    async (userId: string, permissionName: string, revokedBy: string, reason?: string): Promise<boolean> => {
-      return manager.revokePermission(userId, permissionName, revokedBy, reason);
+    async (
+      userId: string,
+      permissionName: string,
+      revokedBy: string,
+      reason?: string
+    ): Promise<boolean> => {
+      return manager.revokePermission(
+        userId,
+        permissionName,
+        revokedBy,
+        reason
+      );
     },
     [manager]
   );
@@ -1307,9 +1536,9 @@ export function useUnifiedPermissionManager(config?: Partial<UnifiedPermissionCo
     analyzeUserPermissions,
     updateConfig,
     statistics,
-    getStatistics: manager.getStatistics.bind(manager)
+    getStatistics: manager.getStatistics.bind(manager),
   };
 }
 
 // 导出单例实例
-export const unifiedPermissionManager = UnifiedPermissionManager.getInstance()
+export const unifiedPermissionManager = UnifiedPermissionManager.getInstance();

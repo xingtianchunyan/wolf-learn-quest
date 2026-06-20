@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -34,7 +33,7 @@ export const useRoleStates = (roomId: string | null | undefined) => {
         .from('role_states')
         .select('*')
         .eq('room_id', roomId);
-      
+
       if (error) {
         console.error('Error fetching role states:', error);
       } else if (data) {

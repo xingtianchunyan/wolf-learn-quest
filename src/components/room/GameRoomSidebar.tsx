@@ -46,35 +46,39 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
   onLeaveRoom,
   onStartGame,
   onAddAIPlayer,
-  onMaxPlayersChange
+  onMaxPlayersChange,
 }) => {
   return (
-    <div className="space-y-6">
-      <Card className="bg-werewolf-card border-werewolf-purple/30">
+    <div className='space-y-6'>
+      <Card className='bg-werewolf-card border-werewolf-purple/30'>
         <CardHeader>
-          <CardTitle className="text-werewolf-purple">{t('room_info')}</CardTitle>
+          <CardTitle className='text-werewolf-purple'>
+            {t('room_info')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
-              <p className="text-sm text-gray-400">{t('room_id')}</p>
-              <p className="font-bold">{roomData.roomId}</p>
+              <p className='text-sm text-gray-400'>{t('room_id')}</p>
+              <p className='font-bold'>{roomData.roomId}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('host_player_id')}</p>
+              <p className='text-sm text-gray-400'>{t('host_player_id')}</p>
               <p>{roomData.hostPlayerId}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">法官状态</p>
+              <p className='text-sm text-gray-400'>法官状态</p>
               <p>{judgeName || '等待法官加入'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">在线玩家</p>
-              <p>{onlinePlayers.length} / {players.length}</p>
+              <p className='text-sm text-gray-400'>在线玩家</p>
+              <p>
+                {onlinePlayers.length} / {players.length}
+              </p>
             </div>
 
-            <div className="mt-4 p-3 bg-werewolf-dark/20 rounded-md">
-              <p className="text-xs text-gray-400 text-center">
+            <div className='mt-4 p-3 bg-werewolf-dark/20 rounded-md'>
+              <p className='text-xs text-gray-400 text-center'>
                 {t('auto_close_warning')}
               </p>
             </div>

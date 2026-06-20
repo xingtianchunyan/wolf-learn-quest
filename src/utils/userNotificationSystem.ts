@@ -2,7 +2,7 @@
  * 文件级注释：用户通知系统
  * 提供统一的用户通知管理功能
  * 支持多种通知类型和自定义样式
- * 
+ *
  * 主要功能：
  * - 多种通知类型（成功、警告、错误、信息）
  * - 自定义通知样式和持续时间
@@ -27,7 +27,7 @@ export enum NotificationType {
   /** 错误通知 */
   ERROR = 'error',
   /** 信息通知 */
-  INFO = 'info'
+  INFO = 'info',
 }
 
 /**
@@ -45,7 +45,7 @@ export enum NotificationPosition {
   /** 底部中央 */
   BOTTOM_CENTER = 'bottom-center',
   /** 底部右侧 */
-  BOTTOM_RIGHT = 'bottom-right'
+  BOTTOM_RIGHT = 'bottom-right',
 }
 
 /**
@@ -162,7 +162,7 @@ export interface NotificationStats {
  */
 export class UserNotificationSystem {
   private static instance: UserNotificationSystem;
-  
+
   /** 系统配置 */
   private config: NotificationSystemConfig;
   /** 活动通知 */
@@ -189,7 +189,7 @@ export class UserNotificationSystem {
       enableAnimation: true,
       animationDuration: 300,
       enablePersistence: true,
-      storageKey: 'wolf_notifications'
+      storageKey: 'wolf_notifications',
     };
 
     // 初始化统计
@@ -199,7 +199,7 @@ export class UserNotificationSystem {
         [NotificationType.SUCCESS]: 0,
         [NotificationType.WARNING]: 0,
         [NotificationType.ERROR]: 0,
-        [NotificationType.INFO]: 0
+        [NotificationType.INFO]: 0,
       },
       byPosition: {
         [NotificationPosition.TOP_LEFT]: 0,
@@ -207,11 +207,11 @@ export class UserNotificationSystem {
         [NotificationPosition.TOP_RIGHT]: 0,
         [NotificationPosition.BOTTOM_LEFT]: 0,
         [NotificationPosition.BOTTOM_CENTER]: 0,
-        [NotificationPosition.BOTTOM_RIGHT]: 0
+        [NotificationPosition.BOTTOM_RIGHT]: 0,
       },
       averageDisplayTime: 0,
       interactionRate: 0,
-      lastNotificationTime: 0
+      lastNotificationTime: 0,
     };
 
     logger.info('用户通知系统已初始化');
@@ -250,7 +250,6 @@ export class UserNotificationSystem {
 
       this.initialized = true;
       logger.info('通知系统初始化完成');
-
     } catch (error) {
       logger.error('通知系统初始化失败', error);
       throw error;
@@ -311,13 +310,12 @@ export class UserNotificationSystem {
 
       logger.info(`通知已显示: ${notification.id}`, notification.config);
       return notification.id;
-
     } catch (error) {
       logger.error('显示通知失败', error);
       await masterErrorHandler.handleError(error, {
         component: 'UserNotificationSystem',
         operation: 'show',
-        context: { config }
+        context: { config },
       });
       throw error;
     }
@@ -359,7 +357,6 @@ export class UserNotificationSystem {
       }
 
       logger.info(`通知已关闭: ${notificationId}`);
-
     } catch (error) {
       logger.error(`关闭通知失败: ${notificationId}`, error);
       throw error;
@@ -371,7 +368,7 @@ export class UserNotificationSystem {
    */
   public async closeAll(): Promise<void> {
     const notificationIds = Array.from(this.activeNotifications.keys());
-    
+
     for (const id of notificationIds) {
       await this.close(id);
     }
@@ -401,13 +398,17 @@ export class UserNotificationSystem {
    * @param message - 消息
    * @param options - 额外选项
    */
-  public async success(title: string, message: string, options?: Partial<NotificationConfig>): Promise<string> {
+  public async success(
+    title: string,
+    message: string,
+    options?: Partial<NotificationConfig>
+  ): Promise<string> {
     return this.show({
       type: NotificationType.SUCCESS,
       title,
       message,
       duration: this.config.defaultDuration,
-      ...options
+      ...options,
     });
   }
 
@@ -417,13 +418,17 @@ export class UserNotificationSystem {
    * @param message - 消息
    * @param options - 额外选项
    */
-  public async warning(title: string, message: string, options?: Partial<NotificationConfig>): Promise<string> {
+  public async warning(
+    title: string,
+    message: string,
+    options?: Partial<NotificationConfig>
+  ): Promise<string> {
     return this.show({
       type: NotificationType.WARNING,
       title,
       message,
       duration: this.config.defaultDuration,
-      ...options
+      ...options,
     });
   }
 
@@ -433,13 +438,17 @@ export class UserNotificationSystem {
    * @param message - 消息
    * @param options - 额外选项
    */
-  public async error(title: string, message: string, options?: Partial<NotificationConfig>): Promise<string> {
+  public async error(
+    title: string,
+    message: string,
+    options?: Partial<NotificationConfig>
+  ): Promise<string> {
     return this.show({
       type: NotificationType.ERROR,
       title,
       message,
       duration: 0, // 错误通知默认不自动关闭
-      ...options
+      ...options,
     });
   }
 
@@ -449,13 +458,17 @@ export class UserNotificationSystem {
    * @param message - 消息
    * @param options - 额外选项
    */
-  public async info(title: string, message: string, options?: Partial<NotificationConfig>): Promise<string> {
+  public async info(
+    title: string,
+    message: string,
+    options?: Partial<NotificationConfig>
+  ): Promise<string> {
     return this.show({
       type: NotificationType.INFO,
       title,
       message,
       duration: this.config.defaultDuration,
-      ...options
+      ...options,
     });
   }
 
@@ -491,7 +504,7 @@ export class UserNotificationSystem {
         [NotificationType.SUCCESS]: 0,
         [NotificationType.WARNING]: 0,
         [NotificationType.ERROR]: 0,
-        [NotificationType.INFO]: 0
+        [NotificationType.INFO]: 0,
       },
       byPosition: {
         [NotificationPosition.TOP_LEFT]: 0,
@@ -499,11 +512,11 @@ export class UserNotificationSystem {
         [NotificationPosition.TOP_RIGHT]: 0,
         [NotificationPosition.BOTTOM_LEFT]: 0,
         [NotificationPosition.BOTTOM_CENTER]: 0,
-        [NotificationPosition.BOTTOM_RIGHT]: 0
+        [NotificationPosition.BOTTOM_RIGHT]: 0,
       },
       averageDisplayTime: 0,
       interactionRate: 0,
-      lastNotificationTime: 0
+      lastNotificationTime: 0,
     };
 
     logger.info('通知历史已清空');
@@ -512,7 +525,9 @@ export class UserNotificationSystem {
   /**
    * 创建通知实例
    */
-  private createNotificationInstance(config: NotificationConfig): NotificationInstance {
+  private createNotificationInstance(
+    config: NotificationConfig
+  ): NotificationInstance {
     const id = this.generateNotificationId();
     const now = Date.now();
 
@@ -525,29 +540,32 @@ export class UserNotificationSystem {
         showIcon: true,
         persistent: false,
         priority: 0,
-        ...config
+        ...config,
       },
       createdAt: now,
       shown: false,
-      closed: false
+      closed: false,
     };
   }
 
   /**
    * 渲染通知
    */
-  private async renderNotification(notification: NotificationInstance): Promise<void> {
+  private async renderNotification(
+    notification: NotificationInstance
+  ): Promise<void> {
     try {
-      const position = notification.config.position || this.config.defaultPosition;
+      const position =
+        notification.config.position || this.config.defaultPosition;
       const container = this.containers.get(position);
-      
+
       if (!container) {
         throw new Error(`通知容器不存在: ${position}`);
       }
 
       // 创建通知元素
       const element = this.createNotificationElement(notification);
-      
+
       // 添加到容器
       container.appendChild(element);
 
@@ -563,7 +581,6 @@ export class UserNotificationSystem {
       if (this.config.enableAnimation) {
         await this.animateNotificationIn(element);
       }
-
     } catch (error) {
       logger.error('渲染通知失败', error);
       throw error;
@@ -573,7 +590,9 @@ export class UserNotificationSystem {
   /**
    * 创建通知元素
    */
-  private createNotificationElement(notification: NotificationInstance): HTMLElement {
+  private createNotificationElement(
+    notification: NotificationInstance
+  ): HTMLElement {
     const element = document.createElement('div');
     element.id = `notification-${notification.id}`;
     element.className = this.getNotificationClasses(notification);
@@ -600,7 +619,9 @@ export class UserNotificationSystem {
   /**
    * 创建通知内容
    */
-  private createNotificationContent(notification: NotificationInstance): HTMLElement {
+  private createNotificationContent(
+    notification: NotificationInstance
+  ): HTMLElement {
     const content = document.createElement('div');
     content.className = 'notification-content';
 
@@ -645,7 +666,9 @@ export class UserNotificationSystem {
   /**
    * 创建动作容器
    */
-  private createActionsContainer(notification: NotificationInstance): HTMLElement {
+  private createActionsContainer(
+    notification: NotificationInstance
+  ): HTMLElement {
     const container = document.createElement('div');
     container.className = 'notification-actions';
 
@@ -672,7 +695,7 @@ export class UserNotificationSystem {
     const classes = [
       'notification',
       `notification-${notification.config.type}`,
-      notification.config.className || ''
+      notification.config.className || '',
     ];
 
     return classes.filter(Boolean).join(' ');
@@ -686,7 +709,7 @@ export class UserNotificationSystem {
       [NotificationType.SUCCESS]: '✓',
       [NotificationType.WARNING]: '⚠',
       [NotificationType.ERROR]: '✗',
-      [NotificationType.INFO]: 'ℹ'
+      [NotificationType.INFO]: 'ℹ',
     };
 
     return icons[type] || icons[NotificationType.INFO];
@@ -697,18 +720,18 @@ export class UserNotificationSystem {
    */
   private createContainers(): void {
     const positions = Object.values(NotificationPosition);
-    
+
     for (const position of positions) {
       const container = document.createElement('div');
       container.id = `notifications-${position}`;
       container.className = `notifications-container ${position}`;
-      
+
       // 添加样式
       this.applyContainerStyles(container, position);
-      
+
       // 添加到页面
       document.body.appendChild(container);
-      
+
       // 保存引用
       this.containers.set(position, container);
     }
@@ -717,7 +740,10 @@ export class UserNotificationSystem {
   /**
    * 应用容器样式
    */
-  private applyContainerStyles(container: HTMLElement, position: NotificationPosition): void {
+  private applyContainerStyles(
+    container: HTMLElement,
+    position: NotificationPosition
+  ): void {
     container.style.position = 'fixed';
     container.style.zIndex = '9999';
     container.style.pointerEvents = 'none';
@@ -755,7 +781,9 @@ export class UserNotificationSystem {
   /**
    * 移除通知元素
    */
-  private async removeNotificationElement(notification: NotificationInstance): Promise<void> {
+  private async removeNotificationElement(
+    notification: NotificationInstance
+  ): Promise<void> {
     const element = document.getElementById(`notification-${notification.id}`);
     if (!element) {
       return;
@@ -769,7 +797,6 @@ export class UserNotificationSystem {
 
       // 移除元素
       element.remove();
-
     } catch (error) {
       logger.error('移除通知元素失败', error);
       // 强制移除
@@ -781,7 +808,7 @@ export class UserNotificationSystem {
    * 入场动画
    */
   private async animateNotificationIn(element: HTMLElement): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       element.style.opacity = '0';
       element.style.transform = 'translateY(-20px)';
       element.style.transition = `all ${this.config.animationDuration}ms ease-out`;
@@ -789,7 +816,7 @@ export class UserNotificationSystem {
       requestAnimationFrame(() => {
         element.style.opacity = '1';
         element.style.transform = 'translateY(0)';
-        
+
         setTimeout(resolve, this.config.animationDuration);
       });
     });
@@ -799,11 +826,11 @@ export class UserNotificationSystem {
    * 退场动画
    */
   private async animateNotificationOut(element: HTMLElement): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       element.style.transition = `all ${this.config.animationDuration}ms ease-in`;
       element.style.opacity = '0';
       element.style.transform = 'translateY(-20px)';
-      
+
       setTimeout(resolve, this.config.animationDuration);
     });
   }
@@ -829,7 +856,7 @@ export class UserNotificationSystem {
     // 按创建时间排序，移除最旧的
     notifications.sort((a, b) => a.createdAt - b.createdAt);
     const oldest = notifications[0];
-    
+
     await this.close(oldest.id);
   }
 
@@ -853,14 +880,17 @@ export class UserNotificationSystem {
   private updateStats(notification: NotificationInstance): void {
     this.stats.total++;
     this.stats.byType[notification.config.type]++;
-    this.stats.byPosition[notification.config.position || this.config.defaultPosition]++;
+    this.stats.byPosition[
+      notification.config.position || this.config.defaultPosition
+    ]++;
     this.stats.lastNotificationTime = notification.createdAt;
 
     // 计算平均显示时间
     if (notification.closedAt) {
       const displayTime = notification.closedAt - notification.createdAt;
-      this.stats.averageDisplayTime = 
-        (this.stats.averageDisplayTime * (this.stats.total - 1) + displayTime) / this.stats.total;
+      this.stats.averageDisplayTime =
+        (this.stats.averageDisplayTime * (this.stats.total - 1) + displayTime) /
+        this.stats.total;
     }
   }
 
@@ -869,22 +899,30 @@ export class UserNotificationSystem {
    */
   private addToHistory(notification: NotificationInstance): void {
     this.notificationHistory.unshift(notification);
-    
+
     // 保持历史记录大小限制
     if (this.notificationHistory.length > this.config.maxHistory) {
-      this.notificationHistory = this.notificationHistory.slice(0, this.config.maxHistory);
+      this.notificationHistory = this.notificationHistory.slice(
+        0,
+        this.config.maxHistory
+      );
     }
   }
 
   /**
    * 持久化通知
    */
-  private async persistNotification(notification: NotificationInstance): Promise<void> {
+  private async persistNotification(
+    notification: NotificationInstance
+  ): Promise<void> {
     try {
       const persistedNotifications = this.getPersistedNotifications();
       persistedNotifications[notification.id] = notification;
-      
-      localStorage.setItem(this.config.storageKey, JSON.stringify(persistedNotifications));
+
+      localStorage.setItem(
+        this.config.storageKey,
+        JSON.stringify(persistedNotifications)
+      );
     } catch (error) {
       logger.error('持久化通知失败', error);
     }
@@ -893,12 +931,17 @@ export class UserNotificationSystem {
   /**
    * 移除持久化通知
    */
-  private async removePersistedNotification(notificationId: string): Promise<void> {
+  private async removePersistedNotification(
+    notificationId: string
+  ): Promise<void> {
     try {
       const persistedNotifications = this.getPersistedNotifications();
       delete persistedNotifications[notificationId];
-      
-      localStorage.setItem(this.config.storageKey, JSON.stringify(persistedNotifications));
+
+      localStorage.setItem(
+        this.config.storageKey,
+        JSON.stringify(persistedNotifications)
+      );
     } catch (error) {
       logger.error('移除持久化通知失败', error);
     }
@@ -910,7 +953,7 @@ export class UserNotificationSystem {
   private async loadPersistedNotifications(): Promise<void> {
     try {
       const persistedNotifications = this.getPersistedNotifications();
-      
+
       for (const notification of Object.values(persistedNotifications)) {
         if (!notification.closed) {
           this.activeNotifications.set(notification.id, notification);

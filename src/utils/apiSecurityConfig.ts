@@ -1,20 +1,20 @@
 /**
  * 文件级注释：API安全配置管理系统
- * 
+ *
  * 该文件实现了一个全面的API安全配置管理系统，旨在：
  * - 提供集中化的API安全配置管理
  * - 支持动态安全策略更新
  * - 实现多层安全防护配置
  * - 提供安全配置验证和审计
  * - 支持环境特定的安全配置
- * 
+ *
  * 主要功能：
  * - 安全策略配置管理
  * - 访问控制配置
  * - 加密和认证配置
  * - 监控和审计配置
  * - 配置热更新和验证
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -30,7 +30,7 @@ export enum SecurityLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
@@ -43,7 +43,7 @@ export enum AuthenticationType {
   JWT = 'jwt',
   OAUTH2 = 'oauth2',
   BASIC = 'basic',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -54,7 +54,7 @@ export enum EncryptionAlgorithm {
   AES_256_GCM = 'aes-256-gcm',
   AES_256_CBC = 'aes-256-cbc',
   CHACHA20_POLY1305 = 'chacha20-poly1305',
-  RSA_OAEP = 'rsa-oaep'
+  RSA_OAEP = 'rsa-oaep',
 }
 
 /**
@@ -389,7 +389,7 @@ export interface ConfigUpdateEvent {
 
 /**
  * 类级注释：API安全配置管理器
- * 
+ *
  * 实现全面的API安全配置管理，提供：
  * - 集中化配置管理
  * - 动态配置更新
@@ -414,7 +414,7 @@ export class ApiSecurityConfigManager {
   private constructor() {
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.globalErrorMonitor = GlobalErrorMonitor.getInstance();
-    
+
     this.currentConfig = this.getDefaultConfig();
     this.initializeConfigValidators();
     this.startConfigWatcher();
@@ -450,7 +450,7 @@ export class ApiSecurityConfigManager {
         skipSuccessfulRequests: false,
         skipFailedRequests: false,
         whitelist: [],
-        blacklist: []
+        blacklist: [],
       },
       cors: {
         enabled: true,
@@ -461,7 +461,7 @@ export class ApiSecurityConfigManager {
         credentials: false,
         maxAge: 86400,
         preflightContinue: false,
-        optionsSuccessStatus: 204
+        optionsSuccessStatus: 204,
       },
       authentication: {
         type: AuthenticationType.JWT,
@@ -472,7 +472,7 @@ export class ApiSecurityConfigManager {
             if (!secret) {
               throw new Error(
                 'JWT_SECRET environment variable is required. ' +
-                'Please set a strong, randomly generated secret and never use the default fallback in production.'
+                  'Please set a strong, randomly generated secret and never use the default fallback in production.'
               );
             }
             return secret;
@@ -481,8 +481,8 @@ export class ApiSecurityConfigManager {
           expiresIn: '24h',
           issuer: 'api-server',
           audience: 'api-client',
-          clockTolerance: 30
-        }
+          clockTolerance: 30,
+        },
       },
       encryption: {
         enabled: false,
@@ -494,8 +494,8 @@ export class ApiSecurityConfigManager {
         keyRotation: {
           enabled: false,
           intervalHours: 24,
-          retentionHours: 72
-        }
+          retentionHours: 72,
+        },
       },
       inputValidation: {
         enabled: true,
@@ -506,13 +506,13 @@ export class ApiSecurityConfigManager {
           'application/json',
           'application/x-www-form-urlencoded',
           'multipart/form-data',
-          'text/plain'
+          'text/plain',
         ],
         xssProtection: true,
         sqlInjectionProtection: true,
         pathTraversalProtection: true,
         commandInjectionProtection: true,
-        customRules: []
+        customRules: [],
       },
       securityHeaders: {
         enabled: true,
@@ -525,26 +525,26 @@ export class ApiSecurityConfigManager {
             'img-src': ["'self'", 'data:', 'https:'],
             'font-src': ["'self'"],
             'connect-src': ["'self'"],
-            'frame-ancestors': ["'none'"]
+            'frame-ancestors': ["'none'"],
           },
-          reportOnly: false
+          reportOnly: false,
         },
         hsts: {
           enabled: true,
           maxAge: 31536000,
           includeSubDomains: true,
-          preload: true
+          preload: true,
         },
         frameOptions: 'DENY',
         contentTypeOptions: true,
         xssProtection: true,
         referrerPolicy: 'strict-origin-when-cross-origin',
         permissionsPolicy: {
-          'camera': [],
-          'microphone': [],
-          'geolocation': [],
-          'payment': []
-        }
+          camera: [],
+          microphone: [],
+          geolocation: [],
+          payment: [],
+        },
       },
       monitoring: {
         enabled: true,
@@ -559,21 +559,21 @@ export class ApiSecurityConfigManager {
           'key',
           'authorization',
           'cookie',
-          'session'
+          'session',
         ],
         metrics: {
           enabled: true,
           interval: 60,
-          retention: 24
+          retention: 24,
         },
         alerts: {
           enabled: false,
           errorRateThreshold: 0.05,
           responseTimeThreshold: 5000,
           notificationMethods: ['email'],
-          recipients: []
-        }
-      }
+          recipients: [],
+        },
+      },
     };
   }
 
@@ -606,31 +606,37 @@ export class ApiSecurityConfigManager {
     });
 
     // 认证配置验证器
-    this.configValidators.set('authentication', (config: AuthenticationConfig) => {
-      const errors: string[] = [];
-      const warnings: string[] = [];
+    this.configValidators.set(
+      'authentication',
+      (config: AuthenticationConfig) => {
+        const errors: string[] = [];
+        const warnings: string[] = [];
 
-      if (config.required && config.type === AuthenticationType.NONE) {
-        errors.push('启用认证时不能使用NONE类型');
-      }
-
-      if (config.type === AuthenticationType.JWT && config.jwt) {
-        if (!config.jwt.secret || config.jwt.secret === 'default-secret') {
-          errors.push('JWT密钥不能为空或使用默认值');
+        if (config.required && config.type === AuthenticationType.NONE) {
+          errors.push('启用认证时不能使用NONE类型');
         }
-        if (config.jwt.secret.length < 32) {
-          warnings.push('建议JWT密钥长度至少为32字符');
-        }
-      }
 
-      if (config.type === AuthenticationType.API_KEY && config.apiKey) {
-        if (!config.apiKey.validKeys || config.apiKey.validKeys.length === 0) {
-          errors.push('API密钥配置必须包含有效的密钥列表');
+        if (config.type === AuthenticationType.JWT && config.jwt) {
+          if (!config.jwt.secret || config.jwt.secret === 'default-secret') {
+            errors.push('JWT密钥不能为空或使用默认值');
+          }
+          if (config.jwt.secret.length < 32) {
+            warnings.push('建议JWT密钥长度至少为32字符');
+          }
         }
-      }
 
-      return { errors, warnings };
-    });
+        if (config.type === AuthenticationType.API_KEY && config.apiKey) {
+          if (
+            !config.apiKey.validKeys ||
+            config.apiKey.validKeys.length === 0
+          ) {
+            errors.push('API密钥配置必须包含有效的密钥列表');
+          }
+        }
+
+        return { errors, warnings };
+      }
+    );
 
     // 加密配置验证器
     this.configValidators.set('encryption', (config: EncryptionConfig) => {
@@ -648,7 +654,10 @@ export class ApiSecurityConfigManager {
           if (config.keyRotation.intervalHours <= 0) {
             errors.push('密钥轮换间隔必须大于0');
           }
-          if (config.keyRotation.retentionHours <= config.keyRotation.intervalHours) {
+          if (
+            config.keyRotation.retentionHours <=
+            config.keyRotation.intervalHours
+          ) {
             warnings.push('建议密钥保留时间大于轮换间隔');
           }
         }
@@ -658,30 +667,33 @@ export class ApiSecurityConfigManager {
     });
 
     // 安全头配置验证器
-    this.configValidators.set('securityHeaders', (config: SecurityHeadersConfig) => {
-      const errors: string[] = [];
-      const warnings: string[] = [];
+    this.configValidators.set(
+      'securityHeaders',
+      (config: SecurityHeadersConfig) => {
+        const errors: string[] = [];
+        const warnings: string[] = [];
 
-      if (config.enabled) {
-        if (config.contentSecurityPolicy?.enabled) {
-          const csp = config.contentSecurityPolicy;
-          if (!csp.directives || Object.keys(csp.directives).length === 0) {
-            warnings.push('建议配置CSP指令以增强安全性');
+        if (config.enabled) {
+          if (config.contentSecurityPolicy?.enabled) {
+            const csp = config.contentSecurityPolicy;
+            if (!csp.directives || Object.keys(csp.directives).length === 0) {
+              warnings.push('建议配置CSP指令以增强安全性');
+            }
+            if (csp.directives['script-src']?.includes("'unsafe-inline'")) {
+              warnings.push('CSP中使用unsafe-inline可能存在XSS风险');
+            }
           }
-          if (csp.directives['script-src']?.includes("'unsafe-inline'")) {
-            warnings.push('CSP中使用unsafe-inline可能存在XSS风险');
+
+          if (config.hsts?.enabled) {
+            if (config.hsts.maxAge < 31536000) {
+              warnings.push('建议HSTS最大年龄至少为1年');
+            }
           }
         }
 
-        if (config.hsts?.enabled) {
-          if (config.hsts.maxAge < 31536000) {
-            warnings.push('建议HSTS最大年龄至少为1年');
-          }
-        }
+        return { errors, warnings };
       }
-
-      return { errors, warnings };
-    });
+    );
   }
 
   /**
@@ -703,48 +715,50 @@ export class ApiSecurityConfigManager {
     try {
       // 合并配置
       const mergedConfig = this.mergeConfigs(this.currentConfig, newConfig);
-      
+
       // 验证配置
       const validationResult = await this.validateConfig(mergedConfig);
-      
+
       if (validationResult.isValid) {
         // 保存旧配置到历史
-        this.configHistory.set(this.currentConfig.version, { ...this.currentConfig });
-        
+        this.configHistory.set(this.currentConfig.version, {
+          ...this.currentConfig,
+        });
+
         // 更新版本号
         mergedConfig.version = this.generateVersion();
-        
+
         // 应用新配置
         this.currentConfig = mergedConfig;
-        
+
         // 触发配置更新事件
         this.emitConfigEvent({
           type: 'config_updated',
           timestamp: new Date(),
           version: mergedConfig.version,
           updatedFields: Object.keys(newConfig),
-          user
+          user,
         });
-        
+
         // 通知监听器
         this.notifyConfigListeners('config_updated', mergedConfig);
-        
+
         // 保存配置到存储
         await this.saveConfigToStorage(mergedConfig);
       }
-      
+
       return validationResult;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
         context: 'config_update',
-        user: user?.id
+        user: user?.id,
       });
-      
+
       return {
         isValid: false,
         errors: [`配置更新失败: ${error.message}`],
         warnings: [],
-        suggestions: []
+        suggestions: [],
       };
     }
   }
@@ -753,12 +767,14 @@ export class ApiSecurityConfigManager {
    * 函数级注释：验证配置
    * 验证API安全配置的有效性
    */
-  public async validateConfig(config: ApiSecurityConfig): Promise<ConfigValidationResult> {
+  public async validateConfig(
+    config: ApiSecurityConfig
+  ): Promise<ConfigValidationResult> {
     const result: ConfigValidationResult = {
       isValid: true,
       errors: [],
       warnings: [],
-      suggestions: []
+      suggestions: [],
     };
 
     try {
@@ -778,7 +794,9 @@ export class ApiSecurityConfigManager {
       // 使用注册的验证器验证各个部分
       for (const [section, validator] of this.configValidators.entries()) {
         if (config[section as keyof ApiSecurityConfig]) {
-          const sectionResult = validator(config[section as keyof ApiSecurityConfig]);
+          const sectionResult = validator(
+            config[section as keyof ApiSecurityConfig]
+          );
           result.errors.push(...sectionResult.errors);
           result.warnings.push(...sectionResult.warnings);
         }
@@ -851,7 +869,7 @@ export class ApiSecurityConfigManager {
           suggestions.push('高安全级别建议使用JWT或OAuth2认证');
         }
         break;
-        
+
       case SecurityLevel.LOW:
         if (config.rateLimit.maxRequests < 100) {
           suggestions.push('低安全级别可以适当放宽速率限制');
@@ -871,17 +889,21 @@ export class ApiSecurityConfigManager {
     updateConfig: Partial<ApiSecurityConfig>
   ): ApiSecurityConfig {
     const merged = JSON.parse(JSON.stringify(baseConfig));
-    
+
     for (const [key, value] of Object.entries(updateConfig)) {
       if (value !== undefined) {
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
           merged[key] = { ...merged[key], ...value };
         } else {
           merged[key] = value;
         }
       }
     }
-    
+
     return merged;
   }
 
@@ -904,13 +926,13 @@ export class ApiSecurityConfigManager {
     listener: (config: ApiSecurityConfig) => void
   ): string {
     const listenerId = Math.random().toString(36).substr(2, 9);
-    
+
     if (!this.configListeners.has(event)) {
       this.configListeners.set(event, []);
     }
-    
+
     this.configListeners.get(event)!.push(listener);
-    
+
     return listenerId;
   }
 
@@ -921,13 +943,13 @@ export class ApiSecurityConfigManager {
   public removeConfigListener(event: string, listenerId: string): boolean {
     const listeners = this.configListeners.get(event);
     if (!listeners) return false;
-    
+
     const index = listeners.findIndex(l => l.toString().includes(listenerId));
     if (index > -1) {
       listeners.splice(index, 1);
       return true;
     }
-    
+
     return false;
   }
 
@@ -944,7 +966,7 @@ export class ApiSecurityConfigManager {
         } catch (error) {
           this.masterErrorHandler.handleError(error, {
             context: 'config_listener_notification',
-            event
+            event,
           });
         }
       });
@@ -960,7 +982,7 @@ export class ApiSecurityConfigManager {
       type: event.type,
       version: event.version,
       timestamp: event.timestamp,
-      user: event.user?.id
+      user: event.user?.id,
     });
   }
 
@@ -972,16 +994,17 @@ export class ApiSecurityConfigManager {
     try {
       // 这里可以从文件、数据库或其他存储加载配置
       // 示例：从环境变量或配置文件加载
-      const configPath = process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
-      
+      const configPath =
+        process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
+
       // 实际实现中应该使用文件系统或数据库
       // const configData = await fs.readFile(configPath, 'utf-8');
       // return JSON.parse(configData);
-      
+
       return null; // 暂时返回null，表示使用默认配置
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
-        context: 'config_load_from_storage'
+        context: 'config_load_from_storage',
       });
       return null;
     }
@@ -991,19 +1014,22 @@ export class ApiSecurityConfigManager {
    * 函数级注释：保存配置到存储
    * 将配置保存到持久化存储
    */
-  private async saveConfigToStorage(config: ApiSecurityConfig): Promise<boolean> {
+  private async saveConfigToStorage(
+    config: ApiSecurityConfig
+  ): Promise<boolean> {
     try {
       // 这里可以保存到文件、数据库或其他存储
       // 示例：保存到配置文件
-      const configPath = process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
-      
+      const configPath =
+        process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
+
       // 实际实现中应该使用文件系统或数据库
       // await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-      
+
       return true;
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
-        context: 'config_save_to_storage'
+        context: 'config_save_to_storage',
       });
       return false;
     }
@@ -1015,8 +1041,9 @@ export class ApiSecurityConfigManager {
    */
   private startConfigWatcher() {
     try {
-      const configPath = process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
-      
+      const configPath =
+        process.env.API_SECURITY_CONFIG_PATH || './config/api-security.json';
+
       // 实际实现中应该使用文件系统监视器
       // const watcher = fs.watch(configPath, async (eventType) => {
       //   if (eventType === 'change') {
@@ -1026,11 +1053,11 @@ export class ApiSecurityConfigManager {
       //     }
       //   }
       // });
-      
+
       // this.configWatchers.set('file', watcher);
     } catch (error) {
       this.masterErrorHandler.handleError(error, {
-        context: 'config_watcher_start'
+        context: 'config_watcher_start',
       });
     }
   }
@@ -1048,7 +1075,7 @@ export class ApiSecurityConfigManager {
       } catch (error) {
         this.masterErrorHandler.handleError(error, {
           context: 'config_watcher_stop',
-          watcher: name
+          watcher: name,
         });
       }
     }
@@ -1059,11 +1086,16 @@ export class ApiSecurityConfigManager {
    * 函数级注释：获取配置历史
    * 获取配置变更历史
    */
-  public getConfigHistory(): Array<{ version: string; config: ApiSecurityConfig }> {
-    return Array.from(this.configHistory.entries()).map(([version, config]) => ({
-      version,
-      config
-    }));
+  public getConfigHistory(): Array<{
+    version: string;
+    config: ApiSecurityConfig;
+  }> {
+    return Array.from(this.configHistory.entries()).map(
+      ([version, config]) => ({
+        version,
+        config,
+      })
+    );
   }
 
   /**
@@ -1082,12 +1114,16 @@ export class ApiSecurityConfigManager {
 
       const validationResult = await this.validateConfig(historicalConfig);
       if (!validationResult.isValid) {
-        throw new Error(`历史配置验证失败: ${validationResult.errors.join(', ')}`);
+        throw new Error(
+          `历史配置验证失败: ${validationResult.errors.join(', ')}`
+        );
       }
 
       // 保存当前配置到历史
-      this.configHistory.set(this.currentConfig.version, { ...this.currentConfig });
-      
+      this.configHistory.set(this.currentConfig.version, {
+        ...this.currentConfig,
+      });
+
       // 应用历史配置
       this.currentConfig = { ...historicalConfig };
       this.currentConfig.version = this.generateVersion();
@@ -1097,7 +1133,7 @@ export class ApiSecurityConfigManager {
         type: 'config_updated',
         timestamp: new Date(),
         version: this.currentConfig.version,
-        user
+        user,
       });
 
       // 通知监听器
@@ -1108,7 +1144,7 @@ export class ApiSecurityConfigManager {
       this.masterErrorHandler.handleError(error, {
         context: 'config_rollback',
         version,
-        user: user?.id
+        user: user?.id,
       });
       return false;
     }
@@ -1138,7 +1174,7 @@ export class ApiSecurityConfigManager {
         isValid: false,
         errors: [`配置导入失败: ${error.message}`],
         warnings: [],
-        suggestions: []
+        suggestions: [],
       };
     }
   }
@@ -1153,8 +1189,11 @@ export class ApiSecurityConfigManager {
       environment: this.currentConfig.environment,
       securityLevel: this.currentConfig.securityLevel,
       historyCount: this.configHistory.size,
-      listenersCount: Array.from(this.configListeners.values()).reduce((sum, listeners) => sum + listeners.length, 0),
-      watchersCount: this.configWatchers.size
+      listenersCount: Array.from(this.configListeners.values()).reduce(
+        (sum, listeners) => sum + listeners.length,
+        0
+      ),
+      watchersCount: this.configWatchers.size,
     };
   }
 }

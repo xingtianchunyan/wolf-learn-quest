@@ -1,13 +1,13 @@
 /**
  * @fileoverview 投票系统辅助函数测试文件
- * 
+ *
  * 本文件包含对投票系统辅助函数的全面测试，包括：
  * - 投票摘要计算功能测试
  * - 投票结果描述生成测试
  * - 投票权限验证测试
  * - 投票时间格式化测试
  * - 边界情况和错误处理测试
- * 
+ *
  * @author AI Assistant
  * @version 1.0.0
  * @since 2024-01-01
@@ -23,12 +23,12 @@ import {
   canBeVoted,
   calculateVoteWeight,
   formatVoteTime,
-  type VotingSummary
+  type VotingSummary,
 } from '../votingSystemHelpers';
 
 /**
  * 投票系统辅助函数测试套件
- * 
+ *
  * 测试投票系统中各种辅助函数的功能正确性，包括：
  * - 投票统计和摘要计算
  * - 权限验证逻辑
@@ -36,7 +36,6 @@ import {
  * - 各种边界情况处理
  */
 describe('VotingSystemHelpers', () => {
-  
   /**
    * 在每个测试前重置所有模拟
    */
@@ -46,7 +45,7 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票摘要计算功能测试组
-   * 
+   *
    * 测试 calculateVotingSummary 函数的各种场景，包括：
    * - 基本投票统计
    * - 投票权重处理
@@ -54,7 +53,6 @@ describe('VotingSystemHelpers', () => {
    * - 过半数判断
    */
   describe('calculateVotingSummary', () => {
-    
     /**
      * 测试基本投票摘要计算功能
      */
@@ -65,13 +63,13 @@ describe('VotingSystemHelpers', () => {
         { target_id: 'player1', is_valid: true },
         { target_id: 'player2', is_valid: true },
         { target_id: undefined, is_valid: true }, // 弃权票
-        { target_id: 'player3', is_valid: false } // 无效票
+        { target_id: 'player3', is_valid: false }, // 无效票
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
         { userId: 'player2', name: '玩家2' },
-        { userId: 'player3', name: '玩家3' }
+        { userId: 'player3', name: '玩家3' },
       ];
 
       // 执行测试
@@ -85,7 +83,7 @@ describe('VotingSystemHelpers', () => {
         playerId: 'player1',
         playerName: '玩家1',
         voteCount: 2,
-        percentage: 50 // 2/4 * 100
+        percentage: 50, // 2/4 * 100
       });
       expect(result.isTied).toBe(false);
       expect(result.hasMajority).toBe(false); // 2票不超过4票的一半
@@ -99,12 +97,12 @@ describe('VotingSystemHelpers', () => {
       const votes = [
         { target_id: 'player1', is_valid: true, vote_weight: 2 },
         { target_id: 'player1', is_valid: true, vote_weight: 1 },
-        { target_id: 'player2', is_valid: true, vote_weight: 3 }
+        { target_id: 'player2', is_valid: true, vote_weight: 3 },
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
-        { userId: 'player2', name: '玩家2' }
+        { userId: 'player2', name: '玩家2' },
       ];
 
       // 执行测试
@@ -117,7 +115,7 @@ describe('VotingSystemHelpers', () => {
         playerId: 'player1',
         playerName: '玩家1',
         voteCount: 3, // 2+1=3 权重
-        percentage: 50 // 3/6 * 100
+        percentage: 50, // 3/6 * 100
       });
       expect(result.hasMajority).toBe(false); // 3票等于6票的一半，不超过
     });
@@ -129,12 +127,12 @@ describe('VotingSystemHelpers', () => {
       // 准备测试数据 - 两个候选人得票相同
       const votes = [
         { target_id: 'player1', is_valid: true },
-        { target_id: 'player2', is_valid: true }
+        { target_id: 'player2', is_valid: true },
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
-        { userId: 'player2', name: '玩家2' }
+        { userId: 'player2', name: '玩家2' },
       ];
 
       // 执行测试
@@ -154,12 +152,12 @@ describe('VotingSystemHelpers', () => {
         { target_id: 'player1', is_valid: true },
         { target_id: 'player1', is_valid: true },
         { target_id: 'player1', is_valid: true },
-        { target_id: 'player2', is_valid: true }
+        { target_id: 'player2', is_valid: true },
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
-        { userId: 'player2', name: '玩家2' }
+        { userId: 'player2', name: '玩家2' },
       ];
 
       // 执行测试
@@ -177,12 +175,12 @@ describe('VotingSystemHelpers', () => {
       // 准备测试数据 - 所有投票都无效
       const votes = [
         { target_id: 'player1', is_valid: false },
-        { target_id: 'player2', is_valid: false }
+        { target_id: 'player2', is_valid: false },
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
-        { userId: 'player2', name: '玩家2' }
+        { userId: 'player2', name: '玩家2' },
       ];
 
       // 执行测试
@@ -201,13 +199,9 @@ describe('VotingSystemHelpers', () => {
      */
     it('应该正确处理未知玩家情况', () => {
       // 准备测试数据 - 投票目标不在玩家列表中
-      const votes = [
-        { target_id: 'unknown_player', is_valid: true }
-      ];
-      
-      const players = [
-        { userId: 'player1', name: '玩家1' }
-      ];
+      const votes = [{ target_id: 'unknown_player', is_valid: true }];
+
+      const players = [{ userId: 'player1', name: '玩家1' }];
 
       // 执行测试
       const result = calculateVotingSummary(votes, players, 1);
@@ -219,11 +213,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票结果描述功能测试组
-   * 
+   *
    * 测试 getVotingResultDescription 函数的各种结果类型描述
    */
   describe('getVotingResultDescription', () => {
-    
     /**
      * 测试淘汰结果描述
      */
@@ -275,11 +268,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票开始条件检查功能测试组
-   * 
+   *
    * 测试 canStartVoting 函数的各种游戏状态检查
    */
   describe('canStartVoting', () => {
-    
     /**
      * 测试正常开始投票条件
      */
@@ -319,11 +311,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票会话类型显示名称功能测试组
-   * 
+   *
    * 测试 getSessionTypeDisplayName 函数的各种会话类型
    */
   describe('getSessionTypeDisplayName', () => {
-    
     /**
      * 测试白天投票显示名称
      */
@@ -359,11 +350,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票权限检查功能测试组
-   * 
+   *
    * 测试 hasVotingPermission 函数的各种权限状态
    */
   describe('hasVotingPermission', () => {
-    
     /**
      * 测试正常状态下的投票权限
      */
@@ -416,11 +406,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 被投票资格检查功能测试组
-   * 
+   *
    * 测试 canBeVoted 函数的各种被投票资格状态
    */
   describe('canBeVoted', () => {
-    
     /**
      * 测试正常状态下的被投票资格
      */
@@ -473,11 +462,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票权重计算功能测试组
-   * 
+   *
    * 测试 calculateVoteWeight 函数的各种权重计算场景
    */
   describe('calculateVoteWeight', () => {
-    
     /**
      * 测试默认投票权重
      */
@@ -517,11 +505,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 投票时间格式化功能测试组
-   * 
+   *
    * 测试 formatVoteTime 函数的各种时间格式化场景
    */
   describe('formatVoteTime', () => {
-    
     /**
      * 在每个测试前设置固定的当前时间
      */
@@ -593,11 +580,10 @@ describe('VotingSystemHelpers', () => {
 
   /**
    * 边界情况和错误处理测试组
-   * 
+   *
    * 测试各种边界情况和异常输入的处理
    */
   describe('边界情况和错误处理', () => {
-    
     /**
      * 测试空数组输入
      */
@@ -636,12 +622,12 @@ describe('VotingSystemHelpers', () => {
       const votes = [
         { target_id: 'player1', is_valid: true, vote_weight: 0 },
         { target_id: 'player1', is_valid: true, vote_weight: -1 },
-        { target_id: 'player2', is_valid: true, vote_weight: 1000 }
+        { target_id: 'player2', is_valid: true, vote_weight: 1000 },
       ];
-      
+
       const players = [
         { userId: 'player1', name: '玩家1' },
-        { userId: 'player2', name: '玩家2' }
+        { userId: 'player2', name: '玩家2' },
       ];
 
       // 应该不抛出错误

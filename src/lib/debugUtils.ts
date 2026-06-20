@@ -36,7 +36,7 @@ export const devLog = {
       console.debug(`[DEV] ${message}`, data || '');
     }
     logger.debug(message, data);
-  }
+  },
 };
 
 /**
@@ -82,7 +82,10 @@ export class PerformanceMonitor {
     }
   }
 
-  static async measureAsync<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  static async measureAsync<T>(
+    label: string,
+    fn: () => Promise<T>
+  ): Promise<T> {
     this.start(label);
     try {
       const result = await fn();
@@ -115,14 +118,14 @@ export class RenderCounter {
     const current = this.counts.get(componentName) || 0;
     const newCount = current + 1;
     this.counts.set(componentName, newCount);
-    
+
     if (isDevelopment() && newCount % 10 === 0) {
       devLog.warn(`组件 ${componentName} 已渲染 ${newCount} 次`, {
         componentName,
-        renderCount: newCount
+        renderCount: newCount,
       });
     }
-    
+
     return newCount;
   }
 

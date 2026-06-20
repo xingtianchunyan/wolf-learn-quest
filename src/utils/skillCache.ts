@@ -32,12 +32,12 @@ export class SkillCacheManager {
   private validationCache = new Map<string, CacheItem<SkillValidationCache>>();
   private roleStateCache = new Map<string, CacheItem<UserRoleStateCache>>();
   private gameStateCache = new Map<string, CacheItem<GameStateCache>>();
-  
+
   // 缓存过期时间配置（毫秒）
   private readonly TTL = {
     validation: 5 * 60 * 1000, // 5分钟
-    roleState: 3 * 60 * 1000,  // 3分钟
-    gameState: 2 * 60 * 1000   // 2分钟
+    roleState: 3 * 60 * 1000, // 3分钟
+    gameState: 2 * 60 * 1000, // 2分钟
   };
 
   static getInstance(): SkillCacheManager {
@@ -106,14 +106,20 @@ export class SkillCacheManager {
     phase: number,
     targetId?: string
   ): SkillValidationCache | null {
-    const key = this.generateValidationKey(skillName, userId, gameStateId, phase, targetId);
+    const key = this.generateValidationKey(
+      skillName,
+      userId,
+      gameStateId,
+      phase,
+      targetId
+    );
     const item = this.validationCache.get(key);
-    
+
     if (!item || this.isExpired(item)) {
       if (item) this.validationCache.delete(key);
       return null;
     }
-    
+
     return item.data;
   }
 
@@ -125,28 +131,37 @@ export class SkillCacheManager {
     data: SkillValidationCache,
     targetId?: string
   ): void {
-    const key = this.generateValidationKey(skillName, userId, gameStateId, phase, targetId);
+    const key = this.generateValidationKey(
+      skillName,
+      userId,
+      gameStateId,
+      phase,
+      targetId
+    );
     const now = Date.now();
-    
+
     this.validationCache.set(key, {
       data,
       timestamp: now,
-      expiresAt: now + this.TTL.validation
+      expiresAt: now + this.TTL.validation,
     });
   }
 
   /**
    * 用户角色状态缓存操作
    */
-  public getRoleStateCache(userId: string, gameStateId: string): UserRoleStateCache | null {
+  public getRoleStateCache(
+    userId: string,
+    gameStateId: string
+  ): UserRoleStateCache | null {
     const key = this.generateRoleStateKey(userId, gameStateId);
     const item = this.roleStateCache.get(key);
-    
+
     if (!item || this.isExpired(item)) {
       if (item) this.roleStateCache.delete(key);
       return null;
     }
-    
+
     return item.data;
   }
 
@@ -158,15 +173,15 @@ export class SkillCacheManager {
   ): void {
     const key = this.generateRoleStateKey(userId, gameStateId);
     const now = Date.now();
-    
+
     this.roleStateCache.set(key, {
       data: {
         roleState,
         roleDesign,
-        timestamp: now
+        timestamp: now,
       },
       timestamp: now,
-      expiresAt: now + this.TTL.roleState
+      expiresAt: now + this.TTL.roleState,
     });
   }
 
@@ -176,12 +191,12 @@ export class SkillCacheManager {
   public getGameStateCache(gameStateId: string): GameStateCache | null {
     const key = this.generateGameStateKey(gameStateId);
     const item = this.gameStateCache.get(key);
-    
+
     if (!item || this.isExpired(item)) {
       if (item) this.gameStateCache.delete(key);
       return null;
     }
-    
+
     return item.data;
   }
 
@@ -192,15 +207,15 @@ export class SkillCacheManager {
   ): void {
     const key = this.generateGameStateKey(gameStateId);
     const now = Date.now();
-    
+
     this.gameStateCache.set(key, {
       data: {
         gameState,
         players,
-        timestamp: now
+        timestamp: now,
       },
       timestamp: now,
-      expiresAt: now + this.TTL.gameState
+      expiresAt: now + this.TTL.gameState,
     });
   }
 
@@ -214,7 +229,7 @@ export class SkillCacheManager {
         this.validationCache.delete(key);
       }
     }
-    
+
     // 清理角色状态缓存
     for (const [key] of this.roleStateCache.entries()) {
       if (key.includes(`:${userId}:`)) {
@@ -233,14 +248,14 @@ export class SkillCacheManager {
         this.validationCache.delete(key);
       }
     }
-    
+
     // 清理角色状态缓存
     for (const [key] of this.roleStateCache.entries()) {
       if (key.includes(`:${gameStateId}`)) {
         this.roleStateCache.delete(key);
       }
     }
-    
+
     // 清理游戏状态缓存
     this.gameStateCache.delete(this.generateGameStateKey(gameStateId));
   }
@@ -262,18 +277,18 @@ export class SkillCacheManager {
       validation: {
         size: this.validationCache.size,
         hits: 0, // 可以添加命中率统计
-        misses: 0
+        misses: 0,
       },
       roleState: {
         size: this.roleStateCache.size,
         hits: 0,
-        misses: 0
+        misses: 0,
       },
       gameState: {
         size: this.gameStateCache.size,
         hits: 0,
-        misses: 0
-      }
+        misses: 0,
+      },
     };
   }
 }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -33,7 +32,7 @@ export const useRoomAnswers = (roomId: string | null | undefined) => {
         .from('room_answers')
         .select('*')
         .eq('room_id', roomId);
-      
+
       if (error) {
         console.error('Error fetching room answers:', error);
       } else if (data) {

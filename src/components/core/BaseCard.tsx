@@ -17,19 +17,19 @@ const BaseCard: React.FC<BaseCardProps> = ({
   children,
   className,
   contentClassName,
-  headerClassName
+  headerClassName,
 }) => {
   return (
-    <Card className={cn("bg-werewolf-card border-werewolf-purple/30", className)}>
-      <CardHeader className={cn("pb-3", headerClassName)}>
-        <CardTitle className="text-werewolf-purple flex items-center text-lg">
-          {Icon && <Icon className="mr-2 h-5 w-5" />}
+    <Card
+      className={cn('bg-werewolf-card border-werewolf-purple/30', className)}
+    >
+      <CardHeader className={cn('pb-3', headerClassName)}>
+        <CardTitle className='text-werewolf-purple flex items-center text-lg'>
+          {Icon && <Icon className='mr-2 h-5 w-5' />}
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className={cn(contentClassName)}>
-        {children}
-      </CardContent>
+      <CardContent className={cn(contentClassName)}>{children}</CardContent>
     </Card>
   );
 };

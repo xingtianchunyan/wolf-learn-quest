@@ -1,12 +1,12 @@
 /**
  * 文件级注释：测试环境设置
- * 
+ *
  * 该文件配置测试环境，包括：
  * - 全局测试工具配置
  * - DOM 测试库设置
  * - 模拟对象配置
  * - 测试环境变量
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -51,7 +51,7 @@ const localStorageMock = {
   clear: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // 模拟 sessionStorage
@@ -62,7 +62,7 @@ const sessionStorageMock = {
   clear: vi.fn(),
 };
 Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock
+  value: sessionStorageMock,
 });
 
 // 模拟 fetch

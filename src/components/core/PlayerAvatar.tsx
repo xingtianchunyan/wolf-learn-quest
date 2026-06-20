@@ -15,28 +15,33 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   avatarUrl,
   size = 'md',
   status = 'alive',
-  className
+  className,
 }) => {
   const sizeClasses = {
     sm: 'h-8 w-8',
     md: 'h-10 w-10',
-    lg: 'h-12 w-12'
+    lg: 'h-12 w-12',
   };
 
   const statusClasses = {
     alive: '',
     dead: 'opacity-50 grayscale',
-    eliminated: 'opacity-30 grayscale'
+    eliminated: 'opacity-30 grayscale',
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
     <Avatar className={cn(sizeClasses[size], statusClasses[status], className)}>
       <AvatarImage src={avatarUrl} alt={name} />
-      <AvatarFallback className="bg-werewolf-purple/20 text-werewolf-purple">
+      <AvatarFallback className='bg-werewolf-purple/20 text-werewolf-purple'>
         {getInitials(name)}
       </AvatarFallback>
     </Avatar>

@@ -7,7 +7,7 @@ export enum SkillErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   PERMISSION_ERROR = 'PERMISSION_ERROR',
   CONFLICT_ERROR = 'CONFLICT_ERROR',
-  TIMEOUT_ERROR = 'TIMEOUT_ERROR'
+  TIMEOUT_ERROR = 'TIMEOUT_ERROR',
 }
 
 /**
@@ -76,7 +76,7 @@ export class SkillErrorHandler {
    */
   private logError(error: SkillError): void {
     this.errorLog.push(error);
-    
+
     // 保持日志大小限制
     if (this.errorLog.length > this.maxLogSize) {
       this.errorLog.shift();
@@ -91,16 +91,19 @@ export class SkillErrorHandler {
   /**
    * 处理验证错误
    */
-  private async handleValidationError(error: SkillError, context?: any): Promise<void> {
+  private async handleValidationError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     // 显示用户友好的错误消息
     const userMessage = this.getUserFriendlyMessage(error);
-    
+
     // 使用toast显示错误
     if (context?.showToast) {
       context.showToast({
         title: '技能使用失败',
         description: userMessage,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
 
@@ -113,20 +116,26 @@ export class SkillErrorHandler {
   /**
    * 处理执行错误
    */
-  private async handleExecutionError(error: SkillError, context?: any): Promise<void> {
+  private async handleExecutionError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     // 尝试重试机制
     if (context?.retryFunction && context?.retryCount < 3) {
-      setTimeout(() => {
-        context.retryFunction();
-        context.retryCount = (context.retryCount || 0) + 1;
-      }, 1000 * Math.pow(2, context.retryCount || 0)); // 指数退避
+      setTimeout(
+        () => {
+          context.retryFunction();
+          context.retryCount = (context.retryCount || 0) + 1;
+        },
+        1000 * Math.pow(2, context.retryCount || 0)
+      ); // 指数退避
     } else {
       // 显示错误并提供手动重试选项
       if (context?.showToast) {
         context.showToast({
           title: '技能执行失败',
           description: '请稍后重试或联系管理员',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     }
@@ -135,14 +144,17 @@ export class SkillErrorHandler {
   /**
    * 处理网络错误
    */
-  private async handleNetworkError(error: SkillError, context?: any): Promise<void> {
+  private async handleNetworkError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     // 检查网络连接
     if (!navigator.onLine) {
       if (context?.showToast) {
         context.showToast({
           title: '网络连接失败',
           description: '请检查网络连接后重试',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
       return;
@@ -160,12 +172,15 @@ export class SkillErrorHandler {
   /**
    * 处理权限错误
    */
-  private async handlePermissionError(error: SkillError, context?: any): Promise<void> {
+  private async handlePermissionError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     if (context?.showToast) {
       context.showToast({
         title: '权限不足',
         description: '您没有权限执行此操作',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
 
@@ -181,12 +196,15 @@ export class SkillErrorHandler {
   /**
    * 处理冲突错误
    */
-  private async handleConflictError(error: SkillError, context?: any): Promise<void> {
+  private async handleConflictError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     if (context?.showToast) {
       context.showToast({
         title: '技能冲突',
         description: '检测到技能冲突，请稍后重试',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
 
@@ -199,12 +217,15 @@ export class SkillErrorHandler {
   /**
    * 处理超时错误
    */
-  private async handleTimeoutError(error: SkillError, context?: any): Promise<void> {
+  private async handleTimeoutError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     if (context?.showToast) {
       context.showToast({
         title: '操作超时',
         description: '操作超时，请重试',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
 
@@ -217,12 +238,15 @@ export class SkillErrorHandler {
   /**
    * 处理通用错误
    */
-  private async handleGenericError(error: SkillError, context?: any): Promise<void> {
+  private async handleGenericError(
+    error: SkillError,
+    context?: any
+  ): Promise<void> {
     if (context?.showToast) {
       context.showToast({
         title: '未知错误',
         description: '发生未知错误，请联系管理员',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   }
@@ -232,16 +256,16 @@ export class SkillErrorHandler {
    */
   private getUserFriendlyMessage(error: SkillError): string {
     const messageMap: Record<string, string> = {
-      'INVALID_PHASE': '当前游戏阶段不能使用此技能',
-      'INVALID_TARGET': '选择的目标无效',
-      'USAGE_LIMIT_EXCEEDED': '技能使用次数已达上限',
-      'TARGET_REQUIRED': '此技能需要选择目标',
-      'INSUFFICIENT_PERMISSION': '权限不足',
-      'SKILL_CONFLICT': '技能冲突，无法执行',
-      'TARGET_ELIMINATED': '目标已被淘汰',
-      'CONSECUTIVE_PROTECTION': '不能连续保护同一人',
-      'POTION_ALREADY_USED': '此类型魔药已使用过',
-      'HUNTER_NOT_ELIMINATED': '猎人复仇技能只能在被淘汰后使用'
+      INVALID_PHASE: '当前游戏阶段不能使用此技能',
+      INVALID_TARGET: '选择的目标无效',
+      USAGE_LIMIT_EXCEEDED: '技能使用次数已达上限',
+      TARGET_REQUIRED: '此技能需要选择目标',
+      INSUFFICIENT_PERMISSION: '权限不足',
+      SKILL_CONFLICT: '技能冲突，无法执行',
+      TARGET_ELIMINATED: '目标已被淘汰',
+      CONSECUTIVE_PROTECTION: '不能连续保护同一人',
+      POTION_ALREADY_USED: '此类型魔药已使用过',
+      HUNTER_NOT_ELIMINATED: '猎人复仇技能只能在被淘汰后使用',
     };
 
     return messageMap[error.code] || error.message || '操作失败';
@@ -281,7 +305,7 @@ export class SkillErrorHandler {
       timestamp: new Date(),
       skillName,
       userId,
-      gameStateId
+      gameStateId,
     };
   }
 }
@@ -289,9 +313,13 @@ export class SkillErrorHandler {
 /**
  * 错误处理装饰器
  */
-export function handleSkillErrors(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function handleSkillErrors(
+  target: any,
+  propertyName: string,
+  descriptor: PropertyDescriptor
+) {
   const method = descriptor.value;
-  
+
   descriptor.value = async function (...args: any[]): Promise<any> {
     try {
       return await method.apply(this, args);
@@ -305,16 +333,16 @@ export function handleSkillErrors(target: any, propertyName: string, descriptor:
         args[0]?.userId,
         args[0]?.gameStateId
       );
-      
+
       await SkillErrorHandler.getInstance().handleError(skillError, {
         showToast: this.showToast,
         resetUI: this.resetUI,
-        retryFunction: () => method.apply(this, args)
+        retryFunction: () => method.apply(this, args),
       });
-      
+
       throw error;
     }
   };
-  
+
   return descriptor;
 }

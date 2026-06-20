@@ -1,5 +1,10 @@
-
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
@@ -32,8 +37,12 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<(User & { player_name?: string }) | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [currentUser, setCurrentUser] = useState<
+    (User & { player_name?: string }) | null
+  >(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -57,13 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If user doesn't exist, create profile
       if (!existingUser) {
-        
         // Get player name from user metadata or display name, fallback to email
-        const playerName = user.user_metadata?.player_name || 
-                          user.user_metadata?.display_name || 
-                          user.email?.split('@')[0] || 
-                          'Player';
-        
+        const playerName =
+          user.user_metadata?.player_name ||
+          user.user_metadata?.display_name ||
+          user.email?.split('@')[0] ||
+          'Player';
+
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert({
@@ -73,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             level: 1,
             experience: 0,
             games_won: 0,
-            games_lost: 0
+            games_lost: 0,
           })
           .select()
           .single();
@@ -81,9 +90,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (insertError) {
           console.error('Error creating user profile:', insertError);
           toast({
-            title: "Profile Creation Failed",
+            title: 'Profile Creation Failed',
             description: `Failed to create user profile: ${insertError.message}. Please try refreshing the page.`,
-            variant: "destructive",
+            variant: 'destructive',
           });
           return null;
         } else {
@@ -95,9 +104,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error ensuring user profile:', error);
       toast({
-        title: "Profile Creation Failed",
-        description: "An unexpected error occurred while creating your profile.",
-        variant: "destructive",
+        title: 'Profile Creation Failed',
+        description:
+          'An unexpected error occurred while creating your profile.',
+        variant: 'destructive',
       });
       return null;
     }
@@ -114,8 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'INITIAL_SESSION') {
         isSessionInitialized.current = true;
       }
@@ -123,10 +134,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!isSessionInitialized.current) {
         return;
       }
-      
+
       if (session?.user) {
         const userProfile = await ensureUserProfile(session.user);
-        setCurrentUser({ ...session.user, player_name: userProfile?.player_name });
+        setCurrentUser({
+          ...session.user,
+          player_name: userProfile?.player_name,
+        });
         setIsLoggedIn(true);
       } else {
         setCurrentUser(null);
@@ -145,12 +159,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializing,
     isLoginOpen,
     setIsLoginOpen,
-    requireAuth
+    requireAuth,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}; 
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

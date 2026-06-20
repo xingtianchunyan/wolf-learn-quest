@@ -2,7 +2,7 @@
  * 文件级注释：自动化安全检查系统
  * 提供持续的安全监控和自动化安全检查功能
  * 集成到应用程序中，实时检测和防护安全威胁
- * 
+ *
  * 主要功能：
  * - 实时安全监控
  * - 自动化漏洞扫描
@@ -12,9 +12,16 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import { ComprehensiveSecurityAudit, VulnerabilityType, VulnerabilitySeverity } from './comprehensiveSecurityAudit';
+import {
+  ComprehensiveSecurityAudit,
+  VulnerabilityType,
+  VulnerabilitySeverity,
+} from './comprehensiveSecurityAudit';
 import { masterErrorHandler } from './masterErrorHandler';
-import { UserNotificationSystem, NotificationType } from './userNotificationSystem';
+import {
+  UserNotificationSystem,
+  NotificationType,
+} from './userNotificationSystem';
 import { ErrorMonitoringService } from '@/services/errorMonitoringService';
 
 const logger = createLogger('automated-security-checker');
@@ -38,7 +45,7 @@ export enum SecurityCheckType {
   /** 配置安全检查 */
   CONFIGURATION_SECURITY = 'configuration_security',
   /** 代码安全检查 */
-  CODE_SECURITY = 'code_security'
+  CODE_SECURITY = 'code_security',
 }
 
 /**
@@ -52,7 +59,7 @@ export enum SecurityCheckLevel {
   /** 深度检查 */
   DEEP = 'deep',
   /** 全面检查 */
-  COMPREHENSIVE = 'comprehensive'
+  COMPREHENSIVE = 'comprehensive',
 }
 
 /**
@@ -70,7 +77,7 @@ export enum SecurityEventType {
   /** 配置错误 */
   CONFIGURATION_ERROR = 'configuration_error',
   /** 安全策略违规 */
-  POLICY_VIOLATION = 'policy_violation'
+  POLICY_VIOLATION = 'policy_violation',
 }
 
 /**
@@ -206,7 +213,7 @@ export class AutomatedSecurityChecker {
   private securityAudit: ComprehensiveSecurityAudit;
   private notificationSystem: UserNotificationSystem;
   private errorMonitoring: ErrorMonitoringService;
-  
+
   /** 检查配置 */
   private config: SecurityCheckConfig;
   /** 检查结果历史 */
@@ -221,7 +228,7 @@ export class AutomatedSecurityChecker {
   private runningChecks = new Set<string>();
   /** 是否正在监控 */
   private isMonitoring = false;
-  
+
   private readonly MAX_HISTORY_SIZE = 1000;
   private readonly MAX_EVENTS_SIZE = 500;
 
@@ -229,7 +236,7 @@ export class AutomatedSecurityChecker {
     this.securityAudit = ComprehensiveSecurityAudit.getInstance();
     this.notificationSystem = UserNotificationSystem.getInstance();
     this.errorMonitoring = ErrorMonitoringService.getInstance();
-    
+
     // 默认配置
     this.config = {
       types: Object.values(SecurityCheckType),
@@ -240,9 +247,9 @@ export class AutomatedSecurityChecker {
       maxConcurrentChecks: 5,
       checkTimeout: 30000, // 30秒
       excludeChecks: [],
-      customRules: []
+      customRules: [],
     };
-    
+
     // 初始化统计
     this.stats = {
       totalChecks: 0,
@@ -254,9 +261,9 @@ export class AutomatedSecurityChecker {
       checksByType: {} as Record<SecurityCheckType, number>,
       checksBySeverity: {} as Record<VulnerabilitySeverity, number>,
       averageCheckDuration: 0,
-      lastCheckTime: 0
+      lastCheckTime: 0,
     };
-    
+
     logger.info('自动化安全检查器已初始化');
   }
 
@@ -321,14 +328,14 @@ export class AutomatedSecurityChecker {
     }
 
     this.isMonitoring = false;
-    
+
     // 清除所有定时器
     this.timers.forEach(timer => clearInterval(timer));
     this.timers.clear();
-    
+
     // 停止实时监控
     this.disableRealTimeMonitoring();
-    
+
     logger.info('自动化安全监控已停止');
   }
 
@@ -368,15 +375,16 @@ export class AutomatedSecurityChecker {
       await this.processCheckResults(results);
 
       const duration = Date.now() - startTime;
-      logger.info(`全面安全检查完成，耗时 ${duration}ms，共检查 ${results.length} 项`);
+      logger.info(
+        `全面安全检查完成，耗时 ${duration}ms，共检查 ${results.length} 项`
+      );
 
       return results;
-
     } catch (error) {
       logger.error('全面安全检查失败', error);
       await masterErrorHandler.handleError(error, {
         component: 'AutomatedSecurityChecker',
-        operation: 'performFullSecurityCheck'
+        operation: 'performFullSecurityCheck',
       });
       throw error;
     }
@@ -386,7 +394,9 @@ export class AutomatedSecurityChecker {
    * 执行单项安全检查
    * @param checkType - 检查类型
    */
-  public async performSecurityCheck(checkType: SecurityCheckType): Promise<SecurityCheckResult> {
+  public async performSecurityCheck(
+    checkType: SecurityCheckType
+  ): Promise<SecurityCheckResult> {
     const checkId = this.generateCheckId(checkType);
     const startTime = Date.now();
 
@@ -434,7 +444,6 @@ export class AutomatedSecurityChecker {
       this.addToHistory(result);
 
       return result;
-
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorResult: SecurityCheckResult = {
@@ -445,14 +454,13 @@ export class AutomatedSecurityChecker {
         severity: VulnerabilitySeverity.HIGH,
         timestamp: Date.now(),
         duration,
-        requiresImmediateAction: true
+        requiresImmediateAction: true,
       };
 
       this.addToHistory(errorResult);
       logger.error(`安全检查失败: ${checkType}`, error);
 
       return errorResult;
-
     } finally {
       this.runningChecks.delete(checkId);
     }
@@ -461,14 +469,16 @@ export class AutomatedSecurityChecker {
   /**
    * 检查输入验证安全
    */
-  private async checkInputValidation(checkId: string): Promise<SecurityCheckResult> {
+  private async checkInputValidation(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
     try {
       // 检查输入验证配置
       const inputConfig = await this.getInputValidationConfig();
-      
+
       if (!inputConfig.enableValidation) {
         issues.push('输入验证未启用');
         severity = VulnerabilitySeverity.HIGH;
@@ -499,9 +509,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个输入验证问题` : 
-        '输入验证检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个输入验证问题`
+          : '输入验证检查通过';
 
       return {
         checkId,
@@ -513,25 +524,28 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getInputValidationRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`输入验证检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `输入验证检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查认证安全
    */
-  private async checkAuthentication(checkId: string): Promise<SecurityCheckResult> {
+  private async checkAuthentication(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
     try {
       // 检查认证配置
       const authConfig = await this.getAuthenticationConfig();
-      
+
       if (authConfig.passwordMinLength < 8) {
         issues.push('密码最小长度要求过低');
         severity = Math.max(severity, VulnerabilitySeverity.MEDIUM);
@@ -547,7 +561,8 @@ export class AutomatedSecurityChecker {
         severity = Math.max(severity, VulnerabilitySeverity.MEDIUM);
       }
 
-      if (authConfig.sessionTimeout > 3600000) { // 1小时
+      if (authConfig.sessionTimeout > 3600000) {
+        // 1小时
         issues.push('会话超时时间过长');
         severity = Math.max(severity, VulnerabilitySeverity.LOW);
       }
@@ -560,9 +575,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个认证安全问题` : 
-        '认证安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个认证安全问题`
+          : '认证安全检查通过';
 
       return {
         checkId,
@@ -574,18 +590,21 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getAuthenticationRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`认证安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `认证安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查授权安全
    */
-  private async checkAuthorization(checkId: string): Promise<SecurityCheckResult> {
+  private async checkAuthorization(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
@@ -612,9 +631,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个授权安全问题` : 
-        '授权安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个授权安全问题`
+          : '授权安全检查通过';
 
       return {
         checkId,
@@ -626,25 +646,28 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getAuthorizationRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`授权安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `授权安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查会话安全
    */
-  private async checkSessionSecurity(checkId: string): Promise<SecurityCheckResult> {
+  private async checkSessionSecurity(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
     try {
       // 检查会话配置
       const sessionConfig = await this.getSessionConfig();
-      
+
       if (!sessionConfig.secure) {
         issues.push('会话Cookie未设置Secure标志');
         severity = Math.max(severity, VulnerabilitySeverity.MEDIUM);
@@ -668,9 +691,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个会话安全问题` : 
-        '会话安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个会话安全问题`
+          : '会话安全检查通过';
 
       return {
         checkId,
@@ -682,18 +706,21 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getSessionSecurityRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`会话安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `会话安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查数据保护
    */
-  private async checkDataProtection(checkId: string): Promise<SecurityCheckResult> {
+  private async checkDataProtection(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
@@ -720,9 +747,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个数据保护问题` : 
-        '数据保护检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个数据保护问题`
+          : '数据保护检查通过';
 
       return {
         checkId,
@@ -734,18 +762,21 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getDataProtectionRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`数据保护检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `数据保护检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查网络安全
    */
-  private async checkNetworkSecurity(checkId: string): Promise<SecurityCheckResult> {
+  private async checkNetworkSecurity(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
@@ -772,9 +803,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个网络安全问题` : 
-        '网络安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个网络安全问题`
+          : '网络安全检查通过';
 
       return {
         checkId,
@@ -786,18 +818,21 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getNetworkSecurityRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`网络安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `网络安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查配置安全
    */
-  private async checkConfigurationSecurity(checkId: string): Promise<SecurityCheckResult> {
+  private async checkConfigurationSecurity(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
@@ -824,9 +859,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个配置安全问题` : 
-        '配置安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个配置安全问题`
+          : '配置安全检查通过';
 
       return {
         checkId,
@@ -838,18 +874,21 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getConfigurationSecurityRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`配置安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `配置安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 检查代码安全
    */
-  private async checkCodeSecurity(checkId: string): Promise<SecurityCheckResult> {
+  private async checkCodeSecurity(
+    checkId: string
+  ): Promise<SecurityCheckResult> {
     const issues: string[] = [];
     let severity = VulnerabilitySeverity.LOW;
 
@@ -876,9 +915,10 @@ export class AutomatedSecurityChecker {
       }
 
       const status = issues.length > 0 ? 'failed' : 'passed';
-      const message = issues.length > 0 ? 
-        `发现 ${issues.length} 个代码安全问题` : 
-        '代码安全检查通过';
+      const message =
+        issues.length > 0
+          ? `发现 ${issues.length} 个代码安全问题`
+          : '代码安全检查通过';
 
       return {
         checkId,
@@ -890,31 +930,36 @@ export class AutomatedSecurityChecker {
         duration: 0,
         details: { issues },
         recommendations: this.getCodeSecurityRecommendations(issues),
-        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH
+        requiresImmediateAction: severity >= VulnerabilitySeverity.HIGH,
       };
-
     } catch (error) {
-      throw new Error(`代码安全检查失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `代码安全检查失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * 执行自定义规则检查
    */
-  private async performCustomRuleCheck(rule: SecurityCheckRule): Promise<SecurityCheckResult> {
+  private async performCustomRuleCheck(
+    rule: SecurityCheckRule
+  ): Promise<SecurityCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const result = await Promise.race([
         rule.check(),
-        new Promise<SecurityCheckResult>((_, reject) => 
-          setTimeout(() => reject(new Error('检查超时')), this.config.checkTimeout)
-        )
+        new Promise<SecurityCheckResult>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('检查超时')),
+            this.config.checkTimeout
+          )
+        ),
       ]);
 
       result.duration = Date.now() - startTime;
       return result;
-
     } catch (error) {
       return {
         checkId: this.generateCheckId(rule.type),
@@ -924,7 +969,7 @@ export class AutomatedSecurityChecker {
         severity: VulnerabilitySeverity.HIGH,
         timestamp: Date.now(),
         duration: Date.now() - startTime,
-        requiresImmediateAction: true
+        requiresImmediateAction: true,
       };
     }
   }
@@ -932,10 +977,15 @@ export class AutomatedSecurityChecker {
   /**
    * 处理检查结果
    */
-  private async processCheckResults(results: SecurityCheckResult[]): Promise<void> {
+  private async processCheckResults(
+    results: SecurityCheckResult[]
+  ): Promise<void> {
     for (const result of results) {
       // 记录安全事件
-      if (result.status === 'failed' && result.severity >= VulnerabilitySeverity.MEDIUM) {
+      if (
+        result.status === 'failed' &&
+        result.severity >= VulnerabilitySeverity.MEDIUM
+      ) {
         await this.recordSecurityEvent({
           id: this.generateEventId(),
           type: SecurityEventType.ATTACK_ATTEMPT,
@@ -945,7 +995,7 @@ export class AutomatedSecurityChecker {
           timestamp: result.timestamp,
           source: 'AutomatedSecurityChecker',
           data: result,
-          handled: false
+          handled: false,
         });
       }
 
@@ -964,7 +1014,9 @@ export class AutomatedSecurityChecker {
   /**
    * 执行自动响应
    */
-  private async executeAutoResponse(result: SecurityCheckResult): Promise<void> {
+  private async executeAutoResponse(
+    result: SecurityCheckResult
+  ): Promise<void> {
     try {
       logger.warn(`执行自动响应: ${result.type}`, result);
 
@@ -982,7 +1034,6 @@ export class AutomatedSecurityChecker {
         default:
           await this.respondToGenericSecurityIssue(result);
       }
-
     } catch (error) {
       logger.error('自动响应执行失败', error);
     }
@@ -991,7 +1042,9 @@ export class AutomatedSecurityChecker {
   /**
    * 发送安全通知
    */
-  private async sendSecurityNotification(result: SecurityCheckResult): Promise<void> {
+  private async sendSecurityNotification(
+    result: SecurityCheckResult
+  ): Promise<void> {
     try {
       await this.notificationSystem.show({
         type: this.getNotificationTypeForSeverity(result.severity),
@@ -1001,13 +1054,13 @@ export class AutomatedSecurityChecker {
         actions: [
           {
             label: '查看详情',
-            action: () => this.showSecurityDetails(result)
+            action: () => this.showSecurityDetails(result),
           },
           {
             label: '忽略',
-            action: () => this.ignoreSecurityIssue(result)
-          }
-        ]
+            action: () => this.ignoreSecurityIssue(result),
+          },
+        ],
       });
     } catch (error) {
       logger.error('发送安全通知失败', error);
@@ -1019,7 +1072,7 @@ export class AutomatedSecurityChecker {
    */
   private async recordSecurityEvent(event: SecurityEvent): Promise<void> {
     this.securityEvents.unshift(event);
-    
+
     // 保持事件历史大小限制
     if (this.securityEvents.length > this.MAX_EVENTS_SIZE) {
       this.securityEvents = this.securityEvents.slice(0, this.MAX_EVENTS_SIZE);
@@ -1089,7 +1142,7 @@ export class AutomatedSecurityChecker {
   private updateStats(results: SecurityCheckResult[]): void {
     for (const result of results) {
       this.stats.totalChecks++;
-      
+
       switch (result.status) {
         case 'passed':
           this.stats.passedChecks++;
@@ -1106,14 +1159,19 @@ export class AutomatedSecurityChecker {
       }
 
       // 按类型统计
-      this.stats.checksByType[result.type] = (this.stats.checksByType[result.type] || 0) + 1;
-      
+      this.stats.checksByType[result.type] =
+        (this.stats.checksByType[result.type] || 0) + 1;
+
       // 按严重级别统计
-      this.stats.checksBySeverity[result.severity] = (this.stats.checksBySeverity[result.severity] || 0) + 1;
+      this.stats.checksBySeverity[result.severity] =
+        (this.stats.checksBySeverity[result.severity] || 0) + 1;
     }
 
     // 更新平均检查时间
-    const totalDuration = results.reduce((sum, result) => sum + result.duration, 0);
+    const totalDuration = results.reduce(
+      (sum, result) => sum + result.duration,
+      0
+    );
     this.stats.averageCheckDuration = totalDuration / results.length;
     this.stats.lastCheckTime = Date.now();
   }
@@ -1123,7 +1181,7 @@ export class AutomatedSecurityChecker {
    */
   private addToHistory(result: SecurityCheckResult): void {
     this.checkHistory.unshift(result);
-    
+
     // 保持历史记录大小限制
     if (this.checkHistory.length > this.MAX_HISTORY_SIZE) {
       this.checkHistory = this.checkHistory.slice(0, this.MAX_HISTORY_SIZE);
@@ -1152,7 +1210,7 @@ export class AutomatedSecurityChecker {
     return {
       enableValidation: true,
       maxStringLength: 5000,
-      enableSanitization: true
+      enableSanitization: true,
     };
   }
 
@@ -1172,7 +1230,7 @@ export class AutomatedSecurityChecker {
       passwordMinLength: 8,
       maxLoginAttempts: 5,
       enableTwoFactor: false,
-      sessionTimeout: 3600000
+      sessionTimeout: 3600000,
     };
   }
 
@@ -1201,11 +1259,13 @@ export class AutomatedSecurityChecker {
     return {
       secure: true,
       httpOnly: true,
-      sameSite: 'strict'
+      sameSite: 'strict',
     };
   }
 
-  private async checkSessionFixationProtection(): Promise<{ protected: boolean }> {
+  private async checkSessionFixationProtection(): Promise<{
+    protected: boolean;
+  }> {
     // 实现会话固定攻击防护检查逻辑
     return { protected: true };
   }
@@ -1260,7 +1320,9 @@ export class AutomatedSecurityChecker {
     return { found: false };
   }
 
-  private async checkDependencyVulnerabilities(): Promise<{ vulnerabilities: number }> {
+  private async checkDependencyVulnerabilities(): Promise<{
+    vulnerabilities: number;
+  }> {
     // 实现依赖漏洞检查逻辑
     return { vulnerabilities: 0 };
   }
@@ -1318,28 +1380,38 @@ export class AutomatedSecurityChecker {
   }
 
   // 自动响应方法
-  private async respondToInputValidationIssue(result: SecurityCheckResult): Promise<void> {
+  private async respondToInputValidationIssue(
+    result: SecurityCheckResult
+  ): Promise<void> {
     // 实现输入验证问题的自动响应
     logger.info('执行输入验证问题自动响应', result);
   }
 
-  private async respondToAuthenticationIssue(result: SecurityCheckResult): Promise<void> {
+  private async respondToAuthenticationIssue(
+    result: SecurityCheckResult
+  ): Promise<void> {
     // 实现认证问题的自动响应
     logger.info('执行认证问题自动响应', result);
   }
 
-  private async respondToAuthorizationIssue(result: SecurityCheckResult): Promise<void> {
+  private async respondToAuthorizationIssue(
+    result: SecurityCheckResult
+  ): Promise<void> {
     // 实现授权问题的自动响应
     logger.info('执行授权问题自动响应', result);
   }
 
-  private async respondToGenericSecurityIssue(result: SecurityCheckResult): Promise<void> {
+  private async respondToGenericSecurityIssue(
+    result: SecurityCheckResult
+  ): Promise<void> {
     // 实现通用安全问题的自动响应
     logger.info('执行通用安全问题自动响应', result);
   }
 
   // 通知相关方法
-  private getNotificationTypeForSeverity(severity: VulnerabilitySeverity): NotificationType {
+  private getNotificationTypeForSeverity(
+    severity: VulnerabilitySeverity
+  ): NotificationType {
     switch (severity) {
       case VulnerabilitySeverity.CRITICAL:
       case VulnerabilitySeverity.HIGH:
@@ -1400,7 +1472,7 @@ export class AutomatedSecurityChecker {
       checksByType: {} as Record<SecurityCheckType, number>,
       checksBySeverity: {} as Record<VulnerabilitySeverity, number>,
       averageCheckDuration: 0,
-      lastCheckTime: 0
+      lastCheckTime: 0,
     };
   }
 
@@ -1416,15 +1488,17 @@ export class AutomatedSecurityChecker {
    * 移除自定义检查规则
    */
   public removeCustomRule(ruleId: string): void {
-    this.config.customRules = this.config.customRules.filter(rule => rule.id !== ruleId);
-    
+    this.config.customRules = this.config.customRules.filter(
+      rule => rule.id !== ruleId
+    );
+
     // 清除相关定时器
     const timerKey = `rule_${ruleId}`;
     if (this.timers.has(timerKey)) {
       clearInterval(this.timers.get(timerKey)!);
       this.timers.delete(timerKey);
     }
-    
+
     logger.info(`移除自定义安全检查规则: ${ruleId}`);
   }
 }

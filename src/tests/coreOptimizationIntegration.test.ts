@@ -1,18 +1,18 @@
 /**
  * 文件级注释：核心优化系统集成测试
- * 
+ *
  * 该文件实现了对第二阶段质量提升工作的核心功能集成测试，验证：
  * - 统一错误处理系统的基本功能
  * - 智能缓存策略的核心特性
  * - 实时订阅内存管理的基础功能
  * - 系统间的基本协同工作
- * 
+ *
  * 测试重点：
  * - 错误处理流程的正确性
  * - 缓存策略的有效性
  * - 内存管理的基本功能
  * - 系统集成的稳定性
- * 
+ *
  * @author SOLO Coding
  * @version 2.0.0
  */
@@ -63,7 +63,7 @@ class MockUnifiedErrorSystem {
     totalErrors: 0,
     errorsByType: {} as Record<string, number>,
     recoveryAttempts: 0,
-    errorRate: 0
+    errorRate: 0,
   };
 
   /**
@@ -73,9 +73,9 @@ class MockUnifiedErrorSystem {
   async handleError(error: Error, context: any = {}) {
     this.errors.push({ error, context, timestamp: Date.now() });
     this.statistics.totalErrors++;
-    
+
     const errorType = context.type || 'SYSTEM';
-    this.statistics.errorsByType[errorType] = 
+    this.statistics.errorsByType[errorType] =
       (this.statistics.errorsByType[errorType] || 0) + 1;
 
     return {
@@ -83,7 +83,7 @@ class MockUnifiedErrorSystem {
       classification: { type: errorType },
       severity: context.severity || 'MEDIUM',
       context,
-      recovery: context.enableRecovery ? { attempted: true } : undefined
+      recovery: context.enableRecovery ? { attempted: true } : undefined,
     };
   }
 
@@ -105,7 +105,7 @@ class MockUnifiedErrorSystem {
       totalErrors: 0,
       errorsByType: {},
       recoveryAttempts: 0,
-      errorRate: 0
+      errorRate: 0,
     };
   }
 
@@ -118,7 +118,7 @@ class MockUnifiedErrorSystem {
       totalErrors: 0,
       errorsByType: {},
       recoveryAttempts: 0,
-      errorRate: 0
+      errorRate: 0,
     };
   }
 }
@@ -136,8 +136,8 @@ class MockIntelligentCacheStrategy {
       hitRate: 0,
       totalQueries: 0,
       avgResponseTime: 0,
-      adaptiveAdjustments: 0
-    }
+      adaptiveAdjustments: 0,
+    },
   };
 
   /**
@@ -164,14 +164,22 @@ class MockIntelligentCacheStrategy {
    * 函数级注释：批量获取缓存数据
    * 批量处理缓存请求
    */
-  async getBatch(requests: Array<{ key: string; fetcher: () => Promise<any>; priority?: string }>) {
+  async getBatch(
+    requests: Array<{
+      key: string;
+      fetcher: () => Promise<any>;
+      priority?: string;
+    }>
+  ) {
     const results = new Map();
-    
+
     // 按优先级排序
     const sortedRequests = requests.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
-      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+      const aPriority =
+        priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+      const bPriority =
+        priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
       return bPriority - aPriority;
     });
 
@@ -232,7 +240,7 @@ class MockIntelligentCacheStrategy {
       hitRate: 0,
       totalQueries: 0,
       avgResponseTime: 0,
-      adaptiveAdjustments: 0
+      adaptiveAdjustments: 0,
     };
   }
 }
@@ -245,18 +253,23 @@ class MockEnhancedRealtimeManager {
   private subscriptions = new Map<string, any>();
   private memoryStats = {
     activeSubscriptions: 0,
-    memoryUsage: 0
+    memoryUsage: 0,
   };
   private connectionStats = {
     activeConnections: 0,
-    connectionPoolUtilization: 0
+    connectionPoolUtilization: 0,
   };
 
   /**
    * 函数级注释：创建订阅
    * 创建新的实时订阅
    */
-  async subscribe(table: string, filter: string, callback: Function, options: any = {}) {
+  async subscribe(
+    table: string,
+    filter: string,
+    callback: Function,
+    options: any = {}
+  ) {
     const id = `${table}_${filter}_${Date.now()}`;
     const subscription = {
       id,
@@ -264,7 +277,7 @@ class MockEnhancedRealtimeManager {
       filter,
       callback,
       options,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     this.subscriptions.set(id, subscription);
@@ -282,7 +295,10 @@ class MockEnhancedRealtimeManager {
     if (this.subscriptions.has(subscriptionId)) {
       this.subscriptions.delete(subscriptionId);
       this.memoryStats.activeSubscriptions = this.subscriptions.size;
-      this.memoryStats.memoryUsage = Math.max(0, this.memoryStats.memoryUsage - 1024);
+      this.memoryStats.memoryUsage = Math.max(
+        0,
+        this.memoryStats.memoryUsage - 1024
+      );
       return true;
     }
     return false;
@@ -304,15 +320,17 @@ class MockEnhancedRealtimeManager {
     const activeConnections = Math.ceil(this.subscriptions.size / 3); // 模拟连接池复用
     return {
       activeConnections,
-      connectionPoolUtilization: this.subscriptions.size > 0 ? 
-        this.subscriptions.size / activeConnections : 0
+      connectionPoolUtilization:
+        this.subscriptions.size > 0
+          ? this.subscriptions.size / activeConnections
+          : 0,
     };
   }
 }
 
 /**
  * 类级注释：核心优化系统集成测试套件
- * 
+ *
  * 提供核心系统集成测试，验证：
  * - 错误处理系统的基本功能
  * - 缓存策略的核心特性
@@ -354,11 +372,11 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该正确处理基本错误', async () => {
       const testError = new Error('测试错误');
-      
+
       const result = await errorSystem.handleError(testError, {
         component: 'TestComponent',
         operation: 'test_operation',
-        type: 'VALIDATION'
+        type: 'VALIDATION',
       });
 
       expect(result.handled).toBe(true);
@@ -376,11 +394,11 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该支持错误恢复机制', async () => {
       const recoveryError = new Error('可恢复错误');
-      
+
       const result = await errorSystem.handleError(recoveryError, {
         component: 'RecoveryTest',
         enableRecovery: true,
-        type: 'NETWORK'
+        type: 'NETWORK',
       });
 
       expect(result.recovery).toBeDefined();
@@ -392,17 +410,18 @@ describe('核心优化系统集成测试', () => {
      * 验证批量处理错误的性能
      */
     it('应该高效处理批量错误', async () => {
-      const errors = Array.from({ length: 10 }, (_, i) => 
-        new Error(`批量错误 ${i + 1}`)
+      const errors = Array.from(
+        { length: 10 },
+        (_, i) => new Error(`批量错误 ${i + 1}`)
       );
 
       const startTime = performance.now();
-      
+
       const results = await Promise.all(
-        errors.map(error => 
+        errors.map(error =>
           errorSystem.handleError(error, {
             component: 'BatchTest',
-            operation: 'batch_test'
+            operation: 'batch_test',
           })
         )
       );
@@ -457,18 +476,18 @@ describe('核心优化系统集成测试', () => {
         {
           key: 'high_priority_1',
           fetcher: vi.fn().mockResolvedValue({ priority: 'high', id: 1 }),
-          priority: 'high'
+          priority: 'high',
         },
         {
           key: 'medium_priority_1',
           fetcher: vi.fn().mockResolvedValue({ priority: 'medium', id: 2 }),
-          priority: 'medium'
+          priority: 'medium',
         },
         {
           key: 'high_priority_2',
           fetcher: vi.fn().mockResolvedValue({ priority: 'high', id: 3 }),
-          priority: 'high'
-        }
+          priority: 'high',
+        },
       ];
 
       const results = await cacheStrategy.getBatch(batchRequests);
@@ -490,10 +509,11 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该正确统计缓存性能指标', async () => {
       const keys = ['key1', 'key2', 'key3'];
-      
+
       // 创建缓存项
       for (const key of keys) {
-        await cacheStrategy.get(key, 
+        await cacheStrategy.get(
+          key,
           vi.fn().mockResolvedValue({ key, data: `data_${key}` })
         );
       }
@@ -520,7 +540,7 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该正确管理订阅生命周期', async () => {
       const callback = vi.fn();
-      
+
       // 创建订阅
       const subscription = await realtimeManager.subscribe(
         'test_table',
@@ -551,7 +571,7 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该优化连接池使用', async () => {
       const subscriptions = [];
-      
+
       // 创建多个订阅
       for (let i = 0; i < 9; i++) {
         const sub = await realtimeManager.subscribe(
@@ -563,7 +583,9 @@ describe('核心优化系统集成测试', () => {
       }
 
       const connectionStats = realtimeManager.getConnectionStats();
-      expect(connectionStats.activeConnections).toBeLessThan(subscriptions.length);
+      expect(connectionStats.activeConnections).toBeLessThan(
+        subscriptions.length
+      );
       expect(connectionStats.connectionPoolUtilization).toBeGreaterThan(1);
 
       // 清理订阅
@@ -652,12 +674,11 @@ describe('核心优化系统集成测试', () => {
 
         expect(cacheStats.performanceMetrics.totalQueries).toBe(1);
         expect(memoryStats.activeSubscriptions).toBe(0);
-
       } catch (error) {
         // 4. 错误处理
         const errorResult = await errorSystem.handleError(error as Error, {
           component: 'IntegrationTest',
-          operation: 'complete_flow'
+          operation: 'complete_flow',
         });
 
         expect(errorResult.handled).toBe(true);
@@ -670,7 +691,9 @@ describe('核心优化系统集成测试', () => {
      */
     it('应该在错误场景下协同工作', async () => {
       // 模拟缓存获取失败
-      const failingFetcher = vi.fn().mockRejectedValue(new Error('缓存获取失败'));
+      const failingFetcher = vi
+        .fn()
+        .mockRejectedValue(new Error('缓存获取失败'));
 
       try {
         await cacheStrategy.get('failing_key', failingFetcher);
@@ -679,7 +702,7 @@ describe('核心优化系统集成测试', () => {
         const errorResult = await errorSystem.handleError(error as Error, {
           component: 'CacheSystem',
           operation: 'data_fetch',
-          enableRecovery: true
+          enableRecovery: true,
         });
 
         expect(errorResult.handled).toBe(true);
@@ -707,7 +730,8 @@ describe('核心优化系统集成测试', () => {
       // 创建缓存项
       for (let i = 0; i < 3; i++) {
         cachePromises.push(
-          cacheStrategy.get(`cache_key_${i}`, 
+          cacheStrategy.get(
+            `cache_key_${i}`,
             vi.fn().mockResolvedValue({ id: i, data: `data_${i}` })
           )
         );

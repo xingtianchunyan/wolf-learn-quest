@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
@@ -11,20 +10,20 @@ export type RoleDesign = Tables<'role_design'> & {
 
 // 本地角色图片映射
 const localRoleImages: Record<string, string> = {
-  'villager': '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
-  'villager_1': '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
-  'villager_2': '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
-  'villager_3': '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
-  'werewolf': '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
-  'werewolf_1': '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
-  'werewolf_2': '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
-  'witch': '/images/roles/3b9178d7-a547-49d9-9b2f-8e3e9feec92b.png',
-  'seer': '/images/roles/cce54aa8-77a3-40e7-b559-b3e3ddb09fc8.png',
-  'hunter': '/images/roles/4b736257-432f-4187-8dc5-431340a6f6e1.png',
-  'guard': '/images/roles/660dd11b-9896-444d-80b5-0a4371c8deef.png',
-  'whitewolf': '/images/roles/2f9b2a78-e79f-4025-9b11-5bc88a7df328.png',
-  'warlock': '/images/roles/392c9861-57a0-4522-93a0-07243faf284f.png',
-  'demon': '/images/roles/9ee3b412-7b6f-44bc-beac-bc8601f647ed.png',
+  villager: '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
+  villager_1: '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
+  villager_2: '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
+  villager_3: '/images/roles/ac54f032-78b6-4c25-82ea-bf91f0d5b5d4.png',
+  werewolf: '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
+  werewolf_1: '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
+  werewolf_2: '/images/roles/b7e85811-97ed-42e4-b429-c77c521745c5.png',
+  witch: '/images/roles/3b9178d7-a547-49d9-9b2f-8e3e9feec92b.png',
+  seer: '/images/roles/cce54aa8-77a3-40e7-b559-b3e3ddb09fc8.png',
+  hunter: '/images/roles/4b736257-432f-4187-8dc5-431340a6f6e1.png',
+  guard: '/images/roles/660dd11b-9896-444d-80b5-0a4371c8deef.png',
+  whitewolf: '/images/roles/2f9b2a78-e79f-4025-9b11-5bc88a7df328.png',
+  warlock: '/images/roles/392c9861-57a0-4522-93a0-07243faf284f.png',
+  demon: '/images/roles/9ee3b412-7b6f-44bc-beac-bc8601f647ed.png',
 };
 
 export const useRoleDesigns = () => {
@@ -43,12 +42,12 @@ export const useRoleDesigns = () => {
           // 直接使用 as RoleDesign 类型断言，避免复杂的类型转换
           const processedRole = {
             ...role,
-            skill_effects: role.skill_effects ? 
-              (role.skill_effects as unknown as SkillEffects) : 
-              undefined,
-            role_attributes: role.role_attributes ? 
-              (role.role_attributes as unknown as RoleAttributes) : 
-              undefined,
+            skill_effects: role.skill_effects
+              ? (role.skill_effects as unknown as SkillEffects)
+              : undefined,
+            role_attributes: role.role_attributes
+              ? (role.role_attributes as unknown as RoleAttributes)
+              : undefined,
           } as RoleDesign;
           return processedRole;
         });
@@ -69,17 +68,17 @@ export const useRoleDesigns = () => {
     if (localRoleImages[roleName]) {
       return localRoleImages[roleName];
     }
-    
+
     // 如果没有本地图片，尝试从 storage 获取
     const role = getRoleByName(roleName);
     if (!role || !role.role_image) {
       return null;
     }
-    
+
     const { data } = supabase.storage
       .from('role-design')
       .getPublicUrl(role.role_image);
-    
+
     return data.publicUrl;
   };
 
@@ -87,7 +86,7 @@ export const useRoleDesigns = () => {
   const getLocalImageByDesignId = (roleDesignId: string) => {
     const roleDesign = roleDesigns.find(design => design.id === roleDesignId);
     if (!roleDesign) return null;
-    
+
     return localRoleImages[roleDesign.role_name] || null;
   };
 
@@ -118,16 +117,16 @@ export const useRoleDesigns = () => {
     return getRolesByFaction(true);
   };
 
-  return { 
-    roleDesigns, 
-    loading, 
-    getRoleByName, 
+  return {
+    roleDesigns,
+    loading,
+    getRoleByName,
     getRoleImageUrl,
     getLocalImageByDesignId,
     getSkillEffects,
     getRoleAttributes,
     getRolesByFaction,
     getGoodRoles,
-    getWolfRoles
+    getWolfRoles,
   };
 };

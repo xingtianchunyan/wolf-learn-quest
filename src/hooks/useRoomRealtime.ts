@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,17 +23,20 @@ export const useRoomRealtime = (roomId: string) => {
           event: '*',
           schema: 'public',
           table: 'rooms',
-          filter: `id=eq.${roomId}`
+          filter: `id=eq.${roomId}`,
         },
-        (payload) => {
+        payload => {
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
-            if (newData.max_players !== undefined && newData.status !== undefined) {
+            if (
+              newData.max_players !== undefined &&
+              newData.status !== undefined
+            ) {
               setRoomData({
                 maxPlayers: newData.max_players,
                 status: newData.status,
                 judge_user_id: newData.judge_user_id,
-                lastUpdate: new Date()
+                lastUpdate: new Date(),
               });
             }
           }
@@ -70,6 +72,6 @@ export const useRoomRealtime = (roomId: string) => {
 
   return {
     roomData,
-    updateMaxPlayers
+    updateMaxPlayers,
   };
 };

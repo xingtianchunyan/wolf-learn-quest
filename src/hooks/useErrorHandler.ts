@@ -20,19 +20,22 @@ export const useErrorHandler = () => {
     enhancedHandler.handleError(error, {
       category: context || 'legacy',
       customMessage: undefined, // 让系统自动生成消息
-      silent: false
+      silent: false,
     });
 
     // 保持原有的日志记录（向后兼容）
     logError(error, context);
   };
 
-  const handleAsyncError = async (asyncFn: () => Promise<any>, context?: string) => {
+  const handleAsyncError = async (
+    asyncFn: () => Promise<any>,
+    context?: string
+  ) => {
     // 记录操作
     recordOperation();
 
     return enhancedHandler.handleAsyncError(asyncFn, {
-      category: context || 'legacy-async'
+      category: context || 'legacy-async',
     });
   };
 
@@ -41,7 +44,7 @@ export const useErrorHandler = () => {
     context?: string
   ) => {
     return enhancedHandler.withErrorHandling(fn, {
-      category: context || 'legacy-wrapper'
+      category: context || 'legacy-wrapper',
     });
   };
 
@@ -56,16 +59,16 @@ export const useErrorHandler = () => {
 function getUserFriendlyMessage(errorMessage: string): string {
   const errorMappings: Record<string, string> = {
     'Network Error': '网络连接失败，请检查网络设置',
-    'Unauthorized': '权限不足，请重新登录',
-    'Forbidden': '没有权限执行此操作',
+    Unauthorized: '权限不足，请重新登录',
+    Forbidden: '没有权限执行此操作',
     'Not Found': '请求的资源不存在',
     'Internal Server Error': '服务器内部错误，请稍后重试',
     'Bad Request': '请求参数错误',
-    'Timeout': '请求超时，请重试',
-    'PGRST116': '数据不存在或已被删除',
-    'PGRST301': '权限不足，无法访问数据',
+    Timeout: '请求超时，请重试',
+    PGRST116: '数据不存在或已被删除',
+    PGRST301: '权限不足，无法访问数据',
     'Authentication required': '请先登录',
-    'Invalid credentials': '用户名或密码错误'
+    'Invalid credentials': '用户名或密码错误',
   };
 
   // 检查是否有匹配的友好消息
@@ -87,16 +90,16 @@ function getUserFriendlyMessage(errorMessage: string): string {
 function getUserFriendlyMessage(errorMessage: string): string {
   const errorMappings: Record<string, string> = {
     'Network Error': '网络连接失败，请检查网络设置',
-    'Unauthorized': '权限不足，请重新登录',
-    'Forbidden': '没有权限执行此操作',
+    Unauthorized: '权限不足，请重新登录',
+    Forbidden: '没有权限执行此操作',
     'Not Found': '请求的资源不存在',
     'Internal Server Error': '服务器内部错误，请稍后重试',
     'Bad Request': '请求参数错误',
-    'Timeout': '请求超时，请重试',
-    'PGRST116': '数据不存在或已被删除',
-    'PGRST301': '权限不足，无法访问数据',
+    Timeout: '请求超时，请重试',
+    PGRST116: '数据不存在或已被删除',
+    PGRST301: '权限不足，无法访问数据',
     'Authentication required': '请先登录',
-    'Invalid credentials': '用户名或密码错误'
+    'Invalid credentials': '用户名或密码错误',
   };
 
   // 检查是否有匹配的友好消息

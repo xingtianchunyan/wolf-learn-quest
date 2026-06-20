@@ -24,7 +24,7 @@ export const useSkillEffectAutoProcessor = (
     successCount: 0,
     failureCount: 0,
     lastProcessTime: null,
-    isRunning: false
+    isRunning: false,
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,7 +47,7 @@ export const useSkillEffectAutoProcessor = (
 
       // 调用数据库函数处理技能效果
       const { data, error } = await supabase.rpc('process_skill_effects', {
-        p_game_state_id: gameStateId
+        p_game_state_id: gameStateId,
       });
 
       if (error) {
@@ -63,14 +63,14 @@ export const useSkillEffectAutoProcessor = (
         successCount: prev.successCount + 1,
         failureCount: prev.failureCount,
         lastProcessTime: new Date(),
-        isRunning: prev.isRunning
+        isRunning: prev.isRunning,
       }));
 
       if (processedCount > 0) {
         logger.info(`成功处理 ${processedCount} 个技能效果`, {
           gameStateId,
           processingTime,
-          processedCount
+          processedCount,
         });
 
         // 显示成功通知
@@ -85,11 +85,11 @@ export const useSkillEffectAutoProcessor = (
       return processedCount;
     } catch (error: any) {
       logger.error('技能效果处理失败', error, { gameStateId });
-      
+
       setStats(prev => ({
         ...prev,
         failureCount: prev.failureCount + 1,
-        lastProcessTime: new Date()
+        lastProcessTime: new Date(),
       }));
 
       // 显示错误通知
@@ -113,8 +113,10 @@ export const useSkillEffectAutoProcessor = (
     if (!gameStateId) return;
 
     try {
-      const { error } = await supabase.rpc('cleanup_expired_standardized_skill_effects');
-      
+      const { error } = await supabase.rpc(
+        'cleanup_expired_standardized_skill_effects'
+      );
+
       if (error) {
         throw new Error(`清理失败: ${error.message}`);
       }
@@ -129,7 +131,7 @@ export const useSkillEffectAutoProcessor = (
   const manualProcess = useCallback(async (): Promise<number> => {
     try {
       const processed = await processSkillEffects();
-      
+
       toast({
         title: '手动处理完成',
         description: `处理了 ${processed} 个技能效果`,
@@ -153,14 +155,15 @@ export const useSkillEffectAutoProcessor = (
     }
 
     setStats(prev => ({ ...prev, isRunning: true }));
-    
+
     // 每10秒检查一次技能效果队列
     intervalRef.current = setInterval(async () => {
       try {
         await processSkillEffects();
-        
+
         // 每次处理后也清理过期效果
-        if (Math.random() < 0.2) { // 20%概率清理
+        if (Math.random() < 0.2) {
+          // 20%概率清理
           await cleanupExpiredEffects();
         }
       } catch (error) {
@@ -169,7 +172,13 @@ export const useSkillEffectAutoProcessor = (
     }, 10000); // 10秒间隔
 
     logger.info('技能效果自动处理已启动', { gameStateId });
-  }, [gameStateId, isJudge, stats.isRunning, processSkillEffects, cleanupExpiredEffects]);
+  }, [
+    gameStateId,
+    isJudge,
+    stats.isRunning,
+    processSkillEffects,
+    cleanupExpiredEffects,
+  ]);
 
   // 停止自动处理
   const stopAutoProcess = useCallback(() => {
@@ -178,7 +187,7 @@ export const useSkillEffectAutoProcessor = (
       intervalRef.current = null;
     }
     setStats(prev => ({ ...prev, isRunning: false }));
-    
+
     logger.info('技能效果自动处理已停止', { gameStateId });
   }, [gameStateId]);
 
@@ -189,7 +198,7 @@ export const useSkillEffectAutoProcessor = (
       successCount: 0,
       failureCount: 0,
       lastProcessTime: null,
-      isRunning: false
+      isRunning: false,
     });
   }, []);
 
@@ -236,6 +245,6 @@ export const useSkillEffectAutoProcessor = (
     manualProcess,
     processSkillEffects,
     cleanupExpiredEffects,
-    resetStats
+    resetStats,
   };
 };

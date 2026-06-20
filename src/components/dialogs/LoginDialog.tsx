@@ -33,27 +33,27 @@ const LoginDialog: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const { data: _data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) {
         toast({
           title: t('login_failed'),
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
-      
+
       toast({
         title: t('login_success'),
         description: t('login_success_desc'),
       });
-      
+
       setIsLoginOpen(false);
       // Reset form
       setEmail('');
@@ -63,7 +63,7 @@ const LoginDialog: React.FC = () => {
       toast({
         title: t('login_failed'),
         description: t('unexpected_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -72,42 +72,48 @@ const LoginDialog: React.FC = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: t('password_mismatch'),
         description: t('password_mismatch_desc'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (!playerId.trim()) {
       toast({
         title: t('player_id_required'),
         description: t('player_id_required_desc'),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Check if Player ID already exists
-      const { data: existingUserRows, error: _checkError } = await supabase
-        .rpc('get_public_user_by_name', { p_name: playerId.trim() });
-        
-      if (existingUserRows && Array.isArray(existingUserRows) && existingUserRows.length > 0) {
+      const { data: existingUserRows, error: _checkError } = await supabase.rpc(
+        'get_public_user_by_name',
+        { p_name: playerId.trim() }
+      );
+
+      if (
+        existingUserRows &&
+        Array.isArray(existingUserRows) &&
+        existingUserRows.length > 0
+      ) {
         toast({
           title: t('player_id_taken'),
           description: t('player_id_taken_desc'),
-          variant: "destructive",
+          variant: 'destructive',
         });
         setLoading(false);
         return;
       }
-      
+
       // Sign up the user with player_name in metadata
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -116,38 +122,38 @@ const LoginDialog: React.FC = () => {
           data: {
             player_name: playerId.trim(),
             display_name: playerId.trim(), // Set display name for Supabase Auth
-          }
-        }
+          },
+        },
       });
-      
+
       if (error) {
         toast({
           title: t('registration_failed'),
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
-      
+
       // Update the user's display name in Supabase Auth
       if (data.user) {
         const { error: updateError } = await supabase.auth.updateUser({
-          data: { 
+          data: {
             display_name: playerId.trim(),
-            player_name: playerId.trim()
-          }
+            player_name: playerId.trim(),
+          },
         });
-        
+
         if (updateError) {
           logger.error('Error updating display name:', updateError);
         }
       }
-      
+
       toast({
         title: t('registration_success'),
         description: t('registration_success_desc'),
       });
-      
+
       setIsLoginOpen(false);
       // Reset form
       setEmail('');
@@ -159,7 +165,7 @@ const LoginDialog: React.FC = () => {
       toast({
         title: t('registration_failed'),
         description: t('unexpected_error'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -168,12 +174,12 @@ const LoginDialog: React.FC = () => {
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) {
       toast({
         title: t('logout_failed'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } else {
       toast({
@@ -185,8 +191,12 @@ const LoginDialog: React.FC = () => {
 
   if (isLoggedIn) {
     return (
-      <Button variant="ghost" className="nav-link flex items-center" onClick={handleLogout}>
-        <LogIn size={20} className="mr-1" />
+      <Button
+        variant='ghost'
+        className='nav-link flex items-center'
+        onClick={handleLogout}
+      >
+        <LogIn size={20} className='mr-1' />
         <span>{t('signout')}</span>
       </Button>
     );
@@ -195,57 +205,61 @@ const LoginDialog: React.FC = () => {
   return (
     <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="nav-link flex items-center" loading={initializing}>
-          <LogIn size={20} className="mr-1" />
+        <Button
+          variant='ghost'
+          className='nav-link flex items-center'
+          loading={initializing}
+        >
+          <LogIn size={20} className='mr-1' />
           <span>{t('signin')}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-werewolf-card text-werewolf-text">
+      <DialogContent className='sm:max-w-[425px] bg-werewolf-card text-werewolf-text'>
         <DialogHeader>
-          <DialogTitle className="text-werewolf-purple">{t('auth_title')}</DialogTitle>
-          <DialogDescription>
-            {t('auth_desc')}
-          </DialogDescription>
+          <DialogTitle className='text-werewolf-purple'>
+            {t('auth_title')}
+          </DialogTitle>
+          <DialogDescription>{t('auth_desc')}</DialogDescription>
         </DialogHeader>
-        
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid grid-cols-2 bg-werewolf-dark/60">
-            <TabsTrigger value="signin">{t('signin')}</TabsTrigger>
-            <TabsTrigger value="signup">{t('signup')}</TabsTrigger>
+
+        <Tabs defaultValue='signin' className='w-full'>
+          <TabsList className='grid grid-cols-2 bg-werewolf-dark/60'>
+            <TabsTrigger value='signin'>{t('signin')}</TabsTrigger>
+            <TabsTrigger value='signup'>{t('signup')}</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="signin">
+
+          <TabsContent value='signin'>
             <form onSubmit={handleLogin}>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-login">{t('email')}</Label>
+              <div className='space-y-4 py-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='email-login'>{t('email')}</Label>
                   <Input
-                    id="email-login"
-                    type="email"
+                    id='email-login'
+                    type='email'
                     placeholder={t('placeholder_email')}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-login">{t('password')}</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='password-login'>{t('password')}</Label>
                   <Input
-                    id="password-login"
-                    type="password"
+                    id='password-login'
+                    type='password'
                     placeholder={t('placeholder_password')}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button 
-                  type="submit" 
-                  className="bg-werewolf-purple hover:bg-werewolf-light"
+                <Button
+                  type='submit'
+                  className='bg-werewolf-purple hover:bg-werewolf-light'
                   disabled={loading}
                 >
                   {loading ? t('signing_in') : t('signin')}
@@ -253,63 +267,65 @@ const LoginDialog: React.FC = () => {
               </DialogFooter>
             </form>
           </TabsContent>
-          
-          <TabsContent value="signup">
+
+          <TabsContent value='signup'>
             <form onSubmit={handleSignUp}>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-signup">{t('email')}</Label>
+              <div className='space-y-4 py-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='email-signup'>{t('email')}</Label>
                   <Input
-                    id="email-signup"
-                    type="email"
+                    id='email-signup'
+                    type='email'
                     placeholder={t('placeholder_email')}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="playerId">{t('player_id')}</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='playerId'>{t('player_id')}</Label>
                   <Input
-                    id="playerId"
-                    type="text"
+                    id='playerId'
+                    type='text'
                     placeholder={t('placeholder_player_id')}
                     value={playerId}
-                    onChange={(e) => setPlayerId(e.target.value)}
+                    onChange={e => setPlayerId(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-signup">{t('password')}</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='password-signup'>{t('password')}</Label>
                   <Input
-                    id="password-signup"
-                    type="password"
+                    id='password-signup'
+                    type='password'
                     placeholder={t('placeholder_password')}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">{t('confirm_password')}</Label>
+                <div className='space-y-2'>
+                  <Label htmlFor='confirm-password'>
+                    {t('confirm_password')}
+                  </Label>
                   <Input
-                    id="confirm-password"
-                    type="password"
+                    id='confirm-password'
+                    type='password'
                     placeholder={t('placeholder_confirm_password')}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={e => setConfirmPassword(e.target.value)}
                     required
-                    className="bg-werewolf-dark/60 border-werewolf-purple/30"
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button 
-                  type="submit" 
-                  className="bg-werewolf-purple hover:bg-werewolf-light"
+                <Button
+                  type='submit'
+                  className='bg-werewolf-purple hover:bg-werewolf-light'
                   disabled={loading}
                 >
                   {loading ? t('creating_account') : t('signup')}

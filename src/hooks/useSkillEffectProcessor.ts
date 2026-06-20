@@ -28,7 +28,7 @@ const DEFAULT_CONFIG: ProcessorConfig = {
   intervalMs: 5000, // 5秒处理一次
   batchSize: 10,
   retryAttempts: 3,
-  enableLogging: true
+  enableLogging: true,
 };
 
 export const useSkillEffectProcessor = (
@@ -41,7 +41,7 @@ export const useSkillEffectProcessor = (
     failureCount: 0,
     lastProcessTime: null,
     processingStatus: 'idle',
-    averageProcessTime: 0
+    averageProcessTime: 0,
   });
 
   const [isRunning, setIsRunning] = useState(false);
@@ -64,7 +64,7 @@ export const useSkillEffectProcessor = (
 
       // 调用数据库函数处理技能效果
       const { data, error } = await supabase.rpc('process_skill_effects', {
-        p_game_state_id: gameStateId
+        p_game_state_id: gameStateId,
       });
 
       if (error) {
@@ -77,9 +77,11 @@ export const useSkillEffectProcessor = (
       // 更新统计数据
       setStats(prev => {
         const newTotal = prev.totalProcessed + processedCount;
-        const newAverage = newTotal > 0 
-          ? (prev.averageProcessTime * prev.totalProcessed + processingTime) / newTotal
-          : processingTime;
+        const newAverage =
+          newTotal > 0
+            ? (prev.averageProcessTime * prev.totalProcessed + processingTime) /
+              newTotal
+            : processingTime;
 
         return {
           totalProcessed: newTotal,
@@ -87,7 +89,7 @@ export const useSkillEffectProcessor = (
           failureCount: prev.failureCount,
           lastProcessTime: new Date(),
           processingStatus: 'idle',
-          averageProcessTime: newAverage
+          averageProcessTime: newAverage,
         };
       });
 
@@ -95,23 +97,24 @@ export const useSkillEffectProcessor = (
         logger.info(`成功处理 ${processedCount} 个技能效果`, {
           gameStateId,
           processingTime,
-          processedCount
+          processedCount,
         });
       }
 
       return processedCount;
     } catch (error: any) {
       logger.error('技能效果处理失败', error, { gameStateId });
-      
+
       setStats(prev => ({
         ...prev,
         failureCount: prev.failureCount + 1,
         processingStatus: 'error',
-        lastProcessTime: new Date()
+        lastProcessTime: new Date(),
       }));
 
       // 错误率过高时显示通知
-      if (stats.failureCount % 5 === 4) { // 每5次失败显示一次
+      if (stats.failureCount % 5 === 4) {
+        // 每5次失败显示一次
         toast({
           title: '技能效果处理异常',
           description: `已连续失败 ${stats.failureCount + 1} 次，请检查系统状态`,
@@ -131,7 +134,7 @@ export const useSkillEffectProcessor = (
 
     try {
       const { error } = await supabase.rpc('cleanup_expired_skill_effects');
-      
+
       if (error) {
         throw new Error(`清理失败: ${error.message}`);
       }
@@ -148,7 +151,7 @@ export const useSkillEffectProcessor = (
   const manualProcess = useCallback(async (): Promise<number> => {
     try {
       const processed = await processEffects();
-      
+
       toast({
         title: '手动处理完成',
         description: `处理了 ${processed} 个技能效果`,
@@ -172,13 +175,14 @@ export const useSkillEffectProcessor = (
     }
 
     setIsRunning(true);
-    
+
     intervalRef.current = setInterval(async () => {
       try {
         await processEffects();
-        
+
         // 每次处理后也清理过期效果
-        if (Math.random() < 0.1) { // 10%概率清理，避免过于频繁
+        if (Math.random() < 0.1) {
+          // 10%概率清理，避免过于频繁
           await cleanupExpiredEffects();
         }
       } catch (error) {
@@ -188,9 +192,16 @@ export const useSkillEffectProcessor = (
 
     logger.info('技能效果自动处理已启动', {
       gameStateId,
-      intervalMs: finalConfig.intervalMs
+      intervalMs: finalConfig.intervalMs,
     });
-  }, [gameStateId, finalConfig.autoProcess, finalConfig.intervalMs, isRunning, processEffects, cleanupExpiredEffects]);
+  }, [
+    gameStateId,
+    finalConfig.autoProcess,
+    finalConfig.intervalMs,
+    isRunning,
+    processEffects,
+    cleanupExpiredEffects,
+  ]);
 
   // 停止自动处理
   const stopAutoProcess = useCallback(() => {
@@ -199,7 +210,7 @@ export const useSkillEffectProcessor = (
       intervalRef.current = null;
     }
     setIsRunning(false);
-    
+
     logger.info('技能效果自动处理已停止', { gameStateId });
   }, [gameStateId]);
 
@@ -211,7 +222,7 @@ export const useSkillEffectProcessor = (
       failureCount: 0,
       lastProcessTime: null,
       processingStatus: 'idle',
-      averageProcessTime: 0
+      averageProcessTime: 0,
     });
   }, []);
 
@@ -249,6 +260,6 @@ export const useSkillEffectProcessor = (
     resetStats,
 
     // 配置
-    config: finalConfig
+    config: finalConfig,
   };
 };

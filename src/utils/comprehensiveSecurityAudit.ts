@@ -6,7 +6,10 @@
 
 import { createLogger } from '@/lib/logger';
 import { enhancedInputValidator } from './enhancedInputValidation';
-import { enhancedPermissionSystem, Permission } from './enhancedPermissionSystem';
+import {
+  enhancedPermissionSystem,
+  Permission,
+} from './enhancedPermissionSystem';
 import { securityEnhancement } from './securityEnhancement';
 import { SECURITY_CONFIG, SecurityLevel } from '@/config/security.config';
 
@@ -20,7 +23,7 @@ export enum VulnerabilitySeverity {
   HIGH = 'high',
   MEDIUM = 'medium',
   LOW = 'low',
-  INFO = 'info'
+  INFO = 'info',
 }
 
 /**
@@ -40,7 +43,7 @@ export enum VulnerabilityType {
   CSRF = 'csrf',
   SECURITY_HEADERS = 'security_headers',
   DATA_EXPOSURE = 'data_exposure',
-  BUSINESS_LOGIC = 'business_logic'
+  BUSINESS_LOGIC = 'business_logic',
 }
 
 /**
@@ -161,7 +164,7 @@ export class ComprehensiveSecurityAudit {
       depth: 'comprehensive',
       excludeCategories: [],
       customRules: [],
-      ...config
+      ...config,
     };
 
     logger.info('开始全面安全审计', { config: auditConfig });
@@ -172,31 +175,49 @@ export class ComprehensiveSecurityAudit {
 
     try {
       // 1. 输入验证审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.INPUT_VALIDATION)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.INPUT_VALIDATION
+        )
+      ) {
         await this.auditInputValidation();
       }
 
       // 2. 认证和授权审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.AUTHENTICATION)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.AUTHENTICATION
+        )
+      ) {
         await this.auditAuthentication();
       }
 
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.AUTHORIZATION)) {
+      if (
+        !auditConfig.excludeCategories.includes(VulnerabilityType.AUTHORIZATION)
+      ) {
         await this.auditAuthorization();
       }
 
       // 3. 会话管理审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.SESSION_MANAGEMENT)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.SESSION_MANAGEMENT
+        )
+      ) {
         await this.auditSessionManagement();
       }
 
       // 4. 加密和数据保护审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.CRYPTOGRAPHY)) {
+      if (
+        !auditConfig.excludeCategories.includes(VulnerabilityType.CRYPTOGRAPHY)
+      ) {
         await this.auditCryptography();
       }
 
       // 5. 注入攻击防护审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.INJECTION)) {
+      if (
+        !auditConfig.excludeCategories.includes(VulnerabilityType.INJECTION)
+      ) {
         await this.auditInjectionProtection();
       }
 
@@ -211,28 +232,44 @@ export class ComprehensiveSecurityAudit {
       }
 
       // 8. 安全头审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.SECURITY_HEADERS)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.SECURITY_HEADERS
+        )
+      ) {
         await this.auditSecurityHeaders();
       }
 
       // 9. 错误处理审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.ERROR_HANDLING)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.ERROR_HANDLING
+        )
+      ) {
         await this.auditErrorHandling();
       }
 
       // 10. 配置安全审计
-      if (auditConfig.includeConfigurationCheck && 
-          !auditConfig.excludeCategories.includes(VulnerabilityType.CONFIGURATION)) {
+      if (
+        auditConfig.includeConfigurationCheck &&
+        !auditConfig.excludeCategories.includes(VulnerabilityType.CONFIGURATION)
+      ) {
         await this.auditConfiguration();
       }
 
       // 11. 数据暴露审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.DATA_EXPOSURE)) {
+      if (
+        !auditConfig.excludeCategories.includes(VulnerabilityType.DATA_EXPOSURE)
+      ) {
         await this.auditDataExposure();
       }
 
       // 12. 业务逻辑审计
-      if (!auditConfig.excludeCategories.includes(VulnerabilityType.BUSINESS_LOGIC)) {
+      if (
+        !auditConfig.excludeCategories.includes(
+          VulnerabilityType.BUSINESS_LOGIC
+        )
+      ) {
         await this.auditBusinessLogic();
       }
 
@@ -253,14 +290,15 @@ export class ComprehensiveSecurityAudit {
         auditId,
         totalVulnerabilities: result.vulnerabilities.length,
         overallScore: result.overallScore,
-        riskLevel: result.riskLevel
+        riskLevel: result.riskLevel,
       });
 
       return result;
-
     } catch (error) {
       logger.error('安全审计过程中发生错误', error);
-      throw new Error(`安全审计失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `安全审计失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -284,12 +322,15 @@ export class ComprehensiveSecurityAudit {
         evidence: { maxStringLength: inputConfig.maxStringLength },
         impact: '可能导致内存耗尽或处理超时',
         recommendation: '建议将最大字符串长度限制在10000字符以内',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
 
     // 检查文件上传安全
-    if (!inputConfig.allowedFileTypes || inputConfig.allowedFileTypes.length === 0) {
+    if (
+      !inputConfig.allowedFileTypes ||
+      inputConfig.allowedFileTypes.length === 0
+    ) {
       this.addVulnerability({
         type: VulnerabilityType.INPUT_VALIDATION,
         severity: VulnerabilitySeverity.HIGH,
@@ -298,13 +339,13 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '攻击者可能上传恶意脚本或可执行文件',
         recommendation: '设置严格的文件类型白名单',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
     // 检查是否包含危险文件类型
     const dangerousTypes = ['exe', 'bat', 'cmd', 'sh', 'php', 'jsp', 'asp'];
-    const allowedDangerousTypes = inputConfig.allowedFileTypes?.filter(type => 
+    const allowedDangerousTypes = inputConfig.allowedFileTypes?.filter(type =>
       dangerousTypes.includes(type.toLowerCase())
     );
 
@@ -319,7 +360,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能导致远程代码执行',
         recommendation: '移除所有可执行文件类型',
         cweId: 'CWE-434',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
 
@@ -333,7 +374,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '可能导致XSS或注入攻击',
         recommendation: '启用输入数据清理功能',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -358,7 +399,7 @@ export class ComprehensiveSecurityAudit {
         impact: '弱密码容易被暴力破解',
         recommendation: '设置最小密码长度为12位或更多',
         cweId: 'CWE-521',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -373,12 +414,13 @@ export class ComprehensiveSecurityAudit {
         evidence: { maxAttempts: globalConfig.maxLoginAttempts },
         impact: '容易受到暴力破解攻击',
         recommendation: '将最大登录尝试次数限制在5次以内',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
     // 检查锁定时间
-    if (globalConfig.lockoutDuration < 300000) { // 5分钟
+    if (globalConfig.lockoutDuration < 300000) {
+      // 5分钟
       this.addVulnerability({
         type: VulnerabilityType.AUTHENTICATION,
         severity: VulnerabilitySeverity.LOW,
@@ -388,7 +430,7 @@ export class ComprehensiveSecurityAudit {
         evidence: { lockoutDuration: globalConfig.lockoutDuration },
         impact: '攻击者可以快速重试攻击',
         recommendation: '设置至少15分钟的锁定时间',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -402,12 +444,13 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '单一认证因子容易被绕过',
         recommendation: '为敏感操作启用双因素认证',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
     // 检查会话超时
-    if (globalConfig.sessionTimeout > 7200000) { // 2小时
+    if (globalConfig.sessionTimeout > 7200000) {
+      // 2小时
       this.addVulnerability({
         type: VulnerabilityType.AUTHENTICATION,
         severity: VulnerabilitySeverity.LOW,
@@ -417,7 +460,7 @@ export class ComprehensiveSecurityAudit {
         evidence: { sessionTimeout: globalConfig.sessionTimeout },
         impact: '增加会话劫持风险',
         recommendation: '设置合理的会话超时时间（建议1小时）',
-        exploitability: 'hard'
+        exploitability: 'hard',
       });
     }
   }
@@ -446,7 +489,7 @@ export class ComprehensiveSecurityAudit {
           impact: '可能导致权限提升攻击',
           recommendation: '检查权限验证逻辑的正确性',
           cweId: 'CWE-269',
-          exploitability: 'medium'
+          exploitability: 'medium',
         });
       }
     } catch (error) {
@@ -466,9 +509,10 @@ export class ComprehensiveSecurityAudit {
     // 检查会话ID生成
     // 检查会话ID的随机性和唯一性
     const sessionConfig = SECURITY_CONFIG.global;
-    
+
     // 检查会话超时配置
-    if (sessionConfig.sessionTimeout > 3600000) { // 1小时
+    if (sessionConfig.sessionTimeout > 3600000) {
+      // 1小时
       this.addVulnerability({
         type: VulnerabilityType.SESSION_MANAGEMENT,
         severity: VulnerabilitySeverity.MEDIUM,
@@ -479,7 +523,7 @@ export class ComprehensiveSecurityAudit {
         impact: '增加会话劫持风险',
         recommendation: '将会话超时设置为30-60分钟',
         cweId: 'CWE-613',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -489,10 +533,11 @@ export class ComprehensiveSecurityAudit {
       // 检查会话存储中是否包含敏感信息
       try {
         const sessionKeys = Object.keys(sessionStorage);
-        const sensitiveKeys = sessionKeys.filter(key => 
-          key.toLowerCase().includes('password') || 
-          key.toLowerCase().includes('token') ||
-          key.toLowerCase().includes('secret')
+        const sensitiveKeys = sessionKeys.filter(
+          key =>
+            key.toLowerCase().includes('password') ||
+            key.toLowerCase().includes('token') ||
+            key.toLowerCase().includes('secret')
         );
 
         if (sensitiveKeys.length > 0) {
@@ -506,7 +551,7 @@ export class ComprehensiveSecurityAudit {
             impact: '敏感信息可能被恶意脚本访问',
             recommendation: '避免在客户端存储敏感信息',
             cweId: 'CWE-922',
-            exploitability: 'easy'
+            exploitability: 'easy',
           });
         }
       } catch (error) {
@@ -526,7 +571,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能受到会话固定攻击',
         recommendation: '在用户登录后重新生成会话ID',
         cweId: 'CWE-384',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -548,13 +593,13 @@ export class ComprehensiveSecurityAudit {
         impact: '数据传输可能被窃听或篡改',
         recommendation: '启用HTTPS并强制重定向',
         cweId: 'CWE-319',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
 
     // 检查安全头配置
     const headers = SECURITY_CONFIG.securityHeaders;
-    
+
     if (!headers['Strict-Transport-Security']) {
       this.addVulnerability({
         type: VulnerabilityType.CRYPTOGRAPHY,
@@ -564,7 +609,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '可能受到协议降级攻击',
         recommendation: '设置Strict-Transport-Security头',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -578,7 +623,7 @@ export class ComprehensiveSecurityAudit {
     // 检查SQL注入防护
     const testSQLInput = "'; DROP TABLE users; --";
     const sqlResult = securityEnhancement.detectSQLInjection(testSQLInput);
-    
+
     if (!sqlResult.detected) {
       this.addVulnerability({
         type: VulnerabilityType.INJECTION,
@@ -590,7 +635,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能导致数据库被攻击',
         recommendation: '增强SQL注入检测规则',
         cweId: 'CWE-89',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -607,7 +652,7 @@ export class ComprehensiveSecurityAudit {
 
     // 检查XSS防护配置
     const testXSSInput = "<script>alert('xss')</script>";
-    
+
     try {
       const validationResult = enhancedInputValidator.validate(
         { test: testXSSInput },
@@ -626,7 +671,7 @@ export class ComprehensiveSecurityAudit {
           impact: '可能导致跨站脚本攻击',
           recommendation: '增强XSS检测和过滤规则',
           cweId: 'CWE-79',
-          exploitability: 'easy'
+          exploitability: 'easy',
         });
       }
     } catch (error) {
@@ -645,7 +690,7 @@ export class ComprehensiveSecurityAudit {
         evidence: { csp },
         impact: '降低XSS攻击防护效果',
         recommendation: '移除unsafe-inline指令，使用nonce或hash',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -658,9 +703,16 @@ export class ComprehensiveSecurityAudit {
 
     // 检查CSRF令牌生成和验证
     try {
-      const token = securityEnhancement.generateCSRFToken('test-user', 'test-session');
-      const validation = securityEnhancement.validateCSRFToken(token, 'test-user', 'test-session');
-      
+      const token = securityEnhancement.generateCSRFToken(
+        'test-user',
+        'test-session'
+      );
+      const validation = securityEnhancement.validateCSRFToken(
+        token,
+        'test-user',
+        'test-session'
+      );
+
       if (!validation.valid) {
         this.addVulnerability({
           type: VulnerabilityType.CSRF,
@@ -670,7 +722,7 @@ export class ComprehensiveSecurityAudit {
           location: 'securityEnhancement.ts',
           impact: '可能导致CSRF防护失效',
           recommendation: '检查CSRF令牌生成和验证逻辑',
-          exploitability: 'medium'
+          exploitability: 'medium',
         });
       }
     } catch (error) {
@@ -680,10 +732,12 @@ export class ComprehensiveSecurityAudit {
         title: 'CSRF防护系统异常',
         description: 'CSRF令牌系统运行异常',
         location: 'securityEnhancement.ts',
-        evidence: { error: error instanceof Error ? error.message : String(error) },
+        evidence: {
+          error: error instanceof Error ? error.message : String(error),
+        },
         impact: 'CSRF防护可能完全失效',
         recommendation: '修复CSRF防护系统错误',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
   }
@@ -700,7 +754,7 @@ export class ComprehensiveSecurityAudit {
       'X-Frame-Options',
       'X-XSS-Protection',
       'Content-Security-Policy',
-      'Referrer-Policy'
+      'Referrer-Policy',
     ];
 
     for (const header of requiredHeaders) {
@@ -713,13 +767,16 @@ export class ComprehensiveSecurityAudit {
           location: 'security.config.ts',
           impact: '降低浏览器安全防护效果',
           recommendation: `设置${header}安全头`,
-          exploitability: 'medium'
+          exploitability: 'medium',
         });
       }
     }
 
     // 检查X-Frame-Options设置
-    if (headers['X-Frame-Options'] !== 'DENY' && headers['X-Frame-Options'] !== 'SAMEORIGIN') {
+    if (
+      headers['X-Frame-Options'] !== 'DENY' &&
+      headers['X-Frame-Options'] !== 'SAMEORIGIN'
+    ) {
       this.addVulnerability({
         type: VulnerabilityType.SECURITY_HEADERS,
         severity: VulnerabilitySeverity.MEDIUM,
@@ -729,7 +786,7 @@ export class ComprehensiveSecurityAudit {
         evidence: { value: headers['X-Frame-Options'] },
         impact: '可能受到点击劫持攻击',
         recommendation: '设置X-Frame-Options为DENY或SAMEORIGIN',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -743,8 +800,11 @@ export class ComprehensiveSecurityAudit {
     // 检查错误信息泄露
     // 检查错误处理是否会泄露敏感信息
     const errorConfig = SECURITY_CONFIG.global;
-    
-    if (errorConfig.showDetailedErrors && process.env.NODE_ENV === 'production') {
+
+    if (
+      errorConfig.showDetailedErrors &&
+      process.env.NODE_ENV === 'production'
+    ) {
       this.addVulnerability({
         type: VulnerabilityType.ERROR_HANDLING,
         severity: VulnerabilitySeverity.MEDIUM,
@@ -754,7 +814,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能泄露系统内部信息',
         recommendation: '在生产环境中禁用详细错误信息',
         cweId: 'CWE-209',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
 
@@ -769,7 +829,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '难以检测和响应安全事件',
         recommendation: '启用安全事件日志记录',
-        exploitability: 'hard'
+        exploitability: 'hard',
       });
     }
 
@@ -791,7 +851,7 @@ export class ComprehensiveSecurityAudit {
 
     // 检查敏感数据处理
     const dataProtectionConfig = SECURITY_CONFIG.dataProtection;
-    
+
     if (!dataProtectionConfig.enableEncryption) {
       this.addVulnerability({
         type: VulnerabilityType.DATA_EXPOSURE,
@@ -802,7 +862,7 @@ export class ComprehensiveSecurityAudit {
         impact: '敏感数据可能以明文形式存储或传输',
         recommendation: '启用数据加密功能',
         cweId: 'CWE-311',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -817,7 +877,7 @@ export class ComprehensiveSecurityAudit {
         impact: '敏感信息可能通过日志泄露',
         recommendation: '启用日志敏感信息清理功能',
         cweId: 'CWE-532',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -832,7 +892,7 @@ export class ComprehensiveSecurityAudit {
         impact: '敏感数据可能通过API响应泄露',
         recommendation: '实施API响应敏感字段过滤',
         cweId: 'CWE-200',
-        exploitability: 'easy'
+        exploitability: 'easy',
       });
     }
 
@@ -846,7 +906,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '备份数据可能被未授权访问',
         recommendation: '对数据备份实施加密和访问控制',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -859,7 +919,7 @@ export class ComprehensiveSecurityAudit {
 
     // 检查业务逻辑漏洞
     const businessConfig = SECURITY_CONFIG.businessLogic;
-    
+
     // 检查权限绕过可能性
     if (!businessConfig.enableStrictValidation) {
       this.addVulnerability({
@@ -871,7 +931,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能导致业务规则被绕过',
         recommendation: '启用严格的业务逻辑验证',
         cweId: 'CWE-840',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -886,7 +946,7 @@ export class ComprehensiveSecurityAudit {
         impact: '可能导致竞态条件攻击',
         recommendation: '实施适当的并发控制机制',
         cweId: 'CWE-362',
-        exploitability: 'hard'
+        exploitability: 'hard',
       });
     }
 
@@ -900,7 +960,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '可能导致业务流程被恶意操控',
         recommendation: '加强业务流程完整性验证',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -914,7 +974,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '可能导致数据不一致或损坏',
         recommendation: '实施数据一致性验证机制',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
 
@@ -928,7 +988,7 @@ export class ComprehensiveSecurityAudit {
         location: 'security.config.ts',
         impact: '可能导致业务规则被违反',
         recommendation: '严格执行业务操作限制',
-        exploitability: 'medium'
+        exploitability: 'medium',
       });
     }
   }
@@ -936,11 +996,13 @@ export class ComprehensiveSecurityAudit {
   /**
    * 添加漏洞
    */
-  private addVulnerability(vulnerability: Omit<SecurityVulnerability, 'id' | 'detectedAt'>): void {
+  private addVulnerability(
+    vulnerability: Omit<SecurityVulnerability, 'id' | 'detectedAt'>
+  ): void {
     const fullVulnerability: SecurityVulnerability = {
       id: this.generateVulnerabilityId(),
       detectedAt: new Date().toISOString(),
-      ...vulnerability
+      ...vulnerability,
     };
 
     this.vulnerabilities.push(fullVulnerability);
@@ -949,7 +1011,10 @@ export class ComprehensiveSecurityAudit {
   /**
    * 生成审计结果
    */
-  private generateAuditResult(auditId: string, timestamp: string): SecurityAuditResult {
+  private generateAuditResult(
+    auditId: string,
+    timestamp: string
+  ): SecurityAuditResult {
     const summary = this.calculateSummary();
     const overallScore = this.calculateOverallScore();
     const riskLevel = this.calculateRiskLevel(overallScore);
@@ -967,7 +1032,9 @@ export class ComprehensiveSecurityAudit {
       categories,
       complianceStatus,
       recommendations,
-      nextAuditDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30天后
+      nextAuditDate: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+      ).toISOString(), // 30天后
     };
   }
 
@@ -977,11 +1044,21 @@ export class ComprehensiveSecurityAudit {
   private calculateSummary() {
     return {
       totalVulnerabilities: this.vulnerabilities.length,
-      criticalCount: this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.CRITICAL).length,
-      highCount: this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.HIGH).length,
-      mediumCount: this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.MEDIUM).length,
-      lowCount: this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.LOW).length,
-      infoCount: this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.INFO).length
+      criticalCount: this.vulnerabilities.filter(
+        v => v.severity === VulnerabilitySeverity.CRITICAL
+      ).length,
+      highCount: this.vulnerabilities.filter(
+        v => v.severity === VulnerabilitySeverity.HIGH
+      ).length,
+      mediumCount: this.vulnerabilities.filter(
+        v => v.severity === VulnerabilitySeverity.MEDIUM
+      ).length,
+      lowCount: this.vulnerabilities.filter(
+        v => v.severity === VulnerabilitySeverity.LOW
+      ).length,
+      infoCount: this.vulnerabilities.filter(
+        v => v.severity === VulnerabilitySeverity.INFO
+      ).length,
     };
   }
 
@@ -996,7 +1073,7 @@ export class ComprehensiveSecurityAudit {
       [VulnerabilitySeverity.HIGH]: 15,
       [VulnerabilitySeverity.MEDIUM]: 8,
       [VulnerabilitySeverity.LOW]: 3,
-      [VulnerabilitySeverity.INFO]: 1
+      [VulnerabilitySeverity.INFO]: 1,
     };
 
     const totalDeduction = this.vulnerabilities.reduce((sum, vuln) => {
@@ -1009,7 +1086,9 @@ export class ComprehensiveSecurityAudit {
   /**
    * 计算风险级别
    */
-  private calculateRiskLevel(score: number): 'low' | 'medium' | 'high' | 'critical' {
+  private calculateRiskLevel(
+    score: number
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (score >= 80) return 'low';
     if (score >= 60) return 'medium';
     if (score >= 40) return 'high';
@@ -1025,11 +1104,11 @@ export class ComprehensiveSecurityAudit {
     for (const type of Object.values(VulnerabilityType)) {
       const typeVulns = this.vulnerabilities.filter(v => v.type === type);
       const score = this.calculateCategoryScore(typeVulns);
-      
+
       categories[type] = {
         score,
         vulnerabilities: typeVulns,
-        recommendations: this.generateCategoryRecommendations(type, typeVulns)
+        recommendations: this.generateCategoryRecommendations(type, typeVulns),
       };
     }
 
@@ -1039,7 +1118,9 @@ export class ComprehensiveSecurityAudit {
   /**
    * 计算分类评分
    */
-  private calculateCategoryScore(vulnerabilities: SecurityVulnerability[]): number {
+  private calculateCategoryScore(
+    vulnerabilities: SecurityVulnerability[]
+  ): number {
     if (vulnerabilities.length === 0) return 100;
 
     const weights = {
@@ -1047,7 +1128,7 @@ export class ComprehensiveSecurityAudit {
       [VulnerabilitySeverity.HIGH]: 25,
       [VulnerabilitySeverity.MEDIUM]: 15,
       [VulnerabilitySeverity.LOW]: 5,
-      [VulnerabilitySeverity.INFO]: 2
+      [VulnerabilitySeverity.INFO]: 2,
     };
 
     const totalDeduction = vulnerabilities.reduce((sum, vuln) => {
@@ -1083,9 +1164,13 @@ export class ComprehensiveSecurityAudit {
     const iso27001Issues: string[] = [];
 
     // OWASP Top 10 检查
-    const owaspVulns = this.vulnerabilities.filter(v => 
-      [VulnerabilityType.INJECTION, VulnerabilityType.AUTHENTICATION, 
-       VulnerabilityType.XSS, VulnerabilityType.AUTHORIZATION].includes(v.type)
+    const owaspVulns = this.vulnerabilities.filter(v =>
+      [
+        VulnerabilityType.INJECTION,
+        VulnerabilityType.AUTHENTICATION,
+        VulnerabilityType.XSS,
+        VulnerabilityType.AUTHORIZATION,
+      ].includes(v.type)
     );
 
     if (owaspVulns.length > 0) {
@@ -1093,8 +1178,11 @@ export class ComprehensiveSecurityAudit {
     }
 
     // GDPR 合规检查
-    const dataProtectionVulns = this.vulnerabilities.filter(v => 
-      [VulnerabilityType.DATA_EXPOSURE, VulnerabilityType.CRYPTOGRAPHY].includes(v.type)
+    const dataProtectionVulns = this.vulnerabilities.filter(v =>
+      [
+        VulnerabilityType.DATA_EXPOSURE,
+        VulnerabilityType.CRYPTOGRAPHY,
+      ].includes(v.type)
     );
 
     const gdprCompliant = dataProtectionVulns.length === 0;
@@ -1103,11 +1191,16 @@ export class ComprehensiveSecurityAudit {
     }
 
     // ISO 27001 检查
-    const securityManagementVulns = this.vulnerabilities.filter(v => 
-      v.severity === VulnerabilitySeverity.CRITICAL || v.severity === VulnerabilitySeverity.HIGH
+    const securityManagementVulns = this.vulnerabilities.filter(
+      v =>
+        v.severity === VulnerabilitySeverity.CRITICAL ||
+        v.severity === VulnerabilitySeverity.HIGH
     );
 
-    const iso27001Score = Math.max(0, 100 - securityManagementVulns.length * 10);
+    const iso27001Score = Math.max(
+      0,
+      100 - securityManagementVulns.length * 10
+    );
     if (iso27001Score < 80) {
       iso27001Issues.push('安全管理体系存在重大缺陷');
     }
@@ -1115,16 +1208,16 @@ export class ComprehensiveSecurityAudit {
     return {
       owasp: {
         score: Math.max(0, 100 - owaspVulns.length * 15),
-        issues: owaspIssues
+        issues: owaspIssues,
       },
       gdpr: {
         compliant: gdprCompliant,
-        issues: gdprIssues
+        issues: gdprIssues,
       },
       iso27001: {
         score: iso27001Score,
-        issues: iso27001Issues
-      }
+        issues: iso27001Issues,
+      },
     };
   }
 
@@ -1136,9 +1229,15 @@ export class ComprehensiveSecurityAudit {
     const shortTerm: string[] = [];
     const longTerm: string[] = [];
 
-    const criticalVulns = this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.CRITICAL);
-    const highVulns = this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.HIGH);
-    const mediumVulns = this.vulnerabilities.filter(v => v.severity === VulnerabilitySeverity.MEDIUM);
+    const criticalVulns = this.vulnerabilities.filter(
+      v => v.severity === VulnerabilitySeverity.CRITICAL
+    );
+    const highVulns = this.vulnerabilities.filter(
+      v => v.severity === VulnerabilitySeverity.HIGH
+    );
+    const mediumVulns = this.vulnerabilities.filter(
+      v => v.severity === VulnerabilitySeverity.MEDIUM
+    );
 
     // 立即行动项（关键漏洞）
     criticalVulns.forEach(vuln => {
@@ -1167,7 +1266,7 @@ export class ComprehensiveSecurityAudit {
     return {
       immediate: Array.from(new Set(immediate)),
       shortTerm: Array.from(new Set(shortTerm)),
-      longTerm: Array.from(new Set(longTerm))
+      longTerm: Array.from(new Set(longTerm)),
     };
   }
 
@@ -1198,14 +1297,14 @@ export class ComprehensiveSecurityAudit {
     switch (format) {
       case 'json':
         return JSON.stringify(result, null, 2);
-      
+
       case 'html':
         return this.generateHTMLReport(result);
-      
+
       case 'pdf':
         // PDF生成需要额外的库支持
         throw new Error('PDF导出功能暂未实现');
-      
+
       default:
         throw new Error(`不支持的导出格式: ${format}`);
     }
@@ -1263,7 +1362,9 @@ export class ComprehensiveSecurityAudit {
     </div>
 
     <h2>发现的漏洞</h2>
-    ${result.vulnerabilities.map(vuln => `
+    ${result.vulnerabilities
+      .map(
+        vuln => `
         <div class="vulnerability ${vuln.severity}">
             <h3>${vuln.title}</h3>
             <p><strong>严重级别:</strong> ${vuln.severity}</p>
@@ -1273,7 +1374,9 @@ export class ComprehensiveSecurityAudit {
             <p><strong>影响:</strong> ${vuln.impact}</p>
             <p><strong>建议:</strong> ${vuln.recommendation}</p>
         </div>
-    `).join('')}
+    `
+      )
+      .join('')}
 
     <div class="recommendations">
         <h2>修复建议</h2>
@@ -1298,11 +1401,8 @@ export class ComprehensiveSecurityAudit {
 }
 
 // 创建全局实例
-export const comprehensiveSecurityAudit = ComprehensiveSecurityAudit.getInstance();
+export const comprehensiveSecurityAudit =
+  ComprehensiveSecurityAudit.getInstance();
 
 // 导出类型
-export type {
-  SecurityVulnerability,
-  SecurityAuditResult,
-  AuditConfig
-};
+export type { SecurityVulnerability, SecurityAuditResult, AuditConfig };

@@ -42,7 +42,7 @@ class AnalyticsService {
   trackAction(action: UserAction): void {
     this.actions.push({
       ...action,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // 限制存储的行为数量
@@ -63,7 +63,9 @@ class AnalyticsService {
     try {
       let query = supabase
         .from('skill_uses')
-        .select('skill_name, execution_status, phase, created_at, target_user_id');
+        .select(
+          'skill_name, execution_status, phase, created_at, target_user_id'
+        );
 
       if (gameStateId) {
         query = query.eq('game_state_id', gameStateId);
@@ -82,12 +84,15 @@ class AnalyticsService {
       }
 
       // 按技能名称分组统计
-      const statsMap = new Map<string, {
-        total: number;
-        success: number;
-        targets: Map<string, number>;
-        phases: Map<string, number>;
-      }>();
+      const statsMap = new Map<
+        string,
+        {
+          total: number;
+          success: number;
+          targets: Map<string, number>;
+          phases: Map<string, number>;
+        }
+      >();
 
       data?.forEach(skill => {
         if (!statsMap.has(skill.skill_name)) {
@@ -95,13 +100,13 @@ class AnalyticsService {
             total: 0,
             success: 0,
             targets: new Map(),
-            phases: new Map()
+            phases: new Map(),
           });
         }
 
         const stats = statsMap.get(skill.skill_name)!;
         stats.total++;
-        
+
         if (skill.execution_status === 'completed') {
           stats.success++;
         }
@@ -134,7 +139,7 @@ class AnalyticsService {
           successRate: stats.total > 0 ? stats.success / stats.total : 0,
           avgResponseTime: 0, // 需要额外的性能数据
           mostCommonTargets,
-          usageByPhase
+          usageByPhase,
         });
       });
 
@@ -148,7 +153,10 @@ class AnalyticsService {
   /**
    * 分析用户行为模式
    */
-  analyzeUserBehavior(userId: string, timeRange: number = 86400000): UserBehaviorPattern {
+  analyzeUserBehavior(
+    userId: string,
+    timeRange: number = 86400000
+  ): UserBehaviorPattern {
     const now = Date.now();
     const userActions = this.actions.filter(
       a => a.userId === userId && now - a.timestamp < timeRange
@@ -190,9 +198,11 @@ class AnalyticsService {
       .map(([skill]) => skill);
 
     // 计算平均决策时间
-    const avgDecisionTime = decisionTimes.length > 0
-      ? decisionTimes.reduce((sum, time) => sum + time, 0) / decisionTimes.length
-      : 0;
+    const avgDecisionTime =
+      decisionTimes.length > 0
+        ? decisionTimes.reduce((sum, time) => sum + time, 0) /
+          decisionTimes.length
+        : 0;
 
     // 获取偏好的游戏阶段
     const preferredPhases = Array.from(phaseActivity.entries())
@@ -211,7 +221,7 @@ class AnalyticsService {
       avgDecisionTime,
       skillSuccessRate: 0, // 需要额外计算
       preferredPhases,
-      activityPattern
+      activityPattern,
     };
   }
 
@@ -244,7 +254,9 @@ class AnalyticsService {
 
       if (skillUses) {
         // 检查失败率
-        const failedSkills = skillUses.filter(s => s.execution_status === 'failed');
+        const failedSkills = skillUses.filter(
+          s => s.execution_status === 'failed'
+        );
         const failureRate = failedSkills.length / skillUses.length;
 
         if (failureRate > 0.1) {
@@ -252,14 +264,19 @@ class AnalyticsService {
             type: 'high_failure_rate',
             severity: 'high',
             description: `技能失败率过高: ${(failureRate * 100).toFixed(1)}%`,
-            affectedUsers: Array.from(new Set(failedSkills.map(s => s.user_id)))
+            affectedUsers: Array.from(
+              new Set(failedSkills.map(s => s.user_id))
+            ),
           });
         }
 
         // 检查用户活跃度
         const userActivity = new Map<string, number>();
         skillUses.forEach(skill => {
-          userActivity.set(skill.user_id, (userActivity.get(skill.user_id) || 0) + 1);
+          userActivity.set(
+            skill.user_id,
+            (userActivity.get(skill.user_id) || 0) + 1
+          );
         });
 
         const inactiveUsers = Array.from(userActivity.entries())
@@ -271,7 +288,7 @@ class AnalyticsService {
             type: 'low_activity',
             severity: 'medium',
             description: `${inactiveUsers.length} 个用户活跃度过低`,
-            affectedUsers: inactiveUsers
+            affectedUsers: inactiveUsers,
           });
         }
       }
@@ -290,7 +307,7 @@ class AnalyticsService {
           type: 'slow_response',
           severity: 'high',
           description: '系统响应速度过慢',
-          affectedUsers: Array.from(new Set(slowActions.map(a => a.userId)))
+          affectedUsers: Array.from(new Set(slowActions.map(a => a.userId))),
         });
       }
 
@@ -328,19 +345,21 @@ class AnalyticsService {
     const uniqueUsers = new Set(recentActions.map(a => a.userId)).size;
     const skillActions = recentActions.filter(a => a.action === 'use_skill');
 
-    const avgSuccessRate = skillStats.length > 0
-      ? skillStats.reduce((sum, stat) => sum + stat.successRate, 0) / skillStats.length
-      : 0;
+    const avgSuccessRate =
+      skillStats.length > 0
+        ? skillStats.reduce((sum, stat) => sum + stat.successRate, 0) /
+          skillStats.length
+        : 0;
 
     return {
       summary: {
         totalActions: recentActions.length,
         uniqueUsers,
         totalSkillUses: skillActions.length,
-        avgSuccessRate
+        avgSuccessRate,
       },
       topSkills: skillStats.slice(0, 10),
-      potentialIssues: issues
+      potentialIssues: issues,
     };
   }
 

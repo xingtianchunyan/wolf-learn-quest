@@ -2,7 +2,7 @@
  * 文件级注释：错误监控服务
  * 提供全面的错误监控、收集和分析功能
  * 支持错误上报、性能监控和用户行为追踪
- * 
+ *
  * 主要功能：
  * - 错误自动收集和上报
  * - 性能指标监控
@@ -30,7 +30,7 @@ export enum ErrorLevel {
   /** 错误 */
   ERROR = 'error',
   /** 严重错误 */
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
@@ -52,7 +52,7 @@ export enum ErrorType {
   /** 性能错误 */
   PERFORMANCE = 'performance',
   /** 数据库错误 */
-  DATABASE = 'database'
+  DATABASE = 'database',
 }
 
 /**
@@ -74,7 +74,7 @@ export enum PerformanceMetricType {
   /** 内存使用 */
   MEMORY_USAGE = 'memory_usage',
   /** CPU使用 */
-  CPU_USAGE = 'cpu_usage'
+  CPU_USAGE = 'cpu_usage',
 }
 
 /**
@@ -186,7 +186,14 @@ export interface ErrorContext {
  */
 export interface UserAction {
   /** 操作类型 */
-  type: 'click' | 'input' | 'navigation' | 'scroll' | 'resize' | 'focus' | 'blur';
+  type:
+    | 'click'
+    | 'input'
+    | 'navigation'
+    | 'scroll'
+    | 'resize'
+    | 'focus'
+    | 'blur';
   /** 操作目标 */
   target: string;
   /** 操作时间 */
@@ -277,7 +284,7 @@ export interface MonitoringStats {
  */
 export class ErrorMonitoringService {
   private static instance: ErrorMonitoringService;
-  
+
   /** 监控配置 */
   private config: MonitoringConfig;
   /** 错误缓存 */
@@ -309,14 +316,10 @@ export class ErrorMonitoringService {
       ignoredErrors: [
         'Script error.',
         'Non-Error promise rejection captured',
-        'ResizeObserver loop limit exceeded'
+        'ResizeObserver loop limit exceeded',
       ],
-      ignoredUrls: [
-        /chrome-extension:/,
-        /moz-extension:/,
-        /safari-extension:/
-      ],
-      customFilters: []
+      ignoredUrls: [/chrome-extension:/, /moz-extension:/, /safari-extension:/],
+      customFilters: [],
     };
 
     // 生成会话ID
@@ -330,7 +333,7 @@ export class ErrorMonitoringService {
         [ErrorLevel.INFO]: 0,
         [ErrorLevel.WARNING]: 0,
         [ErrorLevel.ERROR]: 0,
-        [ErrorLevel.CRITICAL]: 0
+        [ErrorLevel.CRITICAL]: 0,
       },
       errorsByType: {
         [ErrorType.JAVASCRIPT]: 0,
@@ -340,14 +343,14 @@ export class ErrorMonitoringService {
         [ErrorType.BUSINESS]: 0,
         [ErrorType.SECURITY]: 0,
         [ErrorType.PERFORMANCE]: 0,
-        [ErrorType.DATABASE]: 0
+        [ErrorType.DATABASE]: 0,
       },
       errorsByBrowser: {},
       errorsByDevice: {},
       averageErrorRate: 0,
       performanceMetrics: {},
       userActivity: 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
 
     logger.info('错误监控服务已初始化');
@@ -395,7 +398,6 @@ export class ErrorMonitoringService {
 
       this.initialized = true;
       logger.info('错误监控服务初始化完成');
-
     } catch (error) {
       logger.error('错误监控服务初始化失败', error);
       throw error;
@@ -451,7 +453,6 @@ export class ErrorMonitoringService {
 
       logger.info(`错误已报告: ${errorReport.id}`, errorReport);
       return errorReport.id;
-
     } catch (reportingError) {
       logger.error('报告错误失败', reportingError);
       throw reportingError;
@@ -481,7 +482,6 @@ export class ErrorMonitoringService {
       await this.checkPerformanceThresholds(type, value, context);
 
       logger.debug(`性能指标已报告: ${type} = ${value}`);
-
     } catch (error) {
       logger.error('报告性能指标失败', error);
     }
@@ -502,14 +502,16 @@ export class ErrorMonitoringService {
 
       // 保持历史大小限制
       if (this.userActions.length > this.config.maxUserActions) {
-        this.userActions = this.userActions.slice(0, this.config.maxUserActions);
+        this.userActions = this.userActions.slice(
+          0,
+          this.config.maxUserActions
+        );
       }
 
       // 更新用户活跃度
       this.stats.userActivity++;
 
       logger.debug('用户操作已报告', action);
-
     } catch (error) {
       logger.error('报告用户操作失败', error);
     }
@@ -534,7 +536,6 @@ export class ErrorMonitoringService {
       await this.sendErrorReport(errorReport);
 
       logger.warn('安全事件已报告', event);
-
     } catch (error) {
       logger.error('报告安全事件失败', error);
     }
@@ -574,7 +575,7 @@ export class ErrorMonitoringService {
         [ErrorLevel.INFO]: 0,
         [ErrorLevel.WARNING]: 0,
         [ErrorLevel.ERROR]: 0,
-        [ErrorLevel.CRITICAL]: 0
+        [ErrorLevel.CRITICAL]: 0,
       },
       errorsByType: {
         [ErrorType.JAVASCRIPT]: 0,
@@ -584,14 +585,14 @@ export class ErrorMonitoringService {
         [ErrorType.BUSINESS]: 0,
         [ErrorType.SECURITY]: 0,
         [ErrorType.PERFORMANCE]: 0,
-        [ErrorType.DATABASE]: 0
+        [ErrorType.DATABASE]: 0,
       },
       errorsByBrowser: {},
       errorsByDevice: {},
       averageErrorRate: 0,
       performanceMetrics: {},
       userActivity: 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
 
     logger.info('监控缓存已清空');
@@ -614,7 +615,6 @@ export class ErrorMonitoringService {
       }
 
       logger.info(`已上报 ${errors.length} 个缓存错误`);
-
     } catch (error) {
       logger.error('上报缓存错误失败', error);
     }
@@ -625,13 +625,13 @@ export class ErrorMonitoringService {
    */
   private setupGlobalErrorHandlers(): void {
     // JavaScript错误
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       this.reportError(
         event.error || event.message,
         {
           filename: event.filename,
           line: event.lineno,
-          column: event.colno
+          column: event.colno,
         },
         ErrorLevel.ERROR,
         ErrorType.JAVASCRIPT
@@ -639,7 +639,7 @@ export class ErrorMonitoringService {
     });
 
     // Promise拒绝
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       this.reportError(
         event.reason,
         { operation: 'unhandled_promise_rejection' },
@@ -649,16 +649,20 @@ export class ErrorMonitoringService {
     });
 
     // 资源加载错误
-    window.addEventListener('error', (event) => {
-      if (event.target !== window) {
-        this.reportError(
-          `Resource load error: ${(event.target as any)?.src || (event.target as any)?.href}`,
-          { operation: 'resource_load' },
-          ErrorLevel.WARNING,
-          ErrorType.NETWORK
-        );
-      }
-    }, true);
+    window.addEventListener(
+      'error',
+      event => {
+        if (event.target !== window) {
+          this.reportError(
+            `Resource load error: ${(event.target as any)?.src || (event.target as any)?.href}`,
+            { operation: 'resource_load' },
+            ErrorLevel.WARNING,
+            ErrorType.NETWORK
+          );
+        }
+      },
+      true
+    );
   }
 
   /**
@@ -667,7 +671,7 @@ export class ErrorMonitoringService {
   private setupPerformanceMonitoring(): void {
     // Web Vitals监控
     if ('PerformanceObserver' in window) {
-      this.performanceObserver = new PerformanceObserver((list) => {
+      this.performanceObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           this.processPerformanceEntry(entry);
         }
@@ -675,7 +679,15 @@ export class ErrorMonitoringService {
 
       // 监控各种性能指标
       try {
-        this.performanceObserver.observe({ entryTypes: ['navigation', 'paint', 'largest-contentful-paint', 'first-input', 'layout-shift'] });
+        this.performanceObserver.observe({
+          entryTypes: [
+            'navigation',
+            'paint',
+            'largest-contentful-paint',
+            'first-input',
+            'layout-shift',
+          ],
+        });
       } catch (error) {
         logger.warn('部分性能指标监控不支持', error);
       }
@@ -694,15 +706,15 @@ export class ErrorMonitoringService {
    */
   private setupUserTracking(): void {
     // 点击事件
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', event => {
       this.reportUserAction({
         type: 'click',
         target: this.getElementSelector(event.target as Element),
         timestamp: Date.now(),
         data: {
           x: event.clientX,
-          y: event.clientY
-        }
+          y: event.clientY,
+        },
       });
     });
 
@@ -711,7 +723,7 @@ export class ErrorMonitoringService {
       this.reportUserAction({
         type: 'navigation',
         target: window.location.href,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
 
@@ -726,8 +738,8 @@ export class ErrorMonitoringService {
           timestamp: Date.now(),
           data: {
             scrollY: window.scrollY,
-            scrollX: window.scrollX
-          }
+            scrollX: window.scrollX,
+          },
         });
       }, 100);
     });
@@ -773,11 +785,11 @@ export class ErrorMonitoringService {
       context: {
         environment: process.env.NODE_ENV || 'development',
         version: process.env.REACT_APP_VERSION || '1.0.0',
-        ...context
+        ...context,
       },
       userActions: [...this.userActions],
       performance: this.getCurrentPerformanceMetrics(),
-      handled: false
+      handled: false,
     };
   }
 
@@ -800,14 +812,14 @@ export class ErrorMonitoringService {
         component: 'SecuritySystem',
         operation: event.type,
         environment: process.env.NODE_ENV || 'development',
-        version: process.env.REACT_APP_VERSION || '1.0.0'
+        version: process.env.REACT_APP_VERSION || '1.0.0',
       },
       userActions: [...this.userActions],
       performance: this.getCurrentPerformanceMetrics(),
       customData: {
-        securityEvent: event
+        securityEvent: event,
       },
-      handled: false
+      handled: false,
     };
   }
 
@@ -816,12 +828,18 @@ export class ErrorMonitoringService {
    */
   private shouldIgnoreError(errorReport: ErrorReport): boolean {
     // 检查忽略的错误消息
-    if (this.config.ignoredErrors.some(ignored => errorReport.message.includes(ignored))) {
+    if (
+      this.config.ignoredErrors.some(ignored =>
+        errorReport.message.includes(ignored)
+      )
+    ) {
       return true;
     }
 
     // 检查忽略的URL模式
-    if (this.config.ignoredUrls.some(pattern => pattern.test(errorReport.url))) {
+    if (
+      this.config.ignoredUrls.some(pattern => pattern.test(errorReport.url))
+    ) {
       return true;
     }
 
@@ -855,14 +873,17 @@ export class ErrorMonitoringService {
 
     // 按浏览器统计
     const browserKey = `${errorReport.browser.name} ${errorReport.browser.version}`;
-    this.stats.errorsByBrowser[browserKey] = (this.stats.errorsByBrowser[browserKey] || 0) + 1;
+    this.stats.errorsByBrowser[browserKey] =
+      (this.stats.errorsByBrowser[browserKey] || 0) + 1;
 
     // 按设备统计
     const deviceKey = errorReport.device.type;
-    this.stats.errorsByDevice[deviceKey] = (this.stats.errorsByDevice[deviceKey] || 0) + 1;
+    this.stats.errorsByDevice[deviceKey] =
+      (this.stats.errorsByDevice[deviceKey] || 0) + 1;
 
     // 计算错误率
-    this.stats.averageErrorRate = this.stats.totalErrors / Math.max(this.stats.userActivity, 1);
+    this.stats.averageErrorRate =
+      this.stats.totalErrors / Math.max(this.stats.userActivity, 1);
 
     this.stats.lastUpdated = Date.now();
   }
@@ -880,9 +901,9 @@ export class ErrorMonitoringService {
       const response = await fetch(this.config.reportingEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(errorReport)
+        body: JSON.stringify(errorReport),
       });
 
       if (!response.ok) {
@@ -893,7 +914,6 @@ export class ErrorMonitoringService {
       errorReport.handlingResult = 'reported_successfully';
 
       logger.debug(`错误报告已上报: ${errorReport.id}`);
-
     } catch (error) {
       logger.error('发送错误报告失败', error);
       throw error;
@@ -954,8 +974,10 @@ export class ErrorMonitoringService {
    */
   private collectPageLoadMetrics(): void {
     if ('performance' in window && 'getEntriesByType' in performance) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
+
       if (navigation) {
         this.reportPerformanceMetric(
           PerformanceMetricType.PAGE_LOAD,
@@ -977,7 +999,10 @@ export class ErrorMonitoringService {
   /**
    * 更新性能指标
    */
-  private updatePerformanceMetrics(type: PerformanceMetricType, value: number): void {
+  private updatePerformanceMetrics(
+    type: PerformanceMetricType,
+    value: number
+  ): void {
     switch (type) {
       case PerformanceMetricType.PAGE_LOAD:
         this.stats.performanceMetrics.pageLoadTime = value;
@@ -1016,7 +1041,7 @@ export class ErrorMonitoringService {
       [PerformanceMetricType.FIRST_CONTENTFUL_PAINT]: 1800,
       [PerformanceMetricType.LARGEST_CONTENTFUL_PAINT]: 2500,
       [PerformanceMetricType.FIRST_INPUT_DELAY]: 100,
-      [PerformanceMetricType.CUMULATIVE_LAYOUT_SHIFT]: 0.1
+      [PerformanceMetricType.CUMULATIVE_LAYOUT_SHIFT]: 0.1,
     };
 
     const threshold = thresholds[type];
@@ -1026,7 +1051,7 @@ export class ErrorMonitoringService {
         {
           component: 'PerformanceMonitor',
           operation: type,
-          ...context
+          ...context,
         },
         ErrorLevel.WARNING,
         ErrorType.PERFORMANCE
@@ -1046,7 +1071,7 @@ export class ErrorMonitoringService {
    */
   private getBrowserInfo(): BrowserInfo {
     const userAgent = navigator.userAgent;
-    
+
     // 简单的浏览器检测
     let name = 'Unknown';
     let version = 'Unknown';
@@ -1111,7 +1136,7 @@ export class ErrorMonitoringService {
       pixelRatio: window.devicePixelRatio || 1,
       memory: deviceMemory,
       cpuCores: hardwareConcurrency,
-      networkType: connection?.effectiveType
+      networkType: connection?.effectiveType,
     };
   }
 

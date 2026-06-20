@@ -4,16 +4,16 @@ export type PhaseName = 'day' | 'evening' | 'night' | 'dawn';
 
 export const PHASE_MAPPING = {
   1: 'day',
-  2: 'evening', 
+  2: 'evening',
   3: 'night',
-  4: 'dawn'
+  4: 'dawn',
 } as const;
 
 export const REVERSE_PHASE_MAPPING = {
-  'day': 1,
-  'evening': 2,
-  'night': 3,
-  'dawn': 4
+  day: 1,
+  evening: 2,
+  night: 3,
+  dawn: 4,
 } as const;
 
 /**
@@ -49,7 +49,7 @@ export function isValidPhaseName(phaseName: string): phaseName is PhaseName {
  */
 export function getPhaseDisplayName(phase: PhaseNumber | PhaseName): string {
   const phaseName = typeof phase === 'number' ? toPhaseName(phase) : phase;
-  
+
   switch (phaseName) {
     case 'day':
       return '白天';
@@ -68,14 +68,14 @@ export function getPhaseDisplayName(phase: PhaseNumber | PhaseName): string {
  * 获取下一个阶段
  */
 export function getNextPhase(currentPhase: PhaseNumber): PhaseNumber {
-  return currentPhase === 4 ? 1 : (currentPhase + 1) as PhaseNumber;
+  return currentPhase === 4 ? 1 : ((currentPhase + 1) as PhaseNumber);
 }
 
 /**
  * 获取上一个阶段
  */
 export function getPreviousPhase(currentPhase: PhaseNumber): PhaseNumber {
-  return currentPhase === 1 ? 4 : (currentPhase - 1) as PhaseNumber;
+  return currentPhase === 1 ? 4 : ((currentPhase - 1) as PhaseNumber);
 }
 
 /**

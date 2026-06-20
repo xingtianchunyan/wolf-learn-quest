@@ -21,7 +21,10 @@ export const useEveningRefresh = (
 
     if (currentPhase === 2 && prevPhaseRef.current === 1) {
       // Transitioned from day (1) to evening (2)
-      if (!refreshTriggeredRef.current || lastRefreshedRoundRef.current !== currentRound) {
+      if (
+        !refreshTriggeredRef.current ||
+        lastRefreshedRoundRef.current !== currentRound
+      ) {
         refreshTriggeredRef.current = true;
         lastRefreshedRoundRef.current = currentRound;
         // Delay a bit to allow DB updates to propagate via realtime

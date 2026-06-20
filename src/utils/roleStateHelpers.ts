@@ -1,13 +1,12 @@
-
 // 角色状态常量
 export const ROLE_STATUS = {
-  NORMAL: 1,    // 正常状态
-  DYING: 2,     // 濒死状态
-  WEAK: 3,      // 虚弱状态
-  ELIMINATED: 4 // 淘汰状态
+  NORMAL: 1, // 正常状态
+  DYING: 2, // 濒死状态
+  WEAK: 3, // 虚弱状态
+  ELIMINATED: 4, // 淘汰状态
 } as const;
 
-export type RoleStatusType = typeof ROLE_STATUS[keyof typeof ROLE_STATUS];
+export type RoleStatusType = (typeof ROLE_STATUS)[keyof typeof ROLE_STATUS];
 
 // 获取状态名称
 export const getRoleStatusName = (status: number): string => {
@@ -42,7 +41,10 @@ export const getRoleStatusColor = (status: number): string => {
 };
 
 // 检查能否进行某项操作
-export const canPerformAction = (statusEffects: any, action: string): boolean => {
+export const canPerformAction = (
+  statusEffects: any,
+  action: string
+): boolean => {
   if (!statusEffects || typeof statusEffects !== 'object') {
     return false;
   }
@@ -54,18 +56,21 @@ export const getSkillUsesRemaining = (skillUses: any): number | 'unlimited' => {
   if (!skillUses || typeof skillUses !== 'object') {
     return 0;
   }
-  
+
   if (skillUses.unlimited === true) {
     return 'unlimited';
   }
-  
+
   return skillUses.remaining || 0;
 };
 
 // 检查是否可以使用技能
 export const canUseSkill = (skillUses: any): boolean => {
   const remaining = getSkillUsesRemaining(skillUses);
-  return remaining === 'unlimited' || (typeof remaining === 'number' && remaining > 0);
+  return (
+    remaining === 'unlimited' ||
+    (typeof remaining === 'number' && remaining > 0)
+  );
 };
 
 // 检查是否是猎人反击状态
@@ -75,12 +80,18 @@ export const isHunterRevenge = (statusEffects: any): boolean => {
 
 // 获取猎人反击剩余时间（秒）
 export const getHunterRevengeTimeLeft = (statusEffects: any): number => {
-  if (!statusEffects?.is_hunter_revenge || !statusEffects?.hunter_revenge_end_time) {
+  if (
+    !statusEffects?.is_hunter_revenge ||
+    !statusEffects?.hunter_revenge_end_time
+  ) {
     return 0;
   }
-  
+
   const endTime = new Date(statusEffects.hunter_revenge_end_time);
-  const timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000));
+  const timeLeft = Math.max(
+    0,
+    Math.floor((endTime.getTime() - Date.now()) / 1000)
+  );
   return timeLeft;
 };
 

@@ -1,6 +1,9 @@
 // 技能数据结构标准化工具
 import { SkillConfig } from '@/utils/skillMappingConfig';
-import { standardizeEffectData, type StandardizedEffectData } from '@/utils/skillEffectStandardization';
+import {
+  standardizeEffectData,
+  type StandardizedEffectData,
+} from '@/utils/skillEffectStandardization';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('skill-data-standardizer');
@@ -16,7 +19,12 @@ export interface StandardizedSkillUse {
   round_number: number;
   phase: string;
   skill_priority: number;
-  execution_status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'failed';
+  execution_status:
+    | 'pending'
+    | 'processing'
+    | 'completed'
+    | 'cancelled'
+    | 'failed';
   skill_effects: StandardizedEffectData;
   conditions_met: Record<string, any>;
   result?: any;
@@ -91,12 +99,14 @@ export function standardizeSkillUse(
   }
 
   // 标准化技能效果数据
-  const standardizedEffects = standardizeEffectData(rawSkillUse.skill_effects) || {
+  const standardizedEffects = standardizeEffectData(
+    rawSkillUse.skill_effects
+  ) || {
     effect_type: 'unknown',
     target_type: 'player',
     duration: 0,
     stack_count: 1,
-    data: {}
+    data: {},
   };
 
   return {
@@ -128,8 +138,8 @@ export function standardizeSkillUse(
       targetType: 'single' as const,
       effectType: ['passive' as const],
       isPassive: false,
-      conflictsWith: []
-    }
+      conflictsWith: [],
+    },
   };
 }
 
@@ -144,12 +154,14 @@ export function standardizeSkillEffectsQueue(
     return null;
   }
 
-  const standardizedEffectData = standardizeEffectData(rawQueue.effect_data) || {
+  const standardizedEffectData = standardizeEffectData(
+    rawQueue.effect_data
+  ) || {
     effect_type: rawQueue.effect_type,
     target_type: 'player',
     duration: 0,
     stack_count: 1,
-    data: {}
+    data: {},
   };
 
   return {
@@ -167,7 +179,7 @@ export function standardizeSkillEffectsQueue(
     expires_at: rawQueue.expires_at,
     conditions: rawQueue.conditions || {},
     created_at: rawQueue.created_at,
-    updated_at: rawQueue.updated_at
+    updated_at: rawQueue.updated_at,
   };
 }
 
@@ -182,12 +194,14 @@ export function standardizeSkillTarget(
     return null;
   }
 
-  const standardizedEffect = standardizeEffectData(rawTarget.effect_applied) || {
+  const standardizedEffect = standardizeEffectData(
+    rawTarget.effect_applied
+  ) || {
     effect_type: 'unknown',
     target_type: 'player',
     duration: 0,
     stack_count: 1,
-    data: {}
+    data: {},
   };
 
   return {
@@ -203,7 +217,7 @@ export function standardizeSkillTarget(
     stack_count: rawTarget.stack_count || 1,
     is_active: rawTarget.is_active !== false,
     created_at: rawTarget.created_at,
-    updated_at: rawTarget.updated_at || rawTarget.created_at
+    updated_at: rawTarget.updated_at || rawTarget.created_at,
   };
 }
 
@@ -224,7 +238,7 @@ export function batchStandardizeSkillData(
     try {
       const config = skillConfigs.get(rawUse.skill_name);
       const standardized = standardizeSkillUse(rawUse, config);
-      
+
       if (standardized) {
         standardizedUses.push(standardized);
       } else {
@@ -261,7 +275,9 @@ export function validateDataConsistency(
     const requiredFields = ['id', 'user_id', 'game_state_id', 'skill_name'];
     for (const field of requiredFields) {
       if (!use[field]) {
-        errors.push(`技能使用记录 ${use.id || 'unknown'} 缺少必需字段: ${field}`);
+        errors.push(
+          `技能使用记录 ${use.id || 'unknown'} 缺少必需字段: ${field}`
+        );
         missingFieldCount++;
         isValidRecord = false;
       }
@@ -294,7 +310,9 @@ export function validateDataConsistency(
     // 检查关联的技能使用记录是否存在
     const relatedUse = skillUses.find(use => use.id === target.skill_use_id);
     if (!relatedUse) {
-      errors.push(`技能目标记录 ${target.id} 关联的技能使用记录不存在: ${target.skill_use_id}`);
+      errors.push(
+        `技能目标记录 ${target.id} 关联的技能使用记录不存在: ${target.skill_use_id}`
+      );
       inconsistentFieldCount++;
     }
 
@@ -313,7 +331,9 @@ export function validateDataConsistency(
     // 检查关联的技能使用记录是否存在
     const relatedUse = skillUses.find(use => use.id === queue.skill_use_id);
     if (!relatedUse) {
-      errors.push(`技能效果队列 ${queue.id} 关联的技能使用记录不存在: ${queue.skill_use_id}`);
+      errors.push(
+        `技能效果队列 ${queue.id} 关联的技能使用记录不存在: ${queue.skill_use_id}`
+      );
       inconsistentFieldCount++;
     }
 
@@ -327,7 +347,8 @@ export function validateDataConsistency(
     }
   }
 
-  const totalRecords = skillUses.length + skillTargets.length + skillEffectsQueue.length;
+  const totalRecords =
+    skillUses.length + skillTargets.length + skillEffectsQueue.length;
 
   return {
     isValid: errors.length === 0,
@@ -338,25 +359,27 @@ export function validateDataConsistency(
       validRecords,
       invalidRecords,
       missingFieldCount,
-      inconsistentFieldCount
-    }
+      inconsistentFieldCount,
+    },
   };
 }
 
 /**
  * 生成数据质量报告
  */
-export function generateDataQualityReport(validationResult: DataValidationResult): string {
+export function generateDataQualityReport(
+  validationResult: DataValidationResult
+): string {
   const { statistics, errors, warnings } = validationResult;
-  
+
   let report = '=== 技能系统数据质量报告 ===\n\n';
-  
+
   report += `总记录数: ${statistics.totalRecords}\n`;
   report += `有效记录数: ${statistics.validRecords}\n`;
   report += `无效记录数: ${statistics.invalidRecords}\n`;
   report += `缺失字段数: ${statistics.missingFieldCount}\n`;
   report += `不一致字段数: ${statistics.inconsistentFieldCount}\n\n`;
-  
+
   if (errors.length > 0) {
     report += '=== 错误列表 ===\n';
     errors.forEach((error, index) => {
@@ -364,7 +387,7 @@ export function generateDataQualityReport(validationResult: DataValidationResult
     });
     report += '\n';
   }
-  
+
   if (warnings.length > 0) {
     report += '=== 警告列表 ===\n';
     warnings.forEach((warning, index) => {
@@ -372,13 +395,14 @@ export function generateDataQualityReport(validationResult: DataValidationResult
     });
     report += '\n';
   }
-  
-  const qualityScore = statistics.totalRecords > 0 
-    ? Math.round((statistics.validRecords / statistics.totalRecords) * 100)
-    : 0;
-    
+
+  const qualityScore =
+    statistics.totalRecords > 0
+      ? Math.round((statistics.validRecords / statistics.totalRecords) * 100)
+      : 0;
+
   report += `=== 质量评分: ${qualityScore}% ===\n`;
-  
+
   if (qualityScore >= 90) {
     report += '数据质量优秀 ✅\n';
   } else if (qualityScore >= 70) {
@@ -386,6 +410,6 @@ export function generateDataQualityReport(validationResult: DataValidationResult
   } else {
     report += '数据质量需要改进 ❌\n';
   }
-  
+
   return report;
 }

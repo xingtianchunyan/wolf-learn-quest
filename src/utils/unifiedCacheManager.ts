@@ -1,33 +1,33 @@
 /**
  * 文件级注释：统一缓存管理器
- * 
+ *
  * 该文件实现了一个统一的缓存管理系统，集成了项目中的所有缓存组件：
  * - EnhancedQueryCacheStrategy（增强查询缓存策略）
  * - QueryCacheOptimizer（查询缓存优化器）
  * - OptimizedQueryCache（优化查询缓存）
  * - IntelligentCacheStrategy（智能缓存策略）
  * - SkillSystemCache（技能系统缓存）
- * 
+ *
  * 主要功能：
  * - 统一缓存接口
  * - 智能路由和负载均衡
  * - 全局缓存监控和管理
  * - 缓存策略协调
  * - 性能优化和自动调优
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { 
-  EnhancedQueryCacheStrategy, 
-  EnhancedCacheConfig, 
+import {
+  EnhancedQueryCacheStrategy,
+  EnhancedCacheConfig,
   EnhancedQueryContext,
   QueryPriority,
   CacheLevel,
   PerformanceMetrics as EnhancedPerformanceMetrics,
-  OptimizationRecommendation
+  OptimizationRecommendation,
 } from './enhancedQueryCacheStrategy';
 import { QueryCacheOptimizer } from './queryCacheOptimizer';
 import { optimizedQueryCache } from './optimizedQueryCache';
@@ -41,10 +41,10 @@ const logger = createLogger('unified-cache-manager');
  */
 export enum CacheProvider {
   ENHANCED_STRATEGY = 'enhanced_strategy',
-  QUERY_OPTIMIZER = 'query_optimizer', 
+  QUERY_OPTIMIZER = 'query_optimizer',
   OPTIMIZED_CACHE = 'optimized_cache',
   INTELLIGENT_STRATEGY = 'intelligent_strategy',
-  AUTO_SELECT = 'auto_select'
+  AUTO_SELECT = 'auto_select',
 }
 
 /**
@@ -56,7 +56,7 @@ export enum CacheOperation {
   DELETE = 'delete',
   CLEAR = 'clear',
   BATCH_GET = 'batch_get',
-  BATCH_SET = 'batch_set'
+  BATCH_SET = 'batch_set',
 }
 
 /**
@@ -65,17 +65,17 @@ export enum CacheOperation {
 export interface UnifiedCacheConfig {
   // 默认提供者
   defaultProvider: CacheProvider;
-  
+
   // 路由规则
   routingRules: CacheRoutingRule[];
-  
+
   // 负载均衡配置
   loadBalancing: {
     enabled: boolean;
     strategy: 'round_robin' | 'least_loaded' | 'performance_based';
     healthCheckInterval: number;
   };
-  
+
   // 监控配置
   monitoring: {
     enabled: boolean;
@@ -86,7 +86,7 @@ export interface UnifiedCacheConfig {
       memoryUsage: number;
     };
   };
-  
+
   // 故障转移配置
   failover: {
     enabled: boolean;
@@ -94,7 +94,7 @@ export interface UnifiedCacheConfig {
     retryDelay: number;
     fallbackProvider: CacheProvider;
   };
-  
+
   // 性能优化配置
   optimization: {
     autoTuning: boolean;
@@ -176,16 +176,16 @@ export interface UnifiedCacheStats {
   failedRequests: number;
   averageResponseTime: number;
   overallHitRate: number;
-  
+
   // 按提供者分组的统计
   providerStats: Map<CacheProvider, ProviderStats>;
-  
+
   // 按操作分组的统计
   operationStats: Map<CacheOperation, OperationStats>;
-  
+
   // 健康状态
   providerHealth: Map<CacheProvider, ProviderHealth>;
-  
+
   // 路由统计
   routingStats: Map<string, number>;
 }
@@ -213,7 +213,7 @@ export interface OperationStats {
 
 /**
  * 类级注释：统一缓存管理器
- * 
+ *
  * 提供统一的缓存管理接口，集成多个缓存提供者：
  * - 智能路由和负载均衡
  * - 故障转移和容错处理
@@ -222,19 +222,19 @@ export interface OperationStats {
  */
 export class UnifiedCacheManager {
   private static instance: UnifiedCacheManager;
-  
+
   // 核心组件
   private config: UnifiedCacheConfig;
   private enhancedStrategy: EnhancedQueryCacheStrategy;
   private queryOptimizer: QueryCacheOptimizer;
   private intelligentStrategy: IntelligentCacheStrategy;
-  
+
   // 状态管理
   private stats: UnifiedCacheStats;
   private providerHealth: Map<CacheProvider, ProviderHealth> = new Map();
   private routingRules: CacheRoutingRule[];
   private currentProviderIndex = 0;
-  
+
   // 定时器
   private healthCheckTimer: ReturnType<typeof setInterval> | null = null;
   private metricsTimer: ReturnType<typeof setInterval> | null = null;
@@ -251,7 +251,7 @@ export class UnifiedCacheManager {
       loadBalancing: {
         enabled: true,
         strategy: 'performance_based',
-        healthCheckInterval: 30000
+        healthCheckInterval: 30000,
       },
       monitoring: {
         enabled: true,
@@ -259,21 +259,21 @@ export class UnifiedCacheManager {
         alertThresholds: {
           errorRate: 0.1,
           responseTime: 1000,
-          memoryUsage: 0.8
-        }
+          memoryUsage: 0.8,
+        },
       },
       failover: {
         enabled: true,
         maxRetries: 3,
         retryDelay: 1000,
-        fallbackProvider: CacheProvider.OPTIMIZED_CACHE
+        fallbackProvider: CacheProvider.OPTIMIZED_CACHE,
       },
       optimization: {
         autoTuning: true,
         adaptiveRouting: true,
-        predictivePreloading: true
+        predictivePreloading: true,
       },
-      ...config
+      ...config,
     };
 
     this.initializeProviders();
@@ -287,7 +287,9 @@ export class UnifiedCacheManager {
   /**
    * 函数级注释：获取单例实例
    */
-  public static getInstance(config?: Partial<UnifiedCacheConfig>): UnifiedCacheManager {
+  public static getInstance(
+    config?: Partial<UnifiedCacheConfig>
+  ): UnifiedCacheManager {
     if (!UnifiedCacheManager.instance) {
       UnifiedCacheManager.instance = new UnifiedCacheManager(config);
     }
@@ -299,7 +301,7 @@ export class UnifiedCacheManager {
    * 智能路由到最适合的缓存提供者
    */
   public async get<T>(
-    key: string, 
+    key: string,
     options?: {
       priority?: QueryPriority;
       tags?: string[];
@@ -313,35 +315,46 @@ export class UnifiedCacheManager {
       operation: CacheOperation.GET,
       priority: options?.priority || QueryPriority.NORMAL,
       tags: options?.tags || [],
-      retryCount: 0
+      retryCount: 0,
     };
 
     try {
       // 选择最佳提供者
       const provider = options?.provider || this.selectOptimalProvider(context);
-      
+
       // 执行缓存获取
-      const result = await this.executeWithProvider<T>(provider, 'get', key, context);
-      
+      const result = await this.executeWithProvider<T>(
+        provider,
+        'get',
+        key,
+        context
+      );
+
       // 记录成功统计
       this.recordSuccess(provider, performance.now() - startTime, true);
-      
+
       return {
         success: true,
         data: result,
         provider,
         responseTime: performance.now() - startTime,
-        fromCache: result !== null
+        fromCache: result !== null,
       };
     } catch (error) {
       // 尝试故障转移
-      if (this.config.failover.enabled && context.retryCount! < this.config.failover.maxRetries) {
+      if (
+        this.config.failover.enabled &&
+        context.retryCount! < this.config.failover.maxRetries
+      ) {
         return this.handleFailover(context, options?.fallback);
       }
 
       // 记录失败统计
-      this.recordFailure(this.config.defaultProvider, performance.now() - startTime);
-      
+      this.recordFailure(
+        this.config.defaultProvider,
+        performance.now() - startTime
+      );
+
       // 如果有fallback函数，执行它
       if (options?.fallback) {
         try {
@@ -351,7 +364,7 @@ export class UnifiedCacheManager {
             data: fallbackResult,
             provider: CacheProvider.AUTO_SELECT,
             responseTime: performance.now() - startTime,
-            fromCache: false
+            fromCache: false,
           };
         } catch (fallbackError) {
           return {
@@ -359,7 +372,7 @@ export class UnifiedCacheManager {
             provider: CacheProvider.AUTO_SELECT,
             responseTime: performance.now() - startTime,
             fromCache: false,
-            error: fallbackError as Error
+            error: fallbackError as Error,
           };
         }
       }
@@ -369,7 +382,7 @@ export class UnifiedCacheManager {
         provider: this.config.defaultProvider,
         responseTime: performance.now() - startTime,
         fromCache: false,
-        error: error as Error
+        error: error as Error,
       };
     }
   }
@@ -379,8 +392,8 @@ export class UnifiedCacheManager {
    * 智能选择最适合的缓存提供者进行存储
    */
   public async set<T>(
-    key: string, 
-    value: T, 
+    key: string,
+    value: T,
     options?: {
       ttl?: number;
       priority?: QueryPriority;
@@ -398,43 +411,56 @@ export class UnifiedCacheManager {
       tags: options?.tags || [],
       dataSize,
       ttl: options?.ttl,
-      retryCount: 0
+      retryCount: 0,
     };
 
     try {
       // 选择最佳提供者
       const provider = options?.provider || this.selectOptimalProvider(context);
-      
+
       // 执行缓存设置
-      await this.executeWithProvider(provider, 'set', key, context, value, options);
-      
+      await this.executeWithProvider(
+        provider,
+        'set',
+        key,
+        context,
+        value,
+        options
+      );
+
       // 记录成功统计
       this.recordSuccess(provider, performance.now() - startTime, false);
-      
+
       return {
         success: true,
         data: true,
         provider,
         responseTime: performance.now() - startTime,
-        fromCache: false
+        fromCache: false,
       };
     } catch (error) {
       // 尝试故障转移
-      if (this.config.failover.enabled && context.retryCount! < this.config.failover.maxRetries) {
+      if (
+        this.config.failover.enabled &&
+        context.retryCount! < this.config.failover.maxRetries
+      ) {
         context.retryCount!++;
         return this.set(key, value, options);
       }
 
       // 记录失败统计
-      this.recordFailure(this.config.defaultProvider, performance.now() - startTime);
-      
+      this.recordFailure(
+        this.config.defaultProvider,
+        performance.now() - startTime
+      );
+
       return {
         success: false,
         data: false,
         provider: this.config.defaultProvider,
         responseTime: performance.now() - startTime,
         fromCache: false,
-        error: error as Error
+        error: error as Error,
       };
     }
   }
@@ -444,7 +470,7 @@ export class UnifiedCacheManager {
    * 优化的批量获取操作
    */
   public async batchGet<T>(
-    keys: string[], 
+    keys: string[],
     options?: {
       priority?: QueryPriority;
       tags?: string[];
@@ -452,30 +478,37 @@ export class UnifiedCacheManager {
     }
   ): Promise<Map<string, CacheResponse<T>>> {
     const results = new Map<string, CacheResponse<T>>();
-    
+
     // 按提供者分组键
     const keysByProvider = this.groupKeysByProvider(keys, options);
-    
+
     // 并行执行批量获取
-    const promises = Array.from(keysByProvider.entries()).map(async ([provider, providerKeys]) => {
-      try {
-        const batchResults = await this.executeBatchWithProvider<T>(provider, 'batchGet', providerKeys, options);
-        for (const [key, result] of batchResults.entries()) {
-          results.set(key, result);
-        }
-      } catch (error) {
-        // 为失败的键设置错误响应
-        for (const key of providerKeys) {
-          results.set(key, {
-            success: false,
+    const promises = Array.from(keysByProvider.entries()).map(
+      async ([provider, providerKeys]) => {
+        try {
+          const batchResults = await this.executeBatchWithProvider<T>(
             provider,
-            responseTime: 0,
-            fromCache: false,
-            error: error as Error
-          });
+            'batchGet',
+            providerKeys,
+            options
+          );
+          for (const [key, result] of batchResults.entries()) {
+            results.set(key, result);
+          }
+        } catch (error) {
+          // 为失败的键设置错误响应
+          for (const key of providerKeys) {
+            results.set(key, {
+              success: false,
+              provider,
+              responseTime: 0,
+              fromCache: false,
+              error: error as Error,
+            });
+          }
         }
       }
-    });
+    );
 
     await Promise.all(promises);
     return results;
@@ -506,23 +539,30 @@ export class UnifiedCacheManager {
   /**
    * 函数级注释：查找匹配的路由规则
    */
-  private findMatchingRule(context: CacheRequestContext): CacheRoutingRule | null {
+  private findMatchingRule(
+    context: CacheRequestContext
+  ): CacheRoutingRule | null {
     // 按优先级排序规则
-    const sortedRules = [...this.routingRules].sort((a, b) => b.priority - a.priority);
-    
+    const sortedRules = [...this.routingRules].sort(
+      (a, b) => b.priority - a.priority
+    );
+
     for (const rule of sortedRules) {
       if (this.evaluateCondition(rule.condition, context)) {
         return rule;
       }
     }
-    
+
     return null;
   }
 
   /**
    * 函数级注释：评估路由条件
    */
-  private evaluateCondition(condition: CacheCondition, context: CacheRequestContext): boolean {
+  private evaluateCondition(
+    condition: CacheCondition,
+    context: CacheRequestContext
+  ): boolean {
     // 检查键模式
     if (condition.keyPattern && !condition.keyPattern.test(context.key)) {
       return false;
@@ -541,13 +581,18 @@ export class UnifiedCacheManager {
     }
 
     // 检查操作类型
-    if (condition.operation && !condition.operation.includes(context.operation)) {
+    if (
+      condition.operation &&
+      !condition.operation.includes(context.operation)
+    ) {
       return false;
     }
 
     // 检查标签
     if (condition.tags && condition.tags.length > 0) {
-      const hasMatchingTag = condition.tags.some(tag => context.tags.includes(tag));
+      const hasMatchingTag = condition.tags.some(tag =>
+        context.tags.includes(tag)
+      );
       if (!hasMatchingTag) return false;
     }
 
@@ -564,7 +609,7 @@ export class UnifiedCacheManager {
    */
   private selectByLoadBalancing(context: CacheRequestContext): CacheProvider {
     const healthyProviders = this.getHealthyProviders();
-    
+
     if (healthyProviders.length === 0) {
       return this.config.failover.fallbackProvider;
     }
@@ -572,13 +617,13 @@ export class UnifiedCacheManager {
     switch (this.config.loadBalancing.strategy) {
       case 'round_robin':
         return this.selectRoundRobin(healthyProviders);
-      
+
       case 'least_loaded':
         return this.selectLeastLoaded(healthyProviders);
-      
+
       case 'performance_based':
         return this.selectPerformanceBased(healthyProviders, context);
-      
+
       default:
         return healthyProviders[0];
     }
@@ -614,7 +659,10 @@ export class UnifiedCacheManager {
   /**
    * 函数级注释：基于性能选择
    */
-  private selectPerformanceBased(providers: CacheProvider[], context: CacheRequestContext): CacheProvider {
+  private selectPerformanceBased(
+    providers: CacheProvider[],
+    context: CacheRequestContext
+  ): CacheProvider {
     let bestProvider = providers[0];
     let bestScore = this.calculatePerformanceScore(bestProvider, context);
 
@@ -632,7 +680,10 @@ export class UnifiedCacheManager {
   /**
    * 函数级注释：计算性能分数
    */
-  private calculatePerformanceScore(provider: CacheProvider, context: CacheRequestContext): number {
+  private calculatePerformanceScore(
+    provider: CacheProvider,
+    context: CacheRequestContext
+  ): number {
     const health = this.providerHealth.get(provider);
     if (!health || !health.healthy) return 0;
 
@@ -640,10 +691,10 @@ export class UnifiedCacheManager {
     if (!stats) return 0.5;
 
     // 综合评分：响应时间(40%) + 命中率(30%) + 成功率(20%) + 内存使用(10%)
-    const responseTimeScore = Math.max(0, 1 - (health.responseTime / 1000));
+    const responseTimeScore = Math.max(0, 1 - health.responseTime / 1000);
     const hitRateScore = stats.hitRate;
     const successRateScore = stats.successes / Math.max(1, stats.requests);
-    const memoryScore = Math.max(0, 1 - (health.memoryUsage / 100));
+    const memoryScore = Math.max(0, 1 - health.memoryUsage / 100);
 
     return (
       responseTimeScore * 0.4 +
@@ -657,25 +708,35 @@ export class UnifiedCacheManager {
    * 函数级注释：执行提供者操作
    */
   private async executeWithProvider<T>(
-    provider: CacheProvider, 
-    operation: string, 
-    key: string, 
+    provider: CacheProvider,
+    operation: string,
+    key: string,
     context: CacheRequestContext,
     ...args: any[]
   ): Promise<T> {
     switch (provider) {
       case CacheProvider.ENHANCED_STRATEGY:
-        return this.executeEnhancedStrategy<T>(operation, key, context, ...args);
-      
+        return this.executeEnhancedStrategy<T>(
+          operation,
+          key,
+          context,
+          ...args
+        );
+
       case CacheProvider.QUERY_OPTIMIZER:
         return this.executeQueryOptimizer<T>(operation, key, context, ...args);
-      
+
       case CacheProvider.OPTIMIZED_CACHE:
         return this.executeOptimizedCache<T>(operation, key, context, ...args);
-      
+
       case CacheProvider.INTELLIGENT_STRATEGY:
-        return this.executeIntelligentStrategy<T>(operation, key, context, ...args);
-      
+        return this.executeIntelligentStrategy<T>(
+          operation,
+          key,
+          context,
+          ...args
+        );
+
       default:
         throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -685,8 +746,8 @@ export class UnifiedCacheManager {
    * 函数级注释：执行增强策略操作
    */
   private async executeEnhancedStrategy<T>(
-    operation: string, 
-    key: string, 
+    operation: string,
+    key: string,
     context: CacheRequestContext,
     ...args: any[]
   ): Promise<T> {
@@ -696,7 +757,7 @@ export class UnifiedCacheManager {
       tags: context.tags,
       cacheable: true,
       level: CacheLevel.L1_MEMORY,
-      customTTL: context.ttl
+      customTTL: context.ttl,
     };
 
     if (operation === 'get') {
@@ -717,8 +778,8 @@ export class UnifiedCacheManager {
    * 函数级注释：执行查询优化器操作
    */
   private async executeQueryOptimizer<T>(
-    operation: string, 
-    key: string, 
+    operation: string,
+    key: string,
     context: CacheRequestContext,
     ...args: any[]
   ): Promise<T> {
@@ -729,10 +790,14 @@ export class UnifiedCacheManager {
         params: {},
         priority: this.mapPriorityToNumber(context.priority),
         cacheable: true,
-        customTtl: context.ttl
+        customTtl: context.ttl,
       };
-      
-      return this.queryOptimizer.executeQuery(key, async () => null, queryContext);
+
+      return this.queryOptimizer.executeQuery(
+        key,
+        async () => null,
+        queryContext
+      );
     } else if (operation === 'set') {
       // QueryOptimizer主要用于查询，set操作通过其内部缓存处理
       const [value] = args;
@@ -746,8 +811,8 @@ export class UnifiedCacheManager {
    * 函数级注释：执行优化缓存操作
    */
   private async executeOptimizedCache<T>(
-    operation: string, 
-    key: string, 
+    operation: string,
+    key: string,
     context: CacheRequestContext,
     ...args: any[]
   ): Promise<T> {
@@ -758,7 +823,7 @@ export class UnifiedCacheManager {
       await optimizedQueryCache.set(key, value, {
         ttl: context.ttl || options?.ttl,
         tags: context.tags,
-        priority: this.mapPriorityToNumber(context.priority)
+        priority: this.mapPriorityToNumber(context.priority),
       });
       return value;
     }
@@ -770,8 +835,8 @@ export class UnifiedCacheManager {
    * 函数级注释：执行智能策略操作
    */
   private async executeIntelligentStrategy<T>(
-    operation: string, 
-    key: string, 
+    operation: string,
+    key: string,
     context: CacheRequestContext,
     ...args: any[]
   ): Promise<T> {
@@ -779,14 +844,14 @@ export class UnifiedCacheManager {
       return this.intelligentStrategy.get<T>(key, async () => null, {
         priority: context.priority,
         tags: context.tags,
-        ttl: context.ttl
+        ttl: context.ttl,
       });
     } else if (operation === 'set') {
       const [value] = args;
       return this.intelligentStrategy.get<T>(key, async () => value, {
         priority: context.priority,
         tags: context.tags,
-        ttl: context.ttl
+        ttl: context.ttl,
       });
     }
 
@@ -806,7 +871,7 @@ export class UnifiedCacheManager {
    */
   public getOptimizationRecommendations(): OptimizationRecommendation[] {
     const recommendations: OptimizationRecommendation[] = [];
-    
+
     // 分析各提供者性能
     for (const [provider, stats] of this.stats.providerStats.entries()) {
       if (stats.hitRate < 0.7) {
@@ -816,7 +881,7 @@ export class UnifiedCacheManager {
           description: `${provider} 缓存命中率较低 (${(stats.hitRate * 100).toFixed(1)}%)`,
           expectedImprovement: 0.2,
           implementation: '考虑调整TTL策略或增加预加载',
-          impact: { hitRate: 0.2 }
+          impact: { hitRate: 0.2 },
         });
       }
 
@@ -827,7 +892,7 @@ export class UnifiedCacheManager {
           description: `${provider} 响应时间较慢 (${stats.averageResponseTime.toFixed(0)}ms)`,
           expectedImprovement: 0.3,
           implementation: '优化缓存存储结构或增加内存分配',
-          impact: { responseTime: -200 }
+          impact: { responseTime: -200 },
         });
       }
     }
@@ -852,7 +917,7 @@ export class UnifiedCacheManager {
       providerStats: new Map(),
       operationStats: new Map(),
       providerHealth: new Map(),
-      routingStats: new Map()
+      routingStats: new Map(),
     };
 
     // 初始化提供者统计
@@ -864,7 +929,7 @@ export class UnifiedCacheManager {
           failures: 0,
           averageResponseTime: 0,
           hitRate: 0,
-          memoryUsage: 0
+          memoryUsage: 0,
         });
 
         this.providerHealth.set(provider, {
@@ -874,7 +939,7 @@ export class UnifiedCacheManager {
           errorRate: 0,
           memoryUsage: 0,
           lastCheck: Date.now(),
-          consecutiveFailures: 0
+          consecutiveFailures: 0,
         });
       }
     });
@@ -886,42 +951,42 @@ export class UnifiedCacheManager {
         id: 'large-data',
         name: '大数据路由到压缩缓存',
         condition: {
-          dataSize: { min: 10240 } // 10KB以上
+          dataSize: { min: 10240 }, // 10KB以上
         },
         provider: CacheProvider.ENHANCED_STRATEGY,
         priority: 100,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'high-priority',
         name: '高优先级路由到增强策略',
         condition: {
-          priority: [QueryPriority.CRITICAL, QueryPriority.HIGH]
+          priority: [QueryPriority.CRITICAL, QueryPriority.HIGH],
         },
         provider: CacheProvider.ENHANCED_STRATEGY,
         priority: 90,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'skill-system',
         name: '技能系统路由到智能策略',
         condition: {
-          keyPattern: /^skill:/
+          keyPattern: /^skill:/,
         },
         provider: CacheProvider.INTELLIGENT_STRATEGY,
         priority: 80,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'query-optimization',
         name: '查询优化路由',
         condition: {
-          tags: ['query', 'database']
+          tags: ['query', 'database'],
         },
         provider: CacheProvider.QUERY_OPTIMIZER,
         priority: 70,
-        enabled: true
-      }
+        enabled: true,
+      },
     ];
   }
 
@@ -968,12 +1033,18 @@ export class UnifiedCacheManager {
 
   private mapPriorityToNumber(priority: QueryPriority): number {
     switch (priority) {
-      case QueryPriority.CRITICAL: return 5;
-      case QueryPriority.HIGH: return 4;
-      case QueryPriority.NORMAL: return 3;
-      case QueryPriority.LOW: return 2;
-      case QueryPriority.BACKGROUND: return 1;
-      default: return 3;
+      case QueryPriority.CRITICAL:
+        return 5;
+      case QueryPriority.HIGH:
+        return 4;
+      case QueryPriority.NORMAL:
+        return 3;
+      case QueryPriority.LOW:
+        return 2;
+      case QueryPriority.BACKGROUND:
+        return 1;
+      default:
+        return 3;
     }
   }
 
@@ -993,7 +1064,11 @@ export class UnifiedCacheManager {
     return stats ? stats.requests : 0;
   }
 
-  private recordSuccess(provider: CacheProvider, responseTime: number, fromCache: boolean): void {
+  private recordSuccess(
+    provider: CacheProvider,
+    responseTime: number,
+    fromCache: boolean
+  ): void {
     // 实现成功记录逻辑
   }
 
@@ -1002,7 +1077,7 @@ export class UnifiedCacheManager {
   }
 
   private async handleFailover<T>(
-    context: CacheRequestContext, 
+    context: CacheRequestContext,
     fallback?: () => Promise<T>
   ): Promise<CacheResponse<T>> {
     // 实现故障转移逻辑
@@ -1010,12 +1085,12 @@ export class UnifiedCacheManager {
       success: false,
       provider: this.config.failover.fallbackProvider,
       responseTime: 0,
-      fromCache: false
+      fromCache: false,
     };
   }
 
   private groupKeysByProvider(
-    keys: string[], 
+    keys: string[],
     options?: any
   ): Map<CacheProvider, string[]> {
     // 实现键分组逻辑
@@ -1023,9 +1098,9 @@ export class UnifiedCacheManager {
   }
 
   private async executeBatchWithProvider<T>(
-    provider: CacheProvider, 
-    operation: string, 
-    keys: string[], 
+    provider: CacheProvider,
+    operation: string,
+    keys: string[],
     options?: any
   ): Promise<Map<string, CacheResponse<T>>> {
     // 实现批量执行逻辑
@@ -1056,7 +1131,9 @@ export class UnifiedCacheManager {
 export function useUnifiedCacheManager(config?: Partial<UnifiedCacheConfig>) {
   const manager = UnifiedCacheManager.getInstance(config);
   const [stats, setStats] = useState<UnifiedCacheStats | null>(null);
-  const [recommendations, setRecommendations] = useState<OptimizationRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<
+    OptimizationRecommendation[]
+  >([]);
 
   useEffect(() => {
     const updateMetrics = () => {
@@ -1078,14 +1155,21 @@ export function useUnifiedCacheManager(config?: Partial<UnifiedCacheConfig>) {
   );
 
   const set = useCallback(
-    async <T>(key: string, value: T, options?: any): Promise<CacheResponse<boolean>> => {
+    async <T>(
+      key: string,
+      value: T,
+      options?: any
+    ): Promise<CacheResponse<boolean>> => {
       return manager.set(key, value, options);
     },
     [manager]
   );
 
   const batchGet = useCallback(
-    async <T>(keys: string[], options?: any): Promise<Map<string, CacheResponse<T>>> => {
+    async <T>(
+      keys: string[],
+      options?: any
+    ): Promise<Map<string, CacheResponse<T>>> => {
       return manager.batchGet<T>(keys, options);
     },
     [manager]
@@ -1098,7 +1182,8 @@ export function useUnifiedCacheManager(config?: Partial<UnifiedCacheConfig>) {
     stats,
     recommendations,
     getStats: manager.getStats.bind(manager),
-    getOptimizationRecommendations: manager.getOptimizationRecommendations.bind(manager)
+    getOptimizationRecommendations:
+      manager.getOptimizationRecommendations.bind(manager),
   };
 }
 

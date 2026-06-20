@@ -11,7 +11,7 @@ interface StatusBadgeProps {
 const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   variant = 'default',
-  className
+  className,
 }) => {
   const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -35,10 +35,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
   };
 
   return (
-    <Badge 
-      variant={variant} 
-      className={cn(getStatusColor(status), className)}
-    >
+    <Badge variant={variant} className={cn(getStatusColor(status), className)}>
       {status}
     </Badge>
   );

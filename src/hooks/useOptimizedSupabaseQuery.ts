@@ -28,7 +28,9 @@ interface QueryState<T> {
  */
 export const useOptimizedSupabaseQuery = <T = any>(
   tableName: string,
-  queryFn?: (query: PostgrestFilterBuilder<any, any, any>) => PostgrestFilterBuilder<any, any, any>,
+  queryFn?: (
+    query: PostgrestFilterBuilder<any, any, any>
+  ) => PostgrestFilterBuilder<any, any, any>,
   options: QueryOptions = {}
 ) => {
   const {
@@ -37,19 +39,19 @@ export const useOptimizedSupabaseQuery = <T = any>(
     enableRealtime = false,
     debounceMs = 300,
     retryAttempts = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
   } = options;
 
   const [state, setState] = useState<QueryState<T>>({
     data: null,
     loading: true,
     error: null,
-    lastFetched: null
+    lastFetched: null,
   });
 
   const cache = useDataCache<T>(`supabase_${tableName}`, {
     ttl: cacheTTL,
-    enablePersistence: true
+    enablePersistence: true,
   });
 
   const abortControllerRef = useRef<AbortController>();
@@ -63,104 +65,120 @@ export const useOptimizedSupabaseQuery = <T = any>(
   }, [tableName, queryFn]);
 
   // 执行查询
-  const executeQuery = useCallback(async (attempt = 1): Promise<T | null> => {
-    const queryKey = generateQueryKey();
-    
-    // 检查缓存
-    if (enableCache) {
-      const cached = cache.get(queryKey);
-      if (cached) {
-        logger.debug(`使用缓存数据: ${tableName}`, { queryKey });
-        setState(prev => ({
-          ...prev,
-          data: cached,
+  const executeQuery = useCallback(
+    async (attempt = 1): Promise<T | null> => {
+      const queryKey = generateQueryKey();
+
+      // 检查缓存
+      if (enableCache) {
+        const cached = cache.get(queryKey);
+        if (cached) {
+          logger.debug(`使用缓存数据: ${tableName}`, { queryKey });
+          setState(prev => ({
+            ...prev,
+            data: cached,
+            loading: false,
+            error: null,
+            lastFetched: Date.now(),
+          }));
+          return cached;
+        }
+      }
+
+      try {
+        // 取消之前的请求
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+
+        setState(prev => ({ ...prev, loading: true, error: null }));
+
+        // 性能监控
+        const perfLabel = `query_${tableName}_${queryKey}`;
+        PerformanceMonitor.start(perfLabel);
+
+        // 构建查询
+        let query = (supabase as any).from(tableName).select('*');
+        if (queryFn) {
+          query = queryFn(query);
+        }
+
+        const { data, error } = await query;
+
+        PerformanceMonitor.end(perfLabel);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        const result = data as T;
+
+        // 更新状态
+        setState({
+          data: result,
           loading: false,
           error: null,
-          lastFetched: Date.now()
-        }));
-        return cached;
-      }
-    }
-
-    try {
-      // 取消之前的请求
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      abortControllerRef.current = new AbortController();
-
-      setState(prev => ({ ...prev, loading: true, error: null }));
-
-      // 性能监控
-      const perfLabel = `query_${tableName}_${queryKey}`;
-      PerformanceMonitor.start(perfLabel);
-
-      // 构建查询
-      let query = (supabase as any).from(tableName).select('*');
-      if (queryFn) {
-        query = queryFn(query);
-      }
-
-      const { data, error } = await query;
-      
-      PerformanceMonitor.end(perfLabel);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const result = data as T;
-
-      // 更新状态
-      setState({
-        data: result,
-        loading: false,
-        error: null,
-        lastFetched: Date.now()
-      });
-
-      // 缓存结果
-      if (enableCache && result) {
-        cache.set(queryKey, result);
-      }
-
-      logger.debug(`查询成功: ${tableName}`, {
-        queryKey,
-        resultCount: Array.isArray(result) ? result.length : 1
-      });
-
-      return result;
-
-    } catch (error) {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      
-      // 重试逻辑
-      if (attempt < retryAttempts && !abortControllerRef.current?.signal.aborted) {
-        logger.warn(`查询失败，第 ${attempt} 次重试: ${tableName}`, {
-          error: errorObj.message,
-          attempt,
-          maxAttempts: retryAttempts
+          lastFetched: Date.now(),
         });
-        
-        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
-        return executeQuery(attempt + 1);
+
+        // 缓存结果
+        if (enableCache && result) {
+          cache.set(queryKey, result);
+        }
+
+        logger.debug(`查询成功: ${tableName}`, {
+          queryKey,
+          resultCount: Array.isArray(result) ? result.length : 1,
+        });
+
+        return result;
+      } catch (error) {
+        const errorObj =
+          error instanceof Error ? error : new Error(String(error));
+
+        // 重试逻辑
+        if (
+          attempt < retryAttempts &&
+          !abortControllerRef.current?.signal.aborted
+        ) {
+          logger.warn(`查询失败，第 ${attempt} 次重试: ${tableName}`, {
+            error: errorObj.message,
+            attempt,
+            maxAttempts: retryAttempts,
+          });
+
+          await new Promise(resolve =>
+            setTimeout(resolve, retryDelay * attempt)
+          );
+          return executeQuery(attempt + 1);
+        }
+
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: errorObj,
+        }));
+
+        logger.error(`查询失败: ${tableName}`, {
+          error: errorObj.message,
+          stack: errorObj.stack,
+          attempts: attempt,
+        });
+
+        return null;
       }
-
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorObj
-      }));
-
-      logger.error(`查询失败: ${tableName}`, {
-        error: errorObj.message,
-        stack: errorObj.stack,
-        attempts: attempt
-      });
-
-      return null;
-    }
-  }, [tableName, queryFn, generateQueryKey, enableCache, cache, retryAttempts, retryDelay]);
+    },
+    [
+      tableName,
+      queryFn,
+      generateQueryKey,
+      enableCache,
+      cache,
+      retryAttempts,
+      retryDelay,
+    ]
+  );
 
   // 防抖查询
   const debouncedQuery = useCallback(() => {
@@ -190,20 +208,24 @@ export const useOptimizedSupabaseQuery = <T = any>(
 
     const subscription = supabase
       .channel(`realtime_${tableName}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: tableName
-      }, (payload) => {
-        logger.debug(`实时数据变化: ${tableName}`, payload);
-        
-        // 清除缓存并重新查询
-        const queryKey = generateQueryKey();
-        if (enableCache) {
-          cache.remove(queryKey);
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: tableName,
+        },
+        payload => {
+          logger.debug(`实时数据变化: ${tableName}`, payload);
+
+          // 清除缓存并重新查询
+          const queryKey = generateQueryKey();
+          if (enableCache) {
+            cache.remove(queryKey);
+          }
+          debouncedQuery();
         }
-        debouncedQuery();
-      })
+      )
       .subscribe();
 
     subscriptionRef.current = subscription;
@@ -212,7 +234,14 @@ export const useOptimizedSupabaseQuery = <T = any>(
       logger.debug(`清理实时订阅: ${tableName}`);
       subscription.unsubscribe();
     };
-  }, [tableName, enableRealtime, generateQueryKey, enableCache, cache, debouncedQuery]);
+  }, [
+    tableName,
+    enableRealtime,
+    generateQueryKey,
+    enableCache,
+    cache,
+    debouncedQuery,
+  ]);
 
   // 初始查询
   useEffect(() => {
@@ -249,6 +278,8 @@ export const useOptimizedSupabaseQuery = <T = any>(
     error: state.error,
     lastFetched: state.lastFetched,
     refetch,
-    isStale: enableCache ? Date.now() - (state.lastFetched || 0) > cacheTTL : false
+    isStale: enableCache
+      ? Date.now() - (state.lastFetched || 0) > cacheTTL
+      : false,
   };
 };

@@ -5,7 +5,11 @@
 
 import { createLogger } from '@/lib/logger';
 import { ErrorCode, AppError, getErrorMessage, logError } from './errorHandler';
-import { SkillErrorType, SkillError, SkillErrorHandler } from './skillErrorHandler';
+import {
+  SkillErrorType,
+  SkillError,
+  SkillErrorHandler,
+} from './skillErrorHandler';
 
 const logger = createLogger('unified-error-handler');
 
@@ -16,19 +20,19 @@ export enum ErrorSeverity {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
  * 错误处理策略枚举
  */
 export enum ErrorHandlingStrategy {
-  SILENT = 'silent',           // 静默处理，仅记录日志
-  TOAST = 'toast',             // 显示Toast消息
-  MODAL = 'modal',             // 显示模态框
-  REDIRECT = 'redirect',       // 重定向到错误页面
-  RETRY = 'retry',             // 自动重试
-  FALLBACK = 'fallback'        // 使用备用方案
+  SILENT = 'silent', // 静默处理，仅记录日志
+  TOAST = 'toast', // 显示Toast消息
+  MODAL = 'modal', // 显示模态框
+  REDIRECT = 'redirect', // 重定向到错误页面
+  RETRY = 'retry', // 自动重试
+  FALLBACK = 'fallback', // 使用备用方案
 }
 
 /**
@@ -142,23 +146,22 @@ export class UnifiedErrorHandler {
     try {
       // 转换为统一错误格式
       const unifiedError = this.normalizeError(error, context);
-      
+
       // 记录错误历史
       this.addToHistory(unifiedError);
-      
+
       // 记录日志
       if (options.logError !== false) {
         this.logUnifiedError(unifiedError);
       }
-      
+
       // 执行错误处理策略
       await this.executeHandlingStrategy(unifiedError, options);
-      
+
       // 调用错误回调
       if (options.onError) {
         options.onError(unifiedError);
       }
-      
     } catch (handlingError) {
       logger.error('错误处理器本身发生错误', handlingError);
       console.error('[UnifiedErrorHandler] 处理错误时发生异常:', handlingError);
@@ -226,11 +229,14 @@ export class UnifiedErrorHandler {
     error: UnifiedError,
     options: ErrorHandlingOptions
   ): Promise<void> {
-    if (!error.retryable || (error.currentRetries || 0) >= (error.maxRetries || 3)) {
-      logger.warn('操作不可重试或已达到最大重试次数', { 
+    if (
+      !error.retryable ||
+      (error.currentRetries || 0) >= (error.maxRetries || 3)
+    ) {
+      logger.warn('操作不可重试或已达到最大重试次数', {
         errorId: error.id,
         currentRetries: error.currentRetries,
-        maxRetries: error.maxRetries
+        maxRetries: error.maxRetries,
       });
       return;
     }
@@ -238,10 +244,10 @@ export class UnifiedErrorHandler {
     const retryCount = (error.currentRetries || 0) + 1;
     const delay = options.retryDelay || Math.pow(2, retryCount) * 1000; // 指数退避
 
-    logger.info('准备重试操作', { 
+    logger.info('准备重试操作', {
       errorId: error.id,
       retryCount,
-      delay
+      delay,
     });
 
     // 清除之前的重试定时器
@@ -254,29 +260,28 @@ export class UnifiedErrorHandler {
     const timer = setTimeout(async () => {
       try {
         error.currentRetries = retryCount;
-        
+
         if (options.onRetry) {
           options.onRetry(error, retryCount);
         }
-        
+
         await fn();
-        
+
         // 重试成功，清除定时器
         this.retryTimers.delete(error.id);
-        
+
         if (options.onSuccess) {
           options.onSuccess();
         }
-        
+
         logger.info('重试操作成功', { errorId: error.id, retryCount });
-        
       } catch (retryError) {
-        logger.warn('重试操作失败', { 
+        logger.warn('重试操作失败', {
           errorId: error.id,
           retryCount,
-          retryError
+          retryError,
         });
-        
+
         // 递归重试
         await this.retryOperation(fn, error, options);
       }
@@ -308,7 +313,7 @@ export class UnifiedErrorHandler {
         context,
         timestamp,
         retryable: this.isRetryable(error.code),
-        maxRetries: this.getMaxRetries(error.code)
+        maxRetries: this.getMaxRetries(error.code),
       };
     }
 
@@ -322,16 +327,19 @@ export class UnifiedErrorHandler {
         userMessage: this.getSkillErrorUserMessage(error),
         severity: this.determineSkillErrorSeverity(error.type),
         strategy: this.determineSkillErrorStrategy(error.type),
-        details: error.details || { skillName: error.skillName, userId: error.userId },
+        details: error.details || {
+          skillName: error.skillName,
+          userId: error.userId,
+        },
         context: {
           ...context,
           skillName: error.skillName,
           userId: error.userId,
-          gameStateId: error.gameStateId
+          gameStateId: error.gameStateId,
         },
         timestamp,
         retryable: this.isSkillErrorRetryable(error.type),
-        maxRetries: 3
+        maxRetries: 3,
       };
     }
 
@@ -348,7 +356,7 @@ export class UnifiedErrorHandler {
         context,
         timestamp,
         retryable: true,
-        maxRetries: 5
+        maxRetries: 5,
       };
     }
 
@@ -364,7 +372,7 @@ export class UnifiedErrorHandler {
         strategy: ErrorHandlingStrategy.TOAST,
         context,
         timestamp,
-        retryable: false
+        retryable: false,
       };
     }
 
@@ -380,7 +388,7 @@ export class UnifiedErrorHandler {
       details: { originalError: error },
       context,
       timestamp,
-      retryable: false
+      retryable: false,
     };
   }
 
@@ -448,13 +456,13 @@ export class UnifiedErrorHandler {
     // 这里需要根据实际的 Toast 组件实现
     // 例如使用 react-hot-toast 或其他 Toast 库
     console.warn('[Toast]', message, { severity });
-    
+
     // 如果有全局的 toast 函数，可以在这里调用
     if (typeof window !== 'undefined' && (window as any).showToast) {
       (window as any).showToast({
         title: this.getSeverityTitle(severity),
         description: message,
-        variant: this.getSeverityVariant(severity)
+        variant: this.getSeverityVariant(severity),
       });
     }
   }
@@ -467,13 +475,13 @@ export class UnifiedErrorHandler {
   private showModal(message: string, error: UnifiedError): void {
     // 这里需要根据实际的模态框组件实现
     console.error('[Modal]', message, error);
-    
+
     // 如果有全局的模态框函数，可以在这里调用
     if (typeof window !== 'undefined' && (window as any).showErrorModal) {
       (window as any).showErrorModal({
         title: '系统错误',
         message,
-        error
+        error,
       });
     }
   }
@@ -493,7 +501,7 @@ export class UnifiedErrorHandler {
    */
   private async executeFallback(error: UnifiedError): Promise<void> {
     logger.info('执行备用方案', { errorId: error.id, errorType: error.type });
-    
+
     // 根据错误类型执行不同的备用方案
     switch (error.type) {
       case 'network':
@@ -521,7 +529,7 @@ export class UnifiedErrorHandler {
       severity: error.severity,
       context: error.context,
       timestamp: error.timestamp.toISOString(),
-      retryable: error.retryable
+      retryable: error.retryable,
     };
 
     switch (error.severity) {
@@ -546,7 +554,7 @@ export class UnifiedErrorHandler {
    */
   private addToHistory(error: UnifiedError): void {
     this.errorHistory.push(error);
-    
+
     // 保持历史记录大小限制
     if (this.errorHistory.length > this.maxHistorySize) {
       this.errorHistory.shift();
@@ -568,7 +576,7 @@ export class UnifiedErrorHandler {
     const criticalCodes = ['AUTH_FAILED', 'PERMISSION_DENIED'];
     const highCodes = ['DATA_CONFLICT', 'API_ERROR'];
     const mediumCodes = ['NETWORK_ERROR', 'DATA_NOT_FOUND'];
-    
+
     if (criticalCodes.includes(code)) return ErrorSeverity.CRITICAL;
     if (highCodes.includes(code)) return ErrorSeverity.HIGH;
     if (mediumCodes.includes(code)) return ErrorSeverity.MEDIUM;
@@ -583,7 +591,7 @@ export class UnifiedErrorHandler {
     const redirectCodes = ['AUTH_REQUIRED', 'PERMISSION_DENIED'];
     const retryCodes = ['NETWORK_ERROR', 'API_ERROR'];
     const modalCodes = ['DATA_CONFLICT'];
-    
+
     if (redirectCodes.includes(code)) return ErrorHandlingStrategy.REDIRECT;
     if (retryCodes.includes(code)) return ErrorHandlingStrategy.RETRY;
     if (modalCodes.includes(code)) return ErrorHandlingStrategy.MODAL;
@@ -605,9 +613,9 @@ export class UnifiedErrorHandler {
    */
   private getMaxRetries(code: string): number {
     const retryConfig: Record<string, number> = {
-      'NETWORK_ERROR': 5,
-      'API_ERROR': 3,
-      'TIMEOUT_ERROR': 3
+      NETWORK_ERROR: 5,
+      API_ERROR: 3,
+      TIMEOUT_ERROR: 3,
     };
     return retryConfig[code] || 1;
   }
@@ -617,8 +625,12 @@ export class UnifiedErrorHandler {
    * @param error - 错误对象
    */
   private isSkillError(error: any): error is SkillError {
-    return error && typeof error === 'object' && 
-           ('type' in error && Object.values(SkillErrorType).includes(error.type));
+    return (
+      error &&
+      typeof error === 'object' &&
+      'type' in error &&
+      Object.values(SkillErrorType).includes(error.type)
+    );
   }
 
   /**
@@ -628,10 +640,12 @@ export class UnifiedErrorHandler {
   private isNetworkError(error: any): boolean {
     if (!error) return false;
     const message = error.message || '';
-    return message.includes('network') || 
-           message.includes('fetch') || 
-           message.includes('timeout') ||
-           error.name === 'NetworkError';
+    return (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('timeout') ||
+      error.name === 'NetworkError'
+    );
   }
 
   /**
@@ -641,9 +655,11 @@ export class UnifiedErrorHandler {
   private isValidationError(error: any): boolean {
     if (!error) return false;
     const message = error.message || '';
-    return message.includes('validation') || 
-           message.includes('invalid') || 
-           error.name === 'ValidationError';
+    return (
+      message.includes('validation') ||
+      message.includes('invalid') ||
+      error.name === 'ValidationError'
+    );
   }
 
   /**
@@ -657,7 +673,7 @@ export class UnifiedErrorHandler {
       [SkillErrorType.NETWORK_ERROR]: '网络连接失败，请检查网络',
       [SkillErrorType.PERMISSION_ERROR]: '没有权限使用此技能',
       [SkillErrorType.CONFLICT_ERROR]: '技能冲突，请稍后重试',
-      [SkillErrorType.TIMEOUT_ERROR]: '技能执行超时，请重试'
+      [SkillErrorType.TIMEOUT_ERROR]: '技能执行超时，请重试',
     };
     return messageMap[error.type] || '技能操作失败';
   }
@@ -686,7 +702,9 @@ export class UnifiedErrorHandler {
    * 确定技能错误处理策略
    * @param type - 技能错误类型
    */
-  private determineSkillErrorStrategy(type: SkillErrorType): ErrorHandlingStrategy {
+  private determineSkillErrorStrategy(
+    type: SkillErrorType
+  ): ErrorHandlingStrategy {
     switch (type) {
       case SkillErrorType.NETWORK_ERROR:
       case SkillErrorType.TIMEOUT_ERROR:
@@ -708,7 +726,7 @@ export class UnifiedErrorHandler {
     return [
       SkillErrorType.NETWORK_ERROR,
       SkillErrorType.TIMEOUT_ERROR,
-      SkillErrorType.EXECUTION_ERROR
+      SkillErrorType.EXECUTION_ERROR,
     ].includes(type);
   }
 
@@ -721,7 +739,7 @@ export class UnifiedErrorHandler {
       [ErrorSeverity.LOW]: '提示',
       [ErrorSeverity.MEDIUM]: '警告',
       [ErrorSeverity.HIGH]: '错误',
-      [ErrorSeverity.CRITICAL]: '严重错误'
+      [ErrorSeverity.CRITICAL]: '严重错误',
     };
     return titleMap[severity];
   }
@@ -735,7 +753,7 @@ export class UnifiedErrorHandler {
       [ErrorSeverity.LOW]: 'default',
       [ErrorSeverity.MEDIUM]: 'warning',
       [ErrorSeverity.HIGH]: 'destructive',
-      [ErrorSeverity.CRITICAL]: 'destructive'
+      [ErrorSeverity.CRITICAL]: 'destructive',
     };
     return variantMap[severity];
   }
@@ -767,18 +785,20 @@ export class UnifiedErrorHandler {
       total: this.errorHistory.length,
       byType: {} as Record<string, number>,
       bySeverity: {} as Record<ErrorSeverity, number>,
-      byStrategy: {} as Record<ErrorHandlingStrategy, number>
+      byStrategy: {} as Record<ErrorHandlingStrategy, number>,
     };
 
     this.errorHistory.forEach(error => {
       // 按类型统计
       stats.byType[error.type] = (stats.byType[error.type] || 0) + 1;
-      
+
       // 按严重级别统计
-      stats.bySeverity[error.severity] = (stats.bySeverity[error.severity] || 0) + 1;
-      
+      stats.bySeverity[error.severity] =
+        (stats.bySeverity[error.severity] || 0) + 1;
+
       // 按处理策略统计
-      stats.byStrategy[error.strategy] = (stats.byStrategy[error.strategy] || 0) + 1;
+      stats.byStrategy[error.strategy] =
+        (stats.byStrategy[error.strategy] || 0) + 1;
     });
 
     return stats;
@@ -791,7 +811,7 @@ export class UnifiedErrorHandler {
     // 清除所有重试定时器
     this.retryTimers.forEach(timer => clearTimeout(timer));
     this.retryTimers.clear();
-    
+
     // 清空错误历史
     this.clearErrorHistory();
   }
@@ -811,9 +831,13 @@ export function withUnifiedErrorHandling(
   context?: ErrorContext,
   options: ErrorHandlingOptions = {}
 ) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyName: string,
+    descriptor: PropertyDescriptor
+  ) {
     const method = descriptor.value;
-    
+
     descriptor.value = async function (...args: any[]): Promise<any> {
       try {
         return await method.apply(this, args);
@@ -822,7 +846,7 @@ export function withUnifiedErrorHandling(
         throw error;
       }
     };
-    
+
     return descriptor;
   };
 }
@@ -841,7 +865,7 @@ export function createErrorWrapper(
       unifiedErrorHandler.wrapAsync(fn, context, options),
 
     sync: <T extends any[], R>(fn: (...args: T) => R) =>
-      unifiedErrorHandler.wrapSync(fn, context, options)
+      unifiedErrorHandler.wrapSync(fn, context, options),
   };
 }
 
@@ -856,7 +880,7 @@ export enum UnifiedErrorType {
   PERMISSION = 'permission',
   BUSINESS = 'business',
   SYSTEM = 'system',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -868,6 +892,7 @@ export const handleError = (
   options?: ErrorHandlingOptions
 ): Promise<void> => {
   const context = options ? (contextOrOptions as ErrorContext) : undefined;
-  const actualOptions = options || (contextOrOptions as ErrorHandlingOptions) || {};
+  const actualOptions =
+    options || (contextOrOptions as ErrorHandlingOptions) || {};
   return unifiedErrorHandler.handleError(error, context, actualOptions);
 };

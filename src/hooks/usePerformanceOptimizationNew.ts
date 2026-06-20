@@ -25,20 +25,22 @@ interface UsePerformanceOptimizationOptions {
   maxRenderThreshold?: number;
 }
 
-export const usePerformanceOptimization = (options: UsePerformanceOptimizationOptions) => {
+export const usePerformanceOptimization = (
+  options: UsePerformanceOptimizationOptions
+) => {
   const {
     componentName,
     enableMemoryTracking = true,
     enableRenderTracking = true,
     debounceTime = 100,
-    maxRenderThreshold = 5
+    maxRenderThreshold = 5,
   } = options;
 
   const metricsRef = useRef<PerformanceMetrics>({
     renderCount: 0,
     lastRenderTime: 0,
     averageRenderTime: 0,
-    componentName
+    componentName,
   });
 
   const renderTimesRef = useRef<number[]>([]);
@@ -57,25 +59,27 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
     if (enableRenderTracking && startTimeRef.current > 0) {
       const endTime = performance.now();
       const renderTime = endTime - startTimeRef.current;
-      
+
       metricsRef.current.renderCount++;
       metricsRef.current.lastRenderTime = renderTime;
-      
+
       // 记录最近10次渲染时间用于计算平均值
       renderTimesRef.current.push(renderTime);
       if (renderTimesRef.current.length > 10) {
         renderTimesRef.current.shift();
       }
-      
+
       // 计算平均渲染时间
-      metricsRef.current.averageRenderTime = 
-        renderTimesRef.current.reduce((sum, time) => sum + time, 0) / renderTimesRef.current.length;
+      metricsRef.current.averageRenderTime =
+        renderTimesRef.current.reduce((sum, time) => sum + time, 0) /
+        renderTimesRef.current.length;
 
       // 性能警告
-      if (renderTime > 16) { // 大于一帧时间（60fps）
+      if (renderTime > 16) {
+        // 大于一帧时间（60fps）
         logger.warn(`组件${componentName}渲染时间过长`, {
           renderTime,
-          renderCount: metricsRef.current.renderCount
+          renderCount: metricsRef.current.renderCount,
         });
       }
 
@@ -86,7 +90,7 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
         if (recentRenders >= maxRenderThreshold) {
           logger.warn(`组件${componentName}在短时间内渲染次数过多`, {
             renderCount: recentRenders,
-            timeWindow
+            timeWindow,
           });
         }
       }
@@ -99,12 +103,13 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
       const trackMemory = () => {
         const memory = (performance as any).memory;
         metricsRef.current.memoryUsage = memory.usedJSHeapSize;
-        
+
         // 内存泄漏检测
-        if (memory.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB
+        if (memory.usedJSHeapSize > 100 * 1024 * 1024) {
+          // 100MB
           logger.warn(`组件${componentName}可能存在内存泄漏`, {
             memoryUsage: memory.usedJSHeapSize,
-            totalMemory: memory.totalJSHeapSize
+            totalMemory: memory.totalJSHeapSize,
           });
         }
       };
@@ -122,25 +127,32 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
   }, debounceTime);
 
   // 优化的回调函数创建器
-  const createOptimizedCallback = useCallback(<T extends (...args: any[]) => any>(
-    callback: T,
-    deps: React.DependencyList = []
-  ): T => {
-    const memoizedCallback = useCallback(callback, deps);
-    
-    return useCallback((...args: Parameters<T>) => {
-      debouncedUpdate(() => {
-        memoizedCallback(...args);
-      });
-    }, [memoizedCallback, debouncedUpdate]) as T;
-  }, [debouncedUpdate]);
+  const createOptimizedCallback = useCallback(
+    <T extends (...args: any[]) => any>(
+      callback: T,
+      deps: React.DependencyList = []
+    ): T => {
+      const memoizedCallback = useCallback(callback, deps);
+
+      return useCallback(
+        (...args: Parameters<T>) => {
+          debouncedUpdate(() => {
+            memoizedCallback(...args);
+          });
+        },
+        [memoizedCallback, debouncedUpdate]
+      ) as T;
+    },
+    [debouncedUpdate]
+  );
 
   // 优化的状态更新器
-  const createOptimizedSetter = useCallback(<T>(
-    setter: React.Dispatch<React.SetStateAction<T>>
-  ) => {
-    return createOptimizedCallback(setter, [setter]);
-  }, [createOptimizedCallback]);
+  const createOptimizedSetter = useCallback(
+    <T>(setter: React.Dispatch<React.SetStateAction<T>>) => {
+      return createOptimizedCallback(setter, [setter]);
+    },
+    [createOptimizedCallback]
+  );
 
   // 内存清理函数
   const registerCleanup = useCallback((cleanupFn: () => void) => {
@@ -158,7 +170,7 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
       renderCount: 0,
       lastRenderTime: 0,
       averageRenderTime: 0,
-      componentName
+      componentName,
     };
     renderTimesRef.current = [];
   }, [componentName]);
@@ -178,24 +190,24 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
   }, [componentName]);
 
   // 优化的 useMemo 包装器
-  const optimizedMemo = useCallback(<T>(
-    factory: () => T,
-    deps: React.DependencyList = []
-  ): T => {
-    return useMemo(() => {
-      const startTime = performance.now();
-      const result = factory();
-      const endTime = performance.now();
-      
-      if (endTime - startTime > 5) {
-        logger.warn(`${componentName} memo计算时间过长`, {
-          duration: endTime - startTime
-        });
-      }
-      
-      return result;
-    }, deps);
-  }, [componentName]);
+  const optimizedMemo = useCallback(
+    <T>(factory: () => T, deps: React.DependencyList = []): T => {
+      return useMemo(() => {
+        const startTime = performance.now();
+        const result = factory();
+        const endTime = performance.now();
+
+        if (endTime - startTime > 5) {
+          logger.warn(`${componentName} memo计算时间过长`, {
+            duration: endTime - startTime,
+          });
+        }
+
+        return result;
+      }, deps);
+    },
+    [componentName]
+  );
 
   return {
     createOptimizedCallback,
@@ -204,6 +216,6 @@ export const usePerformanceOptimization = (options: UsePerformanceOptimizationOp
     getMetrics,
     resetMetrics,
     optimizedMemo,
-    debouncedUpdate
+    debouncedUpdate,
   };
 };

@@ -106,7 +106,12 @@ export interface PerformanceMetrics {
  */
 export interface UserBehaviorEvent {
   /** 事件类型 */
-  type: 'click' | 'navigation' | 'form_submit' | 'error_encounter' | 'recovery_action';
+  type:
+    | 'click'
+    | 'navigation'
+    | 'form_submit'
+    | 'error_encounter'
+    | 'recovery_action';
   /** 事件时间戳 */
   timestamp: string;
   /** 页面URL */
@@ -185,17 +190,17 @@ export class ErrorMonitoringAndReportingSystem {
       thresholds: {
         errorRatePerMinute: 10,
         highSeverityThreshold: 5,
-        memoryUsageThreshold: 100
+        memoryUsageThreshold: 100,
       },
       reportTargets: {
         console: true,
-        localStorage: true
+        localStorage: true,
       },
-      ...config
+      ...config,
     };
 
     this.sessionId = this.generateSessionId();
-    
+
     if (this.config.enabled) {
       this.initialize();
     }
@@ -207,7 +212,7 @@ export class ErrorMonitoringAndReportingSystem {
   private initialize(): void {
     logger.info('初始化错误监控和报告系统', {
       sessionId: this.sessionId,
-      config: this.config
+      config: this.config,
     });
 
     // 启动定期报告
@@ -240,10 +245,13 @@ export class ErrorMonitoringAndReportingSystem {
 
     // 添加到错误历史
     this.errorHistory.unshift(error);
-    
+
     // 限制历史记录大小
     if (this.errorHistory.length > this.config.maxHistorySize) {
-      this.errorHistory = this.errorHistory.slice(0, this.config.maxHistorySize);
+      this.errorHistory = this.errorHistory.slice(
+        0,
+        this.config.maxHistorySize
+      );
     }
 
     // 检查错误阈值
@@ -260,16 +268,16 @@ export class ErrorMonitoringAndReportingSystem {
           errorId: error.id,
           severity: error.severity,
           type: error.type,
-          component: error.context?.component
+          component: error.context?.component,
         },
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
       });
     }
 
     logger.debug('错误已记录', {
       errorId: error.id,
       severity: error.severity,
-      historySize: this.errorHistory.length
+      historySize: this.errorHistory.length,
     });
   }
 
@@ -283,10 +291,13 @@ export class ErrorMonitoringAndReportingSystem {
     }
 
     this.userBehaviorHistory.unshift(event);
-    
+
     // 限制历史记录大小
     if (this.userBehaviorHistory.length > this.config.maxHistorySize) {
-      this.userBehaviorHistory = this.userBehaviorHistory.slice(0, this.config.maxHistorySize);
+      this.userBehaviorHistory = this.userBehaviorHistory.slice(
+        0,
+        this.config.maxHistorySize
+      );
     }
   }
 
@@ -308,23 +319,32 @@ export class ErrorMonitoringAndReportingSystem {
     );
 
     // 按严重级别分组
-    const bySeverity = this.errorHistory.reduce((acc, error) => {
-      acc[error.severity] = (acc[error.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<ErrorSeverity, number>);
+    const bySeverity = this.errorHistory.reduce(
+      (acc, error) => {
+        acc[error.severity] = (acc[error.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<ErrorSeverity, number>
+    );
 
     // 按错误类型分组
-    const byType = this.errorHistory.reduce((acc, error) => {
-      acc[error.type] = (acc[error.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = this.errorHistory.reduce(
+      (acc, error) => {
+        acc[error.type] = (acc[error.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // 按组件分组
-    const byComponent = this.errorHistory.reduce((acc, error) => {
-      const component = error.context?.component || 'Unknown';
-      acc[component] = (acc[component] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byComponent = this.errorHistory.reduce(
+      (acc, error) => {
+        const component = error.context?.component || 'Unknown';
+        acc[component] = (acc[component] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // 计算重复错误
     const duplicateErrors = this.calculateDuplicateErrors();
@@ -337,7 +357,7 @@ export class ErrorMonitoringAndReportingSystem {
       byComponent,
       errorRate: recentMinuteErrors.length,
       averageResolutionTime: this.calculateAverageResolutionTime(),
-      duplicateErrors
+      duplicateErrors,
     };
   }
 
@@ -346,28 +366,38 @@ export class ErrorMonitoringAndReportingSystem {
    * @returns 性能指标数据
    */
   public getPerformanceMetrics(): PerformanceMetrics {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const navigation = performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming;
     const paint = performance.getEntriesByType('paint');
-    
-    const fcp = paint.find(entry => entry.name === 'first-contentful-paint')?.startTime || 0;
-    
+
+    const fcp =
+      paint.find(entry => entry.name === 'first-contentful-paint')?.startTime ||
+      0;
+
     // 获取内存使用情况（如果支持）
     const memoryInfo = (performance as any).memory;
-    const memoryUsage = memoryInfo ? {
-      used: Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024),
-      total: Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024),
-      percentage: Math.round((memoryInfo.usedJSHeapSize / memoryInfo.totalJSHeapSize) * 100)
-    } : { used: 0, total: 0, percentage: 0 };
+    const memoryUsage = memoryInfo
+      ? {
+          used: Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024),
+          total: Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024),
+          percentage: Math.round(
+            (memoryInfo.usedJSHeapSize / memoryInfo.totalJSHeapSize) * 100
+          ),
+        }
+      : { used: 0, total: 0, percentage: 0 };
 
     return {
-      pageLoadTime: navigation ? navigation.loadEventEnd - navigation.navigationStart : 0,
+      pageLoadTime: navigation
+        ? navigation.loadEventEnd - navigation.navigationStart
+        : 0,
       firstContentfulPaint: fcp,
       largestContentfulPaint: 0, // 需要通过 PerformanceObserver 获取
       cumulativeLayoutShift: 0, // 需要通过 PerformanceObserver 获取
       firstInputDelay: 0, // 需要通过 PerformanceObserver 获取
       memoryUsage,
       jsExecutionTime: this.calculateJSExecutionTime(),
-      networkLatency: this.calculateNetworkLatency()
+      networkLatency: this.calculateNetworkLatency(),
     };
   }
 
@@ -378,14 +408,18 @@ export class ErrorMonitoringAndReportingSystem {
    */
   public generateReport(timeRange?: { start: Date; end: Date }): ErrorReport {
     const now = new Date();
-    const start = timeRange?.start || new Date(now.getTime() - 24 * 60 * 60 * 1000); // 默认24小时
+    const start =
+      timeRange?.start || new Date(now.getTime() - 24 * 60 * 60 * 1000); // 默认24小时
     const end = timeRange?.end || now;
 
     const statistics = this.getErrorStatistics();
     const performance = this.getPerformanceMetrics();
     const userBehaviorSummary = this.generateUserBehaviorSummary();
     const keyFindings = this.generateKeyFindings(statistics, performance);
-    const recommendations = this.generateRecommendations(statistics, performance);
+    const recommendations = this.generateRecommendations(
+      statistics,
+      performance
+    );
     const trends = this.analyzeTrends();
 
     const report: ErrorReport = {
@@ -393,14 +427,14 @@ export class ErrorMonitoringAndReportingSystem {
       generatedAt: now.toISOString(),
       timeRange: {
         start: start.toISOString(),
-        end: end.toISOString()
+        end: end.toISOString(),
       },
       statistics,
       performance,
       userBehaviorSummary,
       keyFindings,
       recommendations,
-      trends
+      trends,
     };
 
     // 保存报告
@@ -409,7 +443,7 @@ export class ErrorMonitoringAndReportingSystem {
     logger.info('错误报告已生成', {
       reportId: report.id,
       timeRange: report.timeRange,
-      totalErrors: statistics.totalErrors
+      totalErrors: statistics.totalErrors,
     });
 
     return report;
@@ -429,15 +463,21 @@ export class ErrorMonitoringAndReportingSystem {
    */
   private startPerformanceMonitoring(): void {
     if (typeof PerformanceObserver !== 'undefined') {
-      this.performanceObserver = new PerformanceObserver((list) => {
+      this.performanceObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
         entries.forEach(entry => {
           this.recordPerformanceEntry(entry);
         });
       });
 
-      this.performanceObserver.observe({ 
-        entryTypes: ['navigation', 'paint', 'largest-contentful-paint', 'layout-shift', 'first-input'] 
+      this.performanceObserver.observe({
+        entryTypes: [
+          'navigation',
+          'paint',
+          'largest-contentful-paint',
+          'layout-shift',
+          'first-input',
+        ],
       });
     }
   }
@@ -447,7 +487,7 @@ export class ErrorMonitoringAndReportingSystem {
    */
   private startUserBehaviorTracking(): void {
     // 监听点击事件
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', event => {
       this.recordUserBehavior({
         type: 'click',
         timestamp: new Date().toISOString(),
@@ -456,9 +496,9 @@ export class ErrorMonitoringAndReportingSystem {
         details: {
           target: (event.target as Element)?.tagName,
           x: event.clientX,
-          y: event.clientY
+          y: event.clientY,
         },
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
       });
     });
 
@@ -470,9 +510,9 @@ export class ErrorMonitoringAndReportingSystem {
         url: window.location.href,
         userAgent: navigator.userAgent,
         details: {
-          type: 'popstate'
+          type: 'popstate',
         },
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
       });
     });
   }
@@ -488,7 +528,7 @@ export class ErrorMonitoringAndReportingSystem {
     if (statistics.errorRate > this.config.thresholds.errorRatePerMinute) {
       logger.warn('错误率超过阈值', {
         current: statistics.errorRate,
-        threshold: this.config.thresholds.errorRatePerMinute
+        threshold: this.config.thresholds.errorRatePerMinute,
       });
     }
 
@@ -497,15 +537,17 @@ export class ErrorMonitoringAndReportingSystem {
     if (highSeverityErrors > this.config.thresholds.highSeverityThreshold) {
       logger.warn('高严重级别错误超过阈值', {
         current: highSeverityErrors,
-        threshold: this.config.thresholds.highSeverityThreshold
+        threshold: this.config.thresholds.highSeverityThreshold,
       });
     }
 
     // 检查内存使用阈值
-    if (performance.memoryUsage.used > this.config.thresholds.memoryUsageThreshold) {
+    if (
+      performance.memoryUsage.used > this.config.thresholds.memoryUsageThreshold
+    ) {
       logger.warn('内存使用超过阈值', {
         current: performance.memoryUsage.used,
-        threshold: this.config.thresholds.memoryUsageThreshold
+        threshold: this.config.thresholds.memoryUsageThreshold,
       });
     }
   }
@@ -544,7 +586,7 @@ export class ErrorMonitoringAndReportingSystem {
       name: entry.name,
       entryType: entry.entryType,
       startTime: entry.startTime,
-      duration: entry.duration
+      duration: entry.duration,
     });
   }
 
@@ -557,19 +599,22 @@ export class ErrorMonitoringAndReportingSystem {
     count: number;
     lastOccurrence: string;
   }> {
-    const errorSignatures = new Map<string, { count: number; lastOccurrence: string }>();
+    const errorSignatures = new Map<
+      string,
+      { count: number; lastOccurrence: string }
+    >();
 
     this.errorHistory.forEach(error => {
       const signature = `${error.type}_${error.message}_${error.context?.component}`;
       const existing = errorSignatures.get(signature);
-      
+
       if (existing) {
         existing.count++;
         existing.lastOccurrence = error.timestamp;
       } else {
         errorSignatures.set(signature, {
           count: 1,
-          lastOccurrence: error.timestamp
+          lastOccurrence: error.timestamp,
         });
       }
     });
@@ -578,7 +623,7 @@ export class ErrorMonitoringAndReportingSystem {
       .filter(([, data]) => data.count > 1)
       .map(([signature, data]) => ({
         signature,
-        ...data
+        ...data,
       }))
       .sort((a, b) => b.count - a.count);
   }
@@ -624,10 +669,13 @@ export class ErrorMonitoringAndReportingSystem {
       event => event.type === 'recovery_action'
     ).length;
 
-    const actionCounts = this.userBehaviorHistory.reduce((acc, event) => {
-      acc[event.type] = (acc[event.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const actionCounts = this.userBehaviorHistory.reduce(
+      (acc, event) => {
+        acc[event.type] = (acc[event.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const mostCommonActions = Object.entries(actionCounts)
       .map(([type, count]) => ({ type, count }))
@@ -638,7 +686,7 @@ export class ErrorMonitoringAndReportingSystem {
       totalEvents: this.userBehaviorHistory.length,
       errorEncounters,
       recoveryActions,
-      mostCommonActions
+      mostCommonActions,
     };
   }
 
@@ -655,11 +703,15 @@ export class ErrorMonitoringAndReportingSystem {
     const findings: string[] = [];
 
     if (statistics.errorRate > this.config.thresholds.errorRatePerMinute) {
-      findings.push(`错误率过高：当前为 ${statistics.errorRate} 错误/分钟，超过阈值 ${this.config.thresholds.errorRatePerMinute}`);
+      findings.push(
+        `错误率过高：当前为 ${statistics.errorRate} 错误/分钟，超过阈值 ${this.config.thresholds.errorRatePerMinute}`
+      );
     }
 
     if (performance.memoryUsage.percentage > 80) {
-      findings.push(`内存使用率过高：当前为 ${performance.memoryUsage.percentage}%`);
+      findings.push(
+        `内存使用率过高：当前为 ${performance.memoryUsage.percentage}%`
+      );
     }
 
     if (statistics.duplicateErrors.length > 0) {
@@ -714,7 +766,7 @@ export class ErrorMonitoringAndReportingSystem {
     return {
       errorRateTrend: 'stable' as const,
       performanceTrend: 'stable' as const,
-      userSatisfactionTrend: 'stable' as const
+      userSatisfactionTrend: 'stable' as const,
     };
   }
 
@@ -755,9 +807,11 @@ export class ErrorMonitoringAndReportingSystem {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(remoteConfig.apiKey && { 'Authorization': `Bearer ${remoteConfig.apiKey}` })
+          ...(remoteConfig.apiKey && {
+            Authorization: `Bearer ${remoteConfig.apiKey}`,
+          }),
         },
-        body: JSON.stringify(report)
+        body: JSON.stringify(report),
       });
 
       if (!response.ok) {
@@ -766,9 +820,8 @@ export class ErrorMonitoringAndReportingSystem {
 
       logger.info('报告已发送到远程服务器', {
         reportId: report.id,
-        endpoint: remoteConfig.endpoint
+        endpoint: remoteConfig.endpoint,
       });
-
     } catch (error) {
       logger.error('发送报告到远程服务器失败', error);
     }
@@ -781,7 +834,7 @@ export class ErrorMonitoringAndReportingSystem {
     const finalReport = this.generateReport();
     logger.info('会话结束，生成最终报告', {
       reportId: finalReport.id,
-      sessionId: this.sessionId
+      sessionId: this.sessionId,
     });
   }
 
@@ -798,13 +851,20 @@ export class ErrorMonitoringAndReportingSystem {
     }
 
     logger.info('错误监控和报告系统已清理', {
-      sessionId: this.sessionId
+      sessionId: this.sessionId,
     });
   }
 }
 
 // 创建全局实例
-export const errorMonitoringAndReportingSystem = new ErrorMonitoringAndReportingSystem();
+export const errorMonitoringAndReportingSystem =
+  new ErrorMonitoringAndReportingSystem();
 
 // 导出配置类型
-export type { ErrorMonitoringConfig, ErrorStatistics, PerformanceMetrics, UserBehaviorEvent, ErrorReport };
+export type {
+  ErrorMonitoringConfig,
+  ErrorStatistics,
+  PerformanceMetrics,
+  UserBehaviorEvent,
+  ErrorReport,
+};

@@ -1,6 +1,6 @@
 /**
  * 文件级注释：高级输入验证系统
- * 
+ *
  * 该文件实现了一个全面的高级输入验证系统，在现有增强输入验证基础上进一步扩展：
  * - 智能威胁检测和机器学习防护
  * - 实时安全监控和异常检测
@@ -8,7 +8,7 @@
  * - 高级数据清理和转换
  * - 性能优化和缓存机制
  * - 详细的安全审计和报告
- * 
+ *
  * 主要特性：
  * - AI驱动的威胁检测
  * - 实时行为分析
@@ -16,19 +16,19 @@
  * - 多维度数据验证
  * - 智能缓存优化
  * - 全面的安全监控
- * 
+ *
  * @author SOLO Coding
  * @version 2.0.0
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { 
-  EnhancedInputValidator, 
-  ValidationConfig, 
-  ValidationResult, 
+import {
+  EnhancedInputValidator,
+  ValidationConfig,
+  ValidationResult,
   ValidationError,
   ValidationRuleType,
-  DataType
+  DataType,
 } from './enhancedInputValidation';
 import { MasterErrorHandler } from './masterErrorHandler';
 import { GlobalErrorMonitor } from './globalErrorMonitor';
@@ -40,33 +40,33 @@ const logger = createLogger('advanced-input-validation-system');
  * 威胁级别枚举
  */
 export enum ThreatLevel {
-  NONE = 'none',           // 无威胁
-  LOW = 'low',             // 低威胁
-  MEDIUM = 'medium',       // 中等威胁
-  HIGH = 'high',           // 高威胁
-  CRITICAL = 'critical'    // 严重威胁
+  NONE = 'none', // 无威胁
+  LOW = 'low', // 低威胁
+  MEDIUM = 'medium', // 中等威胁
+  HIGH = 'high', // 高威胁
+  CRITICAL = 'critical', // 严重威胁
 }
 
 /**
  * 验证模式枚举
  */
 export enum ValidationMode {
-  STRICT = 'strict',           // 严格模式
-  BALANCED = 'balanced',       // 平衡模式
-  PERMISSIVE = 'permissive',   // 宽松模式
-  ADAPTIVE = 'adaptive',       // 自适应模式
-  LEARNING = 'learning'        // 学习模式
+  STRICT = 'strict', // 严格模式
+  BALANCED = 'balanced', // 平衡模式
+  PERMISSIVE = 'permissive', // 宽松模式
+  ADAPTIVE = 'adaptive', // 自适应模式
+  LEARNING = 'learning', // 学习模式
 }
 
 /**
  * 安全策略枚举
  */
 export enum SecurityPolicy {
-  ZERO_TRUST = 'zero_trust',       // 零信任
+  ZERO_TRUST = 'zero_trust', // 零信任
   DEFENSE_DEPTH = 'defense_depth', // 纵深防御
-  RISK_BASED = 'risk_based',       // 基于风险
-  COMPLIANCE = 'compliance',       // 合规导向
-  PERFORMANCE = 'performance'      // 性能优先
+  RISK_BASED = 'risk_based', // 基于风险
+  COMPLIANCE = 'compliance', // 合规导向
+  PERFORMANCE = 'performance', // 性能优先
 }
 
 /**
@@ -83,7 +83,7 @@ export interface AdvancedValidationConfig extends ValidationConfig {
     enableRealTimeMonitoring: boolean;
     enableAdaptiveLearning: boolean;
   };
-  
+
   // 性能配置
   performance: {
     enableCaching: boolean;
@@ -93,7 +93,7 @@ export interface AdvancedValidationConfig extends ValidationConfig {
     maxConcurrentValidations: number;
     timeoutMs: number;
   };
-  
+
   // 监控配置
   monitoring: {
     enableMetrics: boolean;
@@ -105,7 +105,7 @@ export interface AdvancedValidationConfig extends ValidationConfig {
       threatDetections: number;
     };
   };
-  
+
   // 自适应配置
   adaptive: {
     enableAutoTuning: boolean;
@@ -152,7 +152,7 @@ export interface AdvancedValidationContext {
   userId?: string;
   requestId: string;
   timestamp: number;
-  
+
   // 请求信息
   request: {
     ip: string;
@@ -163,7 +163,7 @@ export interface AdvancedValidationContext {
     path: string;
     headers: Record<string, string>;
   };
-  
+
   // 用户信息
   user?: {
     id: string;
@@ -172,7 +172,7 @@ export interface AdvancedValidationContext {
     riskLevel: string;
     lastActivity: number;
   };
-  
+
   // 安全上下文
   security: {
     threatLevel: ThreatLevel;
@@ -192,16 +192,16 @@ export interface AdvancedValidationContext {
 export interface AdvancedValidationResult extends ValidationResult {
   // 威胁检测
   threatDetection: ThreatDetectionResult;
-  
+
   // 行为分析
   behaviorAnalysis: BehaviorAnalysisResult;
-  
+
   // 安全评分
   securityScore: number;
-  
+
   // 建议操作
   recommendedActions: string[];
-  
+
   // 监控数据
   monitoring: {
     processingTime: number;
@@ -209,7 +209,7 @@ export interface AdvancedValidationResult extends ValidationResult {
     rulesExecuted: number;
     threatsBlocked: number;
   };
-  
+
   // 自适应数据
   adaptive: {
     modelVersion: string;
@@ -228,11 +228,11 @@ export interface ValidationMetrics {
   threatsDetected: number;
   averageProcessingTime: number;
   cacheHitRate: number;
-  
+
   // 威胁统计
   threatsByType: Map<string, number>;
   threatsByLevel: Map<ThreatLevel, number>;
-  
+
   // 性能统计
   performanceMetrics: {
     p50ResponseTime: number;
@@ -240,7 +240,7 @@ export interface ValidationMetrics {
     p99ResponseTime: number;
     errorRate: number;
   };
-  
+
   // 用户统计
   userMetrics: {
     uniqueUsers: number;
@@ -263,7 +263,7 @@ export interface AIModelConfig {
 
 /**
  * 类级注释：高级输入验证系统
- * 
+ *
  * 实现全面的高级输入验证系统，提供：
  * - AI驱动的威胁检测
  * - 实时行为分析
@@ -273,27 +273,27 @@ export interface AIModelConfig {
  */
 export class AdvancedInputValidationSystem {
   private static instance: AdvancedInputValidationSystem;
-  
+
   // 核心组件
   private enhancedValidator: EnhancedInputValidator;
   private masterErrorHandler: MasterErrorHandler;
   private globalErrorMonitor: GlobalErrorMonitor;
-  
+
   // 配置和状态
   private config: AdvancedValidationConfig;
   private metrics: ValidationMetrics;
-  
+
   // 缓存和存储
   private validationCache: Map<string, AdvancedValidationResult> = new Map();
   private threatPatterns: Map<string, RegExp[]> = new Map();
   private userProfiles: Map<string, any> = new Map();
   private behaviorHistory: Map<string, any[]> = new Map();
-  
+
   // AI和机器学习
   private aiModel: any = null;
   private learningData: any[] = [];
   private modelVersion = '1.0.0';
-  
+
   // 定时器
   private metricsTimer: ReturnType<typeof setInterval> | null = null;
   private cacheCleanupTimer: ReturnType<typeof setInterval> | null = null;
@@ -308,7 +308,7 @@ export class AdvancedInputValidationSystem {
     this.config = {
       fields: [],
       global: {},
-      
+
       security: {
         mode: ValidationMode.ADAPTIVE,
         policy: SecurityPolicy.DEFENSE_DEPTH,
@@ -316,18 +316,18 @@ export class AdvancedInputValidationSystem {
         enableAIDetection: true,
         enableBehaviorAnalysis: true,
         enableRealTimeMonitoring: true,
-        enableAdaptiveLearning: true
+        enableAdaptiveLearning: true,
       },
-      
+
       performance: {
         enableCaching: true,
         cacheSize: 10000,
         cacheTTL: 300000, // 5分钟
         enableParallelValidation: true,
         maxConcurrentValidations: 10,
-        timeoutMs: 5000
+        timeoutMs: 5000,
       },
-      
+
       monitoring: {
         enableMetrics: true,
         enableAuditLog: true,
@@ -335,24 +335,24 @@ export class AdvancedInputValidationSystem {
         alertThresholds: {
           errorRate: 0.05,
           responseTime: 1000,
-          threatDetections: 10
-        }
+          threatDetections: 10,
+        },
       },
-      
+
       adaptive: {
         enableAutoTuning: true,
         learningRate: 0.1,
         adaptationInterval: 3600000, // 1小时
-        minSamples: 100
+        minSamples: 100,
       },
-      
-      ...config
+
+      ...config,
     };
 
     this.enhancedValidator = EnhancedInputValidator.getInstance();
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.globalErrorMonitor = GlobalErrorMonitor.getInstance();
-    
+
     this.initializeMetrics();
     this.initializeThreatPatterns();
     this.initializeAIModel();
@@ -363,9 +363,12 @@ export class AdvancedInputValidationSystem {
   /**
    * 函数级注释：获取单例实例
    */
-  public static getInstance(config?: Partial<AdvancedValidationConfig>): AdvancedInputValidationSystem {
+  public static getInstance(
+    config?: Partial<AdvancedValidationConfig>
+  ): AdvancedInputValidationSystem {
     if (!AdvancedInputValidationSystem.instance) {
-      AdvancedInputValidationSystem.instance = new AdvancedInputValidationSystem(config);
+      AdvancedInputValidationSystem.instance =
+        new AdvancedInputValidationSystem(config);
     }
     return AdvancedInputValidationSystem.instance;
   }
@@ -385,7 +388,7 @@ export class AdvancedInputValidationSystem {
     try {
       // 合并配置
       const effectiveConfig = { ...this.config, ...config };
-      
+
       // 检查缓存
       if (effectiveConfig.performance.enableCaching) {
         const cacheKey = this.generateCacheKey(data, context, effectiveConfig);
@@ -403,19 +406,22 @@ export class AdvancedInputValidationSystem {
       }
 
       // 执行基础验证
-      const baseValidation = await this.enhancedValidator.validateInput(data, effectiveConfig);
-      
+      const baseValidation = await this.enhancedValidator.validateInput(
+        data,
+        effectiveConfig
+      );
+
       // 执行高级验证
       const advancedResult = await this.performAdvancedValidation(
-        data, 
-        context, 
-        baseValidation, 
+        data,
+        context,
+        baseValidation,
         effectiveConfig
       );
 
       // 后处理
       const finalResult = await this.postprocessResult(advancedResult, context);
-      
+
       // 缓存结果
       if (effectiveConfig.performance.enableCaching) {
         this.cacheResult(data, context, finalResult, effectiveConfig);
@@ -423,18 +429,17 @@ export class AdvancedInputValidationSystem {
 
       // 更新指标
       this.updateMetrics('validation_success', performance.now() - startTime);
-      
+
       // 学习和适应
       if (effectiveConfig.adaptive.enableAutoTuning) {
         this.updateLearningData(data, context, finalResult);
       }
 
       return finalResult;
-
     } catch (error) {
       this.handleValidationError(error, data, context, validationId);
       this.updateMetrics('validation_error', performance.now() - startTime);
-      
+
       return this.createErrorResult(data, context, error);
     }
   }
@@ -444,7 +449,7 @@ export class AdvancedInputValidationSystem {
    * 在验证前进行安全预处理
    */
   private async preprocessInput(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<{ safe: boolean; threats: ThreatDetectionResult[] }> {
     const threats: ThreatDetectionResult[] = [];
@@ -471,13 +476,15 @@ export class AdvancedInputValidationSystem {
       threats.push(...monitoringThreats);
     }
 
-    const highThreatCount = threats.filter(t => 
-      t.threatLevel === ThreatLevel.HIGH || t.threatLevel === ThreatLevel.CRITICAL
+    const highThreatCount = threats.filter(
+      t =>
+        t.threatLevel === ThreatLevel.HIGH ||
+        t.threatLevel === ThreatLevel.CRITICAL
     ).length;
 
     return {
       safe: highThreatCount === 0,
-      threats
+      threats,
     };
   }
 
@@ -493,17 +500,17 @@ export class AdvancedInputValidationSystem {
   ): Promise<AdvancedValidationResult> {
     // 威胁检测
     const threatDetection = await this.performThreatDetection(data, context);
-    
+
     // 行为分析
     const behaviorAnalysis = await this.performBehaviorAnalysis(data, context);
-    
+
     // 计算安全评分
     const securityScore = this.calculateSecurityScore(
-      baseValidation, 
-      threatDetection, 
+      baseValidation,
+      threatDetection,
       behaviorAnalysis
     );
-    
+
     // 生成建议操作
     const recommendedActions = this.generateRecommendedActions(
       baseValidation,
@@ -522,13 +529,13 @@ export class AdvancedInputValidationSystem {
         processingTime: 0, // 将在后处理中设置
         cacheHit: false,
         rulesExecuted: baseValidation.stats.rulesApplied,
-        threatsBlocked: threatDetection.detected ? 1 : 0
+        threatsBlocked: threatDetection.detected ? 1 : 0,
       },
       adaptive: {
         modelVersion: this.modelVersion,
         confidenceLevel: threatDetection.confidence,
-        learningData: null // 将在学习过程中设置
-      }
+        learningData: null, // 将在学习过程中设置
+      },
     };
   }
 
@@ -536,7 +543,9 @@ export class AdvancedInputValidationSystem {
    * 函数级注释：检测基础威胁
    * 使用预定义模式检测基础安全威胁
    */
-  private async detectBasicThreats(data: any): Promise<ThreatDetectionResult[]> {
+  private async detectBasicThreats(
+    data: any
+  ): Promise<ThreatDetectionResult[]> {
     const threats: ThreatDetectionResult[] = [];
     const dataString = JSON.stringify(data);
 
@@ -550,7 +559,7 @@ export class AdvancedInputValidationSystem {
             confidence: 0.8,
             patterns: [pattern.source],
             recommendations: this.getThreatRecommendations(threatType),
-            metadata: { pattern: pattern.source }
+            metadata: { pattern: pattern.source },
           });
         }
       }
@@ -564,7 +573,7 @@ export class AdvancedInputValidationSystem {
    * 使用AI模型检测复杂威胁
    */
   private async detectAIThreats(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<ThreatDetectionResult[]> {
     if (!this.aiModel) {
@@ -574,29 +583,36 @@ export class AdvancedInputValidationSystem {
     try {
       // 特征提取
       const features = this.extractFeatures(data, context);
-      
+
       // AI预测
       const prediction = await this.aiModel.predict(features);
-      
+
       if (prediction.threat_probability > this.config.security.threatLevel) {
-        return [{
-          detected: true,
-          threatType: 'ai_detected',
-          threatLevel: this.mapProbabilityToThreatLevel(prediction.threat_probability),
-          confidence: prediction.confidence,
-          patterns: prediction.patterns || [],
-          recommendations: ['进一步人工审查', '增强监控'],
-          metadata: { 
-            features,
-            prediction,
-            modelVersion: this.modelVersion
-          }
-        }];
+        return [
+          {
+            detected: true,
+            threatType: 'ai_detected',
+            threatLevel: this.mapProbabilityToThreatLevel(
+              prediction.threat_probability
+            ),
+            confidence: prediction.confidence,
+            patterns: prediction.patterns || [],
+            recommendations: ['进一步人工审查', '增强监控'],
+            metadata: {
+              features,
+              prediction,
+              modelVersion: this.modelVersion,
+            },
+          },
+        ];
       }
 
       return [];
     } catch (error) {
-      logger.error('AI威胁检测失败', { error, data: this.sanitizeForLogging(data) });
+      logger.error('AI威胁检测失败', {
+        error,
+        data: this.sanitizeForLogging(data),
+      });
       return [];
     }
   }
@@ -606,21 +622,21 @@ export class AdvancedInputValidationSystem {
    * 分析用户行为模式检测异常
    */
   private async analyzeBehavior(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<ThreatDetectionResult[]> {
     const threats: ThreatDetectionResult[] = [];
-    
+
     if (!context.userId) {
       return threats;
     }
 
     // 获取用户历史行为
     const userHistory = this.behaviorHistory.get(context.userId) || [];
-    
+
     // 分析异常模式
     const anomalies = this.detectBehaviorAnomalies(data, context, userHistory);
-    
+
     if (anomalies.length > 0) {
       threats.push({
         detected: true,
@@ -629,7 +645,7 @@ export class AdvancedInputValidationSystem {
         confidence: 0.7,
         patterns: anomalies,
         recommendations: ['监控用户活动', '要求额外验证'],
-        metadata: { anomalies, userHistory: userHistory.slice(-10) }
+        metadata: { anomalies, userHistory: userHistory.slice(-10) },
       });
     }
 
@@ -644,7 +660,7 @@ export class AdvancedInputValidationSystem {
    * 执行实时安全监控检查
    */
   private async performRealTimeChecks(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<ThreatDetectionResult[]> {
     const threats: ThreatDetectionResult[] = [];
@@ -675,16 +691,17 @@ export class AdvancedInputValidationSystem {
    * 综合威胁检测方法
    */
   private async performThreatDetection(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<ThreatDetectionResult> {
     // 这里应该整合所有威胁检测结果
     const basicThreats = await this.detectBasicThreats(data);
-    const aiThreats = this.config.security.enableAIDetection ? 
-      await this.detectAIThreats(data, context) : [];
-    
+    const aiThreats = this.config.security.enableAIDetection
+      ? await this.detectAIThreats(data, context)
+      : [];
+
     const allThreats = [...basicThreats, ...aiThreats];
-    
+
     if (allThreats.length === 0) {
       return {
         detected: false,
@@ -693,13 +710,15 @@ export class AdvancedInputValidationSystem {
         confidence: 1.0,
         patterns: [],
         recommendations: [],
-        metadata: {}
+        metadata: {},
       };
     }
 
     // 选择最高威胁级别
-    const highestThreat = allThreats.reduce((max, current) => 
-      this.compareThreatLevels(current.threatLevel, max.threatLevel) > 0 ? current : max
+    const highestThreat = allThreats.reduce((max, current) =>
+      this.compareThreatLevels(current.threatLevel, max.threatLevel) > 0
+        ? current
+        : max
     );
 
     return {
@@ -709,7 +728,7 @@ export class AdvancedInputValidationSystem {
       confidence: Math.max(...allThreats.map(t => t.confidence)),
       patterns: allThreats.flatMap(t => t.patterns),
       recommendations: [...new Set(allThreats.flatMap(t => t.recommendations))],
-      metadata: { allThreats }
+      metadata: { allThreats },
     };
   }
 
@@ -718,7 +737,7 @@ export class AdvancedInputValidationSystem {
    * 综合行为分析方法
    */
   private async performBehaviorAnalysis(
-    data: any, 
+    data: any,
     context: AdvancedValidationContext
   ): Promise<BehaviorAnalysisResult> {
     if (!context.userId) {
@@ -730,20 +749,20 @@ export class AdvancedInputValidationSystem {
         userProfile: {
           isNewUser: true,
           riskLevel: 'unknown',
-          historicalBehavior: null
-        }
+          historicalBehavior: null,
+        },
       };
     }
 
     const userProfile = this.userProfiles.get(context.userId);
     const userHistory = this.behaviorHistory.get(context.userId) || [];
-    
+
     // 计算风险评分
     const riskScore = this.calculateRiskScore(data, context, userHistory);
-    
+
     // 检测异常模式
     const anomalies = this.detectBehaviorAnomalies(data, context, userHistory);
-    
+
     // 识别行为模式
     const patterns = this.identifyBehaviorPatterns(userHistory);
 
@@ -755,8 +774,8 @@ export class AdvancedInputValidationSystem {
       userProfile: {
         isNewUser: !userProfile,
         riskLevel: this.calculateUserRiskLevel(riskScore, userHistory),
-        historicalBehavior: userHistory.slice(-10)
-      }
+        historicalBehavior: userHistory.slice(-10),
+      },
     };
   }
 
@@ -851,7 +870,7 @@ export class AdvancedInputValidationSystem {
    */
   public updateConfig(newConfig: Partial<AdvancedValidationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (newConfig.adaptive?.enableAutoTuning !== undefined) {
       if (newConfig.adaptive.enableAutoTuning) {
         this.startAdaptiveLearning();
@@ -876,13 +895,13 @@ export class AdvancedInputValidationSystem {
         p50ResponseTime: 0,
         p95ResponseTime: 0,
         p99ResponseTime: 0,
-        errorRate: 0
+        errorRate: 0,
       },
       userMetrics: {
         uniqueUsers: 0,
         suspiciousUsers: 0,
-        blockedUsers: 0
-      }
+        blockedUsers: 0,
+      },
     };
   }
 
@@ -894,7 +913,7 @@ export class AdvancedInputValidationSystem {
       /eval\s*\(/gi,
       /Function\s*\(/gi,
       /setTimeout\s*\(/gi,
-      /setInterval\s*\(/gi
+      /setInterval\s*\(/gi,
     ]);
 
     this.threatPatterns.set('advanced_sql_injection', [
@@ -902,7 +921,7 @@ export class AdvancedInputValidationSystem {
       /pg_sleep\s*\(/gi,
       /BENCHMARK\s*\(/gi,
       /EXTRACTVALUE\s*\(/gi,
-      /UPDATEXML\s*\(/gi
+      /UPDATEXML\s*\(/gi,
     ]);
 
     this.threatPatterns.set('nosql_injection', [
@@ -912,14 +931,14 @@ export class AdvancedInputValidationSystem {
       /\$lt/gi,
       /\$regex/gi,
       /\$or/gi,
-      /\$and/gi
+      /\$and/gi,
     ]);
 
     this.threatPatterns.set('template_injection', [
       /\{\{.*\}\}/g,
       /\$\{.*\}/g,
       /<\%.*\%>/g,
-      /\{\%.*\%\}/g
+      /\{\%.*\%\}/g,
     ]);
   }
 
@@ -933,9 +952,9 @@ export class AdvancedInputValidationSystem {
           return {
             threat_probability: Math.random() * 0.3, // 模拟低威胁概率
             confidence: 0.8,
-            patterns: []
+            patterns: [],
           };
-        }
+        },
       };
     }
   }
@@ -983,34 +1002,41 @@ export class AdvancedInputValidationSystem {
     return `${context.sessionId}-${context.requestId}-${Date.now()}`;
   }
 
-  private generateCacheKey(data: any, context: AdvancedValidationContext, config: AdvancedValidationConfig): string {
+  private generateCacheKey(
+    data: any,
+    context: AdvancedValidationContext,
+    config: AdvancedValidationConfig
+  ): string {
     // 生成缓存键
     return `validation-${JSON.stringify(data).slice(0, 100)}-${context.userId || 'anonymous'}`;
   }
 
   private isCacheValid(result: AdvancedValidationResult): boolean {
     // 检查缓存是否有效
-    return Date.now() - result.monitoring.processingTime < this.config.performance.cacheTTL;
+    return (
+      Date.now() - result.monitoring.processingTime <
+      this.config.performance.cacheTTL
+    );
   }
 
   private getThreatLevel(threatType: string): ThreatLevel {
     const threatLevels: Record<string, ThreatLevel> = {
-      'xss': ThreatLevel.HIGH,
-      'sql_injection': ThreatLevel.CRITICAL,
-      'command_injection': ThreatLevel.CRITICAL,
-      'path_traversal': ThreatLevel.HIGH,
-      'nosql_injection': ThreatLevel.HIGH,
-      'template_injection': ThreatLevel.MEDIUM
+      xss: ThreatLevel.HIGH,
+      sql_injection: ThreatLevel.CRITICAL,
+      command_injection: ThreatLevel.CRITICAL,
+      path_traversal: ThreatLevel.HIGH,
+      nosql_injection: ThreatLevel.HIGH,
+      template_injection: ThreatLevel.MEDIUM,
     };
     return threatLevels[threatType] || ThreatLevel.LOW;
   }
 
   private getThreatRecommendations(threatType: string): string[] {
     const recommendations: Record<string, string[]> = {
-      'xss': ['清理HTML内容', '使用CSP头', '验证输入'],
-      'sql_injection': ['使用参数化查询', '最小权限原则', '输入验证'],
-      'command_injection': ['避免系统调用', '输入清理', '沙箱执行'],
-      'path_traversal': ['路径规范化', '访问控制', '输入验证']
+      xss: ['清理HTML内容', '使用CSP头', '验证输入'],
+      sql_injection: ['使用参数化查询', '最小权限原则', '输入验证'],
+      command_injection: ['避免系统调用', '输入清理', '沙箱执行'],
+      path_traversal: ['路径规范化', '访问控制', '输入验证'],
     };
     return recommendations[threatType] || ['增强输入验证'];
   }
@@ -1030,7 +1056,7 @@ export class AdvancedInputValidationSystem {
       hasSpecialChars: /[<>'"&]/.test(JSON.stringify(data)),
       userAgent: context.request.userAgent,
       requestMethod: context.request.method,
-      timestamp: context.timestamp
+      timestamp: context.timestamp,
     };
   }
 
@@ -1039,12 +1065,20 @@ export class AdvancedInputValidationSystem {
     return JSON.stringify(data).slice(0, 200);
   }
 
-  private detectBehaviorAnomalies(data: any, context: AdvancedValidationContext, history: any[]): string[] {
+  private detectBehaviorAnomalies(
+    data: any,
+    context: AdvancedValidationContext,
+    history: any[]
+  ): string[] {
     // 检测行为异常
     return [];
   }
 
-  private updateBehaviorHistory(userId: string, data: any, context: AdvancedValidationContext): void {
+  private updateBehaviorHistory(
+    userId: string,
+    data: any,
+    context: AdvancedValidationContext
+  ): void {
     // 更新用户行为历史
     const history = this.behaviorHistory.get(userId) || [];
     history.push({
@@ -1053,39 +1087,58 @@ export class AdvancedInputValidationSystem {
       context: {
         ip: context.request.ip,
         userAgent: context.request.userAgent,
-        path: context.request.path
-      }
+        path: context.request.path,
+      },
     });
-    
+
     // 保持最近100条记录
     if (history.length > 100) {
       history.splice(0, history.length - 100);
     }
-    
+
     this.behaviorHistory.set(userId, history);
   }
 
-  private checkRateLimit(context: AdvancedValidationContext): ThreatDetectionResult | null {
+  private checkRateLimit(
+    context: AdvancedValidationContext
+  ): ThreatDetectionResult | null {
     // 检查请求频率限制
     return null;
   }
 
-  private checkGeographicAnomaly(context: AdvancedValidationContext): ThreatDetectionResult | null {
+  private checkGeographicAnomaly(
+    context: AdvancedValidationContext
+  ): ThreatDetectionResult | null {
     // 检查地理位置异常
     return null;
   }
 
-  private checkDeviceFingerprint(context: AdvancedValidationContext): ThreatDetectionResult | null {
+  private checkDeviceFingerprint(
+    context: AdvancedValidationContext
+  ): ThreatDetectionResult | null {
     // 检查设备指纹
     return null;
   }
 
-  private compareThreatLevels(level1: ThreatLevel, level2: ThreatLevel): number {
-    const levels = [ThreatLevel.NONE, ThreatLevel.LOW, ThreatLevel.MEDIUM, ThreatLevel.HIGH, ThreatLevel.CRITICAL];
+  private compareThreatLevels(
+    level1: ThreatLevel,
+    level2: ThreatLevel
+  ): number {
+    const levels = [
+      ThreatLevel.NONE,
+      ThreatLevel.LOW,
+      ThreatLevel.MEDIUM,
+      ThreatLevel.HIGH,
+      ThreatLevel.CRITICAL,
+    ];
     return levels.indexOf(level1) - levels.indexOf(level2);
   }
 
-  private calculateRiskScore(data: any, context: AdvancedValidationContext, history: any[]): number {
+  private calculateRiskScore(
+    data: any,
+    context: AdvancedValidationContext,
+    history: any[]
+  ): number {
     // 计算风险评分
     return Math.random() * 0.5; // 简化实现
   }
@@ -1101,12 +1154,20 @@ export class AdvancedInputValidationSystem {
     return 'low';
   }
 
-  private postprocessResult(result: AdvancedValidationResult, context: AdvancedValidationContext): Promise<AdvancedValidationResult> {
+  private postprocessResult(
+    result: AdvancedValidationResult,
+    context: AdvancedValidationContext
+  ): Promise<AdvancedValidationResult> {
     // 后处理结果
     return Promise.resolve(result);
   }
 
-  private cacheResult(data: any, context: AdvancedValidationContext, result: AdvancedValidationResult, config: AdvancedValidationConfig): void {
+  private cacheResult(
+    data: any,
+    context: AdvancedValidationContext,
+    result: AdvancedValidationResult,
+    config: AdvancedValidationConfig
+  ): void {
     // 缓存结果
     const cacheKey = this.generateCacheKey(data, context, config);
     this.validationCache.set(cacheKey, result);
@@ -1122,53 +1183,70 @@ export class AdvancedInputValidationSystem {
     }
   }
 
-  private updateLearningData(data: any, context: AdvancedValidationContext, result: AdvancedValidationResult): void {
+  private updateLearningData(
+    data: any,
+    context: AdvancedValidationContext,
+    result: AdvancedValidationResult
+  ): void {
     // 更新学习数据
     this.learningData.push({
       data: this.sanitizeForLogging(data),
       context,
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
+
     // 保持最近1000条记录
     if (this.learningData.length > 1000) {
       this.learningData.splice(0, this.learningData.length - 1000);
     }
   }
 
-  private handleValidationError(error: any, data: any, context: AdvancedValidationContext, validationId: string): void {
+  private handleValidationError(
+    error: any,
+    data: any,
+    context: AdvancedValidationContext,
+    validationId: string
+  ): void {
     // 处理验证错误
     this.masterErrorHandler.handleError(error, {
       context: 'advanced_input_validation',
       validationId,
       data: this.sanitizeForLogging(data),
-      userId: context.userId
+      userId: context.userId,
     });
   }
 
-  private createThreatResult(data: any, context: AdvancedValidationContext, threats: ThreatDetectionResult[]): AdvancedValidationResult {
+  private createThreatResult(
+    data: any,
+    context: AdvancedValidationContext,
+    threats: ThreatDetectionResult[]
+  ): AdvancedValidationResult {
     // 创建威胁结果
-    const highestThreat = threats.reduce((max, current) => 
-      this.compareThreatLevels(current.threatLevel, max.threatLevel) > 0 ? current : max
+    const highestThreat = threats.reduce((max, current) =>
+      this.compareThreatLevels(current.threatLevel, max.threatLevel) > 0
+        ? current
+        : max
     );
 
     return {
       isValid: false,
       sanitizedData: null,
-      errors: [{
-        field: 'root',
-        type: ValidationRuleType.CUSTOM,
-        message: `检测到安全威胁: ${highestThreat.threatType}`,
-        value: data,
-        path: []
-      }],
+      errors: [
+        {
+          field: 'root',
+          type: ValidationRuleType.CUSTOM,
+          message: `检测到安全威胁: ${highestThreat.threatType}`,
+          value: data,
+          path: [],
+        },
+      ],
       warnings: [],
       stats: {
         fieldsValidated: 0,
         rulesApplied: 0,
         fieldsSanitized: 0,
-        validationTime: 0
+        validationTime: 0,
       },
       threatDetection: highestThreat,
       behaviorAnalysis: {
@@ -1179,8 +1257,8 @@ export class AdvancedInputValidationSystem {
         userProfile: {
           isNewUser: !context.userId,
           riskLevel: 'high',
-          historicalBehavior: null
-        }
+          historicalBehavior: null,
+        },
       },
       securityScore: 0,
       recommendedActions: ['立即阻止请求', '触发安全警报'],
@@ -1188,34 +1266,40 @@ export class AdvancedInputValidationSystem {
         processingTime: 0,
         cacheHit: false,
         rulesExecuted: 0,
-        threatsBlocked: threats.length
+        threatsBlocked: threats.length,
       },
       adaptive: {
         modelVersion: this.modelVersion,
         confidenceLevel: highestThreat.confidence,
-        learningData: null
-      }
+        learningData: null,
+      },
     };
   }
 
-  private createErrorResult(data: any, context: AdvancedValidationContext, error: any): AdvancedValidationResult {
+  private createErrorResult(
+    data: any,
+    context: AdvancedValidationContext,
+    error: any
+  ): AdvancedValidationResult {
     // 创建错误结果
     return {
       isValid: false,
       sanitizedData: null,
-      errors: [{
-        field: 'root',
-        type: ValidationRuleType.CUSTOM,
-        message: '验证过程中发生错误',
-        value: data,
-        path: []
-      }],
+      errors: [
+        {
+          field: 'root',
+          type: ValidationRuleType.CUSTOM,
+          message: '验证过程中发生错误',
+          value: data,
+          path: [],
+        },
+      ],
       warnings: [],
       stats: {
         fieldsValidated: 0,
         rulesApplied: 0,
         fieldsSanitized: 0,
-        validationTime: 0
+        validationTime: 0,
       },
       threatDetection: {
         detected: false,
@@ -1224,7 +1308,7 @@ export class AdvancedInputValidationSystem {
         confidence: 0,
         patterns: [],
         recommendations: [],
-        metadata: { error: error.message }
+        metadata: { error: error.message },
       },
       behaviorAnalysis: {
         suspicious: false,
@@ -1234,8 +1318,8 @@ export class AdvancedInputValidationSystem {
         userProfile: {
           isNewUser: true,
           riskLevel: 'unknown',
-          historicalBehavior: null
-        }
+          historicalBehavior: null,
+        },
       },
       securityScore: 0,
       recommendedActions: ['检查系统状态', '重试验证'],
@@ -1243,13 +1327,13 @@ export class AdvancedInputValidationSystem {
         processingTime: 0,
         cacheHit: false,
         rulesExecuted: 0,
-        threatsBlocked: 0
+        threatsBlocked: 0,
       },
       adaptive: {
         modelVersion: this.modelVersion,
         confidenceLevel: 0,
-        learningData: null
-      }
+        learningData: null,
+      },
     };
   }
 
@@ -1261,7 +1345,10 @@ export class AdvancedInputValidationSystem {
     // 清理缓存
     const now = Date.now();
     for (const [key, result] of this.validationCache.entries()) {
-      if (now - result.monitoring.processingTime > this.config.performance.cacheTTL) {
+      if (
+        now - result.monitoring.processingTime >
+        this.config.performance.cacheTTL
+      ) {
         this.validationCache.delete(key);
       }
     }
@@ -1280,7 +1367,9 @@ export class AdvancedInputValidationSystem {
  * 函数级注释：高级输入验证Hook
  * React Hook，用于在组件中使用高级输入验证系统
  */
-export function useAdvancedInputValidation(config?: Partial<AdvancedValidationConfig>) {
+export function useAdvancedInputValidation(
+  config?: Partial<AdvancedValidationConfig>
+) {
   const system = AdvancedInputValidationSystem.getInstance(config);
   const [metrics, setMetrics] = useState<ValidationMetrics | null>(null);
 
@@ -1296,7 +1385,11 @@ export function useAdvancedInputValidation(config?: Partial<AdvancedValidationCo
   }, [system]);
 
   const validateAdvanced = useCallback(
-    async (data: any, context: AdvancedValidationContext, config?: Partial<AdvancedValidationConfig>): Promise<AdvancedValidationResult> => {
+    async (
+      data: any,
+      context: AdvancedValidationContext,
+      config?: Partial<AdvancedValidationConfig>
+    ): Promise<AdvancedValidationResult> => {
       return system.validateAdvanced(data, context, config);
     },
     [system]
@@ -1313,9 +1406,10 @@ export function useAdvancedInputValidation(config?: Partial<AdvancedValidationCo
     validateAdvanced,
     updateConfig,
     metrics,
-    getMetrics: system.getMetrics.bind(system)
+    getMetrics: system.getMetrics.bind(system),
   };
 }
 
 // 导出单例实例
-export const advancedInputValidationSystem = AdvancedInputValidationSystem.getInstance();
+export const advancedInputValidationSystem =
+  AdvancedInputValidationSystem.getInstance();

@@ -13,13 +13,13 @@ export const createFileLogger = (fileName: string) => {
  */
 export const replaceConsoleInFile = (fileName: string) => {
   const logger = createLogger(fileName);
-  
+
   return {
     log: logger.info,
     error: logger.error,
     warn: logger.warn,
     debug: logger.debug,
-    info: logger.info
+    info: logger.info,
   };
 };
 

@@ -20,7 +20,7 @@ interface PreparationPhaseDialogProps {
 const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   isOpen,
   onClose,
-  roomId
+  roomId,
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -36,11 +36,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   // 拖动处理函数
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.dialog-header')) {
+    if (
+      e.target === e.currentTarget ||
+      (e.target as HTMLElement).closest('.dialog-header')
+    ) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - position.x,
-        y: e.clientY - position.y
+        y: e.clientY - position.y,
       });
     }
   };
@@ -50,7 +53,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
       if (isDragging) {
         setPosition({
           x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y
+          y: e.clientY - dragStart.y,
         });
       }
     };
@@ -83,7 +86,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
     setIsStarting(true);
     try {
       const success = await startGame();
-      
+
       if (success) {
         toast({
           title: '游戏开始',
@@ -112,43 +115,45 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
+    <div className='fixed inset-0 z-50 pointer-events-none'>
       <div
         ref={dialogRef}
-        className="absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl"
+        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl'
         style={{
           left: `${position.x + 100}px`,
           top: `${position.y + 50}px`,
           width: '900px',
-          height: '600px'
+          height: '600px',
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="dialog-header p-4 cursor-move border-b border-werewolf-purple/30">
-          <h2 className="text-werewolf-purple text-xl font-semibold leading-none tracking-tight">
+        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
+          <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
             准备阶段管理
           </h2>
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple"
+            className='absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 text-werewolf-purple'
           >
             ✕
           </button>
         </div>
-        
-        <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]">
+
+        <div className='grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]'>
           {/* 左侧 - 房间信息和开始游戏按钮 */}
-          <div className="col-span-4 flex flex-col gap-4">
+          <div className='col-span-4 flex flex-col gap-4'>
             {/* 房间信息 */}
-            <div className="flex-shrink-0">
+            <div className='flex-shrink-0'>
               <RoomInfoCard roomId={roomId} />
             </div>
-            
+
             {/* 开始游戏按钮 */}
-            <div className="flex-shrink-0">
+            <div className='flex-shrink-0'>
               <Button
                 onClick={handleStartGame}
-                disabled={!allPlayersReady || players.length === 0 || isStarting}
+                disabled={
+                  !allPlayersReady || players.length === 0 || isStarting
+                }
                 loading={isStarting}
                 className={`w-full px-4 py-3 text-lg ${
                   allPlayersReady && players.length > 0 && !isStarting
@@ -156,22 +161,22 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                     : 'bg-gray-600 cursor-not-allowed'
                 }`}
               >
-                <Play className="mr-2 h-5 w-5" />
+                <Play className='mr-2 h-5 w-5' />
                 {isStarting ? '正在开始游戏...' : '开始游戏'}
               </Button>
             </div>
           </div>
 
           {/* 右侧 - 题库和玩家状态 */}
-          <div className="col-span-8 flex flex-col gap-4">
+          <div className='col-span-8 flex flex-col gap-4'>
             {/* 题库管理 */}
-            <div className="flex-1">
-              <QuestionBankPanel className="h-full" roomId={roomId} />
+            <div className='flex-1'>
+              <QuestionBankPanel className='h-full' roomId={roomId} />
             </div>
 
             {/* 玩家状态 */}
-            <div className="flex-1">
-              <PlayerStatusPanel roomId={roomId} className="h-full" />
+            <div className='flex-1'>
+              <PlayerStatusPanel roomId={roomId} className='h-full' />
             </div>
           </div>
         </div>

@@ -71,7 +71,7 @@ export enum EvictionStrategy {
   LRU = 'lru',
   LFU = 'lfu',
   FIFO = 'fifo',
-  TTL = 'ttl'
+  TTL = 'ttl',
 }
 
 /**
@@ -88,7 +88,7 @@ class OptimizedQueryCache {
     enablePersistence: false,
     cleanupInterval: 60 * 1000, // 1分钟
     memoryThreshold: 80 * 1024 * 1024, // 80MB
-    enableMetrics: true
+    enableMetrics: true,
   };
   private stats: CacheStats = {
     totalItems: 0,
@@ -99,7 +99,7 @@ class OptimizedQueryCache {
     evictionCount: 0,
     memoryUsage: 0,
     oldestItem: 0,
-    newestItem: 0
+    newestItem: 0,
   };
   private cleanupTimer?: ReturnType<typeof setInterval>;
   private evictionStrategy: EvictionStrategy = EvictionStrategy.LRU;
@@ -147,7 +147,7 @@ class OptimizedQueryCache {
         lastAccessed: now,
         tags,
         size,
-        metadata: options.metadata
+        metadata: options.metadata,
       };
 
       // 如果启用压缩
@@ -162,9 +162,8 @@ class OptimizedQueryCache {
         key,
         size,
         ttl,
-        tags: tags.length
+        tags: tags.length,
       });
-
     } catch (error) {
       logger.error('设置缓存项失败', { key, error });
       throw error;
@@ -206,11 +205,10 @@ class OptimizedQueryCache {
       logger.debug('缓存命中', {
         key,
         accessCount: item.accessCount,
-        age: Date.now() - item.timestamp
+        age: Date.now() - item.timestamp,
       });
 
       return data as T;
-
     } catch (error) {
       logger.error('获取缓存项失败', { key, error });
       this.updateStats('miss');
@@ -237,7 +235,7 @@ class OptimizedQueryCache {
    */
   public deleteByTags(tags: string[]): number {
     let deletedCount = 0;
-    
+
     for (const [key, item] of this.cache.entries()) {
       if (tags.some(tag => item.tags.includes(tag))) {
         this.cache.delete(key);
@@ -294,7 +292,11 @@ class OptimizedQueryCache {
    * 预热缓存
    */
   public async warmup<T>(
-    queries: Array<{ key: string; fetcher: () => Promise<T>; options?: QueryOptions }>
+    queries: Array<{
+      key: string;
+      fetcher: () => Promise<T>;
+      options?: QueryOptions;
+    }>
   ): Promise<void> {
     logger.info('开始缓存预热', { queryCount: queries.length });
 
@@ -351,7 +353,7 @@ class OptimizedQueryCache {
         case EvictionStrategy.FIFO:
           return a[1].timestamp - b[1].timestamp;
         case EvictionStrategy.TTL:
-          return (a[1].timestamp + a[1].ttl) - (b[1].timestamp + b[1].ttl);
+          return a[1].timestamp + a[1].ttl - (b[1].timestamp + b[1].ttl);
         default:
           return a[1].lastAccessed - b[1].lastAccessed;
       }
@@ -373,14 +375,14 @@ class OptimizedQueryCache {
       logger.debug('缓存项已清理', {
         key,
         strategy: this.evictionStrategy,
-        size: item.size
+        size: item.size,
       });
     }
 
     logger.info('缓存清理完成', {
       evictedItems: itemsToEvict.length,
       freedSpace,
-      strategy: this.evictionStrategy
+      strategy: this.evictionStrategy,
     });
   }
 
@@ -429,7 +431,10 @@ class OptimizedQueryCache {
   /**
    * 更新统计信息
    */
-  private updateStats(operation: 'hit' | 'miss' | 'set' | 'delete', item?: CacheItem): void {
+  private updateStats(
+    operation: 'hit' | 'miss' | 'set' | 'delete',
+    item?: CacheItem
+  ): void {
     if (!this.config.enableMetrics) return;
 
     switch (operation) {
@@ -455,7 +460,8 @@ class OptimizedQueryCache {
 
     // 更新命中率
     const totalRequests = this.stats.hitCount + this.stats.missCount;
-    this.stats.hitRate = totalRequests > 0 ? this.stats.hitCount / totalRequests : 0;
+    this.stats.hitRate =
+      totalRequests > 0 ? this.stats.hitCount / totalRequests : 0;
   }
 
   /**
@@ -466,7 +472,9 @@ class OptimizedQueryCache {
     this.stats.totalSize = this.getCurrentSize();
     this.stats.memoryUsage = this.stats.totalSize;
 
-    const timestamps = Array.from(this.cache.values()).map(item => item.timestamp);
+    const timestamps = Array.from(this.cache.values()).map(
+      item => item.timestamp
+    );
     if (timestamps.length > 0) {
       this.stats.oldestItem = Math.min(...timestamps);
       this.stats.newestItem = Math.max(...timestamps);
@@ -486,7 +494,7 @@ class OptimizedQueryCache {
       evictionCount: 0,
       memoryUsage: 0,
       oldestItem: 0,
-      newestItem: 0
+      newestItem: 0,
     };
   }
 
@@ -562,7 +570,7 @@ class OptimizedQueryCache {
    */
   public updateConfig(newConfig: Partial<CacheConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // 重启清理定时器
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
@@ -594,11 +602,11 @@ class OptimizedQueryCache {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     if (this.config.enablePersistence) {
       this.saveToPersistence();
     }
-    
+
     this.cache.clear();
     this.resetStats();
     logger.info('查询缓存已销毁');
@@ -620,7 +628,7 @@ export function withCache<T extends (...args: any[]) => Promise<any>>(
   } = {}
 ): T {
   return (async (...args: Parameters<T>) => {
-    const key = options.keyGenerator 
+    const key = options.keyGenerator
       ? options.keyGenerator(...args)
       : `${fn.name}_${JSON.stringify(args)}`;
 
@@ -636,7 +644,7 @@ export function withCache<T extends (...args: any[]) => Promise<any>>(
     // 缓存结果
     await optimizedQueryCache.set(key, result, {
       ttl: options.ttl,
-      tags: options.tags
+      tags: options.tags,
     });
 
     return result;
@@ -672,12 +680,12 @@ export function useQueryCache<T>(
 
       // 获取新数据
       const result = await fetcher();
-      
+
       // 缓存结果
       if (options.enableCache !== false) {
         await optimizedQueryCache.set(key, result, options);
       }
-      
+
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));

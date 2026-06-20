@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import GameStateDisplay from '@/components/game/displays/GameStateDisplay';
@@ -26,15 +25,19 @@ import MultiChannelChat from '@/components/chat/MultiChannelChat';
 const GamePage = () => {
   const { id: roomId } = useParams();
   const { t } = useLanguage();
-  
+
   // 目标选择状态 - 必须在所有条件检查之前
   const [selectedTargetId, setSelectedTargetId] = useState<string>('');
   const [skillUsageValid, setSkillUsageValid] = useState<boolean>(false);
-  
+
   // 权限和认证检查 - 移动到最前面
   const { currentUser, requireAuth } = useAuth();
-  const { isJudge, isRoomParticipant, loading: permissionsLoading } = usePermissions(roomId);
-  
+  const {
+    isJudge,
+    isRoomParticipant,
+    loading: permissionsLoading,
+  } = usePermissions(roomId);
+
   const { gameState } = useGameState(roomId!);
   useEveningRefresh(gameState);
   // 自动处理濒死状态转换
@@ -42,24 +45,26 @@ const GamePage = () => {
   const { players } = usePlayersRealtime(roomId!);
   const { roleDesigns } = useRoleDesigns();
   const { roleStates } = useRoleStates(roomId!);
-  
+
   // 自动在游戏结束后迁移到新房间
   useRoomTransition(roomId, gameState?.status);
-  
+
   // Get current user's role information - 只有登录用户才能获取
   const currentUserId = currentUser?.id || '';
   const currentRoleState = roleStates.find(rs => rs.user_id === currentUserId);
-  const currentRoleDesign = roleDesigns.find(rd => rd.id === currentRoleState?.role_id);
-  
+  const currentRoleDesign = roleDesigns.find(
+    rd => rd.id === currentRoleState?.role_id
+  );
+
   // 技能系统钩子 - 必须在所有条件返回之前调用
   const {
     skillUses,
     loading: skillLoading,
     useSkillEnhanced,
     getUserSkillData,
-    canUseSkill
+    canUseSkill,
   } = useEnhancedSkillSystem(roomId!, gameState?.id || '', currentUserId);
-  
+
   // 异步检查技能可用性
   React.useEffect(() => {
     const checkSkillUsage = async () => {
@@ -67,7 +72,7 @@ const GamePage = () => {
         setSkillUsageValid(false);
         return;
       }
-      
+
       try {
         const canUse = await canUseSkill(
           currentRoleDesign.skill_name,
@@ -83,41 +88,43 @@ const GamePage = () => {
         setSkillUsageValid(false);
       }
     };
-    
+
     checkSkillUsage();
   }, [
-    canUseSkill, 
-    currentRoleDesign?.skill_name, 
-    currentRoleState, 
-    gameState?.currentPhase, 
-    gameState?.currentRound, 
-    selectedTargetId
+    canUseSkill,
+    currentRoleDesign?.skill_name,
+    currentRoleState,
+    gameState?.currentPhase,
+    gameState?.currentRound,
+    selectedTargetId,
   ]);
-  
+
   // 要求用户登录
   if (!requireAuth()) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="text-center">
-            <p className="text-gray-400 mb-4">请先登录以访问游戏</p>
+        <div className='container mx-auto py-6 px-4'>
+          <div className='text-center'>
+            <p className='text-gray-400 mb-4'>请先登录以访问游戏</p>
           </div>
         </div>
       </PageLayout>
     );
   }
-  
+
   // Check current phase to determine which system to show
   // 白天(1)和傍晚(2)阶段显示投票系统，夜晚(3)和黎明(4)阶段显示技能系统
-  const isVotingPhase = gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
-  const isSkillPhase = gameState?.currentPhase === 3 || gameState?.currentPhase === 4; // Night and dawn
+  const isVotingPhase =
+    gameState?.currentPhase === 1 || gameState?.currentPhase === 2; // Day and evening
+  const isSkillPhase =
+    gameState?.currentPhase === 3 || gameState?.currentPhase === 4; // Night and dawn
 
   if (!roomId) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="text-center">
-            <p className="text-gray-400 mb-4">房间ID不存在</p>
+        <div className='container mx-auto py-6 px-4'>
+          <div className='text-center'>
+            <p className='text-gray-400 mb-4'>房间ID不存在</p>
           </div>
         </div>
       </PageLayout>
@@ -128,10 +135,10 @@ const GamePage = () => {
   if (permissionsLoading) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2"></div>
-            <p className="text-gray-400 mb-4">检查权限中...</p>
+        <div className='container mx-auto py-6 px-4'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
+            <p className='text-gray-400 mb-4'>检查权限中...</p>
           </div>
         </div>
       </PageLayout>
@@ -142,9 +149,9 @@ const GamePage = () => {
   if (!isRoomParticipant) {
     return (
       <PageLayout>
-        <div className="container mx-auto py-6 px-4">
-          <div className="text-center">
-            <p className="text-gray-400 mb-4">您不是此房间的参与者</p>
+        <div className='container mx-auto py-6 px-4'>
+          <div className='text-center'>
+            <p className='text-gray-400 mb-4'>您不是此房间的参与者</p>
           </div>
         </div>
       </PageLayout>
@@ -153,106 +160,137 @@ const GamePage = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6 px-4 h-[calc(100vh-4rem+200px)] flex flex-col">
+      <div className='container mx-auto py-6 px-4 h-[calc(100vh-4rem+200px)] flex flex-col'>
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden'>
           {/* Left Column - Student System and Answer Records */}
-          <div className="lg:col-span-3 flex flex-col gap-6 h-full overflow-hidden">
-            <div className="flex-1 min-h-0">
+          <div className='lg:col-span-3 flex flex-col gap-6 h-full overflow-hidden'>
+            <div className='flex-1 min-h-0'>
               <StudentSystemPanel roomId={roomId} />
             </div>
-            <div className="flex-1 min-h-0">
+            <div className='flex-1 min-h-0'>
               <StudentAnswerRecordPanel roomId={roomId} />
             </div>
           </div>
-          
+
           {/* Center Column - Game Info and Main Content */}
-          <div className="lg:col-span-6 flex flex-col gap-6 h-full overflow-hidden">
-            <div className="flex-1 min-h-0">
-              <GameInfoPanel 
-                roomId={roomId} 
+          <div className='lg:col-span-6 flex flex-col gap-6 h-full overflow-hidden'>
+            <div className='flex-1 min-h-0'>
+              <GameInfoPanel
+                roomId={roomId}
                 selectedTargetId={selectedTargetId}
                 onTargetSelect={setSelectedTargetId}
                 canSelectTargets={isVotingPhase || isSkillPhase}
               />
             </div>
-            <div className="flex-1 min-h-0">
-              <Card className="bg-werewolf-card border-werewolf-purple/30 h-full">
-                <CardContent className="p-6 h-full overflow-y-auto">
-                  <h2 className="text-2xl font-bold text-werewolf-purple mb-4">游戏主界面</h2>
-                  
+            <div className='flex-1 min-h-0'>
+              <Card className='bg-werewolf-card border-werewolf-purple/30 h-full'>
+                <CardContent className='p-6 h-full overflow-y-auto'>
+                  <h2 className='text-2xl font-bold text-werewolf-purple mb-4'>
+                    游戏主界面
+                  </h2>
+
                   {/* 根据游戏阶段显示不同的系统 */}
-                   {isVotingPhase && gameState && (
-                     <VotingPanel 
-                       roomId={roomId} 
-                       gameStateId={gameState.id}
-                       currentPhase={gameState.currentPhase}
-                       currentRound={gameState.currentRound}
-                       isJudge={isJudge}
-                       selectedTargetId={selectedTargetId}
-                       onTargetSelect={setSelectedTargetId}
-                     />
-                   )}
-                  
-                   {isSkillPhase && gameState && currentRoleState && currentRoleDesign && (
-                     <RoleSpecificSkills
-                       roleName={currentRoleDesign.role_name}
-                       skillEffects={currentRoleDesign.skill_effects as Record<string, unknown>}
-                       roleAttributes={currentRoleDesign.role_attributes as Record<string, unknown>}
+                  {isVotingPhase && gameState && (
+                    <VotingPanel
+                      roomId={roomId}
+                      gameStateId={gameState.id}
+                      currentPhase={gameState.currentPhase}
+                      currentRound={gameState.currentRound}
+                      isJudge={isJudge}
+                      selectedTargetId={selectedTargetId}
+                      onTargetSelect={setSelectedTargetId}
+                    />
+                  )}
+
+                  {isSkillPhase &&
+                    gameState &&
+                    currentRoleState &&
+                    currentRoleDesign && (
+                      <RoleSpecificSkills
+                        roleName={currentRoleDesign.role_name}
+                        skillEffects={
+                          currentRoleDesign.skill_effects as Record<
+                            string,
+                            unknown
+                          >
+                        }
+                        roleAttributes={
+                          currentRoleDesign.role_attributes as Record<
+                            string,
+                            unknown
+                          >
+                        }
                         canUseSkill={skillUsageValid}
                         onUseSkill={async (skillData: any) => {
-                         await useSkillEnhanced(
-                           currentRoleDesign.skill_name || '',
-                           skillData.targetId,
-                           skillData,
-                           currentRoleState,
-                           currentRoleDesign,
-                           gameState.currentPhase,
-                           gameState.currentRound
-                         );
-                         setSelectedTargetId('');
-                       }}
-                       availableTargets={players
-                         .filter(p => p.userId !== currentUserId && 
-                                     roleStates.find(rs => rs.user_id === p.userId)?.role_status !== 4)
-                         .map(p => ({
-                           userId: p.userId || p.id,
-                           name: p.name || '未知玩家',
-                           roleStatus: roleStates.find(rs => rs.user_id === p.userId)?.role_status || 1
-                         }))}
-                       currentPhase={gameState.currentPhase}
-                       userSkillUses={skillUses}
-                       gameStateId={gameState.id}
-                       userId={currentUserId}
-                       currentRound={gameState.currentRound}
-                       fullSkillUses={skillUses}
-                     />
-                   )}
-                  
+                          await useSkillEnhanced(
+                            currentRoleDesign.skill_name || '',
+                            skillData.targetId,
+                            skillData,
+                            currentRoleState,
+                            currentRoleDesign,
+                            gameState.currentPhase,
+                            gameState.currentRound
+                          );
+                          setSelectedTargetId('');
+                        }}
+                        availableTargets={players
+                          .filter(
+                            p =>
+                              p.userId !== currentUserId &&
+                              roleStates.find(rs => rs.user_id === p.userId)
+                                ?.role_status !== 4
+                          )
+                          .map(p => ({
+                            userId: p.userId || p.id,
+                            name: p.name || '未知玩家',
+                            roleStatus:
+                              roleStates.find(rs => rs.user_id === p.userId)
+                                ?.role_status || 1,
+                          }))}
+                        currentPhase={gameState.currentPhase}
+                        userSkillUses={skillUses}
+                        gameStateId={gameState.id}
+                        userId={currentUserId}
+                        currentRound={gameState.currentRound}
+                        fullSkillUses={skillUses}
+                      />
+                    )}
+
                   {/* 等待阶段或游戏未开始 */}
                   {!gameState && (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">等待游戏开始...</p>
+                    <div className='text-center py-8'>
+                      <p className='text-gray-400'>等待游戏开始...</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
           </div>
-          
+
           {/* Right Column - Side Panel */}
-          <div className="lg:col-span-3 h-full overflow-hidden">
-            <div className="h-full flex flex-col">              
+          <div className='lg:col-span-3 h-full overflow-hidden'>
+            <div className='h-full flex flex-col'>
               {/* 聊天区 */}
               <MultiChannelChat
                 roomId={roomId}
                 currentUser={currentUser}
-                gamePhase={gameState?.currentPhase === 1 ? 'day' : gameState?.currentPhase === 2 ? 'evening' : gameState?.currentPhase === 3 ? 'night' : gameState?.currentPhase === 4 ? 'dawn' : 'preparation'}
+                gamePhase={
+                  gameState?.currentPhase === 1
+                    ? 'day'
+                    : gameState?.currentPhase === 2
+                      ? 'evening'
+                      : gameState?.currentPhase === 3
+                        ? 'night'
+                        : gameState?.currentPhase === 4
+                          ? 'dawn'
+                          : 'preparation'
+                }
                 gameRound={gameState?.currentRound}
                 userRole={currentRoleDesign?.role_name}
                 isGameRoom={true}
-                title="游戏聊天"
-                height="100%"
+                title='游戏聊天'
+                height='100%'
               />
             </div>
           </div>

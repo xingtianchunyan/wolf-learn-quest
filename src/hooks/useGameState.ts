@@ -48,7 +48,11 @@ export const useGameState = (roomId: string) => {
           setGameState({
             id: stateData.id,
             roomId: stateData.room_id,
-            status: stateData.status as 'waiting' | 'active' | 'paused' | 'ended',
+            status: stateData.status as
+              | 'waiting'
+              | 'active'
+              | 'paused'
+              | 'ended',
             currentPhase: stateData.current_phase as number, // 现在是数字类型
             currentRound: stateData.current_round,
             phaseStartTime: stateData.phase_start_time,
@@ -95,15 +99,19 @@ export const useGameState = (roomId: string) => {
           event: '*',
           schema: 'public',
           table: 'game_states',
-          filter: `room_id=eq.${roomId}`
+          filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
+        payload => {
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             setGameState({
               id: newData.id,
               roomId: newData.room_id,
-              status: newData.status as 'waiting' | 'active' | 'paused' | 'ended',
+              status: newData.status as
+                | 'waiting'
+                | 'active'
+                | 'paused'
+                | 'ended',
               currentPhase: newData.current_phase as number, // 现在是数字类型
               currentRound: newData.current_round,
               phaseStartTime: newData.phase_start_time,
@@ -128,9 +136,9 @@ export const useGameState = (roomId: string) => {
           event: '*',
           schema: 'public',
           table: 'game_settings',
-          filter: `room_id=eq.${roomId}`
+          filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
+        payload => {
           if (payload.new && typeof payload.new === 'object') {
             const newData = payload.new as any;
             setGameSettings({
@@ -195,7 +203,7 @@ export const useGameState = (roomId: string) => {
             day_duration: 300,
             evening_duration: 40,
             night_duration: 180,
-            dawn_duration: 40
+            dawn_duration: 40,
           });
 
         if (settingsError) {
@@ -212,31 +220,36 @@ export const useGameState = (roomId: string) => {
       // 计算阶段结束时间（首轮从傍晚开始，如果是自动模式则设置结束时间）
       const settings = existingSettings || {
         is_auto_advance: true,
-        evening_duration: 40
+        evening_duration: 40,
       };
-      
+
       const now = new Date();
-      const phaseEndTime = settings.is_auto_advance 
-        ? new Date(now.getTime() + (settings.evening_duration || 40) * 1000).toISOString()
+      const phaseEndTime = settings.is_auto_advance
+        ? new Date(
+            now.getTime() + (settings.evening_duration || 40) * 1000
+          ).toISOString()
         : null;
 
       // 创建或更新游戏状态（首轮进入傍晚：2）
       const { data: gameStateData, error: gameStateError } = await supabase
         .from('game_states')
-        .upsert({
-          room_id: roomId,
-          status: 'active',
-          current_phase: 2, // 2 = 傍晚
-          current_round: 1,
-          phase_start_time: now.toISOString(),
-          phase_end_time: phaseEndTime,
-          is_paused: false,
-          total_paused_duration: 0,
-          auto_advance: settings.is_auto_advance,
-          phase_duration: settings.evening_duration || 40
-        }, {
-          onConflict: 'room_id'
-        })
+        .upsert(
+          {
+            room_id: roomId,
+            status: 'active',
+            current_phase: 2, // 2 = 傍晚
+            current_round: 1,
+            phase_start_time: now.toISOString(),
+            phase_end_time: phaseEndTime,
+            is_paused: false,
+            total_paused_duration: 0,
+            auto_advance: settings.is_auto_advance,
+            phase_duration: settings.evening_duration || 40,
+          },
+          {
+            onConflict: 'room_id',
+          }
+        )
         .select()
         .single();
 
@@ -251,9 +264,12 @@ export const useGameState = (roomId: string) => {
       }
 
       // 初始化角色状态（基于角色选择）
-      const { data: initCount, error: initError } = await supabase.rpc('initialize_room_role_states', {
-        p_room_id: roomId
-      });
+      const { data: initCount, error: initError } = await supabase.rpc(
+        'initialize_room_role_states',
+        {
+          p_room_id: roomId,
+        }
+      );
       if (initError) {
         console.error('初始化角色状态失败:', initError);
         // 不中断流程
@@ -267,7 +283,7 @@ export const useGameState = (roomId: string) => {
           game_state_id: gameStateData.id,
           phase: '2', // 存储为字符串以兼容现有表结构
           round_number: 1,
-          started_at: now.toISOString()
+          started_at: now.toISOString(),
         });
 
       if (historyError) {
@@ -296,7 +312,7 @@ export const useGameState = (roomId: string) => {
 
     try {
       const { error } = await supabase.rpc('advance_game_phase', {
-        p_room_id: roomId
+        p_room_id: roomId,
       });
 
       if (error) {
@@ -322,7 +338,7 @@ export const useGameState = (roomId: string) => {
 
     try {
       const { data, error } = await supabase.rpc('toggle_game_pause', {
-        p_room_id: roomId
+        p_room_id: roomId,
       });
 
       if (error) {
@@ -347,15 +363,22 @@ export const useGameState = (roomId: string) => {
   };
 
   // Update game settings
-  const updateGameSettings = async (settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>) => {
+  const updateGameSettings = async (
+    settings: Partial<Omit<GameSettings, 'id' | 'roomId'>>
+  ) => {
     if (!requireAuth() || !roomId) return false;
 
     const dbUpdates: { [key: string]: any } = {};
-    if (settings.isAutoAdvance !== undefined) dbUpdates.is_auto_advance = settings.isAutoAdvance;
-    if (settings.dayDuration !== undefined) dbUpdates.day_duration = settings.dayDuration;
-    if (settings.eveningDuration !== undefined) dbUpdates.evening_duration = settings.eveningDuration;
-    if (settings.nightDuration !== undefined) dbUpdates.night_duration = settings.nightDuration;
-    if (settings.dawnDuration !== undefined) dbUpdates.dawn_duration = settings.dawnDuration;
+    if (settings.isAutoAdvance !== undefined)
+      dbUpdates.is_auto_advance = settings.isAutoAdvance;
+    if (settings.dayDuration !== undefined)
+      dbUpdates.day_duration = settings.dayDuration;
+    if (settings.eveningDuration !== undefined)
+      dbUpdates.evening_duration = settings.eveningDuration;
+    if (settings.nightDuration !== undefined)
+      dbUpdates.night_duration = settings.nightDuration;
+    if (settings.dawnDuration !== undefined)
+      dbUpdates.dawn_duration = settings.dawnDuration;
 
     if (Object.keys(dbUpdates).length === 0) return true;
 
@@ -374,7 +397,7 @@ export const useGameState = (roomId: string) => {
         });
         return false;
       }
-      
+
       toast({
         title: '游戏设置已更新',
       });
@@ -437,9 +460,11 @@ export const useGameState = (roomId: string) => {
       } else if (historyError) {
         console.error('Error fetching game start time:', historyError);
       }
-      
+
       const endTime = new Date();
-      const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+      const duration = Math.round(
+        (endTime.getTime() - startTime.getTime()) / 1000
+      );
 
       // Step 3: Create a game session record for the archive
       const { error: sessionError } = await supabase
@@ -459,7 +484,7 @@ export const useGameState = (roomId: string) => {
         toast({
           title: '游戏已结束',
           description: `但归档时出错: ${sessionError.message}`,
-          variant: 'destructive'
+          variant: 'destructive',
         });
         return true; // Game is ended anyway
       }
@@ -490,7 +515,7 @@ export const useGameState = (roomId: string) => {
       1: '白天',
       2: '傍晚',
       3: '夜晚',
-      4: '黎明'
+      4: '黎明',
     };
     return phaseNames[phase as keyof typeof phaseNames] || '未知';
   };

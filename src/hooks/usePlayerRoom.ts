@@ -12,7 +12,7 @@ export const usePlayerRoom = () => {
   const [playerRoom, setPlayerRoom] = useState<PlayerRoomInfo>({
     roomId: null,
     roomDbId: null,
-    isLoading: true
+    isLoading: true,
   });
   const { currentUser } = useAuth();
 
@@ -26,14 +26,16 @@ export const usePlayerRoom = () => {
       // Check if player is already in a room
       const { data: roomPlayerData } = await supabase
         .from('room_players')
-        .select(`
+        .select(
+          `
           room_id,
           rooms!inner(
             id,
             room_id,
             status
           )
-        `)
+        `
+        )
         .eq('user_id', currentUser.id)
         .eq('rooms.status', 'waiting')
         .maybeSingle();
@@ -42,7 +44,7 @@ export const usePlayerRoom = () => {
         setPlayerRoom({
           roomId: roomPlayerData.rooms.room_id,
           roomDbId: roomPlayerData.rooms.id,
-          isLoading: false
+          isLoading: false,
         });
       } else {
         setPlayerRoom({ roomId: null, roomDbId: null, isLoading: false });
@@ -78,7 +80,10 @@ export const usePlayerRoom = () => {
 
       if (roleSelectionError) {
         // Log the error but don't block the rest of the leave process
-        console.error('Error deleting role selection on leave:', roleSelectionError);
+        console.error(
+          'Error deleting role selection on leave:',
+          roleSelectionError
+        );
       }
 
       // Check if room is now empty and delete it
@@ -88,10 +93,7 @@ export const usePlayerRoom = () => {
         .eq('room_id', playerRoom.roomDbId);
 
       if (!remainingPlayers || remainingPlayers.length === 0) {
-        await supabase
-          .from('rooms')
-          .delete()
-          .eq('id', playerRoom.roomDbId);
+        await supabase.from('rooms').delete().eq('id', playerRoom.roomDbId);
       }
 
       setPlayerRoom({ roomId: null, roomDbId: null, isLoading: false });
@@ -109,6 +111,6 @@ export const usePlayerRoom = () => {
   return {
     playerRoom,
     checkPlayerRoom,
-    leaveCurrentRoom
+    leaveCurrentRoom,
   };
 };

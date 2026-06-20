@@ -1,6 +1,6 @@
 /**
  * 文件级注释：高级RBAC系统
- * 
+ *
  * 该文件实现了一个全面的基于角色的访问控制(RBAC)系统：
  * - 动态角色管理
  * - 层级角色继承
@@ -8,7 +8,7 @@
  * - 条件权限分配
  * - 时间基础访问控制
  * - 权限委托和代理
- * 
+ *
  * 主要特性：
  * - 多维度权限模型
  * - 智能权限推理
@@ -16,7 +16,7 @@
  * - 自动权限优化
  * - 实时权限监控
  * - 全面审计追踪
- * 
+ *
  * @author SOLO Coding
  * @version 2.0.0
  */
@@ -32,37 +32,37 @@ const logger = createLogger('advanced-rbac-system');
  * 角色类型枚举
  */
 export enum RoleType {
-  SYSTEM = 'system',           // 系统角色
-  BUSINESS = 'business',       // 业务角色
-  FUNCTIONAL = 'functional',   // 功能角色
-  TEMPORARY = 'temporary',     // 临时角色
-  DELEGATED = 'delegated',     // 委托角色
-  INHERITED = 'inherited'      // 继承角色
+  SYSTEM = 'system', // 系统角色
+  BUSINESS = 'business', // 业务角色
+  FUNCTIONAL = 'functional', // 功能角色
+  TEMPORARY = 'temporary', // 临时角色
+  DELEGATED = 'delegated', // 委托角色
+  INHERITED = 'inherited', // 继承角色
 }
 
 /**
  * 权限范围枚举
  */
 export enum PermissionScope {
-  GLOBAL = 'global',           // 全局权限
+  GLOBAL = 'global', // 全局权限
   ORGANIZATION = 'organization', // 组织权限
-  DEPARTMENT = 'department',   // 部门权限
-  TEAM = 'team',              // 团队权限
-  PROJECT = 'project',        // 项目权限
-  RESOURCE = 'resource',      // 资源权限
-  PERSONAL = 'personal'       // 个人权限
+  DEPARTMENT = 'department', // 部门权限
+  TEAM = 'team', // 团队权限
+  PROJECT = 'project', // 项目权限
+  RESOURCE = 'resource', // 资源权限
+  PERSONAL = 'personal', // 个人权限
 }
 
 /**
  * 权限状态枚举
  */
 export enum PermissionState {
-  ACTIVE = 'active',           // 激活
-  INACTIVE = 'inactive',       // 未激活
-  SUSPENDED = 'suspended',     // 暂停
-  EXPIRED = 'expired',         // 过期
-  REVOKED = 'revoked',         // 撤销
-  PENDING = 'pending'          // 待审批
+  ACTIVE = 'active', // 激活
+  INACTIVE = 'inactive', // 未激活
+  SUSPENDED = 'suspended', // 暂停
+  EXPIRED = 'expired', // 过期
+  REVOKED = 'revoked', // 撤销
+  PENDING = 'pending', // 待审批
 }
 
 /**
@@ -75,32 +75,32 @@ export interface AdvancedRole {
   description: string;
   type: RoleType;
   scope: PermissionScope;
-  
+
   // 层级关系
   parentRoles: string[];
   childRoles: string[];
   level: number;
   priority: number;
-  
+
   // 权限配置
   permissions: AdvancedPermission[];
   inheritedPermissions: AdvancedPermission[];
   delegatedPermissions: AdvancedPermission[];
-  
+
   // 约束条件
   constraints: RoleConstraint[];
   conditions: RoleCondition[];
-  
+
   // 时间控制
   validFrom?: number;
   validTo?: number;
   maxDuration?: number;
-  
+
   // 状态信息
   isActive: boolean;
   isSystem: boolean;
   isAssignable: boolean;
-  
+
   // 元数据
   metadata: Record<string, any>;
   tags: string[];
@@ -118,41 +118,41 @@ export interface AdvancedPermission {
   name: string;
   displayName: string;
   description: string;
-  
+
   // 权限分类
   category: string;
   subcategory?: string;
   action: string;
   resource: string;
-  
+
   // 权限范围
   scope: PermissionScope;
   scopeId?: string;
-  
+
   // 权限级别
   level: number;
   priority: number;
-  
+
   // 约束条件
   constraints: PermissionConstraint[];
   conditions: PermissionCondition[];
-  
+
   // 时间控制
   validFrom?: number;
   validTo?: number;
   maxUsage?: number;
   usageCount?: number;
-  
+
   // 状态信息
   state: PermissionState;
   isInheritable: boolean;
   isDelegatable: boolean;
   isRevocable: boolean;
-  
+
   // 依赖关系
   dependencies: string[];
   conflicts: string[];
-  
+
   // 元数据
   metadata: Record<string, any>;
   tags: string[];
@@ -165,7 +165,13 @@ export interface AdvancedPermission {
  */
 export interface RoleConstraint {
   id: string;
-  type: 'mutual_exclusion' | 'prerequisite' | 'cardinality' | 'separation_of_duty' | 'time_based' | 'location_based';
+  type:
+    | 'mutual_exclusion'
+    | 'prerequisite'
+    | 'cardinality'
+    | 'separation_of_duty'
+    | 'time_based'
+    | 'location_based';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -178,7 +184,15 @@ export interface RoleCondition {
   id: string;
   type: 'user_attribute' | 'context' | 'time' | 'location' | 'custom';
   field: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'in'
+    | 'not_in'
+    | 'greater_than'
+    | 'less_than'
+    | 'matches'
+    | 'custom';
   value: any;
   description?: string;
 }
@@ -188,7 +202,13 @@ export interface RoleCondition {
  */
 export interface PermissionConstraint {
   id: string;
-  type: 'time_window' | 'usage_limit' | 'ip_restriction' | 'device_restriction' | 'approval_required' | 'custom';
+  type:
+    | 'time_window'
+    | 'usage_limit'
+    | 'ip_restriction'
+    | 'device_restriction'
+    | 'approval_required'
+    | 'custom';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -201,7 +221,15 @@ export interface PermissionCondition {
   id: string;
   type: 'context' | 'resource_state' | 'user_state' | 'environment' | 'custom';
   field: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'in'
+    | 'not_in'
+    | 'greater_than'
+    | 'less_than'
+    | 'matches'
+    | 'custom';
   value: any;
   description?: string;
 }
@@ -213,30 +241,30 @@ export interface UserRoleAssignment {
   id: string;
   userId: string;
   roleId: string;
-  
+
   // 分配信息
   assignedBy: string;
   assignedAt: number;
   reason: string;
-  
+
   // 时间控制
   validFrom?: number;
   validTo?: number;
-  
+
   // 约束条件
   constraints: AssignmentConstraint[];
   conditions: AssignmentCondition[];
-  
+
   // 状态信息
   isActive: boolean;
   isTemporary: boolean;
   isDelegated: boolean;
-  
+
   // 委托信息
   delegatedFrom?: string;
   delegatedBy?: string;
   delegationLevel?: number;
-  
+
   // 元数据
   metadata: Record<string, any>;
   lastUsed?: number;
@@ -248,7 +276,12 @@ export interface UserRoleAssignment {
  */
 export interface AssignmentConstraint {
   id: string;
-  type: 'approval_required' | 'time_limit' | 'usage_limit' | 'location_based' | 'custom';
+  type:
+    | 'approval_required'
+    | 'time_limit'
+    | 'usage_limit'
+    | 'location_based'
+    | 'custom';
   description: string;
   parameters: Record<string, any>;
   isActive: boolean;
@@ -259,9 +292,23 @@ export interface AssignmentConstraint {
  */
 export interface AssignmentCondition {
   id: string;
-  type: 'user_attribute' | 'context' | 'time' | 'location' | 'approval' | 'custom';
+  type:
+    | 'user_attribute'
+    | 'context'
+    | 'time'
+    | 'location'
+    | 'approval'
+    | 'custom';
   field: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'not_in' | 'greater_than' | 'less_than' | 'matches' | 'custom';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'in'
+    | 'not_in'
+    | 'greater_than'
+    | 'less_than'
+    | 'matches'
+    | 'custom';
   value: any;
   description?: string;
 }
@@ -275,7 +322,7 @@ export interface PermissionEvaluationContext {
   permissionName: string;
   resourceId?: string;
   resourceType?: string;
-  
+
   // 环境信息
   timestamp: number;
   ip?: string;
@@ -286,19 +333,19 @@ export interface PermissionEvaluationContext {
     city?: string;
     coordinates?: { lat: number; lng: number };
   };
-  
+
   // 用户信息
   userAttributes: Record<string, any>;
   userState: Record<string, any>;
-  
+
   // 资源信息
   resourceAttributes?: Record<string, any>;
   resourceState?: Record<string, any>;
-  
+
   // 请求信息
   requestAttributes: Record<string, any>;
   sessionAttributes: Record<string, any>;
-  
+
   // 自定义上下文
   customContext: Record<string, any>;
 }
@@ -309,7 +356,7 @@ export interface PermissionEvaluationContext {
 export interface PermissionEvaluationResult {
   allowed: boolean;
   reason?: string;
-  
+
   // 详细信息
   evaluatedRoles: Array<{
     roleId: string;
@@ -323,7 +370,7 @@ export interface PermissionEvaluationResult {
       reason?: string;
     }>;
   }>;
-  
+
   // 约束检查
   constraintResults: Array<{
     constraintId: string;
@@ -331,7 +378,7 @@ export interface PermissionEvaluationResult {
     passed: boolean;
     reason?: string;
   }>;
-  
+
   // 条件检查
   conditionResults: Array<{
     conditionId: string;
@@ -339,11 +386,11 @@ export interface PermissionEvaluationResult {
     passed: boolean;
     reason?: string;
   }>;
-  
+
   // 性能信息
   evaluationTime: number;
   cacheHit: boolean;
-  
+
   // 审计信息
   auditTrail: Array<{
     step: string;
@@ -362,24 +409,24 @@ export interface RBACConfiguration {
   enableDelegation: boolean;
   enableConstraints: boolean;
   enableConditions: boolean;
-  
+
   // 安全配置
   enforceConstraints: boolean;
   requireApprovalForSensitive: boolean;
   enableSeparationOfDuty: boolean;
   enableLeastPrivilege: boolean;
-  
+
   // 性能配置
   enableCaching: boolean;
   cacheTimeout: number;
   enableParallelEvaluation: boolean;
   maxEvaluationTime: number;
-  
+
   // 审计配置
   enableAuditTrail: boolean;
   auditLevel: 'basic' | 'detailed' | 'verbose';
   retentionDays: number;
-  
+
   // 优化配置
   enableAutoOptimization: boolean;
   optimizationInterval: number;
@@ -389,7 +436,7 @@ export interface RBACConfiguration {
 
 /**
  * 类级注释：高级RBAC系统
- * 
+ *
  * 实现全面的基于角色的访问控制系统，提供：
  * - 动态角色管理
  * - 智能权限评估
@@ -399,21 +446,24 @@ export interface RBACConfiguration {
  */
 export class AdvancedRBACSystem {
   private static instance: AdvancedRBACSystem;
-  
+
   // 核心组件
   private permissionManager: UnifiedPermissionManager;
   private errorHandler: MasterErrorHandler;
-  
+
   // 数据存储
   private roles: Map<string, AdvancedRole> = new Map();
   private permissions: Map<string, AdvancedPermission> = new Map();
   private userRoleAssignments: Map<string, UserRoleAssignment[]> = new Map();
-  
+
   // 缓存和索引
-  private evaluationCache: Map<string, { result: PermissionEvaluationResult; timestamp: number }> = new Map();
+  private evaluationCache: Map<
+    string,
+    { result: PermissionEvaluationResult; timestamp: number }
+  > = new Map();
   private roleHierarchyCache: Map<string, string[]> = new Map();
   private permissionIndex: Map<string, Set<string>> = new Map();
-  
+
   // 配置和监控
   private config: RBACConfiguration;
   private statistics: {
@@ -424,7 +474,7 @@ export class AdvancedRBACSystem {
     cacheHitRate: number;
     averageEvaluationTime: number;
   };
-  
+
   // 定时器
   private cacheCleanupTimer: ReturnType<typeof setInterval> | null = null;
   private optimizationTimer: ReturnType<typeof setInterval> | null = null;
@@ -455,12 +505,12 @@ export class AdvancedRBACSystem {
       optimizationInterval: 3600000, // 1小时
       enableConflictDetection: true,
       enableRedundancyDetection: true,
-      ...config
+      ...config,
     };
 
     this.permissionManager = UnifiedPermissionManager.getInstance();
     this.errorHandler = MasterErrorHandler.getInstance();
-    
+
     this.initializeStatistics();
     this.initializeDefaultRoles();
     this.initializeDefaultPermissions();
@@ -471,7 +521,9 @@ export class AdvancedRBACSystem {
   /**
    * 函数级注释：获取单例实例
    */
-  public static getInstance(config?: Partial<RBACConfiguration>): AdvancedRBACSystem {
+  public static getInstance(
+    config?: Partial<RBACConfiguration>
+  ): AdvancedRBACSystem {
     if (!AdvancedRBACSystem.instance) {
       AdvancedRBACSystem.instance = new AdvancedRBACSystem(config);
     }
@@ -482,15 +534,20 @@ export class AdvancedRBACSystem {
    * 函数级注释：评估权限
    * 主要的权限评估方法
    */
-  public async evaluatePermission(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult> {
+  public async evaluatePermission(
+    context: PermissionEvaluationContext
+  ): Promise<PermissionEvaluationResult> {
     const startTime = performance.now();
-    
+
     try {
       // 检查缓存
       if (this.config.enableCaching) {
         const cacheKey = this.generateEvaluationCacheKey(context);
         const cached = this.evaluationCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < this.config.cacheTimeout) {
+        if (
+          cached &&
+          Date.now() - cached.timestamp < this.config.cacheTimeout
+        ) {
           this.updateStatistics('cache_hit');
           return { ...cached.result, cacheHit: true };
         }
@@ -498,7 +555,7 @@ export class AdvancedRBACSystem {
 
       // 执行权限评估
       const result = await this.performPermissionEvaluation(context);
-      
+
       // 缓存结果
       if (this.config.enableCaching) {
         this.cacheEvaluationResult(context, result);
@@ -506,13 +563,19 @@ export class AdvancedRBACSystem {
 
       // 更新统计
       this.updateStatistics('evaluation', performance.now() - startTime);
-      
-      return { ...result, evaluationTime: performance.now() - startTime, cacheHit: false };
 
+      return {
+        ...result,
+        evaluationTime: performance.now() - startTime,
+        cacheHit: false,
+      };
     } catch (error) {
       logger.error('权限评估失败', { error, context });
-      this.errorHandler.handleError(error, { context: 'rbac_evaluation', userId: context.userId });
-      
+      this.errorHandler.handleError(error, {
+        context: 'rbac_evaluation',
+        userId: context.userId,
+      });
+
       return {
         allowed: false,
         reason: '权限评估过程中发生错误',
@@ -521,12 +584,14 @@ export class AdvancedRBACSystem {
         conditionResults: [],
         evaluationTime: performance.now() - startTime,
         cacheHit: false,
-        auditTrail: [{
-          step: 'evaluation_error',
-          result: false,
-          reason: error.message,
-          timestamp: Date.now()
-        }]
+        auditTrail: [
+          {
+            step: 'evaluation_error',
+            result: false,
+            reason: error.message,
+            timestamp: Date.now(),
+          },
+        ],
       };
     }
   }
@@ -536,13 +601,20 @@ export class AdvancedRBACSystem {
    * 创建新的角色定义
    */
   public async createRole(
-    roleData: Omit<AdvancedRole, 'id' | 'createdAt' | 'updatedAt' | 'inheritedPermissions' | 'delegatedPermissions'>,
+    roleData: Omit<
+      AdvancedRole,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'inheritedPermissions'
+      | 'delegatedPermissions'
+    >,
     createdBy: string
   ): Promise<string> {
     try {
       // 验证角色数据
       this.validateRoleData(roleData);
-      
+
       // 检查角色名称唯一性
       if (this.isRoleNameExists(roleData.name)) {
         throw new Error(`角色名称 "${roleData.name}" 已存在`);
@@ -550,7 +622,7 @@ export class AdvancedRBACSystem {
 
       // 生成角色ID
       const roleId = this.generateRoleId();
-      
+
       // 创建角色对象
       const role: AdvancedRole = {
         ...roleData,
@@ -560,30 +632,35 @@ export class AdvancedRBACSystem {
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy,
-        updatedBy: createdBy
+        updatedBy: createdBy,
       };
 
       // 计算继承权限
       if (this.config.enableInheritance && role.parentRoles.length > 0) {
-        role.inheritedPermissions = await this.calculateInheritedPermissions(role.parentRoles);
+        role.inheritedPermissions = await this.calculateInheritedPermissions(
+          role.parentRoles
+        );
       }
 
       // 存储角色
       this.roles.set(roleId, role);
-      
+
       // 更新层级缓存
       this.invalidateHierarchyCache();
-      
+
       // 更新权限索引
       this.updatePermissionIndex(role);
-      
-      // 记录审计日志
-      this.recordAuditLog('role_created', { roleId, roleName: role.name, createdBy });
-      
-      logger.info('角色创建成功', { roleId, roleName: role.name, createdBy });
-      
-      return roleId;
 
+      // 记录审计日志
+      this.recordAuditLog('role_created', {
+        roleId,
+        roleName: role.name,
+        createdBy,
+      });
+
+      logger.info('角色创建成功', { roleId, roleName: role.name, createdBy });
+
+      return roleId;
     } catch (error) {
       logger.error('角色创建失败', { error, roleData });
       throw error;
@@ -620,7 +697,10 @@ export class AdvancedRBACSystem {
       }
 
       // 检查分配者权限
-      const canAssign = await this.checkAssignmentPermission(assignedBy, roleId);
+      const canAssign = await this.checkAssignmentPermission(
+        assignedBy,
+        roleId
+      );
       if (!canAssign) {
         throw new Error('没有分配此角色的权限');
       }
@@ -632,7 +712,7 @@ export class AdvancedRBACSystem {
 
       // 生成分配ID
       const assignmentId = this.generateAssignmentId();
-      
+
       // 创建分配记录
       const assignment: UserRoleAssignment = {
         id: assignmentId,
@@ -649,30 +729,29 @@ export class AdvancedRBACSystem {
         isTemporary: !!options?.validTo,
         isDelegated: false,
         metadata: options?.metadata || {},
-        usageCount: 0
+        usageCount: 0,
       };
 
       // 存储分配记录
       const userAssignments = this.userRoleAssignments.get(userId) || [];
       userAssignments.push(assignment);
       this.userRoleAssignments.set(userId, userAssignments);
-      
+
       // 清除相关缓存
       this.invalidateUserCache(userId);
-      
+
       // 记录审计日志
       this.recordAuditLog('role_assigned', {
         assignmentId,
         userId,
         roleId,
         roleName: role.name,
-        assignedBy
+        assignedBy,
       });
-      
-      logger.info('角色分配成功', { assignmentId, userId, roleId, assignedBy });
-      
-      return assignmentId;
 
+      logger.info('角色分配成功', { assignmentId, userId, roleId, assignedBy });
+
+      return assignmentId;
     } catch (error) {
       logger.error('角色分配失败', { error, userId, roleId, assignedBy });
       throw error;
@@ -698,19 +777,22 @@ export class AdvancedRBACSystem {
 
       // 查找并撤销分配
       const userAssignments = this.userRoleAssignments.get(userId) || [];
-      const assignmentIndex = userAssignments.findIndex(a => a.roleId === roleId && a.isActive);
-      
+      const assignmentIndex = userAssignments.findIndex(
+        a => a.roleId === roleId && a.isActive
+      );
+
       if (assignmentIndex === -1) {
         throw new Error('未找到有效的角色分配');
       }
 
       const assignment = userAssignments[assignmentIndex];
-      
+
       // 检查是否可撤销
       const role = this.roles.get(roleId);
       if (role && !role.isSystem) {
         // 系统角色需要特殊权限才能撤销
-        const canRevokeSystem = await this.checkSystemRoleRevocationPermission(revokedBy);
+        const canRevokeSystem =
+          await this.checkSystemRoleRevocationPermission(revokedBy);
         if (!canRevokeSystem) {
           throw new Error('没有撤销系统角色的权限');
         }
@@ -721,10 +803,10 @@ export class AdvancedRBACSystem {
       assignment.metadata.revokedBy = revokedBy;
       assignment.metadata.revokedAt = Date.now();
       assignment.metadata.revocationReason = reason;
-      
+
       // 清除相关缓存
       this.invalidateUserCache(userId);
-      
+
       // 记录审计日志
       this.recordAuditLog('role_revoked', {
         assignmentId: assignment.id,
@@ -732,13 +814,12 @@ export class AdvancedRBACSystem {
         roleId,
         roleName: role?.name,
         revokedBy,
-        reason
+        reason,
       });
-      
-      logger.info('角色撤销成功', { userId, roleId, revokedBy, reason });
-      
-      return true;
 
+      logger.info('角色撤销成功', { userId, roleId, revokedBy, reason });
+
+      return true;
     } catch (error) {
       logger.error('角色撤销失败', { error, userId, roleId, revokedBy });
       throw error;
@@ -749,14 +830,19 @@ export class AdvancedRBACSystem {
    * 函数级注释：获取用户角色
    * 获取用户的所有有效角色
    */
-  public async getUserRoles(userId: string, includeInherited: boolean = true): Promise<AdvancedRole[]> {
+  public async getUserRoles(
+    userId: string,
+    includeInherited: boolean = true
+  ): Promise<AdvancedRole[]> {
     try {
       const userAssignments = this.userRoleAssignments.get(userId) || [];
-      const activeAssignments = userAssignments.filter(a => this.isAssignmentActive(a));
-      
+      const activeAssignments = userAssignments.filter(a =>
+        this.isAssignmentActive(a)
+      );
+
       const roles: AdvancedRole[] = [];
       const roleIds = new Set<string>();
-      
+
       // 获取直接分配的角色
       for (const assignment of activeAssignments) {
         const role = this.roles.get(assignment.roleId);
@@ -768,7 +854,9 @@ export class AdvancedRBACSystem {
 
       // 获取继承的角色
       if (includeInherited && this.config.enableInheritance) {
-        const inheritedRoleIds = await this.getInheritedRoles(Array.from(roleIds));
+        const inheritedRoleIds = await this.getInheritedRoles(
+          Array.from(roleIds)
+        );
         for (const roleId of inheritedRoleIds) {
           if (!roleIds.has(roleId)) {
             const role = this.roles.get(roleId);
@@ -781,7 +869,6 @@ export class AdvancedRBACSystem {
       }
 
       return roles;
-
     } catch (error) {
       logger.error('获取用户角色失败', { error, userId });
       return [];
@@ -792,32 +879,43 @@ export class AdvancedRBACSystem {
    * 函数级注释：获取用户权限
    * 获取用户的所有有效权限
    */
-  public async getUserPermissions(userId: string): Promise<AdvancedPermission[]> {
+  public async getUserPermissions(
+    userId: string
+  ): Promise<AdvancedPermission[]> {
     try {
       const roles = await this.getUserRoles(userId, true);
       const permissions: AdvancedPermission[] = [];
       const permissionIds = new Set<string>();
-      
+
       for (const role of roles) {
         // 直接权限
         for (const permission of role.permissions) {
-          if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
+          if (
+            !permissionIds.has(permission.id) &&
+            this.isPermissionActive(permission)
+          ) {
             permissions.push(permission);
             permissionIds.add(permission.id);
           }
         }
-        
+
         // 继承权限
         for (const permission of role.inheritedPermissions) {
-          if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
+          if (
+            !permissionIds.has(permission.id) &&
+            this.isPermissionActive(permission)
+          ) {
             permissions.push(permission);
             permissionIds.add(permission.id);
           }
         }
-        
+
         // 委托权限
         for (const permission of role.delegatedPermissions) {
-          if (!permissionIds.has(permission.id) && this.isPermissionActive(permission)) {
+          if (
+            !permissionIds.has(permission.id) &&
+            this.isPermissionActive(permission)
+          ) {
             permissions.push(permission);
             permissionIds.add(permission.id);
           }
@@ -825,7 +923,6 @@ export class AdvancedRBACSystem {
       }
 
       return permissions;
-
     } catch (error) {
       logger.error('获取用户权限失败', { error, userId });
       return [];
@@ -852,7 +949,7 @@ export class AdvancedRBACSystem {
       userState: {},
       requestAttributes: additionalContext || {},
       sessionAttributes: {},
-      customContext: {}
+      customContext: {},
     };
 
     // 获取用户角色
@@ -861,7 +958,7 @@ export class AdvancedRBACSystem {
 
     // 评估权限
     const result = await this.evaluatePermission(context);
-    
+
     return result.allowed;
   }
 
@@ -877,13 +974,19 @@ export class AdvancedRBACSystem {
    */
   public updateConfiguration(newConfig: Partial<RBACConfiguration>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // 重启相关服务
-    if (newConfig.enableCaching !== undefined || newConfig.cacheTimeout !== undefined) {
+    if (
+      newConfig.enableCaching !== undefined ||
+      newConfig.cacheTimeout !== undefined
+    ) {
       this.restartCaching();
     }
-    
-    if (newConfig.enableAutoOptimization !== undefined || newConfig.optimizationInterval !== undefined) {
+
+    if (
+      newConfig.enableAutoOptimization !== undefined ||
+      newConfig.optimizationInterval !== undefined
+    ) {
       this.restartOptimization();
     }
   }
@@ -905,8 +1008,15 @@ export class AdvancedRBACSystem {
    * 函数级注释：执行权限评估
    * 核心权限评估逻辑
    */
-  private async performPermissionEvaluation(context: PermissionEvaluationContext): Promise<PermissionEvaluationResult> {
-    const auditTrail: Array<{ step: string; result: boolean; reason?: string; timestamp: number }> = [];
+  private async performPermissionEvaluation(
+    context: PermissionEvaluationContext
+  ): Promise<PermissionEvaluationResult> {
+    const auditTrail: Array<{
+      step: string;
+      result: boolean;
+      reason?: string;
+      timestamp: number;
+    }> = [];
     const evaluatedRoles: Array<{
       roleId: string;
       roleName: string;
@@ -929,21 +1039,21 @@ export class AdvancedRBACSystem {
       step: 'get_user_roles',
       result: true,
       reason: `找到 ${roles.length} 个角色`,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // 评估每个角色
     for (const role of roles) {
       const roleEvaluation = await this.evaluateRolePermission(role, context);
       evaluatedRoles.push(roleEvaluation);
-      
+
       if (roleEvaluation.allowed) {
         overallAllowed = true;
         auditTrail.push({
           step: 'role_evaluation',
           result: true,
           reason: `角色 "${role.name}" 允许访问`,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
         break; // 任一角色允许即可
       }
@@ -955,7 +1065,7 @@ export class AdvancedRBACSystem {
         step: 'final_evaluation',
         result: false,
         reason: overallReason,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -967,7 +1077,7 @@ export class AdvancedRBACSystem {
       conditionResults: [],
       evaluationTime: 0,
       cacheHit: false,
-      auditTrail
+      auditTrail,
     };
   }
 
@@ -1004,7 +1114,7 @@ export class AdvancedRBACSystem {
         roleName: role.name,
         allowed: false,
         reason: '角色未激活',
-        permissions
+        permissions,
       };
     }
 
@@ -1015,7 +1125,7 @@ export class AdvancedRBACSystem {
         roleName: role.name,
         allowed: false,
         reason: '角色时间约束不满足',
-        permissions
+        permissions,
       };
     }
 
@@ -1023,24 +1133,30 @@ export class AdvancedRBACSystem {
     const allPermissions = [
       ...role.permissions,
       ...role.inheritedPermissions,
-      ...role.delegatedPermissions
+      ...role.delegatedPermissions,
     ];
 
     for (const permission of allPermissions) {
-      const permissionAllowed = await this.evaluatePermission(permission, context);
+      const permissionAllowed = await this.evaluatePermission(
+        permission,
+        context
+      );
       permissions.push({
         permissionId: permission.id,
         permissionName: permission.name,
         allowed: permissionAllowed.allowed,
-        reason: permissionAllowed.reason
+        reason: permissionAllowed.reason,
       });
 
-      if (permission.name === context.permissionName && permissionAllowed.allowed) {
+      if (
+        permission.name === context.permissionName &&
+        permissionAllowed.allowed
+      ) {
         return {
           roleId: role.id,
           roleName: role.name,
           allowed: true,
-          permissions
+          permissions,
         };
       }
     }
@@ -1050,7 +1166,7 @@ export class AdvancedRBACSystem {
       roleName: role.name,
       allowed: false,
       reason: '角色中未找到匹配的权限',
-      permissions
+      permissions,
     };
   }
 
@@ -1078,13 +1194,20 @@ export class AdvancedRBACSystem {
     }
 
     // 检查使用次数限制
-    if (permission.maxUsage && permission.usageCount && permission.usageCount >= permission.maxUsage) {
+    if (
+      permission.maxUsage &&
+      permission.usageCount &&
+      permission.usageCount >= permission.maxUsage
+    ) {
       return { allowed: false, reason: '权限使用次数已达上限' };
     }
 
     // 检查权限约束
     if (this.config.enforceConstraints && permission.constraints.length > 0) {
-      const constraintResult = await this.evaluatePermissionConstraints(permission.constraints, context);
+      const constraintResult = await this.evaluatePermissionConstraints(
+        permission.constraints,
+        context
+      );
       if (!constraintResult.passed) {
         return { allowed: false, reason: constraintResult.reason };
       }
@@ -1092,7 +1215,10 @@ export class AdvancedRBACSystem {
 
     // 检查权限条件
     if (permission.conditions.length > 0) {
-      const conditionResult = await this.evaluatePermissionConditions(permission.conditions, context);
+      const conditionResult = await this.evaluatePermissionConditions(
+        permission.conditions,
+        context
+      );
       if (!conditionResult.passed) {
         return { allowed: false, reason: conditionResult.reason };
       }
@@ -1109,13 +1235,20 @@ export class AdvancedRBACSystem {
       totalAssignments: 0,
       evaluationCount: 0,
       cacheHitRate: 0,
-      averageEvaluationTime: 0
+      averageEvaluationTime: 0,
     };
   }
 
   private initializeDefaultRoles(): void {
     // 创建默认系统角色
-    const defaultRoles: Omit<AdvancedRole, 'id' | 'createdAt' | 'updatedAt' | 'inheritedPermissions' | 'delegatedPermissions'>[] = [
+    const defaultRoles: Omit<
+      AdvancedRole,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'inheritedPermissions'
+      | 'delegatedPermissions'
+    >[] = [
       {
         name: 'system_admin',
         displayName: '系统管理员',
@@ -1135,8 +1268,8 @@ export class AdvancedRBACSystem {
         metadata: {},
         tags: ['system', 'admin'],
         createdBy: 'system',
-        updatedBy: 'system'
-      }
+        updatedBy: 'system',
+      },
     ];
 
     defaultRoles.forEach(roleData => {
@@ -1147,7 +1280,7 @@ export class AdvancedRBACSystem {
         inheritedPermissions: [],
         delegatedPermissions: [],
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.roles.set(roleId, role);
     });
@@ -1155,7 +1288,10 @@ export class AdvancedRBACSystem {
 
   private initializeDefaultPermissions(): void {
     // 创建默认权限
-    const defaultPermissions: Omit<AdvancedPermission, 'id' | 'createdAt' | 'updatedAt'>[] = [
+    const defaultPermissions: Omit<
+      AdvancedPermission,
+      'id' | 'createdAt' | 'updatedAt'
+    >[] = [
       {
         name: 'system.admin',
         displayName: '系统管理',
@@ -1175,8 +1311,8 @@ export class AdvancedRBACSystem {
         dependencies: [],
         conflicts: [],
         metadata: {},
-        tags: ['system', 'admin']
-      }
+        tags: ['system', 'admin'],
+      },
     ];
 
     defaultPermissions.forEach(permissionData => {
@@ -1185,7 +1321,7 @@ export class AdvancedRBACSystem {
         ...permissionData,
         id: permissionId,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.permissions.set(permissionId, permission);
     });
@@ -1263,11 +1399,15 @@ export class AdvancedRBACSystem {
     return `assign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private generateEvaluationCacheKey(context: PermissionEvaluationContext): string {
+  private generateEvaluationCacheKey(
+    context: PermissionEvaluationContext
+  ): string {
     return `${context.userId}:${context.permissionName}:${context.resourceId || 'global'}`;
   }
 
-  private async calculateInheritedPermissions(parentRoleIds: string[]): Promise<AdvancedPermission[]> {
+  private async calculateInheritedPermissions(
+    parentRoleIds: string[]
+  ): Promise<AdvancedPermission[]> {
     // 简化实现
     return [];
   }
@@ -1284,32 +1424,44 @@ export class AdvancedRBACSystem {
     logger.info('RBAC审计日志', { action, details, timestamp: Date.now() });
   }
 
-  private async checkAssignmentPermission(assignedBy: string, roleId: string): Promise<boolean> {
+  private async checkAssignmentPermission(
+    assignedBy: string,
+    roleId: string
+  ): Promise<boolean> {
     // 简化实现
     return true;
   }
 
-  private async validateRoleConstraints(userId: string, roleId: string, constraints: RoleConstraint[]): Promise<void> {
+  private async validateRoleConstraints(
+    userId: string,
+    roleId: string,
+    constraints: RoleConstraint[]
+  ): Promise<void> {
     // 验证角色约束
   }
 
-  private async checkRevocationPermission(revokedBy: string, roleId: string): Promise<boolean> {
+  private async checkRevocationPermission(
+    revokedBy: string,
+    roleId: string
+  ): Promise<boolean> {
     // 简化实现
     return true;
   }
 
-  private async checkSystemRoleRevocationPermission(revokedBy: string): Promise<boolean> {
+  private async checkSystemRoleRevocationPermission(
+    revokedBy: string
+  ): Promise<boolean> {
     // 简化实现
     return true;
   }
 
   private isAssignmentActive(assignment: UserRoleAssignment): boolean {
     if (!assignment.isActive) return false;
-    
+
     const now = Date.now();
     if (assignment.validFrom && now < assignment.validFrom) return false;
     if (assignment.validTo && now > assignment.validTo) return false;
-    
+
     return true;
   }
 
@@ -1330,11 +1482,14 @@ export class AdvancedRBACSystem {
     }
   }
 
-  private cacheEvaluationResult(context: PermissionEvaluationContext, result: PermissionEvaluationResult): void {
+  private cacheEvaluationResult(
+    context: PermissionEvaluationContext,
+    result: PermissionEvaluationResult
+  ): void {
     const cacheKey = this.generateEvaluationCacheKey(context);
     this.evaluationCache.set(cacheKey, {
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -1346,7 +1501,7 @@ export class AdvancedRBACSystem {
       case 'evaluation':
         this.statistics.evaluationCount++;
         if (value) {
-          this.statistics.averageEvaluationTime = 
+          this.statistics.averageEvaluationTime =
             (this.statistics.averageEvaluationTime + value) / 2;
         }
         break;
@@ -1367,12 +1522,18 @@ export class AdvancedRBACSystem {
     return true;
   }
 
-  private async evaluatePermissionConstraints(constraints: PermissionConstraint[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string }> {
+  private async evaluatePermissionConstraints(
+    constraints: PermissionConstraint[],
+    context: PermissionEvaluationContext
+  ): Promise<{ passed: boolean; reason?: string }> {
     // 简化实现
     return { passed: true };
   }
 
-  private async evaluatePermissionConditions(conditions: PermissionCondition[], context: PermissionEvaluationContext): Promise<{ passed: boolean; reason?: string }> {
+  private async evaluatePermissionConditions(
+    conditions: PermissionCondition[],
+    context: PermissionEvaluationContext
+  ): Promise<{ passed: boolean; reason?: string }> {
     // 简化实现
     return { passed: true };
   }
@@ -1389,8 +1550,9 @@ export class AdvancedRBACSystem {
   private updateStatisticsData(): void {
     this.statistics.totalRoles = this.roles.size;
     this.statistics.totalPermissions = this.permissions.size;
-    this.statistics.totalAssignments = Array.from(this.userRoleAssignments.values())
-      .reduce((total, assignments) => total + assignments.length, 0);
+    this.statistics.totalAssignments = Array.from(
+      this.userRoleAssignments.values()
+    ).reduce((total, assignments) => total + assignments.length, 0);
   }
 
   private async performAutoOptimization(): void {
@@ -1419,14 +1581,27 @@ export function useAdvancedRBACSystem(config?: Partial<RBACConfiguration>) {
   }, [rbacSystem]);
 
   const checkUserPermission = useCallback(
-    async (userId: string, permissionName: string, resourceId?: string, context?: Record<string, any>): Promise<boolean> => {
-      return rbacSystem.checkUserPermission(userId, permissionName, resourceId, context);
+    async (
+      userId: string,
+      permissionName: string,
+      resourceId?: string,
+      context?: Record<string, any>
+    ): Promise<boolean> => {
+      return rbacSystem.checkUserPermission(
+        userId,
+        permissionName,
+        resourceId,
+        context
+      );
     },
     [rbacSystem]
   );
 
   const getUserRoles = useCallback(
-    async (userId: string, includeInherited?: boolean): Promise<AdvancedRole[]> => {
+    async (
+      userId: string,
+      includeInherited?: boolean
+    ): Promise<AdvancedRole[]> => {
       return rbacSystem.getUserRoles(userId, includeInherited);
     },
     [rbacSystem]
@@ -1440,14 +1615,24 @@ export function useAdvancedRBACSystem(config?: Partial<RBACConfiguration>) {
   );
 
   const assignRole = useCallback(
-    async (userId: string, roleId: string, assignedBy: string, options?: any): Promise<string> => {
+    async (
+      userId: string,
+      roleId: string,
+      assignedBy: string,
+      options?: any
+    ): Promise<string> => {
       return rbacSystem.assignRole(userId, roleId, assignedBy, options);
     },
     [rbacSystem]
   );
 
   const revokeRole = useCallback(
-    async (userId: string, roleId: string, revokedBy: string, reason?: string): Promise<boolean> => {
+    async (
+      userId: string,
+      roleId: string,
+      revokedBy: string,
+      reason?: string
+    ): Promise<boolean> => {
       return rbacSystem.revokeRole(userId, roleId, revokedBy, reason);
     },
     [rbacSystem]
@@ -1460,7 +1645,7 @@ export function useAdvancedRBACSystem(config?: Partial<RBACConfiguration>) {
     assignRole,
     revokeRole,
     statistics,
-    updateConfiguration: rbacSystem.updateConfiguration.bind(rbacSystem)
+    updateConfiguration: rbacSystem.updateConfiguration.bind(rbacSystem),
   };
 }
 

@@ -14,7 +14,7 @@ interface UseSkillRealtimeParams {
 export const useSkillRealtime = ({
   gameStateId,
   setSkillUses,
-  fetchAllSkillData
+  fetchAllSkillData,
 }: UseSkillRealtimeParams) => {
   // 优化的实时订阅 - 只订阅必要的表
   useEffect(() => {
@@ -37,18 +37,20 @@ export const useSkillRealtime = ({
             const enhancedUse = {
               ...newSkillUse,
               chinese_name: config?.chineseName || newSkillUse.skill_name,
-              skill_config: config
+              skill_config: config,
             };
 
             if (payload.eventType === 'INSERT') {
               setSkillUses(current => [enhancedUse, ...current]);
             } else if (payload.eventType === 'UPDATE') {
               setSkillUses(current =>
-                current.map(su => su.id === enhancedUse.id ? enhancedUse : su)
+                current.map(su => (su.id === enhancedUse.id ? enhancedUse : su))
               );
             } else if (payload.eventType === 'DELETE' && payload.old) {
               setSkillUses(current =>
-                current.filter(su => su.id !== (payload.old as EnhancedSkillUse).id)
+                current.filter(
+                  su => su.id !== (payload.old as EnhancedSkillUse).id
+                )
               );
             }
           }

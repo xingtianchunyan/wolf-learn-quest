@@ -48,9 +48,12 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
   const logger = createLogger('useQuestionBank');
 
   const [selectedFile, setSelectedFile] = useState<string>('');
-  const [selectedPreprocessedFile, setSelectedPreprocessedFile] = useState<string>('');
+  const [selectedPreprocessedFile, setSelectedPreprocessedFile] =
+    useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [preprocessedFiles, setPreprocessedFiles] = useState<PreprocessedFile[]>([]);
+  const [preprocessedFiles, setPreprocessedFiles] = useState<
+    PreprocessedFile[]
+  >([]);
   const [status, setStatus] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -96,13 +99,17 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         .from('generated_questions')
         .select('original_file_path');
 
-      const preprocessedPaths = new Set(preprocessedData?.map(p => p.original_file_path) || []);
-      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
+      const preprocessedPaths = new Set(
+        preprocessedData?.map(p => p.original_file_path) || []
+      );
+      const generatedPaths = new Set(
+        generatedData?.map(g => g.original_file_path) || []
+      );
 
       const filesWithStatus = (uploadedData || []).map(file => ({
         ...file,
         is_preprocessed: preprocessedPaths.has(file.file_path),
-        is_generated: generatedPaths.has(file.file_path)
+        is_generated: generatedPaths.has(file.file_path),
       }));
 
       setUploadedFiles(filesWithStatus);
@@ -129,11 +136,13 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         .from('generated_questions')
         .select('original_file_path');
 
-      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
+      const generatedPaths = new Set(
+        generatedData?.map(g => g.original_file_path) || []
+      );
 
       const filesWithStatus = (preprocessedData || []).map(file => ({
         ...file,
-        is_generated: generatedPaths.has(file.original_file_path)
+        is_generated: generatedPaths.has(file.original_file_path),
       }));
 
       setPreprocessedFiles(filesWithStatus);
@@ -154,13 +163,13 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'preprocessed_files'
+          table: 'preprocessed_files',
         },
-        (payload) => {
+        payload => {
           logger.debug('检测到新的预处理文件:', payload);
           toast({
             title: '预处理完成',
-            description: '文件预处理已完成，页面数据已更新'
+            description: '文件预处理已完成，页面数据已更新',
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
@@ -177,13 +186,13 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'generated_questions'
+          table: 'generated_questions',
         },
-        (payload) => {
+        payload => {
           logger.debug('检测到新的生成题目:', payload);
           toast({
             title: '题目生成完成',
-            description: 'AI题目生成已完成，页面数据已更新'
+            description: 'AI题目生成已完成，页面数据已更新',
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
@@ -202,7 +211,8 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
   const sanitizeFileName = (fileName: string): string => {
     const lastDotIndex = fileName.lastIndexOf('.');
-    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+    const name =
+      lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
     const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
 
     const cleanName = name
@@ -220,16 +230,25 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
   const handleFileUpload = async (file: File, resetInput: () => void) => {
     clearError();
 
-    const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
+    const allowedFormats = [
+      '.txt',
+      '.doc',
+      '.docx',
+      '.xls',
+      '.xlsx',
+      '.pptx',
+      '.md',
+    ];
     const fileExtension = `.${file.name.split('.').pop()?.toLowerCase()}`;
 
     if (!allowedFormats.includes(fileExtension)) {
-      const errorMsg = '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
+      const errorMsg =
+        '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
       setError(errorMsg);
       toast({
         title: '文件格式不支持',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -240,7 +259,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '文件过大',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -252,7 +271,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '文件重复',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -270,19 +289,17 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         .from('question-files')
         .upload(`uploads/${fileName}`, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
         });
 
       if (error) {
         throw new Error(`上传失败: ${error.message}`);
       }
 
-      const { error: dbError } = await supabase
-        .from('uploaded_files')
-        .insert({
-          file_name: originalName,
-          file_path: `uploads/${fileName}`
-        });
+      const { error: dbError } = await supabase.from('uploaded_files').insert({
+        file_name: originalName,
+        file_path: `uploads/${fileName}`,
+      });
 
       if (dbError) {
         throw new Error(`保存文件信息失败: ${dbError.message}`);
@@ -290,7 +307,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
       toast({
         title: '上传成功',
-        description: `文件 "${originalName}" 已成功上传`
+        description: `文件 "${originalName}" 已成功上传`,
       });
 
       await fetchUploadedFiles();
@@ -300,7 +317,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '上传失败',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -316,7 +333,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '请选择文件',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -333,13 +350,16 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         throw new Error('选择的文件不存在');
       }
 
-      const { data, error } = await supabase.functions.invoke('preprocess-file', {
-        body: {
-          filePath: selectedFileData.file_path,
-          fileName: selectedFileData.file_name,
-          roomId: roomId || 'current-room'
+      const { data, error } = await supabase.functions.invoke(
+        'preprocess-file',
+        {
+          body: {
+            filePath: selectedFileData.file_path,
+            fileName: selectedFileData.file_name,
+            roomId: roomId || 'current-room',
+          },
         }
-      });
+      );
 
       if (error) {
         throw new Error(`API调用失败: ${error.message}`);
@@ -349,12 +369,13 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         throw new Error(data?.error || '预处理失败，请重试');
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : '文件预处理失败';
+      const errorMsg =
+        error instanceof Error ? error.message : '文件预处理失败';
       setError(`预处理失败: ${errorMsg}`);
       toast({
         title: '预处理失败',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       setIsProcessing(false);
       setStatus('');
@@ -368,7 +389,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '请选择已预处理文件',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -380,13 +401,16 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     setStatus('使用Qwen2.5-72B模型生成题目中...');
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: {
-          preprocessedId: selectedPreprocessedFile,
-          questionCount: 18,
-          roomId: roomId || 'current-room'
+      const { data, error } = await supabase.functions.invoke(
+        'generate-questions',
+        {
+          body: {
+            preprocessedId: selectedPreprocessedFile,
+            questionCount: 18,
+            roomId: roomId || 'current-room',
+          },
         }
-      });
+      );
 
       if (error) {
         setTimeout(() => {
@@ -398,7 +422,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
             toast({
               title: '生成失败',
               description: errorMsg,
-              variant: 'destructive'
+              variant: 'destructive',
             });
           }
         }, 30000);
@@ -415,7 +439,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
             toast({
               title: '生成失败',
               description: errorMsg,
-              variant: 'destructive'
+              variant: 'destructive',
             });
           }
         }, 30000);
@@ -427,7 +451,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       toast({
         title: '生成失败',
         description: errorMsg,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       setIsGenerating(false);
       setStatus('');
@@ -453,6 +477,6 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     fetchPreprocessedFiles,
     handleFileUpload,
     handlePreprocessFile,
-    handleGenerateQuestions
+    handleGenerateQuestions,
   };
 };

@@ -2,14 +2,14 @@
  * 文件级注释：主错误处理器
  * 统一整合所有错误处理机制，提供一致的错误处理策略和用户体验
  * 解决现有多个错误处理器之间的不一致性和重复问题
- * 
+ *
  * 主要功能：
  * - 统一错误分类和标准化
  * - 智能错误恢复和重试机制
  * - 用户友好的错误通知
  * - 完整的错误监控和报告
  * - 错误历史记录和分析
- * 
+ *
  * @author SOLO Coding
  * @version 3.0.0
  */
@@ -78,7 +78,13 @@ export interface ErrorHandlingOptions {
  */
 export interface ErrorClassification {
   /** 错误类别 */
-  category: 'network' | 'validation' | 'permission' | 'business' | 'system' | 'internal';
+  category:
+    | 'network'
+    | 'validation'
+    | 'permission'
+    | 'business'
+    | 'system'
+    | 'internal';
   /** 严重级别 */
   severity: ErrorSeverity;
   /** 是否可重试 */
@@ -185,9 +191,9 @@ export class MasterErrorHandler {
       [ErrorSeverity.LOW]: 0,
       [ErrorSeverity.MEDIUM]: 0,
       [ErrorSeverity.HIGH]: 0,
-      [ErrorSeverity.CRITICAL]: 0
+      [ErrorSeverity.CRITICAL]: 0,
     },
-    averageProcessingTime: 0
+    averageProcessingTime: 0,
   };
   private processingTimes: number[] = [];
 
@@ -215,38 +221,38 @@ export class MasterErrorHandler {
   ): Promise<ErrorHandlingResult> {
     const startTime = Date.now();
     const errorId = this.generateErrorId();
-    
+
     try {
       // 1. 标准化错误对象
       const unifiedError = this.normalizeError(error, context, errorId);
-      
+
       // 2. 记录错误历史
       this.addToHistory(unifiedError);
-      
+
       // 3. 更新统计信息
       this.updateStats(unifiedError);
-      
+
       // 4. 记录日志
       if (options.logError !== false) {
         this.logError(unifiedError);
       }
-      
+
       // 5. 上报监控
       if (options.reportToMonitoring !== false) {
         await this.reportToMonitoring(unifiedError);
       }
-      
+
       // 6. 尝试自动恢复
       let recovered = false;
       if (options.attemptRecovery !== false && unifiedError.retryable) {
         recovered = await this.attemptRecovery(unifiedError, options);
       }
-      
+
       // 7. 显示用户通知
       if (options.showNotification !== false && !options.silent) {
         await this.showUserNotification(unifiedError, options, recovered);
       }
-      
+
       // 8. 构建处理结果
       const result: ErrorHandlingResult = {
         errorId,
@@ -258,30 +264,29 @@ export class MasterErrorHandler {
         severity: unifiedError.severity,
         classification: unifiedError.classification,
         processingTime: Date.now() - startTime,
-        recoverySuggestion: this.getRecoverySuggestion(unifiedError)
+        recoverySuggestion: this.getRecoverySuggestion(unifiedError),
       };
-      
+
       // 9. 更新恢复统计
       if (recovered) {
         this.errorStats.recovered++;
       } else {
         this.errorStats.failed++;
       }
-      
+
       // 10. 调用回调
       if (options.onError) {
         options.onError(unifiedError);
       }
-      
+
       if (recovered && options.onRecovery) {
         options.onRecovery(unifiedError);
       }
-      
+
       return result;
-      
     } catch (handlingError) {
       logger.error('错误处理器本身发生错误', handlingError);
-      
+
       // 返回默认错误处理结果
       return {
         errorId,
@@ -297,9 +302,9 @@ export class MasterErrorHandler {
           isRetryable: false,
           userMessage: '系统内部错误',
           technicalDetails: String(handlingError),
-          suggestedAction: '请联系技术支持'
+          suggestedAction: '请联系技术支持',
         },
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       };
     }
   }
@@ -372,14 +377,14 @@ export class MasterErrorHandler {
       originalError: error,
       context: {
         ...context,
-        timestamp: context.timestamp || Date.now()
+        timestamp: context.timestamp || Date.now(),
       },
       timestamp: Date.now(),
       severity,
       classification,
       stack: error instanceof Error ? error.stack : undefined,
       retryable,
-      maxRetries: maxRetries || (retryable ? 3 : 0)
+      maxRetries: maxRetries || (retryable ? 3 : 0),
     };
   }
 
@@ -402,47 +407,48 @@ export class MasterErrorHandler {
         category: 'network' as const,
         userMessage: '网络连接出现问题，请检查网络设置',
         technicalDetails: `网络错误: ${message}`,
-        suggestedAction: '请检查网络连接并重试'
+        suggestedAction: '请检查网络连接并重试',
       },
       validation: {
         category: 'validation' as const,
         userMessage: '输入的数据格式不正确',
         technicalDetails: `验证错误: ${message}`,
-        suggestedAction: '请检查输入数据的格式'
+        suggestedAction: '请检查输入数据的格式',
       },
       permission: {
         category: 'permission' as const,
         userMessage: '您没有执行此操作的权限',
         technicalDetails: `权限错误: ${message}`,
-        suggestedAction: '请联系管理员获取相应权限'
+        suggestedAction: '请联系管理员获取相应权限',
       },
       business: {
         category: 'business' as const,
         userMessage: '操作无法完成，请检查操作条件',
         technicalDetails: `业务逻辑错误: ${message}`,
-        suggestedAction: '请检查操作条件并重试'
+        suggestedAction: '请检查操作条件并重试',
       },
       system: {
         category: 'system' as const,
         userMessage: '系统暂时不可用，请稍后重试',
         technicalDetails: `系统错误: ${message}`,
-        suggestedAction: '请稍后重试或联系技术支持'
-      }
+        suggestedAction: '请稍后重试或联系技术支持',
+      },
     };
 
     const defaultCategory = {
       category: 'internal' as const,
       userMessage: '发生了未知错误',
       technicalDetails: message,
-      suggestedAction: '请重试或联系技术支持'
+      suggestedAction: '请重试或联系技术支持',
     };
 
-    const categoryInfo = categories[type as keyof typeof categories] || defaultCategory;
+    const categoryInfo =
+      categories[type as keyof typeof categories] || defaultCategory;
 
     return {
       ...categoryInfo,
       severity,
-      isRetryable: this.isErrorRetryable(type, code)
+      isRetryable: this.isErrorRetryable(type, code),
     };
   }
 
@@ -455,7 +461,7 @@ export class MasterErrorHandler {
   private isErrorRetryable(type: string, code: string): boolean {
     const retryableTypes = ['network'];
     const retryableCodes = ['NETWORK_ERROR', 'TIMEOUT_ERROR', 'SERVER_ERROR'];
-    
+
     return retryableTypes.includes(type) || retryableCodes.includes(code);
   }
 
@@ -473,7 +479,7 @@ export class MasterErrorHandler {
       [ErrorCode.DATA_INVALID]: ErrorSeverity.MEDIUM,
       [ErrorCode.NETWORK_ERROR]: ErrorSeverity.HIGH,
       [ErrorCode.API_ERROR]: ErrorSeverity.HIGH,
-      [ErrorCode.UNKNOWN_ERROR]: ErrorSeverity.CRITICAL
+      [ErrorCode.UNKNOWN_ERROR]: ErrorSeverity.CRITICAL,
     };
 
     return severityMap[code || ''] || ErrorSeverity.MEDIUM;
@@ -485,10 +491,7 @@ export class MasterErrorHandler {
    * @returns 是否可重试
    */
   private isAppErrorRetryable(code?: string): boolean {
-    const retryableCodes = [
-      ErrorCode.NETWORK_ERROR,
-      ErrorCode.API_ERROR
-    ];
+    const retryableCodes = [ErrorCode.NETWORK_ERROR, ErrorCode.API_ERROR];
 
     return retryableCodes.includes(code as ErrorCode);
   }
@@ -505,10 +508,12 @@ export class MasterErrorHandler {
       [SkillErrorType.INVALID_TARGET]: ErrorSeverity.MEDIUM,
       [SkillErrorType.COOLDOWN_ACTIVE]: ErrorSeverity.LOW,
       [SkillErrorType.INSUFFICIENT_RESOURCES]: ErrorSeverity.MEDIUM,
-      [SkillErrorType.SKILL_FAILED]: ErrorSeverity.HIGH
+      [SkillErrorType.SKILL_FAILED]: ErrorSeverity.HIGH,
     };
 
-    return severityMap[type || SkillErrorType.SKILL_FAILED] || ErrorSeverity.MEDIUM;
+    return (
+      severityMap[type || SkillErrorType.SKILL_FAILED] || ErrorSeverity.MEDIUM
+    );
   }
 
   /**
@@ -519,7 +524,7 @@ export class MasterErrorHandler {
   private isSkillErrorRetryable(type?: SkillErrorType): boolean {
     const retryableTypes = [
       SkillErrorType.SKILL_FAILED,
-      SkillErrorType.INSUFFICIENT_RESOURCES
+      SkillErrorType.INSUFFICIENT_RESOURCES,
     ];
 
     return retryableTypes.includes(type as SkillErrorType);
@@ -543,7 +548,10 @@ export class MasterErrorHandler {
     const maxRetries = options.maxRetries || error.maxRetries || 3;
 
     if (currentRetries >= maxRetries) {
-      logger.warn('达到最大重试次数', { errorId: error.id, retries: currentRetries });
+      logger.warn('达到最大重试次数', {
+        errorId: error.id,
+        retries: currentRetries,
+      });
       return false;
     }
 
@@ -558,7 +566,7 @@ export class MasterErrorHandler {
       errorId: error.id,
       attempt: currentRetries + 1,
       maxRetries,
-      delay
+      delay,
     });
 
     // 等待延迟
@@ -590,9 +598,9 @@ export class MasterErrorHandler {
   private async recoverNetworkError(error: UnifiedError): Promise<boolean> {
     // 简单的网络连接测试
     try {
-      const response = await fetch('/api/health', { 
+      const response = await fetch('/api/health', {
         method: 'GET',
-        timeout: 5000 
+        timeout: 5000,
       } as any);
       return response.ok;
     } catch {
@@ -638,11 +646,15 @@ export class MasterErrorHandler {
     options: ErrorHandlingOptions,
     recovered: boolean
   ): Promise<void> {
-    const message = options.customMessage || this.getUserFriendlyMessage(error, options);
-    
+    const message =
+      options.customMessage || this.getUserFriendlyMessage(error, options);
+
     // 根据严重级别选择通知方式
-    const notificationType = this.getNotificationType(error.severity, recovered);
-    
+    const notificationType = this.getNotificationType(
+      error.severity,
+      recovered
+    );
+
     // 这里应该调用实际的通知系统
     // 暂时使用console输出
     if (recovered) {
@@ -658,7 +670,10 @@ export class MasterErrorHandler {
    * @param recovered - 是否已恢复
    * @returns 通知类型
    */
-  private getNotificationType(severity: ErrorSeverity, recovered: boolean): string {
+  private getNotificationType(
+    severity: ErrorSeverity,
+    recovered: boolean
+  ): string {
     if (recovered) {
       return 'success';
     }
@@ -715,7 +730,7 @@ export class MasterErrorHandler {
       severity: error.severity,
       context: error.context,
       timestamp: error.timestamp,
-      stack: error.stack
+      stack: error.stack,
     };
 
     switch (error.severity) {
@@ -746,7 +761,7 @@ export class MasterErrorHandler {
         errorId: error.id,
         type: error.type,
         severity: error.severity,
-        timestamp: error.timestamp
+        timestamp: error.timestamp,
       });
     } catch (reportError) {
       logger.error('上报监控系统失败', reportError);
@@ -759,7 +774,7 @@ export class MasterErrorHandler {
    */
   private addToHistory(error: UnifiedError): void {
     this.errorHistory.unshift(error);
-    
+
     // 保持历史记录在合理范围内
     if (this.errorHistory.length > 1000) {
       this.errorHistory = this.errorHistory.slice(0, 500);
@@ -773,10 +788,11 @@ export class MasterErrorHandler {
   private updateStats(error: UnifiedError): void {
     this.errorStats.total++;
     this.errorStats.handled++;
-    
+
     // 按类型统计
-    this.errorStats.byType[error.type] = (this.errorStats.byType[error.type] || 0) + 1;
-    
+    this.errorStats.byType[error.type] =
+      (this.errorStats.byType[error.type] || 0) + 1;
+
     // 按严重级别统计
     this.errorStats.bySeverity[error.severity]++;
   }
@@ -812,8 +828,10 @@ export class MasterErrorHandler {
    */
   public cleanupExpiredErrors(maxAge: number = 24 * 60 * 60 * 1000): void {
     const cutoffTime = Date.now() - maxAge;
-    this.errorHistory = this.errorHistory.filter(error => error.timestamp > cutoffTime);
-    
+    this.errorHistory = this.errorHistory.filter(
+      error => error.timestamp > cutoffTime
+    );
+
     // 清理重试计数器
     for (const [errorId, _] of this.retryCounters.entries()) {
       const error = this.errorHistory.find(e => e.id === errorId);
@@ -837,9 +855,9 @@ export class MasterErrorHandler {
         [ErrorSeverity.LOW]: 0,
         [ErrorSeverity.MEDIUM]: 0,
         [ErrorSeverity.HIGH]: 0,
-        [ErrorSeverity.CRITICAL]: 0
+        [ErrorSeverity.CRITICAL]: 0,
       },
-      averageProcessingTime: 0
+      averageProcessingTime: 0,
     };
     this.processingTimes = [];
   }

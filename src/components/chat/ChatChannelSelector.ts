@@ -15,7 +15,7 @@ interface ChatChannelSelectorProps {
 const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
   channels,
   currentChannel,
-  onChannelChange
+  onChannelChange,
 }) => {
   return React.createElement(
     'div',
@@ -30,7 +30,7 @@ const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
             currentChannel.id === channel.id
               ? 'bg-primary text-primary-foreground'
               : 'bg-secondary text-secondary-foreground'
-          }`
+          }`,
         },
         channel.name
       )

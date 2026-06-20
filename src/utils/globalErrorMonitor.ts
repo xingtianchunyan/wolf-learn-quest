@@ -1,20 +1,20 @@
 /**
  * 文件级注释：全局错误监控系统
- * 
+ *
  * 该文件实现了一个全局错误监控和报告系统，旨在：
  * - 监控和捕获全局JavaScript错误
  * - 提供实时错误统计和分析
  * - 实现错误报告和通知机制
  * - 支持错误趋势分析和预警
  * - 集成第三方错误监控服务
- * 
+ *
  * 主要功能：
  * - 全局错误捕获
  * - 错误统计和分析
  * - 实时监控和报告
  * - 错误趋势预测
  * - 性能影响评估
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
@@ -31,7 +31,7 @@ export enum ErrorCategory {
   BUSINESS = 'business',
   SYSTEM = 'system',
   SECURITY = 'security',
-  PERFORMANCE = 'performance'
+  PERFORMANCE = 'performance',
 }
 
 /**
@@ -176,7 +176,7 @@ interface UserSession {
 
 /**
  * 类级注释：全局错误监控器
- * 
+ *
  * 实现全局错误监控功能，提供：
  * - 错误捕获和收集
  * - 实时统计和分析
@@ -207,7 +207,7 @@ export class GlobalErrorMonitor {
     this.masterErrorHandler = MasterErrorHandler.getInstance();
     this.stats = this.initializeStats();
     this.currentSession = this.initializeSession();
-    
+
     this.setupGlobalErrorHandlers();
     this.setupPerformanceMonitoring();
     this.startReporting();
@@ -241,15 +241,15 @@ export class GlobalErrorMonitor {
         ignoreMessages: [
           'Script error.',
           'Non-Error promise rejection captured',
-          'ResizeObserver loop limit exceeded'
+          'ResizeObserver loop limit exceeded',
         ],
         ignoreUrls: [
           'chrome-extension://',
           'moz-extension://',
-          'safari-extension://'
+          'safari-extension://',
         ],
-        minSeverity: ErrorSeverity.LOW
-      }
+        minSeverity: ErrorSeverity.LOW,
+      },
     };
   }
 
@@ -264,7 +264,7 @@ export class GlobalErrorMonitor {
         [ErrorSeverity.LOW]: 0,
         [ErrorSeverity.MEDIUM]: 0,
         [ErrorSeverity.HIGH]: 0,
-        [ErrorSeverity.CRITICAL]: 0
+        [ErrorSeverity.CRITICAL]: 0,
       },
       errorsByCategory: {
         [ErrorCategory.FRONTEND]: 0,
@@ -276,7 +276,7 @@ export class GlobalErrorMonitor {
         [ErrorCategory.AUTHORIZATION]: 0,
         [ErrorCategory.BUSINESS_LOGIC]: 0,
         [ErrorCategory.SYSTEM]: 0,
-        [ErrorCategory.EXTERNAL_SERVICE]: 0
+        [ErrorCategory.EXTERNAL_SERVICE]: 0,
       },
       errorsByTime: [],
       topErrors: [],
@@ -284,8 +284,8 @@ export class GlobalErrorMonitor {
       userImpact: {
         affectedUsers: 0,
         totalUsers: 0,
-        impactPercentage: 0
-      }
+        impactPercentage: 0,
+      },
     };
   }
 
@@ -301,7 +301,7 @@ export class GlobalErrorMonitor {
       pageViews: [],
       errors: [],
       userAgent: navigator.userAgent,
-      deviceInfo: this.getDeviceInfo()
+      deviceInfo: this.getDeviceInfo(),
     };
   }
 
@@ -320,10 +320,10 @@ export class GlobalErrorMonitor {
   private getDeviceInfo() {
     const userAgent = navigator.userAgent;
     const mobile = /Mobile|Android|iPhone|iPad/.test(userAgent);
-    
+
     let browser = 'Unknown';
     let version = 'Unknown';
-    
+
     if (userAgent.includes('Chrome')) {
       browser = 'Chrome';
       const match = userAgent.match(/Chrome\/(\d+)/);
@@ -342,7 +342,7 @@ export class GlobalErrorMonitor {
       platform: navigator.platform,
       browser,
       version,
-      mobile
+      mobile,
     };
   }
 
@@ -354,30 +354,37 @@ export class GlobalErrorMonitor {
     if (!this.config.enabled) return;
 
     // 捕获JavaScript错误
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       this.handleGlobalError(event.error || new Error(event.message), {
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
-        type: 'javascript_error'
+        type: 'javascript_error',
       });
     });
 
     // 捕获未处理的Promise拒绝
-    window.addEventListener('unhandledrejection', (event) => {
-      const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+    window.addEventListener('unhandledrejection', event => {
+      const error =
+        event.reason instanceof Error
+          ? event.reason
+          : new Error(String(event.reason));
       this.handleGlobalError(error, {
         type: 'unhandled_promise_rejection',
-        promise: event.promise
+        promise: event.promise,
       });
     });
 
     // 捕获资源加载错误
-    window.addEventListener('error', (event) => {
-      if (event.target && event.target !== window) {
-        this.handleResourceError(event);
-      }
-    }, true);
+    window.addEventListener(
+      'error',
+      event => {
+        if (event.target && event.target !== window) {
+          this.handleResourceError(event);
+        }
+      },
+      true
+    );
   }
 
   /**
@@ -385,10 +392,11 @@ export class GlobalErrorMonitor {
    * 初始化性能监控和指标收集
    */
   private setupPerformanceMonitoring() {
-    if (!this.config.enablePerformanceMonitoring || !window.PerformanceObserver) return;
+    if (!this.config.enablePerformanceMonitoring || !window.PerformanceObserver)
+      return;
 
     try {
-      this.performanceObserver = new PerformanceObserver((list) => {
+      this.performanceObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
         entries.forEach(entry => {
           if (entry.entryType === 'navigation') {
@@ -399,7 +407,9 @@ export class GlobalErrorMonitor {
         });
       });
 
-      this.performanceObserver.observe({ entryTypes: ['navigation', 'largest-contentful-paint'] });
+      this.performanceObserver.observe({
+        entryTypes: ['navigation', 'largest-contentful-paint'],
+      });
     } catch (error) {
       console.warn('性能监控初始化失败:', error);
     }
@@ -423,10 +433,10 @@ export class GlobalErrorMonitor {
         errorId,
         sessionId: this.currentSession.sessionId,
         url: window.location.href,
-        timestamp
+        timestamp,
       },
       timestamp,
-      sessionId: this.currentSession.sessionId
+      sessionId: this.currentSession.sessionId,
     });
 
     // 限制缓存大小
@@ -445,7 +455,7 @@ export class GlobalErrorMonitor {
       await this.masterErrorHandler.handleError(error, {
         ...context,
         globalMonitor: true,
-        sessionId: this.currentSession.sessionId
+        sessionId: this.currentSession.sessionId,
       });
     } catch (handlingError) {
       console.error('主错误处理器处理失败:', handlingError);
@@ -459,12 +469,12 @@ export class GlobalErrorMonitor {
   private handleResourceError(event: Event) {
     const target = event.target as HTMLElement;
     const error = new Error(`资源加载失败: ${target.tagName}`);
-    
+
     this.handleGlobalError(error, {
       type: 'resource_error',
       tagName: target.tagName,
       src: (target as any).src || (target as any).href,
-      currentSrc: (target as any).currentSrc
+      currentSrc: (target as any).currentSrc,
     });
   }
 
@@ -478,7 +488,11 @@ export class GlobalErrorMonitor {
 
     // 检查忽略的错误消息
     const message = error.message || '';
-    if (this.config.filters.ignoreMessages.some(pattern => message.includes(pattern))) {
+    if (
+      this.config.filters.ignoreMessages.some(pattern =>
+        message.includes(pattern)
+      )
+    ) {
       return false;
     }
 
@@ -513,7 +527,7 @@ export class GlobalErrorMonitor {
     this.stats.errorsByTime.push({
       timestamp,
       count: 1,
-      severity
+      severity,
     });
 
     // 限制时间序列长度
@@ -534,8 +548,10 @@ export class GlobalErrorMonitor {
    */
   private determineSeverity(error: Error, context: any): ErrorSeverity {
     if (context.type === 'resource_error') return ErrorSeverity.LOW;
-    if (error.name === 'TypeError' || error.name === 'ReferenceError') return ErrorSeverity.HIGH;
-    if (context.type === 'unhandled_promise_rejection') return ErrorSeverity.MEDIUM;
+    if (error.name === 'TypeError' || error.name === 'ReferenceError')
+      return ErrorSeverity.HIGH;
+    if (context.type === 'unhandled_promise_rejection')
+      return ErrorSeverity.MEDIUM;
     return ErrorSeverity.MEDIUM;
   }
 
@@ -546,7 +562,8 @@ export class GlobalErrorMonitor {
   private determineCategory(error: Error, context: any): ErrorCategory {
     if (context.type === 'resource_error') return ErrorCategory.FRONTEND;
     if (context.type === 'network_error') return ErrorCategory.NETWORK;
-    if (context.type === 'unhandled_promise_rejection') return ErrorCategory.FRONTEND;
+    if (context.type === 'unhandled_promise_rejection')
+      return ErrorCategory.FRONTEND;
     return ErrorCategory.FRONTEND;
   }
 
@@ -555,7 +572,9 @@ export class GlobalErrorMonitor {
    * 更新最常见错误的统计
    */
   private updateTopErrors(message: string) {
-    const existing = this.stats.topErrors.find(item => item.message === message);
+    const existing = this.stats.topErrors.find(
+      item => item.message === message
+    );
     if (existing) {
       existing.count++;
       existing.lastOccurred = Date.now();
@@ -563,7 +582,7 @@ export class GlobalErrorMonitor {
       this.stats.topErrors.push({
         message,
         count: 1,
-        lastOccurred: Date.now()
+        lastOccurred: Date.now(),
       });
     }
 
@@ -581,17 +600,17 @@ export class GlobalErrorMonitor {
   private updateErrorRateTrend(timestamp: number) {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
-    
+
     // 计算最近5分钟的错误率
     const recentErrors = this.stats.errorsByTime.filter(
       item => item.timestamp > fiveMinutesAgo
     );
-    
+
     const errorRate = recentErrors.length / 5; // 每分钟错误数
 
     this.stats.errorRateTrend.push({
       timestamp: now,
-      rate: errorRate
+      rate: errorRate,
     });
 
     // 限制趋势数据长度
@@ -606,11 +625,11 @@ export class GlobalErrorMonitor {
    */
   private updateSession(errorId: string, error: Error) {
     const severity = this.determineSeverity(error, {});
-    
+
     this.currentSession.errors.push({
       errorId,
       timestamp: Date.now(),
-      severity
+      severity,
     });
 
     this.currentSession.lastActivity = Date.now();
@@ -624,7 +643,7 @@ export class GlobalErrorMonitor {
     this.currentSession.pageViews.push({
       url: window.location.href,
       timestamp: Date.now(),
-      duration: entry.loadEventEnd - entry.loadEventStart
+      duration: entry.loadEventEnd - entry.loadEventStart,
     });
   }
 
@@ -657,7 +676,7 @@ export class GlobalErrorMonitor {
     try {
       const report = this.generateReport();
       await this.sendReport(report);
-      
+
       // 清理旧的错误缓存
       this.cleanupOldErrors();
     } catch (error) {
@@ -678,15 +697,15 @@ export class GlobalErrorMonitor {
       timestamp: now,
       timeRange: {
         start: oneHourAgo,
-        end: now
+        end: now,
       },
       stats: { ...this.stats },
       performance: {
         averageResponseTime: this.calculateAverageResponseTime(),
         errorImpactOnPerformance: this.calculateErrorImpactOnPerformance(),
-        memoryUsage: this.getMemoryUsage()
+        memoryUsage: this.getMemoryUsage(),
       },
-      recommendations: this.generateRecommendations()
+      recommendations: this.generateRecommendations(),
     };
   }
 
@@ -698,7 +717,10 @@ export class GlobalErrorMonitor {
     const pageViews = this.currentSession.pageViews;
     if (pageViews.length === 0) return 0;
 
-    const totalDuration = pageViews.reduce((sum, view) => sum + view.duration, 0);
+    const totalDuration = pageViews.reduce(
+      (sum, view) => sum + view.duration,
+      0
+    );
     return totalDuration / pageViews.length;
   }
 
@@ -710,12 +732,17 @@ export class GlobalErrorMonitor {
     const recentErrors = this.stats.errorsByTime.filter(
       item => item.timestamp > Date.now() - 60 * 60 * 1000
     );
-    
+
     // 简单的影响评分：错误数量 * 严重级别权重
     const impact = recentErrors.reduce((sum, error) => {
-      const weight = error.severity === ErrorSeverity.CRITICAL ? 4 :
-                    error.severity === ErrorSeverity.HIGH ? 3 :
-                    error.severity === ErrorSeverity.MEDIUM ? 2 : 1;
+      const weight =
+        error.severity === ErrorSeverity.CRITICAL
+          ? 4
+          : error.severity === ErrorSeverity.HIGH
+            ? 3
+            : error.severity === ErrorSeverity.MEDIUM
+              ? 2
+              : 1;
       return sum + weight;
     }, 0);
 
@@ -753,7 +780,7 @@ export class GlobalErrorMonitor {
       recommendations.push({
         type: 'critical' as const,
         message: '错误率过高，可能影响用户体验',
-        action: '检查最近的代码更改，考虑回滚或修复'
+        action: '检查最近的代码更改，考虑回滚或修复',
       });
     }
 
@@ -765,7 +792,7 @@ export class GlobalErrorMonitor {
       recommendations.push({
         type: 'critical' as const,
         message: `发现 ${criticalErrors.length} 个严重错误`,
-        action: '立即调查并修复严重错误'
+        action: '立即调查并修复严重错误',
       });
     }
 
@@ -775,7 +802,7 @@ export class GlobalErrorMonitor {
       recommendations.push({
         type: 'warning' as const,
         message: '内存使用率过高',
-        action: '检查内存泄漏，优化内存使用'
+        action: '检查内存泄漏，优化内存使用',
       });
     }
 
@@ -788,7 +815,7 @@ export class GlobalErrorMonitor {
    */
   private async sendReport(report: ErrorReport) {
     // 这里可以集成第三方监控服务
-    
+
     // 示例：发送到自定义端点
     try {
       // await fetch('/api/error-reports', {
@@ -807,8 +834,10 @@ export class GlobalErrorMonitor {
    */
   private cleanupOldErrors() {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    this.errorCache = this.errorCache.filter(item => item.timestamp > oneHourAgo);
-    
+    this.errorCache = this.errorCache.filter(
+      item => item.timestamp > oneHourAgo
+    );
+
     // 清理时间序列数据
     this.stats.errorsByTime = this.stats.errorsByTime.filter(
       item => item.timestamp > oneHourAgo
@@ -821,7 +850,7 @@ export class GlobalErrorMonitor {
    */
   public updateConfig(newConfig: Partial<ErrorMonitorConfig>) {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (!this.config.enabled && this.reportTimer) {
       clearInterval(this.reportTimer);
       this.reportTimer = null;
@@ -854,7 +883,7 @@ export class GlobalErrorMonitor {
     this.handleGlobalError(error, {
       ...context,
       type: 'manual_report',
-      manual: true
+      manual: true,
     });
   }
 
@@ -881,7 +910,9 @@ export class GlobalErrorMonitor {
  * 函数级注释：初始化全局错误监控
  * 初始化并启动全局错误监控系统
  */
-export function initializeGlobalErrorMonitor(config?: Partial<ErrorMonitorConfig>) {
+export function initializeGlobalErrorMonitor(
+  config?: Partial<ErrorMonitorConfig>
+) {
   const monitor = GlobalErrorMonitor.getInstance();
   if (config) {
     monitor.updateConfig(config);

@@ -11,18 +11,22 @@ interface LoadingSpinnerProps {
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
   text,
-  className
+  className,
 }) => {
   const sizeClasses = {
     sm: 'h-4 w-4',
-    md: 'h-6 w-6', 
-    lg: 'h-8 w-8'
+    md: 'h-6 w-6',
+    lg: 'h-8 w-8',
   };
 
   return (
-    <div className={cn("flex items-center justify-center", className)}>
-      <Loader2 className={cn("animate-spin text-werewolf-purple", sizeClasses[size])} />
-      {text && <span className="ml-2 text-sm text-muted-foreground">{text}</span>}
+    <div className={cn('flex items-center justify-center', className)}>
+      <Loader2
+        className={cn('animate-spin text-werewolf-purple', sizeClasses[size])}
+      />
+      {text && (
+        <span className='ml-2 text-sm text-muted-foreground'>{text}</span>
+      )}
     </div>
   );
 };

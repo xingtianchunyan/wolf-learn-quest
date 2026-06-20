@@ -22,7 +22,9 @@ export interface UseGameRoomDataReturn {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn => {
+export const useGameRoomData = (
+  id: string | undefined
+): UseGameRoomDataReturn => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -37,8 +39,9 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
     const judgeUserId = roomData?.judge_user_id;
 
     const fetchJudgeName = async (userId: string) => {
-      const { data, error } = await supabase
-        .rpc('get_public_user_profile', { p_user_id: userId });
+      const { data, error } = await supabase.rpc('get_public_user_profile', {
+        p_user_id: userId,
+      });
 
       if (!error && Array.isArray(data) && data.length > 0) {
         setJudgeName(data[0].player_name);
@@ -58,7 +61,9 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUser(session.user);
           setCurrentUserId(session.user.id);
@@ -70,21 +75,26 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
             .maybeSingle();
 
           if (userData) {
-            setCurrentUser({ ...session.user, player_name: userData.player_name });
+            setCurrentUser({
+              ...session.user,
+              player_name: userData.player_name,
+            });
           }
         }
 
         if (id) {
           const { data: roomDataRaw, error: roomError } = await supabase
             .from('rooms')
-            .select(`
+            .select(
+              `
               id,
               room_id,
               max_players,
               host_id,
               judge_user_id,
               room_players(id, user_id)
-            `)
+            `
+            )
             .eq('id', id)
             .maybeSingle();
 
@@ -93,7 +103,7 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
             toast({
               title: t('error'),
               description: t('error_loading_room'),
-              variant: 'destructive'
+              variant: 'destructive',
             });
             return;
           }
@@ -101,8 +111,10 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
           if (roomDataRaw) {
             let hostPlayerName = 'Unknown';
             if (roomDataRaw.host_id) {
-              const { data: hostData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: roomDataRaw.host_id });
+              const { data: hostData } = await supabase.rpc(
+                'get_public_user_profile',
+                { p_user_id: roomDataRaw.host_id }
+              );
 
               if (hostData && Array.isArray(hostData) && hostData.length > 0) {
                 hostPlayerName = hostData[0].player_name;
@@ -114,13 +126,14 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
               roomId: roomDataRaw.room_id,
               hostPlayerId: hostPlayerName,
               maxPlayers: roomDataRaw.max_players,
-              judge_user_id: roomDataRaw.judge_user_id
+              judge_user_id: roomDataRaw.judge_user_id,
             });
           }
         } else if (session?.user) {
           const { data: roomPlayerData } = await supabase
             .from('room_players')
-            .select(`
+            .select(
+              `
               id,
               room_id,
               rooms!inner(
@@ -130,7 +143,8 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
                 host_id,
                 judge_user_id
               )
-            `)
+            `
+            )
             .eq('user_id', session.user.id)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -141,8 +155,10 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
 
             let hostPlayerName = 'Unknown';
             if (room.host_id) {
-              const { data: hostData } = await supabase
-                .rpc('get_public_user_profile', { p_user_id: room.host_id });
+              const { data: hostData } = await supabase.rpc(
+                'get_public_user_profile',
+                { p_user_id: room.host_id }
+              );
 
               if (hostData && Array.isArray(hostData) && hostData.length > 0) {
                 hostPlayerName = hostData[0].player_name;
@@ -154,7 +170,7 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
               roomId: room.room_id,
               hostPlayerId: hostPlayerName,
               maxPlayers: room.max_players,
-              judge_user_id: room.judge_user_id
+              judge_user_id: room.judge_user_id,
             });
           }
         }
@@ -163,7 +179,7 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
         toast({
           title: t('error'),
           description: t('error_loading_room'),
-          variant: 'destructive'
+          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -181,6 +197,6 @@ export const useGameRoomData = (id: string | undefined): UseGameRoomDataReturn =
     isLoading,
     setRoomData,
     setJudgeName,
-    setIsLoading
+    setIsLoading,
   };
 };

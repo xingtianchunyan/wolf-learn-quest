@@ -13,7 +13,7 @@ export const usePermissions = (roomId?: string) => {
   const [permissions, setPermissions] = useState<PermissionsState>({
     isJudge: false,
     isRoomParticipant: false,
-    loading: true
+    loading: true,
   });
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export const usePermissions = (roomId?: string) => {
         setPermissions({
           isJudge: false,
           isRoomParticipant: false,
-          loading: false
+          loading: false,
         });
         return;
       }
@@ -52,14 +52,14 @@ export const usePermissions = (roomId?: string) => {
         setPermissions({
           isJudge,
           isRoomParticipant: _isRoomParticipant,
-          loading: false
+          loading: false,
         });
       } catch (error) {
         console.error('Error checking permissions:', error);
         setPermissions({
           isJudge: false,
           isRoomParticipant: false,
-          loading: false
+          loading: false,
         });
       }
     };
@@ -71,6 +71,6 @@ export const usePermissions = (roomId?: string) => {
 
   return {
     ...permissions,
-    requireAuth
+    requireAuth,
   };
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -60,11 +59,12 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
           console.error('Error fetching user data:', userError);
         }
 
-        const displayName = userData?.player_name || 
-                           currentUser.user_metadata?.display_name || 
-                           currentUser.user_metadata?.player_name || 
-                           currentUser.email?.split('@')[0] || 
-                           'Player';
+        const displayName =
+          userData?.player_name ||
+          currentUser.user_metadata?.display_name ||
+          currentUser.user_metadata?.player_name ||
+          currentUser.email?.split('@')[0] ||
+          'Player';
 
         setPlayerData({
           id: currentUser.id,
@@ -91,7 +91,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
   const handleAvatarUpdate = (url: string) => {
     setAvatarUrl(url);
   };
-  
+
   // Get level from experience
   const getLevelInfo = (exp: number) => {
     if (exp >= 200) return { level: 4, nextLevelExp: null };
@@ -99,32 +99,38 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
     if (exp >= 50) return { level: 2, nextLevelExp: 100 };
     return { level: 1, nextLevelExp: 50 };
   };
-  
+
   const levelInfo = getLevelInfo(playerData.experience);
-  
+
   return (
     <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
-      <CardHeader className="text-center">
-        <CardTitle className="text-werewolf-purple">{t('player_information')}</CardTitle>
+      <CardHeader className='text-center'>
+        <CardTitle className='text-werewolf-purple'>
+          {t('player_information')}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center">
+      <CardContent className='flex flex-col items-center'>
         {/* Avatar Section - Centered */}
-        <AvatarUpload 
+        <AvatarUpload
           avatarUrl={avatarUrl}
           playerName={playerData.name}
           onAvatarUpdate={handleAvatarUpdate}
         />
-        
+
         {/* Player Name - Centered */}
-        <h3 className="text-xl font-bold mb-2 text-center">{playerData.name}</h3>
-        
+        <h3 className='text-xl font-bold mb-2 text-center'>
+          {playerData.name}
+        </h3>
+
         {/* Player ID - Centered below name */}
         {playerData.playerId && (
-          <p className="text-sm text-gray-400 mb-4 text-center">{t('player_id')}: {playerData.playerId}</p>
+          <p className='text-sm text-gray-400 mb-4 text-center'>
+            {t('player_id')}: {playerData.playerId}
+          </p>
         )}
-        
+
         {/* Player Stats */}
-        <PlayerStats 
+        <PlayerStats
           level={playerData.level}
           experience={playerData.experience}
           wins={playerData.wins}

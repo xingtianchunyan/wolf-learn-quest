@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -16,14 +15,13 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
   useEffect(() => {
     if (!roomId || !currentUser) return;
 
-
     const roomChannel = supabase.channel(`room_presence_${roomId}`);
 
     // 监听presence变化
     roomChannel
       .on('presence', { event: 'sync' }, () => {
         const presenceState = roomChannel.presenceState();
-        
+
         // 转换presence state为我们需要的格式
         const players: PlayerPresence[] = [];
         Object.values(presenceState).forEach((presences: any) => {
@@ -32,19 +30,17 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
               players.push({
                 user_id: presence.user_id,
                 player_name: presence.player_name,
-                online_at: presence.online_at
+                online_at: presence.online_at,
               });
             }
           });
         });
-        
+
         setOnlinePlayers(players);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-      })
-      .subscribe(async (status) => {
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {})
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {})
+      .subscribe(async status => {
         if (status === 'SUBSCRIBED') {
           // 订阅成功后，发送当前用户的在线状态
           const userStatus: PlayerPresence = {
@@ -107,6 +103,6 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
     onlinePlayers,
     getOnlinePlayers,
     isPlayerOnline,
-    channel
+    channel,
   };
 };

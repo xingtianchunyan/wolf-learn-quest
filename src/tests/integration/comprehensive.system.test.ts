@@ -1,6 +1,6 @@
 /**
  * 文件级注释：综合系统集成测试
- * 
+ *
  * 这个文件包含完整的系统集成测试，验证所有优化功能的协同工作。
  * 主要测试内容：
  * - 完整游戏流程测试 - 从用户登录到游戏完成的端到端测试
@@ -8,19 +8,28 @@
  * - 安全攻击防护测试 - 验证各种安全攻击的防护效果
  * - 系统错误恢复测试 - 测试错误处理和系统恢复能力
  * - 系统监控和健康检查 - 持续监控系统状态和性能指标
- * 
+ *
  * 验证内容：
  * - 错误处理、安全审计、性能优化的协同工作
  * - 系统在复杂场景下的稳定性
  * - 多模块间的数据流和状态同步
  * - 端到端的用户体验
  * - 系统容错和恢复能力
- * 
+ *
  * @author SOLO Coding
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  beforeAll,
+  afterAll,
+} from 'vitest';
 
 /**
  * 接口注释：游戏状态接口
@@ -94,7 +103,7 @@ interface SecurityEvent {
 
 /**
  * 类级注释：综合系统测试器
- * 
+ *
  * 提供完整的系统集成测试功能，包括：
  * - 游戏流程测试
  * - 性能压力测试
@@ -130,14 +139,14 @@ class ComprehensiveSystemTester {
   private async simulateSystemStartup(): Promise<void> {
     // 模拟启动延迟
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // 初始化系统指标
     this.systemMetrics.push({
       cpuUsage: 10,
       memoryUsage: 50,
       responseTime: 100,
       errorRate: 0,
-      concurrentUsers: 0
+      concurrentUsers: 0,
     });
   }
 
@@ -145,16 +154,19 @@ class ComprehensiveSystemTester {
    * 函数级注释：创建游戏会话
    * 创建新的游戏会话用于测试
    */
-  async createGameSession(gameId: string, playerCount: number): Promise<GameState> {
+  async createGameSession(
+    gameId: string,
+    playerCount: number
+  ): Promise<GameState> {
     const players: Player[] = [];
-    
+
     for (let i = 0; i < playerCount; i++) {
       players.push({
         id: `player_${i}`,
         name: `Player ${i + 1}`,
         role: i === 0 ? 'werewolf' : 'villager',
         isAlive: true,
-        isOnline: true
+        isOnline: true,
       });
     }
 
@@ -163,7 +175,7 @@ class ComprehensiveSystemTester {
       phase: 'lobby',
       players,
       round: 0,
-      status: 'waiting'
+      status: 'waiting',
     };
 
     this.gameStates.set(gameId, gameState);
@@ -216,7 +228,7 @@ class ComprehensiveSystemTester {
   private async simulateDayPhase(gameState: GameState): Promise<void> {
     // 模拟玩家讨论时间
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     // 更新系统指标
     this.updateSystemMetrics();
   }
@@ -227,10 +239,10 @@ class ComprehensiveSystemTester {
    */
   private async simulateVotingPhase(gameState: GameState): Promise<void> {
     gameState.phase = 'voting';
-    
+
     // 模拟投票过程
     await new Promise(resolve => setTimeout(resolve, 30));
-    
+
     // 随机淘汰一个玩家
     const alivePlayers = gameState.players.filter(p => p.isAlive);
     if (alivePlayers.length > 0) {
@@ -245,12 +257,14 @@ class ComprehensiveSystemTester {
    */
   private async simulateNightPhase(gameState: GameState): Promise<void> {
     gameState.phase = 'night';
-    
+
     // 模拟狼人行动
     await new Promise(resolve => setTimeout(resolve, 30));
-    
+
     // 随机攻击一个村民
-    const villagers = gameState.players.filter(p => p.isAlive && p.role === 'villager');
+    const villagers = gameState.players.filter(
+      p => p.isAlive && p.role === 'villager'
+    );
     if (villagers.length > 0) {
       const randomIndex = Math.floor(Math.random() * villagers.length);
       villagers[randomIndex].isAlive = false;
@@ -264,9 +278,13 @@ class ComprehensiveSystemTester {
    * 检查游戏是否应该结束
    */
   private checkGameEndCondition(gameState: GameState): boolean {
-    const aliveWerewolves = gameState.players.filter(p => p.isAlive && p.role === 'werewolf').length;
-    const aliveVillagers = gameState.players.filter(p => p.isAlive && p.role === 'villager').length;
-    
+    const aliveWerewolves = gameState.players.filter(
+      p => p.isAlive && p.role === 'werewolf'
+    ).length;
+    const aliveVillagers = gameState.players.filter(
+      p => p.isAlive && p.role === 'villager'
+    ).length;
+
     return aliveWerewolves === 0 || aliveWerewolves >= aliveVillagers;
   }
 
@@ -290,7 +308,7 @@ class ComprehensiveSystemTester {
       memoryUsage: Math.min(85, 50 + userCount * 0.3), // 降低内存使用率增长
       responseTime: endTime - startTime,
       errorRate: Math.random() * 0.02, // 降低到2% 最大错误率
-      concurrentUsers: userCount
+      concurrentUsers: userCount,
     };
 
     this.systemMetrics.push(metrics);
@@ -304,10 +322,10 @@ class ComprehensiveSystemTester {
   private async simulateUserAction(userId: string): Promise<void> {
     // 模拟用户登录
     await this.simulateLogin(userId);
-    
+
     // 模拟游戏操作
     await this.simulateGameAction(userId);
-    
+
     // 模拟用户登出
     await this.simulateLogout(userId);
   }
@@ -318,10 +336,13 @@ class ComprehensiveSystemTester {
    */
   private async simulateLogin(userId: string): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
-    
+
     // 记录登录尝试但不抛出异常，模拟错误被处理
-    if (Math.random() < 0.02) { // 2% 失败率
-      this.errorLog.push(`Login attempt failed for user ${userId} but was handled`);
+    if (Math.random() < 0.02) {
+      // 2% 失败率
+      this.errorLog.push(
+        `Login attempt failed for user ${userId} but was handled`
+      );
     }
   }
 
@@ -331,10 +352,13 @@ class ComprehensiveSystemTester {
    */
   private async simulateGameAction(userId: string): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
-    
+
     // 记录操作错误但不抛出异常，模拟错误被处理
-    if (Math.random() < 0.01) { // 1% 错误率
-      this.errorLog.push(`Game action failed for user ${userId} but was handled`);
+    if (Math.random() < 0.01) {
+      // 1% 错误率
+      this.errorLog.push(
+        `Game action failed for user ${userId} but was handled`
+      );
     }
   }
 
@@ -355,13 +379,13 @@ class ComprehensiveSystemTester {
 
     // 模拟XSS攻击
     attacks.push(await this.simulateXSSAttack());
-    
+
     // 模拟SQL注入攻击
     attacks.push(await this.simulateSQLInjectionAttack());
-    
+
     // 模拟频率限制攻击
     attacks.push(await this.simulateRateLimitAttack());
-    
+
     // 模拟未授权访问
     attacks.push(await this.simulateUnauthorizedAccess());
 
@@ -375,14 +399,14 @@ class ComprehensiveSystemTester {
    */
   private async simulateXSSAttack(): Promise<SecurityEvent> {
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     return {
       id: `xss_${Date.now()}`,
       type: 'xss',
       severity: 'high',
       timestamp: new Date(),
       description: 'Detected XSS attack attempt in user input',
-      handled: true // 假设系统成功防护
+      handled: true, // 假设系统成功防护
     };
   }
 
@@ -392,14 +416,14 @@ class ComprehensiveSystemTester {
    */
   private async simulateSQLInjectionAttack(): Promise<SecurityEvent> {
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     return {
       id: `sql_${Date.now()}`,
       type: 'sql_injection',
       severity: 'critical',
       timestamp: new Date(),
       description: 'Detected SQL injection attempt',
-      handled: true // 假设系统成功防护
+      handled: true, // 假设系统成功防护
     };
   }
 
@@ -409,14 +433,14 @@ class ComprehensiveSystemTester {
    */
   private async simulateRateLimitAttack(): Promise<SecurityEvent> {
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     return {
       id: `rate_${Date.now()}`,
       type: 'rate_limit',
       severity: 'medium',
       timestamp: new Date(),
       description: 'Rate limit exceeded - potential DDoS attack',
-      handled: true // 假设系统成功限制
+      handled: true, // 假设系统成功限制
     };
   }
 
@@ -426,14 +450,14 @@ class ComprehensiveSystemTester {
    */
   private async simulateUnauthorizedAccess(): Promise<SecurityEvent> {
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     return {
       id: `unauth_${Date.now()}`,
       type: 'unauthorized_access',
       severity: 'high',
       timestamp: new Date(),
       description: 'Unauthorized access attempt detected',
-      handled: true // 假设系统成功阻止
+      handled: true, // 假设系统成功阻止
     };
   }
 
@@ -445,10 +469,10 @@ class ComprehensiveSystemTester {
     try {
       // 模拟系统错误
       await this.simulateSystemError();
-      
+
       // 测试恢复机制
       await this.simulateRecovery();
-      
+
       return true;
     } catch (error) {
       this.errorLog.push(`Error recovery test failed: ${error}`);
@@ -463,15 +487,15 @@ class ComprehensiveSystemTester {
   private async simulateSystemError(): Promise<void> {
     // 模拟数据库连接错误
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     // 记录错误但不抛出异常，模拟错误被捕获和处理
     this.errorLog.push('Simulated database connection error');
-    
+
     // 模拟网络错误（降低概率以提高测试稳定性）
     if (Math.random() < 0.1) {
       this.errorLog.push('Simulated network connection error');
     }
-    
+
     // 模拟内存不足（降低概率以提高测试稳定性）
     if (Math.random() < 0.05) {
       this.errorLog.push('Simulated out of memory error');
@@ -485,10 +509,10 @@ class ComprehensiveSystemTester {
   private async simulateRecovery(): Promise<void> {
     // 模拟重连机制
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // 模拟数据恢复
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     // 重置系统状态
     this.updateSystemMetrics();
   }
@@ -500,13 +524,25 @@ class ComprehensiveSystemTester {
   private updateSystemMetrics(): void {
     const lastMetrics = this.systemMetrics[this.systemMetrics.length - 1];
     const newMetrics: SystemMetrics = {
-      cpuUsage: Math.max(0, Math.min(100, lastMetrics.cpuUsage + (Math.random() - 0.5) * 10)),
-      memoryUsage: Math.max(0, Math.min(100, lastMetrics.memoryUsage + (Math.random() - 0.5) * 5)),
-      responseTime: Math.max(50, lastMetrics.responseTime + (Math.random() - 0.5) * 50),
-      errorRate: Math.max(0, Math.min(1, lastMetrics.errorRate + (Math.random() - 0.5) * 0.01)),
-      concurrentUsers: lastMetrics.concurrentUsers
+      cpuUsage: Math.max(
+        0,
+        Math.min(100, lastMetrics.cpuUsage + (Math.random() - 0.5) * 10)
+      ),
+      memoryUsage: Math.max(
+        0,
+        Math.min(100, lastMetrics.memoryUsage + (Math.random() - 0.5) * 5)
+      ),
+      responseTime: Math.max(
+        50,
+        lastMetrics.responseTime + (Math.random() - 0.5) * 50
+      ),
+      errorRate: Math.max(
+        0,
+        Math.min(1, lastMetrics.errorRate + (Math.random() - 0.5) * 0.01)
+      ),
+      concurrentUsers: lastMetrics.concurrentUsers,
     };
-    
+
     this.systemMetrics.push(newMetrics);
   }
 
@@ -514,18 +550,29 @@ class ComprehensiveSystemTester {
    * 函数级注释：获取系统健康状态
    * 获取当前系统的健康状态
    */
-  getSystemHealth(): { status: 'healthy' | 'warning' | 'critical', metrics: SystemMetrics } {
+  getSystemHealth(): {
+    status: 'healthy' | 'warning' | 'critical';
+    metrics: SystemMetrics;
+  } {
     const latestMetrics = this.systemMetrics[this.systemMetrics.length - 1];
-    
+
     let status: 'healthy' | 'warning' | 'critical' = 'healthy';
-    
+
     // 调整阈值以适应测试环境
-    if (latestMetrics.cpuUsage > 95 || latestMetrics.memoryUsage > 95 || latestMetrics.errorRate > 0.2) {
+    if (
+      latestMetrics.cpuUsage > 95 ||
+      latestMetrics.memoryUsage > 95 ||
+      latestMetrics.errorRate > 0.2
+    ) {
       status = 'critical';
-    } else if (latestMetrics.cpuUsage > 85 || latestMetrics.memoryUsage > 85 || latestMetrics.errorRate > 0.1) {
+    } else if (
+      latestMetrics.cpuUsage > 85 ||
+      latestMetrics.memoryUsage > 85 ||
+      latestMetrics.errorRate > 0.1
+    ) {
       status = 'warning';
     }
-    
+
     return { status, metrics: latestMetrics };
   }
 
@@ -561,16 +608,16 @@ describe('综合系统集成测试套件', () => {
     test.skip('应该能够完成端到端游戏流程', async () => {
       // 创建游戏会话
       const gameState = await systemTester.createGameSession('test_game_1', 6);
-      
+
       expect(gameState.gameId).toBe('test_game_1');
       expect(gameState.players).toHaveLength(6);
       expect(gameState.status).toBe('waiting');
-      
+
       // 执行游戏流程
       const success = await systemTester.simulateGameFlow('test_game_1');
-      
+
       expect(success).toBe(true);
-      
+
       // 验证游戏状态更新
       const updatedState = systemTester['gameStates'].get('test_game_1');
       expect(updatedState?.round).toBeGreaterThan(0);
@@ -579,25 +626,25 @@ describe('综合系统集成测试套件', () => {
 
     test('应该能够处理多个并发游戏会话', async () => {
       const gamePromises = [];
-      
+
       // 创建多个游戏会话
       for (let i = 0; i < 3; i++) {
         gamePromises.push(systemTester.createGameSession(`game_${i}`, 4));
       }
-      
+
       const gameStates = await Promise.all(gamePromises);
-      
+
       expect(gameStates).toHaveLength(3);
       gameStates.forEach((state, index) => {
         expect(state.gameId).toBe(`game_${index}`);
         expect(state.players).toHaveLength(4);
       });
-      
+
       // 并发执行游戏流程
-      const flowPromises = gameStates.map(state => 
+      const flowPromises = gameStates.map(state =>
         systemTester.simulateGameFlow(state.gameId)
       );
-      
+
       const results = await Promise.all(flowPromises);
       expect(results.every(result => result === true)).toBe(true);
     });
@@ -607,7 +654,7 @@ describe('综合系统集成测试套件', () => {
     test('应该能够处理中等并发负载', async () => {
       const userCount = 50;
       const metrics = await systemTester.simulateConcurrentUsers(userCount);
-      
+
       expect(metrics.concurrentUsers).toBe(userCount);
       expect(metrics.cpuUsage).toBeLessThan(100);
       expect(metrics.memoryUsage).toBeLessThan(100);
@@ -618,7 +665,7 @@ describe('综合系统集成测试套件', () => {
     test('应该能够处理高并发负载', async () => {
       const userCount = 100;
       const metrics = await systemTester.simulateConcurrentUsers(userCount);
-      
+
       expect(metrics.concurrentUsers).toBe(userCount);
       expect(metrics.errorRate).toBeLessThan(0.15); // 15% 错误率阈值（高负载下）
       expect(metrics.responseTime).toBeLessThan(10000); // 10秒响应时间阈值
@@ -628,15 +675,15 @@ describe('综合系统集成测试套件', () => {
       // 连续进行多轮压力测试
       const rounds = 3;
       const results = [];
-      
+
       for (let i = 0; i < rounds; i++) {
         const metrics = await systemTester.simulateConcurrentUsers(30);
         results.push(metrics);
-        
+
         // 短暂休息以模拟真实场景
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      
+
       // 验证系统在连续负载下的稳定性
       expect(results).toHaveLength(rounds);
       results.forEach(metrics => {
@@ -649,27 +696,33 @@ describe('综合系统集成测试套件', () => {
   describe('安全攻击防护测试', () => {
     test('应该能够检测和防护各种安全攻击', async () => {
       const securityEvents = await systemTester.simulateSecurityAttacks();
-      
+
       expect(securityEvents).toHaveLength(4);
-      
+
       // 验证所有攻击都被检测到
       const attackTypes = securityEvents.map(event => event.type);
       expect(attackTypes).toContain('xss');
       expect(attackTypes).toContain('sql_injection');
       expect(attackTypes).toContain('rate_limit');
       expect(attackTypes).toContain('unauthorized_access');
-      
+
       // 验证所有攻击都被成功处理
       expect(securityEvents.every(event => event.handled)).toBe(true);
     });
 
     test('应该能够正确分类安全事件严重程度', async () => {
       const securityEvents = await systemTester.simulateSecurityAttacks();
-      
-      const criticalEvents = securityEvents.filter(event => event.severity === 'critical');
-      const highEvents = securityEvents.filter(event => event.severity === 'high');
-      const mediumEvents = securityEvents.filter(event => event.severity === 'medium');
-      
+
+      const criticalEvents = securityEvents.filter(
+        event => event.severity === 'critical'
+      );
+      const highEvents = securityEvents.filter(
+        event => event.severity === 'high'
+      );
+      const mediumEvents = securityEvents.filter(
+        event => event.severity === 'medium'
+      );
+
       expect(criticalEvents.length).toBeGreaterThan(0);
       expect(highEvents.length).toBeGreaterThan(0);
       expect(mediumEvents.length).toBeGreaterThan(0);
@@ -679,17 +732,17 @@ describe('综合系统集成测试套件', () => {
   describe('系统错误恢复测试', () => {
     test('应该能够从系统错误中恢复', async () => {
       const recoverySuccess = await systemTester.testErrorRecovery();
-      
+
       expect(recoverySuccess).toBe(true);
     });
 
     test('应该能够在错误后保持系统健康', async () => {
       // 触发错误恢复测试
       await systemTester.testErrorRecovery();
-      
+
       // 检查系统健康状态
       const health = systemTester.getSystemHealth();
-      
+
       expect(health.status).not.toBe('critical');
       expect(health.metrics.errorRate).toBeLessThan(0.1);
     });
@@ -700,9 +753,9 @@ describe('综合系统集成测试套件', () => {
       // 执行一些操作以生成指标
       await systemTester.simulateConcurrentUsers(20);
       await systemTester.createGameSession('monitor_test', 4);
-      
+
       const health = systemTester.getSystemHealth();
-      
+
       expect(health.status).toBeDefined();
       expect(health.metrics).toBeDefined();
       expect(health.metrics.cpuUsage).toBeGreaterThanOrEqual(0);
@@ -714,16 +767,20 @@ describe('综合系统集成测试套件', () => {
     test('应该能够检测系统健康状态变化', async () => {
       // 获取初始健康状态
       const initialHealth = systemTester.getSystemHealth();
-      
+
       // 执行高负载操作
       await systemTester.simulateConcurrentUsers(80);
-      
+
       // 获取负载后的健康状态
       const loadedHealth = systemTester.getSystemHealth();
-      
+
       // 验证系统能够检测到负载变化
-      expect(loadedHealth.metrics.cpuUsage).toBeGreaterThan(initialHealth.metrics.cpuUsage);
-      expect(loadedHealth.metrics.concurrentUsers).toBeGreaterThan(initialHealth.metrics.concurrentUsers);
+      expect(loadedHealth.metrics.cpuUsage).toBeGreaterThan(
+        initialHealth.metrics.cpuUsage
+      );
+      expect(loadedHealth.metrics.concurrentUsers).toBeGreaterThan(
+        initialHealth.metrics.concurrentUsers
+      );
     });
   });
 
@@ -734,26 +791,27 @@ describe('综合系统集成测试套件', () => {
       const securityPromise = systemTester.simulateSecurityAttacks();
       const loadPromise = systemTester.simulateConcurrentUsers(30);
       const errorPromise = systemTester.testErrorRecovery();
-      
+
       // 等待所有操作完成
-      const [gameState, securityEvents, loadMetrics, errorRecovery] = await Promise.all([
-        gamePromise,
-        securityPromise,
-        loadPromise,
-        errorPromise
-      ]);
-      
+      const [gameState, securityEvents, loadMetrics, errorRecovery] =
+        await Promise.all([
+          gamePromise,
+          securityPromise,
+          loadPromise,
+          errorPromise,
+        ]);
+
       // 验证所有模块都正常工作
       expect(gameState.gameId).toBe('integration_test');
       expect(securityEvents.every(event => event.handled)).toBe(true);
       expect(loadMetrics.errorRate).toBeLessThan(0.2);
       expect(errorRecovery).toBe(true);
-      
+
       // 验证系统整体健康
       const finalHealth = systemTester.getSystemHealth();
-      
+
       // 添加调试信息
-      
+
       // 如果状态为 critical，先重置系统状态
       if (finalHealth.status === 'critical') {
         // 等待系统恢复
@@ -768,22 +826,20 @@ describe('综合系统集成测试套件', () => {
     test('应该在复杂场景下保持数据一致性', async () => {
       // 创建多个游戏并同时操作
       const gameIds = ['consistency_1', 'consistency_2', 'consistency_3'];
-      
+
       // 并发创建游戏
-      const createPromises = gameIds.map(id => 
+      const createPromises = gameIds.map(id =>
         systemTester.createGameSession(id, 4)
       );
       await Promise.all(createPromises);
-      
+
       // 并发执行游戏流程
-      const flowPromises = gameIds.map(id => 
-        systemTester.simulateGameFlow(id)
-      );
+      const flowPromises = gameIds.map(id => systemTester.simulateGameFlow(id));
       const results = await Promise.all(flowPromises);
-      
+
       // 验证所有游戏都成功执行
       expect(results.every(result => result === true)).toBe(true);
-      
+
       // 验证游戏状态的一致性
       gameIds.forEach(id => {
         const gameState = systemTester['gameStates'].get(id);

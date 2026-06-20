@@ -10,12 +10,16 @@ export interface VoteRecord {
 }
 
 // 帮助函数：通过用户ID获取玩家名称
-const getPlayerNames = async (userIds: string[]): Promise<Map<string, string>> => {
+const getPlayerNames = async (
+  userIds: string[]
+): Promise<Map<string, string>> => {
   if (userIds.length === 0) {
     return new Map();
   }
-  const { data, error } = await supabase
-    .rpc('get_public_user_profiles_by_ids', { p_user_ids: userIds });
+  const { data, error } = await supabase.rpc(
+    'get_public_user_profiles_by_ids',
+    { p_user_ids: userIds }
+  );
 
   if (error) {
     console.error('获取玩家名称失败:', error);
@@ -37,7 +41,12 @@ export const useVoteResults = (roomId: string) => {
   const { gameState } = useGameState(roomId);
 
   const fetchVoteResults = useCallback(async () => {
-    if (!roomId || !gameState || gameState.status === 'waiting' || gameState.status === 'ended') {
+    if (
+      !roomId ||
+      !gameState ||
+      gameState.status === 'waiting' ||
+      gameState.status === 'ended'
+    ) {
       setVoteRecords([]);
       setLoading(false);
       return;
@@ -78,14 +87,14 @@ export const useVoteResults = (roomId: string) => {
         .select('voter_id, target_id')
         .eq('voting_session_id', currentSessionId)
         .eq('is_valid', true);
-      
+
       if (votesError) {
         console.error('获取投票记录失败:', votesError);
         setVoteRecords([]);
         setLoading(false);
         return;
       }
-      
+
       if (!votes || votes.length === 0) {
         setVoteRecords([]);
         setLoading(false);
@@ -94,8 +103,8 @@ export const useVoteResults = (roomId: string) => {
 
       // 聚合投票结果并收集所有玩家ID
       const allPlayerIds = new Set<string>();
-      const voteCounts: Record<string, {voters: string[]}> = {};
-      
+      const voteCounts: Record<string, { voters: string[] }> = {};
+
       votes.forEach(vote => {
         if (vote.target_id && vote.voter_id) {
           if (!voteCounts[vote.target_id]) {
@@ -106,25 +115,28 @@ export const useVoteResults = (roomId: string) => {
           allPlayerIds.add(vote.voter_id);
         }
       });
-      
+
       // 获取玩家名称
       const playerNamesMap = await getPlayerNames(Array.from(allPlayerIds));
 
       // 格式化投票记录
-      const formattedRecords: VoteRecord[] = Object.entries(voteCounts).map(([votedPlayerId, {voters}]) => {
-        return {
-          votedPlayerId,
-          votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
-          voteCount: voters.length,
-          voters: voters.map(voterId => playerNamesMap.get(voterId) || '未知玩家'),
-        };
-      });
+      const formattedRecords: VoteRecord[] = Object.entries(voteCounts).map(
+        ([votedPlayerId, { voters }]) => {
+          return {
+            votedPlayerId,
+            votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
+            voteCount: voters.length,
+            voters: voters.map(
+              voterId => playerNamesMap.get(voterId) || '未知玩家'
+            ),
+          };
+        }
+      );
 
       // 按票数降序排序
       formattedRecords.sort((a, b) => b.voteCount - a.voteCount);
 
       setVoteRecords(formattedRecords);
-
     } catch (error) {
       console.error('处理投票结果时出错:', error);
     } finally {
@@ -163,7 +175,7 @@ export const useVoteResults = (roomId: string) => {
         }
       )
       .subscribe();
-    
+
     return () => {
       supabase.removeChannel(channel);
     };

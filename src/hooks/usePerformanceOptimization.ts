@@ -15,26 +15,32 @@ export const usePerformanceOptimization = (componentName: string) => {
     renderCountRef.current = RenderCounter.increment(componentName);
     const currentTime = performance.now();
     const timeSinceLastRender = currentTime - lastRenderTime.current;
-    
+
     if (timeSinceLastRender < 16 && renderCountRef.current > 1) {
       logger.warn(`组件 ${componentName} 渲染频率过高`, {
         componentName,
         timeSinceLastRender,
-        renderCount: renderCountRef.current
+        renderCount: renderCountRef.current,
       });
     }
-    
+
     lastRenderTime.current = currentTime;
   });
 
   return {
     renderCount: renderCountRef.current,
-    measurePerformance: useCallback((label: string, fn: () => any) => {
-      return PerformanceMonitor.measure(`${componentName}-${label}`, fn);
-    }, [componentName]),
-    measurePerformanceAsync: useCallback(async (label: string, fn: () => Promise<any>) => {
-      return PerformanceMonitor.measureAsync(`${componentName}-${label}`, fn);
-    }, [componentName])
+    measurePerformance: useCallback(
+      (label: string, fn: () => any) => {
+        return PerformanceMonitor.measure(`${componentName}-${label}`, fn);
+      },
+      [componentName]
+    ),
+    measurePerformanceAsync: useCallback(
+      async (label: string, fn: () => Promise<any>) => {
+        return PerformanceMonitor.measureAsync(`${componentName}-${label}`, fn);
+      },
+      [componentName]
+    ),
   };
 };
 
@@ -84,10 +90,10 @@ export const useOptimizedThrottle = <T extends (...args: any[]) => any>(
   return useCallback(
     ((...args: Parameters<T>) => {
       if (throttleRef.current) return;
-      
+
       throttleRef.current = true;
       latestCallback.current(...args);
-      
+
       setTimeout(() => {
         throttleRef.current = false;
       }, delay);
@@ -104,7 +110,7 @@ export const useStableCallback = <T extends (...args: any[]) => any>(
   deps: React.DependencyList
 ): T => {
   const callbackRef = useRef(callback);
-  
+
   useEffect(() => {
     callbackRef.current = callback;
   }, deps);
@@ -118,13 +124,16 @@ export const useStableCallback = <T extends (...args: any[]) => any>(
 /**
  * 深度比较 memo - 用于复杂对象的记忆化
  */
-export const useDeepMemo = <T>(factory: () => T, deps: React.DependencyList): T => {
+export const useDeepMemo = <T>(
+  factory: () => T,
+  deps: React.DependencyList
+): T => {
   const ref = useRef<{ deps: React.DependencyList; value: T }>();
 
   if (!ref.current || !deepEqual(deps, ref.current.deps)) {
     ref.current = {
       deps: [...deps],
-      value: factory()
+      value: factory(),
     };
   }
 
@@ -136,18 +145,18 @@ function deepEqual(a: any, b: any): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (typeof a !== typeof b) return false;
-  
+
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
     return a.every((item, index) => deepEqual(item, b[index]));
   }
-  
+
   if (typeof a === 'object') {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
     if (keysA.length !== keysB.length) return false;
     return keysA.every(key => deepEqual(a[key], b[key]));
   }
-  
+
   return false;
 }
