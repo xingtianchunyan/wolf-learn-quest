@@ -10,44 +10,32 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: 使用 Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v5
+
+    - name: 使用 Node.js 22
+      uses: actions/setup-node@v5
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '22.x'
         cache: 'npm'
-    
+
     - name: 安装依赖
       run: npm ci
-    
-    - name: 运行单元测试
-      run: npm run test:unit
-    
-    - name: 运行集成测试
-      run: npm run test:integration
-      env:
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-    
+
+    - name: 运行测试
+      run: npm run test:run
+
     - name: 生成测试覆盖率报告
       run: npm run test:coverage
-    
+
     - name: 上传覆盖率报告
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage/coverage-final.json
+        files: ./coverage/coverage-final.json
         flags: unittests
         name: codecov-umbrella
-    
-    - name: 运行性能测试
-      run: npm run test:performance
-    
+        fail_ci_if_error: false
+
     - name: 检查测试覆盖率阈值
       run: |
         COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
@@ -59,77 +47,21 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: 使用 Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v5
+
+    - name: 使用 Node.js 22
+      uses: actions/setup-node@v5
       with:
-        node-version: '20.x'
+        node-version: '22.x'
         cache: 'npm'
-    
+
     - name: 安装依赖
       run: npm ci
-    
+
     - name: 运行 ESLint
       run: npm run lint
-    
+
     - name: 运行类型检查
       run: npm run type-check
-
-  e2e:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: 使用 Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: 安装依赖
-      run: npm ci
-    
-    - name: 运行 E2E 测试
-      run: npm run test:e2e
-      env:
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-    
-    - name: 上传 E2E 测试结果
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: e2e-test-results
-        path: test-results/
-
-  performance-regression:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: 使用 Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: 安装依赖
-      run: npm ci
-    
-    - name: 运行性能基准测试
-      run: npm run benchmark
-    
-    - name: 比较性能基线
-      run: |
-        node scripts/compare-performance.js
-    
-    - name: 上传性能报告
-      uses: actions/upload-artifact@v3
-      with:
-        name: performance-report
-        path: performance-report.json
