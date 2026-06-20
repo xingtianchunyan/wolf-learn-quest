@@ -1,469 +1,48 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BookOpen, Upload, File, Database, Sparkles, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { createLogger } from '@/lib/logger';
+import { useQuestionBank } from '@/hooks/useQuestionBank';
 import QuestionBankDialog from './QuestionBankDialog';
 import QuestionBankTooltip from './QuestionBankTooltip';
-
-const logger = createLogger('QuestionBankPanel');
 
 interface QuestionBankPanelProps {
   className?: string;
   roomId?: string;
 }
 
-interface UploadedFile {
-  id: string;
-  file_name: string;
-  file_path: string;
-  uploaded_at: string;
-  is_preprocessed?: boolean;
-  is_generated?: boolean;
-}
-
-interface PreprocessedFile {
-  id: string;
-  file_name: string;
-  original_file_path: string;
-  created_at: string;
-  model_used: string;
-  is_generated?: boolean;
-}
-
 const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId }) => {
-  const [selectedFile, setSelectedFile] = useState<string>('');
-  const [selectedPreprocessedFile, setSelectedPreprocessedFile] = useState<string>('');
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [preprocessedFiles, setPreprocessedFiles] = useState<PreprocessedFile[]>([]);
-  const [status, setStatus] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showQuestionBank, setShowQuestionBank] = useState(false);
-  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+  const {
+    uploadedFiles,
+    preprocessedFiles,
+    selectedFile,
+    setSelectedFile,
+    selectedPreprocessedFile,
+    setSelectedPreprocessedFile,
+    status,
+    isUploading,
+    isProcessing,
+    isGenerating,
+    showQuestionBank,
+    setShowQuestionBank,
+    error,
+    clearError,
+    handleFileUpload,
+    handlePreprocessFile,
+    handleGenerateQuestions
+  } = useQuestionBank(roomId);
 
-  useEffect(() => {
-    fetchUploadedFiles();
-    fetchPreprocessedFiles();
-    
-    // 设置实时监听 preprocessed_files 表的变化
-    const preprocessedChannel = supabase
-      .channel('preprocessed-files-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'preprocessed_files'
-        },
-        (payload) => {
-          logger.debug('检测到新的预处理文件:', payload);
-          toast({
-            title: '预处理完成',
-            description: '文件预处理已完成，页面数据已更新',
-          });
-          fetchPreprocessedFiles();
-          fetchUploadedFiles();
-          // 停止预处理状态
-          setIsProcessing(false);
-          setStatus('');
-        }
-      )
-      .subscribe();
-
-    // 设置实时监听 generated_questions 表的变化
-    const generatedChannel = supabase
-      .channel('generated-questions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'generated_questions'
-        },
-        (payload) => {
-          logger.debug('检测到新的生成题目:', payload);
-          toast({
-            title: '题目生成完成',
-            description: 'AI题目生成已完成，页面数据已更新',
-          });
-          fetchPreprocessedFiles();
-          fetchUploadedFiles();
-          // 停止生成状态
-          setIsGenerating(false);
-          setStatus('');
-          clearError(); // 清除可能的错误提示
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(preprocessedChannel);
-      supabase.removeChannel(generatedChannel);
-    };
-  }, [toast]);
-
-  const fetchUploadedFiles = async () => {
-    try {
-      logger.debug('获取文件列表...');
-      
-      // 获取已上传的文件
-      const { data: uploadedData, error: uploadedError } = await supabase
-        .from('uploaded_files')
-        .select('*')
-        .order('uploaded_at', { ascending: false });
-
-      if (uploadedError) {
-        logger.error('Error fetching uploaded files:', uploadedError);
-        setError(`获取文件列表失败: ${uploadedError.message}`);
-        return;
-      }
-
-      // 检查哪些文件已经预处理过
-      const { data: preprocessedData } = await supabase
-        .from('preprocessed_files')
-        .select('original_file_path');
-
-      // 检查哪些文件已经生成过题目
-      const { data: generatedData } = await supabase
-        .from('generated_questions')
-        .select('original_file_path');
-
-      const preprocessedPaths = new Set(preprocessedData?.map(p => p.original_file_path) || []);
-      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
-
-      const filesWithStatus = (uploadedData || []).map(file => ({
-        ...file,
-        is_preprocessed: preprocessedPaths.has(file.file_path),
-        is_generated: generatedPaths.has(file.file_path)
-      }));
-
-      setUploadedFiles(filesWithStatus);
-      logger.debug('文件列表获取成功:', filesWithStatus.length, '个文件');
-    } catch (error) {
-      logger.error('Error fetching uploaded files:', error);
-      setError('获取文件列表时发生错误');
-    }
-  };
-
-  const fetchPreprocessedFiles = async () => {
-    try {
-      
-      const { data: preprocessedData, error } = await supabase
-        .from('preprocessed_files')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching preprocessed files:', error);
-        setError(`获取预处理文件列表失败: ${error.message}`);
-        return;
-      }
-
-      // 检查哪些预处理文件已经生成过题目
-      const { data: generatedData } = await supabase
-        .from('generated_questions')
-        .select('original_file_path');
-
-      const generatedPaths = new Set(generatedData?.map(g => g.original_file_path) || []);
-
-      const filesWithStatus = (preprocessedData || []).map(file => ({
-        ...file,
-        is_generated: generatedPaths.has(file.original_file_path)
-      }));
-
-      setPreprocessedFiles(filesWithStatus);
-    } catch (error) {
-      console.error('Error fetching preprocessed files:', error);
-      setError('获取预处理文件列表时发生错误');
-    }
-  };
-
-  const clearError = () => {
-    setError('');
-  };
-
-  const sanitizeFileName = (fileName: string): string => {
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
-    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
-    
-    const cleanName = name
-      .replace(/[^\w\s.-]/g, '')
-      .replace(/\s+/g, '_')
-      .replace(/_{2,}/g, '_')
-      .replace(/[.-]+/g, '_')
-      .trim()
-      .substring(0, 50);
-    
-    const finalName = cleanName || 'file';
-    return `${finalName}${extension}`;
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    clearError();
-
-    const allowedFormats = ['.txt', '.doc', '.docx', '.xls', '.xlsx', '.pptx', '.md'];
-    const fileExtension = `.${  file.name.split('.').pop()?.toLowerCase()}`;
-    
-    if (!allowedFormats.includes(fileExtension)) {
-      const errorMsg = '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
-      setError(errorMsg);
-      toast({
-        title: '文件格式不支持',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      const errorMsg = '文件大小不能超过10MB';
-      setError(errorMsg);
-      toast({
-        title: '文件过大',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 检查是否已经上传过同名文件
-    const existingFile = uploadedFiles.find(f => f.file_name === file.name);
-    if (existingFile) {
-      const errorMsg = '该文件已经上传过了';
-      setError(errorMsg);
-      toast({
-        title: '文件重复',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    setStatus('文件上传中...');
-
-    try {
-      const originalName = file.name;
-      const sanitizedName = sanitizeFileName(originalName);
-      const timestamp = Date.now();
-      const fileName = `${timestamp}_${sanitizedName}`;
-      
-      
-      const { data, error } = await supabase.storage
-        .from('question-files')
-        .upload(`uploads/${fileName}`, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        console.error('Upload error:', error);
-        throw new Error(`上传失败: ${error.message}`);
-      }
-
-      // 将文件信息保存到数据库
-      const { error: dbError } = await supabase
-        .from('uploaded_files')
-        .insert({
-          file_name: originalName,
-          file_path: `uploads/${fileName}`
-        });
-
-      if (dbError) {
-        console.error('Database insert error:', dbError);
-        throw new Error(`保存文件信息失败: ${dbError.message}`);
-      }
-
-      toast({
-        title: '上传成功',
-        description: `文件 "${originalName}" 已成功上传`,
-      });
-
-      await fetchUploadedFiles();
-      
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      const errorMsg = error instanceof Error ? error.message : '文件上传失败';
-      setError(errorMsg);
-      toast({
-        title: '上传失败',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploading(false);
-      setStatus('');
+    handleFileUpload(file, () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    }
-  };
-
-  const handlePreprocessFile = async () => {
-    if (!selectedFile) {
-      const errorMsg = '请先选择要预处理的文件';
-      setError(errorMsg);
-      toast({
-        title: '请选择文件',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 防止重复处理
-    if (isProcessing) {
-      return;
-    }
-
-    clearError();
-    setIsProcessing(true);
-    setStatus('使用Qwen2.5-72B模型预处理文件中...');
-
-    try {
-      const selectedFileData = uploadedFiles.find(f => f.id === selectedFile);
-      if (!selectedFileData) {
-        throw new Error('选择的文件不存在');
-      }
-
-      
-      const { data, error } = await supabase.functions.invoke('preprocess-file', {
-        body: {
-          filePath: selectedFileData.file_path,
-          fileName: selectedFileData.file_name,
-          roomId: roomId || 'current-room'
-        }
-      });
-
-
-      if (error) {
-        console.error('Function invoke error:', error);
-        throw new Error(`API调用失败: ${error.message}`);
-      }
-
-      if (!data || !data.success) {
-        const errorMsg = data?.error || '预处理失败，请重试';
-        console.error('预处理失败:', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      // 不要立即设置成功状态，等待实时监听来处理
-      
-    } catch (error) {
-      console.error('Error preprocessing file:', error);
-      const errorMsg = error instanceof Error ? error.message : '文件预处理失败';
-      setError(`预处理失败: ${errorMsg}`);
-      toast({
-        title: '预处理失败',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      setIsProcessing(false);
-      setStatus('');
-    }
-  };
-
-  const handleGenerateQuestions = async () => {
-    if (!selectedPreprocessedFile) {
-      const errorMsg = '请选择已预处理的文件';
-      setError(errorMsg);
-      toast({
-        title: '请选择已预处理文件',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 防止重复生成
-    if (isGenerating) {
-      return;
-    }
-
-    clearError();
-    setIsGenerating(true);
-    setStatus('使用Qwen2.5-72B模型生成题目中...');
-
-    try {
-      
-      const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: {
-          preprocessedId: selectedPreprocessedFile,
-          questionCount: 18,
-          roomId: roomId || 'current-room'
-        }
-      });
-
-
-      if (error) {
-        console.error('Function invoke error:', error);
-        // 不立即抛出错误，先等待实时监听检测数据库变化
-        
-        // 设置一个超时，如果30秒内没有检测到数据库更新，则显示错误
-        setTimeout(() => {
-          if (isGenerating) {
-            setIsGenerating(false);
-            setStatus('');
-            const errorMsg = `API调用失败: ${error.message}`;
-            setError(`生成失败: ${errorMsg}`);
-            toast({
-              title: '生成失败',
-              description: errorMsg,
-              variant: 'destructive',
-            });
-          }
-        }, 30000);
-        
-        return; // 不立即返回错误，等待实时监听
-      }
-
-      if (!data || !data.success) {
-        const errorMsg = data?.error || '题目生成失败';
-        console.error('生成失败:', errorMsg);
-        
-        // 同样不立即抛出错误，等待实时监听
-        setTimeout(() => {
-          if (isGenerating) {
-            setIsGenerating(false);
-            setStatus('');
-            setError(`生成失败: ${errorMsg}`);
-            toast({
-              title: '生成失败',
-              description: errorMsg,
-              variant: 'destructive',
-            });
-          }
-        }, 30000);
-        
-        return;
-      }
-
-      // 请求成功，但仍然等待实时监听来确认数据库更新
-      
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      const errorMsg = error instanceof Error ? error.message : '题目生成失败';
-      setError(`生成失败: ${errorMsg}`);
-      toast({
-        title: '生成失败',
-        description: errorMsg,
-        variant: 'destructive',
-      });
-      setIsGenerating(false);
-      setStatus('');
-    }
+    });
   };
 
   return (
@@ -509,7 +88,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({ className, roomId
                   ref={fileInputRef}
                   type="file"
                   accept=".txt,.doc,.docx,.xls,.xlsx,.pptx,.md"
-                  onChange={handleFileUpload}
+                  onChange={onFileChange}
                   style={{ display: 'none' }}
                 />
               </div>

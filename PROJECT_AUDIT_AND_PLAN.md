@@ -274,7 +274,7 @@
 | # | 任务 | 关键文件 | 验收标准 |
 |---|------|----------|----------|
 | P2-1 | **统一数据/实时层（已完成）** | `src/hooks/useRoomData.ts`（新建）、`src/contexts/PermissionContext.tsx` | 新增 `useRoomData(roomId)` 统一返回 room/players/gameState/gameSettings/roleStates；PermissionContext 消费该 Hook 数据，移除独立查库与额外 realtime 订阅 |
-| P2-2 | **拆分巨型组件（进行中）** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | `GameRoom.tsx` 已从 674 行降至 418 行；拆出 `useGameRoomData`、`GameRoomSidebar`、`GameRoomChatPanel`、`GameRoomLoading`、`GameRoomNotFound`。剩余 `StudentSystemPanel`/`TeacherSystemPanel`/`QuestionBankPanel` 仍待拆分 |
+| P2-2 | **拆分巨型组件（进行中）** | `GameRoom.tsx`、`StudentSystemPanel.tsx`、`TeacherSystemPanel.tsx`、`QuestionBankPanel.tsx` | `GameRoom.tsx` 从 674 行降至 418 行；`StudentSystemPanel.tsx` 从 571 行降至 121 行并拆出 `useStudentSystem`。剩余 `GameRoom.tsx`/`QuestionBankPanel.tsx` 仍待继续拆分 |
 | P2-3 | **统一类型定义（已完成）** | `src/types/game.ts`、`src/types/skill.types.ts`、`src/hooks/useGameState.ts` | 删除简陋 `GameState`；`GameState`/`GameSettings` 上提到 `src/types/game.ts`；新增 `src/types/index.ts` 统一导出 |
 | P2-4 | **合并投票 UI 入口（已完成清理）** | `VotingSystemManager.tsx`、`EnhancedVotingManager.tsx` | 删除未使用的 `VotingSystemManager`；保留 `EnhancedVotingManager` 作为法官端投票入口 |
 | P2-5 | **合并技能系统入口（已完成清理）** | `SkillSystemManager.tsx`、`SkillUsePanel.tsx`、`GameSkillPanel.tsx`、`NightSkillInterface.tsx` | 删除未使用的 `SkillSystemManager`、`SkillUsePanel`、`NightSkillInterface`；保留 `GameSkillPanel` 作为学生端技能入口 |
