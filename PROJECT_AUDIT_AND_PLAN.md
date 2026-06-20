@@ -262,7 +262,7 @@
 
 | # | 任务 | 关键文件 | 验收标准 |
 |---|------|----------|----------|
-| P1-1 | **合并错误处理系统** | `src/utils/errorHandler.ts`、`unifiedErrorHandler.ts`、`masterErrorHandler.ts`、`improvedErrorSystem.ts`、`unifiedErrorSystem.ts` | 保留唯一入口（建议 `unifiedErrorHandler.ts`），删除或标记其他为 deprecated；所有调用方迁移；`unifiedErrorSystem.test.ts` 全部通过 |
+| P1-1 | **合并错误处理系统（进行中）** | `src/utils/errorHandler.ts`、`unifiedErrorHandler.ts`、`masterErrorHandler.ts`、`improvedErrorSystem.ts`、`unifiedErrorSystem.ts` | 已删除 `unifiedErrorSystem.ts`、`improvedErrorSystem.ts`、`errorHandlingExamples.ts` 及相关测试；`useEnhancedErrorHandler` 改为引用 `unifiedErrorHandler.ts`；`unifiedErrorHandler.ts` 新增 `UnifiedErrorType` / `handleError` 兼容导出。剩余 `masterErrorHandler.ts`、`globalErrorMonitor.ts`、`errorClassifier.ts`、`unifiedErrorManager.ts` 仍需进一步合并或 shim |
 | P1-2 | **修复投票模块测试漂移** | `src/hooks/__tests__/useVotingSystem.test.ts`、`src/hooks/useVotingSystem.ts` | 统一 channel 名为 `voting_sessions_*` / `votes_*`；更新测试断言；移除对不存在 API（`getVotingSession`、`error` 状态）的断言 |
 | P1-3 | **删除/替换空实现（已完成）** | `src/utils/performanceCriticalFixes.ts`、`src/data/skillConfigs.ts`、`src/components/game/panels/EnhancedSkillPanel.tsx` | 已删除空实现及引用；相关测试已清理或 skip |
 | P1-4 | **清理 Lovable 残留（已完成）** | `package.json`、`vite.config.ts`、`index.html`、`README.md`、`public/lovable-uploads/`、`supabase/functions/*/index.ts`、docs/ | 移除 `lovable-tagger` 依赖与 `componentTagger`；替换 OG/Twitter 元数据；删除 `public/lovable-uploads/`；重写 README；CORS 移除 lovable.app |
