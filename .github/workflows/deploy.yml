@@ -100,12 +100,12 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # 部署到Vercel
+  # 部署到Vercel（需要配置 secrets 后才启用）
   deploy-vercel:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: false
     environment: production
     steps:
       - name: Checkout code
@@ -125,12 +125,12 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
 
-  # 部署到Netlify
+  # 部署到Netlify（需要配置 secrets 后才启用）
   deploy-netlify:
     name: Deploy to Netlify
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: false
     environment: production
     steps:
       - name: Checkout code
@@ -156,12 +156,12 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
-  # Docker构建和推送
+  # Docker构建和推送（需要配置 secrets 后才启用）
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -197,12 +197,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # 健康检查
+  # 健康检查（依赖部署任务，当前随部署任务一起禁用）
   health-check:
     name: Health Check
     runs-on: ubuntu-latest
     needs: [deploy-vercel, deploy-netlify]
-    if: always() && (needs.deploy-vercel.result == 'success' || needs.deploy-netlify.result == 'success')
+    if: false
     steps:
       - name: Check Vercel deployment
         if: needs.deploy-vercel.result == 'success'
