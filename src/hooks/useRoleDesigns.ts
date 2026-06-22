@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：角色设计数据 Hook
+ * 负责加载 `role_design` 表，并提供基础名/实例名兼容的角色查询与图片解析能力。
+ */
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
@@ -26,6 +30,34 @@ const localRoleImages: Record<string, string> = {
   demon: '/images/roles/9ee3b412-7b6f-44bc-beac-bc8601f647ed.png',
 };
 
+/**
+ * 函数级注释：提取角色基础名
+ * 将 `villager_2` 这类实例名归一化为 `villager`，便于与数据库记录做兼容匹配。
+ */
+const getBaseRoleName = (roleName: string) => roleName.replace(/_\d+$/, '');
+
+/**
+ * 函数级注释：返回最匹配的角色设计
+ * 优先精确匹配实例名，找不到时回退到相同基础名的角色设计。
+ */
+const findBestMatchingRoleDesign = (
+  roleDesigns: RoleDesign[],
+  roleName: string
+): RoleDesign | undefined => {
+  const exactMatch = roleDesigns.find(role => role.role_name === roleName);
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const baseRoleName = getBaseRoleName(roleName);
+  return roleDesigns.find(
+    role => role.role_name === baseRoleName || getBaseRoleName(role.role_name) === baseRoleName
+  );
+};
+
+/**
+ * 函数级注释：读取角色设计数据并提供衍生查询能力
+ */
 export const useRoleDesigns = () => {
   const [roleDesigns, setRoleDesigns] = useState<RoleDesign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +92,7 @@ export const useRoleDesigns = () => {
   }, []);
 
   const getRoleByName = (name: string) => {
-    return roleDesigns.find(r => r.role_name === name);
+    return findBestMatchingRoleDesign(roleDesigns, name);
   };
 
   const getRoleImageUrl = (roleName: string) => {

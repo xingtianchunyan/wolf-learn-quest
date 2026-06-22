@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+/**
+ * 文件级注释：房间角色选择组件
+ * 在角色设计数据加载完成后再展开角色实例，避免加载阶段的空匹配告警。
+ */
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -20,6 +24,9 @@ interface RoleSelectionProps {
   isReady: boolean;
 }
 
+/**
+ * 组件级注释：渲染房间内的角色卡片选择区
+ */
 const RoleSelection: React.FC<RoleSelectionProps> = ({
   maxPlayers,
   currentPlayerCount,
@@ -49,7 +56,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
   // 获取角色配置并与设计数据结合
   const roleConfigs = getRoleConfiguration(maxPlayers);
-  const expandedRoles = expandRolesWithDesigns(roleConfigs, roleDesigns);
+  const expandedRoles = useMemo(() => {
+    if (roleDesignsLoading) {
+      return [];
+    }
+
+    return expandRolesWithDesigns(roleConfigs, roleDesigns);
+  }, [roleConfigs, roleDesigns, roleDesignsLoading]);
 
   // 获取当前玩家选择的角色（现在是 role_design 的 uuid）
   const currentSelection = getCurrentPlayerSelection();

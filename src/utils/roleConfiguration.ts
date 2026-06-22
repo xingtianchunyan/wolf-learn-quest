@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间角色配置与角色设计匹配工具
+ * 负责根据玩家人数生成角色配置，并将角色实例稳定映射到 `role_design.role_name`。
+ */
 export interface RoleCountConfig {
   roleName: string;
   count: number;
@@ -11,6 +15,9 @@ export interface ExpandedRole {
   roleDesignId?: string;
 }
 
+/**
+ * 函数级注释：根据玩家人数返回角色数量配置
+ */
 export const getRoleConfiguration = (
   playerCount: number
 ): RoleCountConfig[] => {
@@ -85,42 +92,82 @@ export const getRoleConfiguration = (
   return configs[playerCount] || configs[6];
 };
 
-// 根据角色设计数据扩展角色，确保每个角色实例都对应一个具体的 role_design 记录
+/**
+ * 函数级注释：提取角色基础名
+ * 例如 `werewolf_2` 会被归一化为 `werewolf`，用于对齐实例名与数据库中的基础角色名。
+ */
+const getBaseRoleName = (roleName: string): string => {
+  return roleName.replace(/_\d+$/, '');
+};
+
+/**
+ * 函数级注释：提取角色实例序号
+ * 若角色名不带实例后缀，则返回 `null`。
+ */
+const getRoleInstanceIndex = (roleName: string): number | null => {
+  const match = roleName.match(/_(\d+)$/);
+  return match ? Number(match[1]) : null;
+};
+
+/**
+ * 接口注释：角色设计最小匹配结构
+ */
+interface RoleDesignLookupItem {
+  id: string;
+  role_name: string;
+}
+
+/**
+ * 函数级注释：为指定角色实例选择最合适的角色设计
+ * 匹配顺序为：精确实例名 -> 基础角色名 -> 同基础名下的对应序号 -> 同基础名下的首个可用设计。
+ */
+const resolveRoleDesign = (
+  roleName: string,
+  instanceIndex: number,
+  roleDesigns: RoleDesignLookupItem[]
+): RoleDesignLookupItem | undefined => {
+  const exactRoleName = `${roleName}_${instanceIndex}`;
+  const exactMatch = roleDesigns.find(
+    design => design.role_name === exactRoleName
+  );
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const baseMatch = roleDesigns.find(design => design.role_name === roleName);
+  if (baseMatch) {
+    return baseMatch;
+  }
+
+  const relatedDesigns = roleDesigns
+    .filter(design => getBaseRoleName(design.role_name) === roleName)
+    .sort((left, right) => {
+      const leftIndex = getRoleInstanceIndex(left.role_name) ?? 0;
+      const rightIndex = getRoleInstanceIndex(right.role_name) ?? 0;
+      return leftIndex - rightIndex;
+    });
+
+  return relatedDesigns[instanceIndex - 1] ?? relatedDesigns[0];
+};
+
+/**
+ * 函数级注释：根据角色设计数据扩展角色实例
+ * 该函数会优先对齐实例名，再回退到基础角色名，确保 `role_design` 的命名差异不会导致房间页告警。
+ */
 export const expandRolesWithDesigns = (
   roleConfigs: RoleCountConfig[],
   roleDesigns: Array<{ id: string; role_name: string }>
 ): ExpandedRole[] => {
+  if (roleDesigns.length === 0) {
+    return [];
+  }
+
   const expandedRoles: ExpandedRole[] = [];
 
   roleConfigs.forEach(role => {
-    // 查找匹配的角色设计，优先匹配带序号的角色名
-    const baseDesigns = roleDesigns.filter(
-      design =>
-        design.role_name === role.roleName ||
-        design.role_name.startsWith(`${role.roleName}_`)
-    );
-
-    // 如果没有找到带序号的设计，使用基础角色设计
-    const availableDesigns =
-      baseDesigns.length > 0
-        ? baseDesigns
-        : roleDesigns.filter(design => design.role_name === role.roleName);
-
     for (let i = 1; i <= role.count; i++) {
-      // 优先使用带序号的角色设计
-      const numberedRoleName = `${role.roleName}_${i}`;
-      let roleDesign = roleDesigns.find(
-        design => design.role_name === numberedRoleName
-      );
+      const roleDesign = resolveRoleDesign(role.roleName, i, roleDesigns);
 
-      // 如果没有找到带序号的设计，使用基础角色设计
-      if (!roleDesign) {
-        roleDesign = roleDesigns.find(
-          design => design.role_name === role.roleName
-        );
-      }
-
-      // 如果仍然没有找到，跳过这个角色
       if (!roleDesign) {
         console.warn(`No role design found for ${role.roleName} instance ${i}`);
         continue;
