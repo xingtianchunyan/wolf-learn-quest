@@ -1,0 +1,4 @@
+-- Historical draft of standardized_skill_targets migration.
+-- It was superseded by the follow-up migration
+-- 20250825024355_9f5b68ab-9023-4127-8e3b-ecb07193b4de.sql.
+-- Keep this file as a no-op to avoid duplicate CREATE TABLE failures on fresh databases.

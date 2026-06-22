@@ -1,0 +1,4 @@
+-- Historical duplicate of the voting system migration.
+-- The voting tables and core functions are already created in
+-- 20250625161536_881909be-135c-4309-b58a-f57b8c222e90.sql.
+-- Keep this file as a no-op so fresh databases can migrate cleanly.
