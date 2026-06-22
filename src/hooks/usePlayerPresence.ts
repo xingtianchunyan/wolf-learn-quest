@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间在线状态 Presence Hook
+ * 通过唯一 presence 频道名避免重复挂载时复用已订阅频道。
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -8,6 +12,9 @@ interface PlayerPresence {
   online_at: string;
 }
 
+/**
+ * 函数级注释：维护房间在线玩家 presence 状态
+ */
 export const usePlayerPresence = (roomId: string, currentUser: any) => {
   const [onlinePlayers, setOnlinePlayers] = useState<PlayerPresence[]>([]);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
@@ -15,7 +22,10 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
   useEffect(() => {
     if (!roomId || !currentUser) return;
 
-    const roomChannel = supabase.channel(`room_presence_${roomId}`);
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const roomChannel = supabase.channel(
+      `room_presence_${roomId}_${channelSuffix}`
+    );
 
     // 监听presence变化
     roomChannel

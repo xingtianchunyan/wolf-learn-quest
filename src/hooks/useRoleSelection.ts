@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间角色选择 Hook
+ * 使用唯一 realtime 频道名，避免同名频道在重复挂载时被复用。
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
@@ -17,6 +21,9 @@ interface RoleSelection {
   };
 }
 
+/**
+ * 函数级注释：读取并维护房间内的角色选择状态
+ */
 export const useRoleSelection = (
   roomId: string,
   currentUserId: string | null,
@@ -29,6 +36,8 @@ export const useRoleSelection = (
 
   useEffect(() => {
     if (!roomId) return;
+
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     // 初始获取角色选择，包含角色设计信息
     const fetchRoleSelections = async () => {
@@ -65,7 +74,7 @@ export const useRoleSelection = (
 
     // 订阅角色选择变化
     const channel = supabase
-      .channel(`role_selections_${roomId}`)
+      .channel(`role_selections_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {

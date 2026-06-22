@@ -15,12 +15,30 @@
  */
 
 import { createLogger } from '@/lib/logger';
-import { ErrorCode, AppError, getErrorMessage } from './errorHandler';
-import { SkillErrorType, SkillErrorHandler } from './skillErrorHandler';
+import { ErrorCode, AppError } from './errorHandler';
+import { SkillErrorType } from './skillErrorHandler';
 import type { SkillError } from './skillErrorHandler';
-import { ErrorSeverity, ErrorHandlingStrategy } from './unifiedErrorHandler';
+import { ErrorSeverity } from './unifiedErrorHandler';
 
 const logger = createLogger('master-error-handler');
+
+/**
+ * 函数级注释：判断对象是否符合技能错误结构
+ * `SkillError` 是接口而不是类，运行时需要通过结构化字段做类型收窄。
+ */
+const isSkillErrorLike = (error: unknown): error is SkillError => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const candidate = error as Partial<SkillError>;
+  return (
+    typeof candidate.type === 'string' &&
+    Object.values(SkillErrorType).includes(candidate.type as SkillErrorType) &&
+    typeof candidate.message === 'string' &&
+    typeof candidate.code === 'string'
+  );
+};
 
 /**
  * 错误上下文接口
@@ -335,7 +353,7 @@ export class MasterErrorHandler {
       message = error.message;
       severity = this.mapAppErrorSeverity(error.code);
       retryable = this.isAppErrorRetryable(error.code);
-    } else if (error instanceof SkillError) {
+    } else if (isSkillErrorLike(error)) {
       type = 'skill';
       code = error.type || 'SKILL_ERROR';
       message = error.message;

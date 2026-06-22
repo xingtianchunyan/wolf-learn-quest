@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间角色状态 Hook
+ * 通过唯一频道后缀规避重复挂载时的 realtime 频道复用问题。
+ */
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -16,6 +20,9 @@ export interface RoleState {
   updated_at: string;
 }
 
+/**
+ * 函数级注释：读取并订阅房间内所有玩家的角色状态
+ */
 export const useRoleStates = (roomId: string | null | undefined) => {
   const [roleStates, setRoleStates] = useState<RoleState[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +33,8 @@ export const useRoleStates = (roomId: string | null | undefined) => {
       setLoading(false);
       return;
     }
+
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     const fetchRoleStates = async () => {
       setLoading(true);
@@ -45,7 +54,7 @@ export const useRoleStates = (roomId: string | null | undefined) => {
     fetchRoleStates();
 
     const channel = supabase
-      .channel(`role_states_for_room_${roomId}`)
+      .channel(`role_states_for_room_${roomId}_${channelSuffix}`)
       .on<RoleState>(
         'postgres_changes',
         {

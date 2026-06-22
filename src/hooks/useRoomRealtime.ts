@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间基础实时信息 Hook
+ * 统一为 realtime 频道追加唯一后缀，避免重复挂载时订阅冲突。
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,15 +12,20 @@ interface RoomRealtimeData {
   lastUpdate: Date;
 }
 
+/**
+ * 函数级注释：监听房间基础字段变化
+ */
 export const useRoomRealtime = (roomId: string) => {
   const [roomData, setRoomData] = useState<RoomRealtimeData | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
 
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
     // Subscribe to room changes
     const channel = supabase
-      .channel(`room_${roomId}`)
+      .channel(`room_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {

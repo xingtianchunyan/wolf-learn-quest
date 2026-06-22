@@ -25,6 +25,7 @@ export const useRoomTransition = (
 
     let roomSub: ReturnType<typeof supabase.channel> | null = null;
     let cancelled = false;
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     const leaveRoomExplicit = async (rid: string) => {
       if (!requireAuth()) return;
@@ -106,7 +107,7 @@ export const useRoomTransition = (
 
         // Subscribe to room changes for next_room_id
         roomSub = supabase
-          .channel(`room_transition_${roomId}`)
+          .channel(`room_transition_${roomId}_${channelSuffix}`)
           .on(
             'postgres_changes',
             {

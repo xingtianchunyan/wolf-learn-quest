@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间游戏状态 Hook
+ * 为避免 React 严格模式或重复挂载时复用已订阅频道，实时频道名称追加唯一后缀。
+ */
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,6 +10,9 @@ import type { GameState, GameSettings } from '@/types/game';
 
 export type { GameState, GameSettings } from '@/types/game';
 
+/**
+ * 函数级注释：读取并订阅指定房间的游戏状态与设置
+ */
 export const useGameState = (roomId: string) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
@@ -91,8 +98,10 @@ export const useGameState = (roomId: string) => {
   useEffect(() => {
     if (!roomId) return;
 
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
     const stateChannel = supabase
-      .channel(`game_state_${roomId}`)
+      .channel(`game_state_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {
@@ -129,7 +138,7 @@ export const useGameState = (roomId: string) => {
       .subscribe();
 
     const settingsChannel = supabase
-      .channel(`game_settings_${roomId}`)
+      .channel(`game_settings_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {

@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：多频道聊天 Hook
+ * 频道订阅名追加唯一后缀，避免房间页重复挂载时复用已订阅的 realtime channel。
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +46,9 @@ interface SystemAnnouncementMetadata {
   };
 }
 
+/**
+ * 函数级注释：管理房间聊天记录、实时同步与发言动作
+ */
 export const useMultiChannelChat = ({
   roomId,
   currentUser,
@@ -186,8 +193,10 @@ export const useMultiChannelChat = ({
   useEffect(() => {
     if (!roomId) return;
 
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
     const channel = supabase
-      .channel('multi-channel-chat')
+      .channel(`multi-channel-chat_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {

@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：房间玩家实时列表 Hook
+ * 通过唯一频道名规避重复订阅时报错，确保房间页在严格模式下也能稳定挂载。
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,12 +16,17 @@ interface Player {
   role?: string;
 }
 
+/**
+ * 函数级注释：获取并订阅房间玩家列表
+ */
 export const usePlayersRealtime = (roomId: string) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!roomId) return;
+
+    const channelSuffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     // 初始获取玩家列表
     const fetchPlayers = async () => {
@@ -112,7 +121,7 @@ export const usePlayersRealtime = (roomId: string) => {
 
     // 订阅房间玩家变化
     const channel = supabase
-      .channel(`room_players_${roomId}`)
+      .channel(`room_players_${roomId}_${channelSuffix}`)
       .on(
         'postgres_changes',
         {
