@@ -38,6 +38,7 @@ replacements.txt
 # Generated / local tooling
 coverage/
 .venv-filterrepo/
+supabase/.temp/
 
 # AI IDE drafts
 .trae/
