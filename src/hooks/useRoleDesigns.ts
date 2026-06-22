@@ -51,7 +51,9 @@ const findBestMatchingRoleDesign = (
 
   const baseRoleName = getBaseRoleName(roleName);
   return roleDesigns.find(
-    role => role.role_name === baseRoleName || getBaseRoleName(role.role_name) === baseRoleName
+    role =>
+      role.role_name === baseRoleName ||
+      getBaseRoleName(role.role_name) === baseRoleName
   );
 };
 

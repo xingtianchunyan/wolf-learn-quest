@@ -159,7 +159,10 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({
       const effects = (statusEffects as Record<string, unknown>) || {};
       const canVote =
         isJudge ||
-        (isRoomParticipant && Boolean(effects.can_vote) && isActiveGame && isVotePhase);
+        (isRoomParticipant &&
+          Boolean(effects.can_vote) &&
+          isActiveGame &&
+          isVotePhase);
       const canUseSkill =
         isJudge ||
         (isRoomParticipant &&
@@ -281,10 +284,13 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({
   ): Promise<Record<PermissionName, boolean>> => {
     try {
       const permissionResults = await Promise.all(
-        permissions.map(async permission => [
-          permission,
-          await checkEnhancedPermission(permission, context),
-        ] as const)
+        permissions.map(
+          async permission =>
+            [
+              permission,
+              await checkEnhancedPermission(permission, context),
+            ] as const
+        )
       );
       return Object.fromEntries(permissionResults);
     } catch (error) {

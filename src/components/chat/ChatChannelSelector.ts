@@ -8,7 +8,12 @@ import React from 'react';
  * 类型注释：聊天频道
  * 当前聊天系统通过字符串字面量描述频道类型。
  */
-export type ChatChannel = 'public' | 'team' | 'judge_private' | 'system' | 'all';
+export type ChatChannel =
+  | 'public'
+  | 'team'
+  | 'judge_private'
+  | 'system'
+  | 'all';
 
 /**
  * 接口注释：聊天频道切换器属性

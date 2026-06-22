@@ -7,7 +7,6 @@ import {
   type SkillUsageContext,
 } from '@/services/enhancedSkillService';
 import { skillCache } from '@/utils/skillCache';
-import { skillBatchProcessor } from '@/utils/skillBatchProcessor';
 
 export interface SkillSuggestion {
   canUse: boolean;
@@ -141,30 +140,8 @@ export const useSkillValidation = (
           additionalData,
         };
 
-        // 使用批处理器来处理技能使用
-        await skillBatchProcessor.addOperation({
-          type: 'skill_use',
-          data: {
-            user_id: userId,
-            game_state_id: gameStateId,
-            skill_name: skillName,
-            target_user_id: targetUserId,
-            phase:
-              currentPhase === 1
-                ? 'day'
-                : currentPhase === 2
-                  ? 'evening'
-                  : currentPhase === 3
-                    ? 'night'
-                    : 'dawn',
-            round_number: currentRound || 1,
-            skill_effects: additionalData,
-            skill_priority: roleDesign?.priority || 100,
-          },
-          priority: roleDesign?.priority || 100,
-          gameStateId,
-          userId,
-        });
+        // 直接调用技能服务
+        await EnhancedSkillService.useSkillEnhanced(context);
 
         // 清除相关缓存
         skillCache.clearUserCache(userId);

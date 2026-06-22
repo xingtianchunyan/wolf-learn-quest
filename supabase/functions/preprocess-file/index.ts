@@ -190,12 +190,13 @@ serve(async req => {
         .single();
 
       if (fileError) {
-        const { data: sameRoomFile, error: existingByNameError } = await supabase
-          .from('uploaded_files')
-          .select('*')
-          .eq('file_name', fileName)
-          .eq('room_id', roomId)
-          .single();
+        const { data: sameRoomFile, error: existingByNameError } =
+          await supabase
+            .from('uploaded_files')
+            .select('*')
+            .eq('file_name', fileName)
+            .eq('room_id', roomId)
+            .single();
 
         if (sameRoomFile && !existingByNameError) {
           uploadedFileId = sameRoomFile.id;
@@ -322,8 +323,7 @@ serve(async req => {
         error: error instanceof Error ? error.message : '未知错误',
       }),
       {
-        status:
-          error instanceof RequestValidationError ? error.status : 500,
+        status: error instanceof RequestValidationError ? error.status : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
