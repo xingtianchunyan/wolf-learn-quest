@@ -29,6 +29,19 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+/**
+ * 请求参数校验错误，用于向调用方返回明确的 400 响应。
+ */
+class RequestValidationError extends Error {
+  status: number;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'RequestValidationError';
+    this.status = 400;
+  }
+}
+
 async function extractDocxText(fileBuffer: ArrayBuffer): Promise<string> {
   try {
     console.log('开始解析DOCX文件，大小:', fileBuffer.byteLength);
@@ -98,7 +111,27 @@ serve(async req => {
       throw new Error('SILICONFLOW_API_KEY环境变量未设置');
     }
 
-    const { filePath, fileName, roomId } = await req.json();
+    let requestBody: Record<string, unknown>;
+    try {
+      requestBody = await req.json();
+    } catch {
+      throw new RequestValidationError('请求体必须是合法的 JSON');
+    }
+
+    const { filePath, fileName, roomId } = requestBody;
+    if (
+      typeof filePath !== 'string' ||
+      filePath.trim().length === 0 ||
+      typeof fileName !== 'string' ||
+      fileName.trim().length === 0 ||
+      typeof roomId !== 'string' ||
+      roomId.trim().length === 0
+    ) {
+      throw new RequestValidationError(
+        '缺少必填参数: filePath、fileName、roomId'
+      );
+    }
+
     console.log('预处理文件:', { filePath, fileName, roomId });
 
     // 检查是否已经预处理过
@@ -123,7 +156,19 @@ serve(async req => {
       );
     }
 
-    // 记录或获取文件信息
+    // 从存储桶下载文件
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('question-files')
+      .download(filePath);
+
+    if (downloadError || !fileData) {
+      console.error('文件下载失败:', downloadError);
+      throw new Error('文件下载失败');
+    }
+
+    console.log('文件下载成功，大小:', fileData.size);
+
+    // 记录或获取文件信息。先确保文件可下载，再写入数据库，避免失败时留下半成品记录。
     let uploadedFileId;
     const { data: existingFile } = await supabase
       .from('uploaded_files')
@@ -145,23 +190,23 @@ serve(async req => {
         .single();
 
       if (fileError) {
-        console.error('文件记录创建失败:', fileError);
-        throw new Error(`文件记录失败: ${fileError.message}`);
+        const { data: sameRoomFile, error: existingByNameError } = await supabase
+          .from('uploaded_files')
+          .select('*')
+          .eq('file_name', fileName)
+          .eq('room_id', roomId)
+          .single();
+
+        if (sameRoomFile && !existingByNameError) {
+          uploadedFileId = sameRoomFile.id;
+        } else {
+          console.error('文件记录创建失败:', fileError);
+          throw new Error(`文件记录失败: ${fileError.message}`);
+        }
+      } else {
+        uploadedFileId = newFile.id;
       }
-      uploadedFileId = newFile.id;
     }
-
-    // 从存储桶下载文件
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('question-files')
-      .download(filePath);
-
-    if (downloadError || !fileData) {
-      console.error('文件下载失败:', downloadError);
-      throw new Error('文件下载失败');
-    }
-
-    console.log('文件下载成功，大小:', fileData.size);
 
     const fileExtension = fileName.toLowerCase().split('.').pop();
     let fileContent = '';
@@ -277,7 +322,8 @@ serve(async req => {
         error: error instanceof Error ? error.message : '未知错误',
       }),
       {
-        status: 500,
+        status:
+          error instanceof RequestValidationError ? error.status : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

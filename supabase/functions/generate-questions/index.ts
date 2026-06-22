@@ -171,6 +171,7 @@ serve(async req => {
     const { data: savedQuestionSet, error: saveError } = await supabase
       .from('generated_questions')
       .insert({
+        room_id: roomId,
         original_file_path: preprocessedData.original_file_path,
         file_name: preprocessedData.file_name,
         model_used: 'Qwen/Qwen2.5-72B-Instruct',
@@ -186,7 +187,7 @@ serve(async req => {
       throw new Error(`保存失败: ${saveError.message}`);
     }
 
-    // 将每道题目单独保存到questions表 - 修复：使用正确的correct_option映射 (0-3)
+    // 将每道题目单独保存到 questions 表，数据库约束要求 correct_option 为 1-4。
     const individualQuestions = questionsData.questions.map(
       (q: any, index: number) => ({
         question: q.question,
@@ -196,12 +197,12 @@ serve(async req => {
         option_d: q.option_d,
         correct_option:
           q.correct_answer === 'A'
-            ? 0
+            ? 1
             : q.correct_answer === 'B'
-              ? 1
+              ? 2
               : q.correct_answer === 'C'
-                ? 2
-                : 3,
+                ? 3
+                : 4,
         explanation: q.explanation,
         generated_questions_id: savedQuestionSet.id,
         difficulty: Math.floor(index / 6) + 1, // 分为3个难度等级
@@ -215,7 +216,16 @@ serve(async req => {
 
     if (questionsError) {
       console.error('保存单独题目失败:', questionsError);
-      // 这里不抛出错误，因为主要数据已经保存成功
+      const { error: rollbackError } = await supabase
+        .from('generated_questions')
+        .delete()
+        .eq('id', savedQuestionSet.id);
+
+      if (rollbackError) {
+        console.error('回滚题目集合失败:', rollbackError);
+      }
+
+      throw new Error(`保存单独题目失败: ${questionsError.message}`);
     }
 
     console.log('题目生成完成，ID:', savedQuestionSet.id);
