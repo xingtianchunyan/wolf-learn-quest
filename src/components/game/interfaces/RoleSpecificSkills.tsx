@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { UnifiedWitchSkillInterface } from './UnifiedWitchSkillInterface';
 import type { RoleSpecificSkillsProps } from '@/types/skill.types';
+
+type InvestigationResult =
+  | string
+  | {
+      faction?: string;
+      isWerewolf?: boolean;
+      result?: InvestigationResult;
+    };
 import {
   Skull,
   Shield,
@@ -42,9 +50,14 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     // 女巫不受限制
     if (isWitch) return false;
 
-    // 检查其他角色是否已在当前夜晚使用过技能 - 使用实际的回合数据
+    // 只判断当前用户在当前回合的当前夜晚是否已使用过技能，
+    // 避免被队友 AI（尤其是狼人队友）的行动错误禁用。
     return userSkillUses.some(
-      use => use.phase === 'night' && currentPhase === 3
+      use =>
+        use.user_id === userId &&
+        use.phase === 'night' &&
+        use.round_number === currentRound &&
+        currentPhase === 3
     );
   };
 
@@ -175,7 +188,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     };
 
     // 解析查验结果的辅助函数
-    const parseInvestigationResult = (result: any) => {
+    const parseInvestigationResult = (result: InvestigationResult | null) => {
       if (!result) return '未知';
 
       // 处理不同格式的查验结果
@@ -185,7 +198,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
           : '好人';
       }
 
-      if (typeof result === 'object') {
+      if (typeof result === 'object' && result !== null) {
         if (result.faction === 'werewolf' || result.isWerewolf === true)
           return '狼人';
         if (result.faction === 'villager' || result.isWerewolf === false)

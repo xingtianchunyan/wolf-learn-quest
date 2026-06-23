@@ -18,6 +18,7 @@ import { useRoleStates } from '@/hooks/useRoleStates';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
 import { useAutoDyingStatusProcessor } from '@/hooks/useAutoDyingStatusProcessor';
+import type { SkillData } from '@/types/skill.types';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
 import MultiChannelChat from '@/components/chat/MultiChannelChat';
@@ -222,7 +223,7 @@ const GamePage = () => {
                           >
                         }
                         canUseSkill={skillUsageValid}
-                        onUseSkill={async (skillData: any) => {
+                        onUseSkill={async (skillData: SkillData) => {
                           await useSkillEnhanced(
                             currentRoleDesign.skill_name || '',
                             skillData.targetId,

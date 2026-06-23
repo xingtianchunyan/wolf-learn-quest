@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Heart, Skull, Target } from 'lucide-react';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
+import type { SkillData } from '@/types/skill.types';
 
 interface UnifiedWitchSkillInterfaceProps {
   gameStateId: string;
@@ -17,7 +18,7 @@ interface UnifiedWitchSkillInterfaceProps {
   currentRound: number;
   currentPhase: number;
   canUseSkill: boolean;
-  onUseSkill: (skillData: any) => void;
+  onUseSkill: (skillData: SkillData) => void;
   availableTargets: Array<{ userId: string; name: string; roleStatus: number }>;
 }
 

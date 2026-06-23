@@ -7,6 +7,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useGameState } from '@/hooks/useGameState';
 import { supabase } from '@/integrations/supabase/client';
 import { createLogger } from '@/lib/logger';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface Question {
   id: string;
@@ -40,7 +41,7 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [userAnswers, setUserAnswers] = useState<any[]>([]);
+  const [userAnswers, setUserAnswers] = useState<Tables<'room_answers'>[]>([]);
   const { currentUser } = useAuth();
   const { gameState } = useGameState(roomId);
   const logger = createLogger('StudentAnswerRecordPanel');

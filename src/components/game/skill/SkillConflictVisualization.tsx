@@ -22,9 +22,17 @@ interface SkillConflict {
   status: 'pending' | 'resolving' | 'resolved';
 }
 
+interface SkillConflictResolution {
+  action?: 'priority' | 'cancel_all';
+  resolved?: boolean;
+}
+
 interface SkillConflictVisualizationProps {
   conflicts: SkillConflict[];
-  onResolveConflict: (conflictId: string, resolution: any) => void;
+  onResolveConflict: (
+    conflictId: string,
+    resolution: SkillConflictResolution
+  ) => void;
   gamePhase: string;
   isJudge: boolean;
 }

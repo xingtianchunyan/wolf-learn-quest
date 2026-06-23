@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock } from 'lucide-react';
+import type { GameState } from '@/types/game';
 
 interface StudentTimerDisplayProps {
   showTimer: boolean;
@@ -7,7 +8,7 @@ interface StudentTimerDisplayProps {
   timeRemaining: number;
   formatTime: (seconds: number) => string;
   isAnsweringPhase: boolean;
-  gameState: any; // 保持原有类型
+  gameState: GameState | null;
 }
 
 const StudentTimerDisplay: React.FC<StudentTimerDisplayProps> = ({

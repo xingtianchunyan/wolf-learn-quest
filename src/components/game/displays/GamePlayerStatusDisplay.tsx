@@ -225,6 +225,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
           return (
             <div
               key={player.id}
+              data-testid='player-status-card'
               className={getPlayerCardClass(player)}
               onClick={() => handlePlayerClick(player)}
             >

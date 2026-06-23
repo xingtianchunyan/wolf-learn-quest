@@ -53,7 +53,17 @@ const GameRoom = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
     null
   );
-  const [currentPlayerRecord, setCurrentPlayerRecord] = useState<any>(null);
+  interface RoomPlayerRecord {
+    id: string;
+    room_id: string;
+    user_id: string;
+    is_ready: boolean;
+    is_ai: boolean;
+    role?: string | null;
+  }
+
+  const [currentPlayerRecord, setCurrentPlayerRecord] =
+    useState<RoomPlayerRecord | null>(null);
   const [previousMaxPlayers, setPreviousMaxPlayers] = useState<number | null>(
     null
   );

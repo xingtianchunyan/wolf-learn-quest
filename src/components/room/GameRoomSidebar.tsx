@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PlayersList from '@/components/room/PlayersList';
+import PlayersList, { type Player } from '@/components/room/PlayersList';
 
 interface GameRoomSidebarProps {
   roomData: {
@@ -10,7 +10,7 @@ interface GameRoomSidebarProps {
     judge_user_id?: string | null;
   };
   judgeName: string | null;
-  players: any[];
+  players: Player[];
   currentMaxPlayers: number;
   onlinePlayers: string[];
   isReady: boolean;
