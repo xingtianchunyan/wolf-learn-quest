@@ -169,6 +169,25 @@ export const en = {
   guest_account_badge: 'Guest Account',
   placeholder_password: 'Enter your password',
   placeholder_confirm_password: 'Confirm your password',
+  forgot_password: 'Forgot password?',
+  forgot_password_title: 'Reset Password',
+  forgot_password_desc:
+    'Enter your email and we will send you a password reset link',
+  send_reset_link: 'Send reset link',
+  sending_reset_link: 'Sending...',
+  reset_link_sent: 'Reset link sent',
+  reset_link_sent_desc:
+    'Please check your email and click the link to reset your password',
+  reset_link_failed: 'Failed to send reset link',
+  resend_confirmation: 'Resend confirmation email',
+  resending_confirmation: 'Resending...',
+  confirmation_resent: 'Confirmation email resent',
+  confirmation_resent_desc:
+    'Please check your email and click the confirmation link',
+  resend_confirmation_failed: 'Failed to resend confirmation email',
+  back_to_signin: 'Back to sign in',
+  no_account: "Don't have an account?",
+  has_account: 'Already have an account?',
 
   // Game Rules Dialog
   game_rules_title: 'Game Rules',

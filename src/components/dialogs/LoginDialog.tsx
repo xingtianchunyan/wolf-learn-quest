@@ -29,6 +29,7 @@ const LoginDialog: React.FC = () => {
   const [playerId, setPlayerId] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isLoggedIn, initializing, isLoginOpen, setIsLoginOpen } = useAuth();
@@ -257,6 +258,101 @@ const LoginDialog: React.FC = () => {
   };
 
   /**
+   * 函数级注释：发送密码重置链接
+   */
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      toast({
+        title: t('email'),
+        description: t('player_id_required_desc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        toast({
+          title: t('reset_link_failed'),
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: t('reset_link_sent'),
+        description: t('reset_link_sent_desc'),
+      });
+
+      setActiveTab('signin');
+    } catch (error) {
+      logger.error('Forgot password error:', error);
+      toast({
+        title: t('reset_link_failed'),
+        description: t('unexpected_error'),
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 函数级注释：重发注册确认邮件
+   */
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) {
+      toast({
+        title: t('email'),
+        description: t('player_id_required_desc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+
+      if (error) {
+        toast({
+          title: t('resend_confirmation_failed'),
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: t('confirmation_resent'),
+        description: t('confirmation_resent_desc'),
+      });
+    } catch (error) {
+      logger.error('Resend confirmation error:', error);
+      toast({
+        title: t('resend_confirmation_failed'),
+        description: t('unexpected_error'),
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
    * 函数级注释：执行退出登录
    */
   const handleLogout = async () => {
@@ -309,7 +405,7 @@ const LoginDialog: React.FC = () => {
           <DialogDescription>{t('auth_desc')}</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue='signin' className='w-full'>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
           <TabsList className='grid grid-cols-2 bg-werewolf-dark/60'>
             <TabsTrigger value='signin'>{t('signin')}</TabsTrigger>
             <TabsTrigger value='signup'>{t('signup')}</TabsTrigger>
@@ -331,7 +427,16 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='password-login'>{t('password')}</Label>
+                  <div className='flex items-center justify-between'>
+                    <Label htmlFor='password-login'>{t('password')}</Label>
+                    <button
+                      type='button'
+                      onClick={() => setActiveTab('forgot')}
+                      className='text-xs text-werewolf-purple hover:underline bg-transparent border-none p-0'
+                    >
+                      {t('forgot_password')}
+                    </button>
+                  </div>
                   <Input
                     id='password-login'
                     type='password'
@@ -376,6 +481,48 @@ const LoginDialog: React.FC = () => {
                     disabled={loading}
                   >
                     {loading ? t('signing_in') : t('signin')}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value='forgot'>
+            <form onSubmit={handleForgotPassword}>
+              <div className='space-y-4 py-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='email-forgot'>{t('email')}</Label>
+                  <Input
+                    id='email-forgot'
+                    type='email'
+                    placeholder={t('placeholder_email')}
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    {t('forgot_password_desc')}
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='border-werewolf-purple/30 bg-werewolf-dark/40'
+                    disabled={loading}
+                    onClick={() => setActiveTab('signin')}
+                  >
+                    {t('back_to_signin')}
+                  </Button>
+                  <Button
+                    type='submit'
+                    className='bg-werewolf-purple hover:bg-werewolf-light'
+                    disabled={loading}
+                  >
+                    {loading ? t('sending_reset_link') : t('send_reset_link')}
                   </Button>
                 </div>
               </DialogFooter>
@@ -436,10 +583,21 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className='flex-col gap-2'>
+                <Button
+                  type='button'
+                  variant='link'
+                  className='text-werewolf-purple hover:underline w-full'
+                  disabled={loading}
+                  onClick={handleResendConfirmation}
+                >
+                  {loading
+                    ? t('resending_confirmation')
+                    : t('resend_confirmation')}
+                </Button>
                 <Button
                   type='submit'
-                  className='bg-werewolf-purple hover:bg-werewolf-light'
+                  className='bg-werewolf-purple hover:bg-werewolf-light w-full'
                   disabled={loading}
                 >
                   {loading ? t('creating_account') : t('signup')}
