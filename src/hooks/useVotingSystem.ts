@@ -358,6 +358,10 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       try {
         await VotingService.castVote(currentSession.id, voterId, targetId);
 
+        // Refresh the local vote list immediately so the UI reflects the vote
+        // even when the real-time subscription is delayed or dropped.
+        await fetchVotes(currentSession.id);
+
         toast({
           title: '投票成功',
           description: targetId ? '您已成功投票' : '您已弃权',
@@ -381,7 +385,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [currentSession, toast]
+    [currentSession, fetchVotes, toast]
   );
 
   // 计算投票结果
@@ -394,6 +398,11 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
       setLoading(true);
       try {
         await VotingService.calculateVotingResults(targetSessionId);
+
+        // Refresh votes and results immediately so the judge panel reflects
+        // the computed outcome even when real-time subscriptions lag.
+        await fetchVotes(targetSessionId);
+        await fetchResults(targetSessionId);
 
         toast({
           title: '投票结果已计算',
@@ -413,7 +422,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [currentSession, toast]
+    [currentSession, fetchVotes, fetchResults, toast]
   );
 
   // 处理投票结果
