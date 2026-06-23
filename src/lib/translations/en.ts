@@ -162,15 +162,10 @@ export const en = {
   guest_login_hint:
     'Guests can also create or join rooms, and upgrade to a full account later.',
   guest_login_failed: 'Guest login failed',
-  guest_login_success: 'Guest login successful!',
-  guest_login_success_desc:
-    'You are now in guest mode and can start playing immediately.',
-  guest_player_id_required_desc: 'Please enter a guest name before continuing',
   guest_account_badge: 'Guest Account',
   placeholder_password: 'Enter your password',
   placeholder_confirm_password: 'Confirm your password',
   forgot_password: 'Forgot password?',
-  forgot_password_title: 'Reset Password',
   forgot_password_desc:
     'Enter your email and we will send you a password reset link',
   send_reset_link: 'Send reset link',
@@ -179,15 +174,7 @@ export const en = {
   reset_link_sent_desc:
     'Please check your email and click the link to reset your password',
   reset_link_failed: 'Failed to send reset link',
-  resend_confirmation: 'Resend confirmation email',
-  resending_confirmation: 'Resending...',
-  confirmation_resent: 'Confirmation email resent',
-  confirmation_resent_desc:
-    'Please check your email and click the confirmation link',
-  resend_confirmation_failed: 'Failed to resend confirmation email',
   back_to_signin: 'Back to sign in',
-  no_account: "Don't have an account?",
-  has_account: 'Already have an account?',
 
   // Game Rules Dialog
   game_rules_title: 'Game Rules',

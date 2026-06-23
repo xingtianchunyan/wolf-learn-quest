@@ -1,6 +1,6 @@
 /**
- * 文件级注释：登录与游客登录对话框
- * 提供邮箱密码登录、注册以及匿名游客入口。
+ * 文件级注释：登录与注册对话框
+ * 提供邮箱密码登录、注册以及密码重置入口。
  */
 import React, { useState } from 'react';
 import { createLogger } from '@/lib/logger';
@@ -184,80 +184,6 @@ const LoginDialog: React.FC = () => {
   };
 
   /**
-   * 函数级注释：执行游客匿名登录
-   */
-  const handleGuestLogin = async () => {
-    const guestPlayerId = playerId.trim();
-
-    if (!guestPlayerId) {
-      toast({
-        title: t('player_id_required'),
-        description: t('guest_player_id_required_desc'),
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data: existingUserRows } = await supabase.rpc(
-        'get_public_user_by_name',
-        { p_name: guestPlayerId }
-      );
-
-      if (
-        existingUserRows &&
-        Array.isArray(existingUserRows) &&
-        existingUserRows.length > 0
-      ) {
-        toast({
-          title: t('player_id_taken'),
-          description: t('player_id_taken_desc'),
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const { error } = await supabase.auth.signInAnonymously({
-        options: {
-          data: {
-            player_name: guestPlayerId,
-            display_name: guestPlayerId,
-            is_guest: true,
-          },
-        },
-      });
-
-      if (error) {
-        toast({
-          title: t('guest_login_failed'),
-          description: error.message,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      toast({
-        title: t('guest_login_success'),
-        description: t('guest_login_success_desc'),
-      });
-
-      setIsLoginOpen(false);
-      setPlayerId('');
-    } catch (error) {
-      logger.error('Guest login error:', error);
-      toast({
-        title: t('guest_login_failed'),
-        description: t('unexpected_error'),
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
    * 函数级注释：发送密码重置链接
    */
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -298,52 +224,6 @@ const LoginDialog: React.FC = () => {
       logger.error('Forgot password error:', error);
       toast({
         title: t('reset_link_failed'),
-        description: t('unexpected_error'),
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * 函数级注释：重发注册确认邮件
-   */
-  const handleResendConfirmation = async () => {
-    if (!email.trim()) {
-      toast({
-        title: t('email'),
-        description: t('player_id_required_desc'),
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-
-      if (error) {
-        toast({
-          title: t('resend_confirmation_failed'),
-          description: error.message,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      toast({
-        title: t('confirmation_resent'),
-        description: t('confirmation_resent_desc'),
-      });
-    } catch (error) {
-      logger.error('Resend confirmation error:', error);
-      toast({
-        title: t('resend_confirmation_failed'),
         description: t('unexpected_error'),
         variant: 'destructive',
       });
@@ -447,34 +327,9 @@ const LoginDialog: React.FC = () => {
                     className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
-                <div className='border-t border-werewolf-purple/20 pt-4 space-y-2'>
-                  <Label htmlFor='guest-player-id'>
-                    {t('guest_player_id')}
-                  </Label>
-                  <Input
-                    id='guest-player-id'
-                    type='text'
-                    placeholder={t('placeholder_guest_player_id')}
-                    value={playerId}
-                    onChange={e => setPlayerId(e.target.value)}
-                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
-                  />
-                  <p className='text-xs text-muted-foreground'>
-                    {t('guest_login_hint')}
-                  </p>
-                </div>
               </div>
               <DialogFooter>
                 <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    className='border-werewolf-purple/30 bg-werewolf-dark/40'
-                    disabled={loading}
-                    onClick={handleGuestLogin}
-                  >
-                    {loading ? t('guest_signing_in') : t('continue_as_guest')}
-                  </Button>
                   <Button
                     type='submit'
                     className='bg-werewolf-purple hover:bg-werewolf-light'
@@ -583,18 +438,7 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
               </div>
-              <DialogFooter className='flex-col gap-2'>
-                <Button
-                  type='button'
-                  variant='link'
-                  className='text-werewolf-purple hover:underline w-full'
-                  disabled={loading}
-                  onClick={handleResendConfirmation}
-                >
-                  {loading
-                    ? t('resending_confirmation')
-                    : t('resend_confirmation')}
-                </Button>
+              <DialogFooter>
                 <Button
                   type='submit'
                   className='bg-werewolf-purple hover:bg-werewolf-light w-full'
