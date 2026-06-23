@@ -55,8 +55,7 @@ export const useEnhancedVotingAnalysis = (
     if (votingSummary.abstentions > 0) {
       const abstentionVoters = votingSummary.voteDetails?.['abstention'] || [];
       const abstentionVoterNames = abstentionVoters.map(
-        vote =>
-          players.find(p => p.userId === vote.voterId)?.name || '未知玩家'
+        vote => players.find(p => p.userId === vote.voterId)?.name || '未知玩家'
       );
 
       records.push({
@@ -98,7 +97,9 @@ export const useEnhancedVotingAnalysis = (
         winner: topVotedPlayers[0],
       };
     } else {
-      const tiedPlayerNames = topVotedPlayers.map(p => p.votedPlayerName).join('、');
+      const tiedPlayerNames = topVotedPlayers
+        .map(p => p.votedPlayerName)
+        .join('、');
       return {
         type: 'tie',
         message: `平票：${tiedPlayerNames} 各获得 ${maxVotes} 票`,

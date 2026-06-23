@@ -402,7 +402,8 @@ export const en = {
   ai_judge_unavailable: 'AI judge is not available yet',
   ai_judge_unavailable_desc:
     'The complete AI judge flow is still under construction, so only the regular room path is available for now.',
-  ai_judge_feature_note: 'AI judge mode is under development and temporarily unavailable',
+  ai_judge_feature_note:
+    'AI judge mode is under development and temporarily unavailable',
   ready: 'Ready',
   not_ready: 'Not Ready',
   ready_to_start: 'Ready to start!',

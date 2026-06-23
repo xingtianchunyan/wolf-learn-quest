@@ -13,7 +13,10 @@ export interface ChatMessage {
   room_id: string;
 }
 
-export const useRoomChat = (roomId: string | null, currentUser: User | null) => {
+export const useRoomChat = (
+  roomId: string | null,
+  currentUser: User | null
+) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();

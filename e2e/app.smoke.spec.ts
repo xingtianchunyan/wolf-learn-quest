@@ -12,7 +12,9 @@ test.describe('app smoke', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('heading', { name: 'Welcome to the Werewolf Social Learning' })
+      page.getByRole('heading', {
+        name: 'Welcome to the Werewolf Social Learning',
+      })
     ).toBeVisible();
 
     await page.getByRole('link', { name: 'Start Game' }).click();

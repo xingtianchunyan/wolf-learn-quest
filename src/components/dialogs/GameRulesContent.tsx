@@ -246,9 +246,7 @@ const GameRulesContent: React.FC = () => {
                   <h5 className='font-medium text-yellow-400'>
                     {t('phase_evening_quiz')}
                   </h5>
-                  <p className='text-sm mt-1'>
-                    {t('phase_evening_quiz_time')}
-                  </p>
+                  <p className='text-sm mt-1'>{t('phase_evening_quiz_time')}</p>
                   <p className='text-sm'>{t('phase_evening_quiz_desc')}</p>
                 </div>
 
@@ -256,9 +254,7 @@ const GameRulesContent: React.FC = () => {
                   <h5 className='font-medium text-purple-400'>
                     {t('phase_nighttime')}
                   </h5>
-                  <p className='text-sm mt-1'>
-                    {t('phase_nighttime_time')}
-                  </p>
+                  <p className='text-sm mt-1'>{t('phase_nighttime_time')}</p>
                   <p className='text-sm'>{t('phase_nighttime_desc')}</p>
                 </div>
 
@@ -266,9 +262,7 @@ const GameRulesContent: React.FC = () => {
                   <h5 className='font-medium text-orange-400'>
                     {t('phase_dawn_quiz')}
                   </h5>
-                  <p className='text-sm mt-1'>
-                    {t('phase_dawn_quiz_time')}
-                  </p>
+                  <p className='text-sm mt-1'>{t('phase_dawn_quiz_time')}</p>
                   <p className='text-sm'>{t('phase_dawn_quiz_desc')}</p>
                 </div>
               </div>
@@ -313,10 +307,7 @@ const GameRulesContent: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {characterSkills.map((character, index) => (
-                    <TableRow
-                      key={index}
-                      className='hover:bg-werewolf-dark/20'
-                    >
+                    <TableRow key={index} className='hover:bg-werewolf-dark/20'>
                       <TableCell
                         className={`font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(character.role) ? 'text-red-400' : 'text-green-400'}`}
                       >
@@ -426,9 +417,7 @@ const GameRulesContent: React.FC = () => {
             <h3 className='font-bold text-lg text-werewolf-purple'>
               {t('info_disclosure_title')}
             </h3>
-            <p className='text-sm text-gray-400'>
-              {t('info_disclosure_desc')}
-            </p>
+            <p className='text-sm text-gray-400'>{t('info_disclosure_desc')}</p>
 
             <div className='border border-werewolf-purple/30 rounded-md overflow-hidden'>
               <Table>
@@ -447,21 +436,14 @@ const GameRulesContent: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {informationDisclosure.map((info, index) => (
-                    <TableRow
-                      key={index}
-                      className='hover:bg-werewolf-dark/20'
-                    >
+                    <TableRow key={index} className='hover:bg-werewolf-dark/20'>
                       <TableCell
                         className={`font-medium ${['Werewolf', 'White Wolf', 'Warlock', 'Demon'].includes(info.role) ? 'text-red-400' : 'text-green-400'}`}
                       >
                         {info.role}
                       </TableCell>
-                      <TableCell className='text-sm'>
-                        {info.phases}
-                      </TableCell>
-                      <TableCell className='text-sm'>
-                        {info.scope}
-                      </TableCell>
+                      <TableCell className='text-sm'>{info.phases}</TableCell>
+                      <TableCell className='text-sm'>{info.scope}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

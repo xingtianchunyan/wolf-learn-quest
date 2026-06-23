@@ -27,9 +27,7 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
           </CardHeader>
           <CardContent>
             {skillUses.length === 0 ? (
-              <div className='text-center text-gray-500 py-4'>
-                暂无活跃技能
-              </div>
+              <div className='text-center text-gray-500 py-4'>暂无活跃技能</div>
             ) : (
               <div className='space-y-2'>
                 {skillUses.slice(0, 5).map((skill: EnhancedSkillUse) => (

@@ -26,7 +26,9 @@ export class GamePage {
           timeout: 5000,
         });
       } else {
-        throw new Error('confirm-vote not visible after creating voting session');
+        throw new Error(
+          'confirm-vote not visible after creating voting session'
+        );
       }
     }
   }
@@ -46,7 +48,9 @@ export class GamePage {
     try {
       await expect(selectionText).toBeVisible({ timeout: 2000 });
     } catch {
-      console.log('[e2e] Playwright click did not select target; using native click.');
+      console.log(
+        '[e2e] Playwright click did not select target; using native click.'
+      );
       await target.evaluate(el => el.click());
       await expect(selectionText).toBeVisible({ timeout: 5000 });
     }

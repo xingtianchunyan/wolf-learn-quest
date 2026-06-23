@@ -45,7 +45,9 @@ const logger = createLogger('skill-data');
 
 export const useSkillData = (gameStateId?: string) => {
   const [skillUses, setSkillUses] = useState<EnhancedSkillUse[]>([]);
-  const [skillEffectsQueue, setSkillEffectsQueue] = useState<SkillEffectQueueItem[]>([]);
+  const [skillEffectsQueue, setSkillEffectsQueue] = useState<
+    SkillEffectQueueItem[]
+  >([]);
   const [skillTargets, setSkillTargets] = useState<SkillTarget[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());

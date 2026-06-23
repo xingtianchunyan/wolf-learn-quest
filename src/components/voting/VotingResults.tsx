@@ -56,7 +56,9 @@ export const VotingResults: React.FC<VotingResultsProps> = ({
             投票情况
           </div>
           <Badge variant='outline' className='text-green-400 border-green-400'>
-            {currentSession.session_type === 'day_vote' ? '白天投票' : '放逐投票'}
+            {currentSession.session_type === 'day_vote'
+              ? '白天投票'
+              : '放逐投票'}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -100,7 +102,10 @@ export const VotingResults: React.FC<VotingResultsProps> = ({
                         <span className='text-gray-300 font-medium'>
                           {targetPlayer?.name || '未知玩家'}
                         </span>
-                        <Badge variant='outline' className='text-werewolf-purple'>
+                        <Badge
+                          variant='outline'
+                          className='text-werewolf-purple'
+                        >
                           {voteCount} 票
                         </Badge>
                       </div>
@@ -155,7 +160,9 @@ export const VotingResults: React.FC<VotingResultsProps> = ({
 
         {results.length > 0 && (
           <div className='space-y-3'>
-            <h4 className='text-sm font-medium text-werewolf-purple'>投票结果</h4>
+            <h4 className='text-sm font-medium text-werewolf-purple'>
+              投票结果
+            </h4>
             <ScrollArea className='max-h-32'>
               <div className='space-y-2'>
                 {results.map(result => (
@@ -171,7 +178,10 @@ export const VotingResults: React.FC<VotingResultsProps> = ({
                           : '无目标'}
                       </span>
                       <div className='flex items-center space-x-2'>
-                        <Badge variant='outline' className='text-werewolf-purple'>
+                        <Badge
+                          variant='outline'
+                          className='text-werewolf-purple'
+                        >
                           {result.total_votes} 票
                         </Badge>
                         <Badge

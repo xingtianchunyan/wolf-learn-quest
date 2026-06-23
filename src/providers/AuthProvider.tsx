@@ -9,10 +9,7 @@ import React, {
   useState,
   useRef,
 } from 'react';
-import {
-  supabase,
-  SUPABASE_STORAGE_KEY,
-} from '@/integrations/supabase/client';
+import { supabase, SUPABASE_STORAGE_KEY } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
 

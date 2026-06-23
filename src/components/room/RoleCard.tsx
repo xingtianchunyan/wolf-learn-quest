@@ -66,9 +66,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           <div className='h-full flex flex-col'>
             <div
               className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
-                canSelect
-                  ? 'cursor-pointer'
-                  : 'cursor-not-allowed opacity-60'
+                canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
               }`}
               onClick={() => canSelect && onSelect()}
             >
@@ -96,10 +94,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                 🎭
               </div>
             </div>
-            <div
-              className='text-center cursor-pointer'
-              onClick={onFlip}
-            >
+            <div className='text-center cursor-pointer' onClick={onFlip}>
               <h3 className='font-bold text-lg text-white mb-2'>
                 {role.displayName}
               </h3>
@@ -193,10 +188,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               </div>
             </div>
 
-            <div
-              className='text-center mt-3 cursor-pointer'
-              onClick={onFlip}
-            >
+            <div className='text-center mt-3 cursor-pointer' onClick={onFlip}>
               <div className='text-xs text-gray-400'>单击返回正面</div>
             </div>
           </div>

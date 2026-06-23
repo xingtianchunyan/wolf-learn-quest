@@ -29,9 +29,7 @@ export const SkillSystemProgressTab: React.FC<SkillSystemProgressTabProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className='text-lg'>技能执行进度跟踪</CardTitle>
-          <CardDescription>
-            实时显示技能执行的各个步骤和状态
-          </CardDescription>
+          <CardDescription>实时显示技能执行的各个步骤和状态</CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
           {Object.entries(skillProgress).map(([skillName, steps]) => (

@@ -153,7 +153,9 @@ class PerformanceReporter {
     // 使用Navigation Timing API记录其他指标
     window.addEventListener('load', () => {
       setTimeout(() => {
-        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        const nav = performance.getEntriesByType(
+          'navigation'
+        )[0] as PerformanceNavigationTiming;
         if (nav) {
           this.recordMetric('TTFB', nav.responseStart - nav.requestStart, 'ms');
           this.recordMetric(

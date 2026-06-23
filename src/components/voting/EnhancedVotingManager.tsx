@@ -176,31 +176,31 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
 
         {(currentSession || voteRecords.length > 0) &&
           gameState?.status === 'active' && (
-          <div className='grid grid-cols-2 gap-3 flex-shrink-0'>
-            <Button
-              variant='outline'
-              onClick={handleCalculateResults}
-              data-testid='calculate-results-button'
-              className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
-              disabled={isCalculating || votesLoading}
-            >
-              <Calculator className='h-4 w-4 mr-2' />
-              {isCalculating ? '计算中...' : '计算结果'}
-            </Button>
+            <div className='grid grid-cols-2 gap-3 flex-shrink-0'>
+              <Button
+                variant='outline'
+                onClick={handleCalculateResults}
+                data-testid='calculate-results-button'
+                className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
+                disabled={isCalculating || votesLoading}
+              >
+                <Calculator className='h-4 w-4 mr-2' />
+                {isCalculating ? '计算中...' : '计算结果'}
+              </Button>
 
-            <Button
-              onClick={handleProcessResults}
-              data-testid='process-results-button'
-              className='bg-werewolf-purple hover:bg-werewolf-purple/80'
-              disabled={
-                isProcessing || votesLoading || voteRecords.length === 0
-              }
-            >
-              <Gavel className='h-4 w-4 mr-2' />
-              {isProcessing ? '处理中...' : '处理结果'}
-            </Button>
-          </div>
-        )}
+              <Button
+                onClick={handleProcessResults}
+                data-testid='process-results-button'
+                className='bg-werewolf-purple hover:bg-werewolf-purple/80'
+                disabled={
+                  isProcessing || votesLoading || voteRecords.length === 0
+                }
+              >
+                <Gavel className='h-4 w-4 mr-2' />
+                {isProcessing ? '处理中...' : '处理结果'}
+              </Button>
+            </div>
+          )}
       </CardContent>
     </Card>
   );

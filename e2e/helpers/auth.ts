@@ -113,9 +113,9 @@ export function readSessionFromStorageState(storageStatePath: string): {
   const origin =
     state.origins.find(
       o =>
-        o.origin.includes('localhost:8080') || o.origin.includes('localhost:8081')
-    ) ||
-    state.origins[0];
+        o.origin.includes('localhost:8080') ||
+        o.origin.includes('localhost:8081')
+    ) || state.origins[0];
   if (!origin) {
     throw new Error(`No origin found in storage state: ${storageStatePath}`);
   }

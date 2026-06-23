@@ -343,7 +343,9 @@ const LoginDialog: React.FC = () => {
                   />
                 </div>
                 <div className='border-t border-werewolf-purple/20 pt-4 space-y-2'>
-                  <Label htmlFor='guest-player-id'>{t('guest_player_id')}</Label>
+                  <Label htmlFor='guest-player-id'>
+                    {t('guest_player_id')}
+                  </Label>
                   <Input
                     id='guest-player-id'
                     type='text'

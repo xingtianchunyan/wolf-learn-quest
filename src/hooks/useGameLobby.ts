@@ -302,8 +302,9 @@ export const useGameLobby = () => {
         return;
       }
 
-      const { error: playerError } = await supabase
-        .rpc('join_room_as_player', { p_room_id: newRoom.id });
+      const { error: playerError } = await supabase.rpc('join_room_as_player', {
+        p_room_id: newRoom.id,
+      });
 
       if (playerError) {
         console.error('Error adding player to room:', playerError);

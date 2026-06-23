@@ -49,7 +49,9 @@ const LobbyActionButtons: React.FC<LobbyActionButtonsProps> = ({
           {isCreatingRoom ? t('creating') : t('create_room')}
         </Button>
       </div>
-      <p className='text-xs text-muted-foreground'>{t('ai_judge_feature_note')}</p>
+      <p className='text-xs text-muted-foreground'>
+        {t('ai_judge_feature_note')}
+      </p>
     </div>
   );
 };

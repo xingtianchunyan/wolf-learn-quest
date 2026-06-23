@@ -36,7 +36,10 @@ export const VotingNoSession: React.FC<VotingNoSessionProps> = ({
       <CardHeader className='pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center justify-between'>
           <div className='flex items-center'>投票系统</div>
-          <Badge variant='outline' className='text-yellow-400 border-yellow-400'>
+          <Badge
+            variant='outline'
+            className='text-yellow-400 border-yellow-400'
+          >
             未激活
           </Badge>
         </CardTitle>

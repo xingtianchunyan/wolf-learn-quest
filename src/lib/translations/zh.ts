@@ -373,7 +373,8 @@ export const zh = {
   players_list: '玩家列表',
   add_ai: '添加AI',
   ai_judge_unavailable: 'AI 法官暂未开放',
-  ai_judge_unavailable_desc: 'AI 法官完整链路仍在完善中，当前先保留普通房间入口。',
+  ai_judge_unavailable_desc:
+    'AI 法官完整链路仍在完善中，当前先保留普通房间入口。',
   ai_judge_feature_note: 'AI 法官模式开发中，暂时不可用',
   ready: '已准备',
   not_ready: '未准备',

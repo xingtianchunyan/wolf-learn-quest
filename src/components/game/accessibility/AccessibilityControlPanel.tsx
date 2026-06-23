@@ -21,7 +21,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useAccessibility, type AccessibilitySettings } from './AccessibilityProvider';
+import {
+  useAccessibility,
+  type AccessibilitySettings,
+} from './AccessibilityProvider';
 
 interface AccessibilityControlPanelProps {
   isOpen: boolean;
