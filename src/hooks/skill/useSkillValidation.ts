@@ -7,6 +7,7 @@ import {
   type SkillUsageContext,
 } from '@/services/enhancedSkillService';
 import { skillCache } from '@/utils/skillCache';
+import type { RoleState, RoleDesign } from '@/types/skillSystem.types';
 
 export interface SkillSuggestion {
   canUse: boolean;
@@ -29,8 +30,8 @@ export const useSkillValidation = (
   const validateSkillFrontend = useCallback(
     async (
       skillName: string,
-      roleState?: any,
-      roleDesign?: any,
+      roleState?: RoleState,
+      roleDesign?: RoleDesign,
       currentPhase?: number,
       targetUserId?: string,
       currentRound?: number
@@ -97,9 +98,9 @@ export const useSkillValidation = (
     async (
       skillName: string,
       targetUserId?: string,
-      additionalData: Record<string, any> = {},
-      roleState?: any,
-      roleDesign?: any,
+      additionalData: Record<string, unknown> = {},
+      roleState?: RoleState,
+      roleDesign?: RoleDesign,
       currentPhase?: number,
       currentRound?: number
     ) => {
@@ -153,21 +154,32 @@ export const useSkillValidation = (
         });
 
         return { success: true };
-      } catch (error: any) {
+      } catch (error) {
         logger.error('技能使用失败', error);
 
-        // 根据错误类型决定是否显示弹窗
-        if (
-          error.code === 'VALIDATION_FAILED' ||
-          error.reason?.includes('限制')
-        ) {
+        const isGameRuleError =
+          error &&
+          typeof error === 'object' &&
+          (('code' in error && error.code === 'VALIDATION_FAILED') ||
+            ('reason' in error &&
+              typeof error.reason === 'string' &&
+              error.reason.includes('限制')));
+
+        if (isGameRuleError) {
           // 游戏规则相关错误，不显示弹窗，只记录日志
           logger.warn('技能使用违反游戏规则', error);
         } else {
           // 系统错误，显示错误弹窗
+          const message =
+            error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            typeof error.message === 'string'
+              ? error.message
+              : '系统错误，请重试';
           toast({
             title: '技能使用失败',
-            description: error.message || '系统错误，请重试',
+            description: message,
             variant: 'destructive',
           });
         }
@@ -180,8 +192,8 @@ export const useSkillValidation = (
   // 获取技能使用建议
   const getSkillSuggestion = useCallback(
     async (
-      roleState?: any,
-      roleDesign?: any,
+      roleState?: RoleState,
+      roleDesign?: RoleDesign,
       currentPhase?: number,
       currentRound?: number,
       targetUserId?: string
@@ -215,8 +227,8 @@ export const useSkillValidation = (
   const canUseSkill = useCallback(
     async (
       skillName: string,
-      roleState?: any,
-      roleDesign?: any,
+      roleState?: RoleState,
+      roleDesign?: RoleDesign,
       currentPhase?: number,
       targetUserId?: string,
       currentRound?: number

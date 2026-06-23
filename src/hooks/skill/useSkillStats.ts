@@ -4,7 +4,11 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { EnhancedSkillService } from '@/services/enhancedSkillService';
 import { matchesEffectType } from '@/utils/skillEffectStandardization';
-import { EnhancedSkillUse } from './useSkillData';
+import {
+  EnhancedSkillUse,
+  SkillEffectQueueItem,
+  SkillTarget,
+} from './useSkillData';
 
 export interface SkillSystemStats {
   totalUses: number;
@@ -19,8 +23,8 @@ const logger = createLogger('skill-stats');
 
 export const useSkillStats = (
   skillUses: EnhancedSkillUse[],
-  skillTargets: any[],
-  skillEffectsQueue: any[],
+  skillTargets: SkillTarget[],
+  skillEffectsQueue: SkillEffectQueueItem[],
   userId?: string,
   gameStateId?: string
 ) => {

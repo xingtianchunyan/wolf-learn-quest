@@ -3,13 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GripVertical } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from 'react-beautiful-dnd';
 import { Question } from '../types/questionBank';
 import { Button } from '@/components/ui/button';
 
 interface QuestionOrderEditorProps {
   selectedQuestions: Question[];
-  onDragEnd: (result: any) => void;
+  onDragEnd: (result: DropResult) => void;
   onLinkSystem: () => void;
   isSystemLinked: boolean;
 }

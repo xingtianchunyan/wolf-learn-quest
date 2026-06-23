@@ -16,23 +16,37 @@ export interface EnhancedSkillUse {
   phase: string;
   skill_priority: number;
   execution_status: string;
-  skill_effects: any;
-  conditions_met: any;
-  result?: any;
+  skill_effects: Record<string, unknown> | null;
+  conditions_met: Record<string, unknown> | null;
+  result?: Record<string, unknown> | null;
   execution_time?: string;
   failure_reason?: string;
   created_at: string;
   updated_at?: string;
   chinese_name?: string;
-  skill_config?: any;
+  skill_config?: Record<string, unknown> | null;
+}
+
+export interface SkillEffectQueueItem {
+  id: string;
+  skill_use_id: string;
+  status: string;
+  [key: string]: unknown;
+}
+
+export interface SkillTarget {
+  id: string;
+  skill_use_id: string;
+  is_active: boolean;
+  [key: string]: unknown;
 }
 
 const logger = createLogger('skill-data');
 
 export const useSkillData = (gameStateId?: string) => {
   const [skillUses, setSkillUses] = useState<EnhancedSkillUse[]>([]);
-  const [skillEffectsQueue, setSkillEffectsQueue] = useState<any[]>([]);
-  const [skillTargets, setSkillTargets] = useState<any[]>([]);
+  const [skillEffectsQueue, setSkillEffectsQueue] = useState<SkillEffectQueueItem[]>([]);
+  const [skillTargets, setSkillTargets] = useState<SkillTarget[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
 

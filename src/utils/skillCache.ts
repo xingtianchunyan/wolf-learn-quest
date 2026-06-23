@@ -15,15 +15,20 @@ interface SkillValidationCache {
   suggestion?: string;
 }
 
+import type { GameState } from '@/types/game';
+import type { RoleState } from '@/hooks/useRoleStates';
+import type { RoleDesign } from '@/hooks/useRoleDesigns';
+import type { Player } from '@/hooks/usePlayersRealtime';
+
 interface UserRoleStateCache {
-  roleState: any;
-  roleDesign: any;
+  roleState: RoleState;
+  roleDesign: RoleDesign;
   timestamp: number;
 }
 
 interface GameStateCache {
-  gameState: any;
-  players: any[];
+  gameState: GameState;
+  players: Player[];
   timestamp: number;
 }
 
@@ -168,8 +173,8 @@ export class SkillCacheManager {
   public setRoleStateCache(
     userId: string,
     gameStateId: string,
-    roleState: any,
-    roleDesign: any
+    roleState: RoleState,
+    roleDesign: RoleDesign
   ): void {
     const key = this.generateRoleStateKey(userId, gameStateId);
     const now = Date.now();
@@ -202,8 +207,8 @@ export class SkillCacheManager {
 
   public setGameStateCache(
     gameStateId: string,
-    gameState: any,
-    players: any[]
+    gameState: GameState,
+    players: Player[]
   ): void {
     const key = this.generateGameStateKey(gameStateId);
     const now = Date.now();

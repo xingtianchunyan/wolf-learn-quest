@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type { Tables } from '@/integrations/supabase/types';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
 import PlayerStatusManager from '@/components/game/panels/PlayerStatusManager';
+
+interface RoomPlayersRow {
+  user_id: string;
+  status: string;
+}
 
 interface Player {
   id: string;
@@ -55,9 +62,11 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
         .eq('room_id', roomId);
       if (!error && Array.isArray(data)) {
         const map: Record<string, string> = {};
-        data.forEach((r: any) => {
-          if (r?.user_id) map[r.user_id] = r.status;
-        });
+        data.forEach(
+          (r: Pick<Tables<'room_players'>, 'user_id' | 'status'>) => {
+            if (r?.user_id) map[r.user_id] = r.status;
+          }
+        );
         setUserStatusMap(map);
       }
     };
@@ -74,14 +83,14 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
           table: 'room_players',
           filter: `room_id=eq.${roomId}`,
         },
-        (payload: any) => {
+        (payload: RealtimePostgresChangesPayload<RoomPlayersRow>) => {
           setUserStatusMap(prev => {
             const next = { ...prev } as Record<string, string>;
             if (payload.eventType === 'DELETE' && payload.old) {
-              const oldUserId = (payload.old as any).user_id;
+              const oldUserId = payload.old.user_id;
               if (oldUserId) delete next[oldUserId];
             } else if (payload.new) {
-              const row = payload.new as any;
+              const row = payload.new;
               if (row?.user_id) next[row.user_id] = row.status;
             }
             return next;

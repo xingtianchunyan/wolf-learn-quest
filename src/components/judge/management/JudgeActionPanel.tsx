@@ -177,6 +177,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   variant='outline'
                   size='sm'
                   onClick={() => setIsPreparationDialogOpen(true)}
+                  data-testid='preparation-phase-button'
                   className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
                 >
                   <Settings className='h-4 w-4 mr-2' />
@@ -212,6 +213,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
             <Button
               variant='outline'
               onClick={handleNextPhase}
+              data-testid='next-phase-button'
               className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
               loading={isAdvancing}
               disabled={!isGameActive || isAdvancing}
@@ -223,6 +225,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
             <Button
               variant='outline'
               onClick={handlePauseGame}
+              data-testid='pause-game-button'
               className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
               loading={isPausing}
               disabled={!isGameActive || isPausing}
@@ -238,6 +241,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
             <Button
               variant='destructive'
               onClick={handleEndGame}
+              data-testid='end-game-button'
               className='hover:bg-red-600'
               loading={isEnding}
               disabled={!isGameActive || isEnding}

@@ -155,6 +155,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                   !allPlayersReady || players.length === 0 || isStarting
                 }
                 loading={isStarting}
+                data-testid='start-game-button'
                 className={`w-full px-4 py-3 text-lg ${
                   allPlayersReady && players.length > 0 && !isStarting
                     ? 'bg-werewolf-purple hover:bg-werewolf-light'
