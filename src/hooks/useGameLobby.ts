@@ -303,21 +303,16 @@ export const useGameLobby = () => {
       }
 
       const { error: playerError } = await supabase
-        .from('room_players')
-        .insert({
-          room_id: newRoom.id,
-          user_id: currentUser.id,
-          is_ready: false,
-          is_ai: false,
-        });
+        .rpc('join_room_as_player', { p_room_id: newRoom.id });
 
       if (playerError) {
         console.error('Error adding player to room:', playerError);
         toast({
           title: t('room_create_failed'),
-          description: t('room_create_error'),
+          description: playerError.message || t('room_create_error'),
           variant: 'destructive',
         });
+        return;
       }
 
       toast({
@@ -339,7 +334,12 @@ export const useGameLobby = () => {
   };
 
   const handleCreateRoom = () => createRoomCore(true);
-  const handleCreateAIJudge = () => createRoomCore(false);
+  const handleCreateAIJudge = async () => {
+    toast({
+      title: t('ai_judge_unavailable'),
+      description: t('ai_judge_unavailable_desc'),
+    });
+  };
 
   const joinRoom = async (roomId: string) => {
     if (!currentUser) {
@@ -394,11 +394,8 @@ export const useGameLobby = () => {
         return;
       }
 
-      const { error } = await supabase.from('room_players').insert({
-        room_id: roomId,
-        user_id: currentUser.id,
-        is_ready: false,
-        is_ai: false,
+      const { error } = await supabase.rpc('join_room_as_player', {
+        p_room_id: roomId,
       });
 
       if (error) {

@@ -1465,6 +1465,10 @@ export type Database = {
           room_id: string;
         }[];
       };
+      add_ai_player: {
+        Args: { p_room_id: string };
+        Returns: boolean;
+      };
       initialize_game_state: {
         Args: { p_room_id: string };
         Returns: string;

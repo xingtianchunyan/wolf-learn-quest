@@ -4,8 +4,9 @@
  */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Player {
+export interface Player {
   id: string;
   name: string;
   avatar: string;
@@ -14,6 +15,12 @@ interface Player {
   isAI: boolean;
   userId?: string; // 添加userId字段用于在线状态检查
   role?: string;
+}
+
+interface UserProfile {
+  user_id: string;
+  player_name: string | null;
+  avatar_url: string | null;
 }
 
 /**
@@ -60,7 +67,7 @@ export const usePlayersRealtime = (roomId: string) => {
             .filter(player => !player.is_ai && player.user_id)
             .map(player => player.user_id);
 
-          let usersData: any[] = [];
+          let usersData: UserProfile[] = [];
           if (userIds.length > 0) {
             const { data: users, error: usersError } = await supabase.rpc(
               'get_public_user_profiles_by_ids',
@@ -70,13 +77,13 @@ export const usePlayersRealtime = (roomId: string) => {
             if (usersError) {
               console.error('Error fetching users:', usersError);
             } else {
-              usersData = users || [];
+              usersData = (users as UserProfile[] | null) || [];
             }
           }
 
           // 转换玩家数据
           const transformedPlayers: Player[] = roomPlayers.map(
-            (player: any) => {
+            (player: Tables<'room_players'>) => {
               if (player.is_ai) {
                 return {
                   id: player.id,
@@ -163,11 +170,8 @@ export const usePlayersRealtime = (roomId: string) => {
 
   const addAIPlayer = async () => {
     try {
-      const { error } = await supabase.from('room_players').insert({
-        room_id: roomId,
-        is_ai: true,
-        is_ready: true,
-        user_id: null,
+      const { error } = await supabase.rpc('add_ai_player', {
+        p_room_id: roomId,
       });
 
       if (error) {

@@ -56,12 +56,8 @@ export const useRoomTransition = (
 
         if (!asJudge) {
           if (!requireAuth()) return;
-          // Insert player into new room
-          const { error } = await supabase.from('room_players').insert({
-            room_id: newRoomId,
-            user_id: currentUser.id,
-            is_ready: false,
-            is_ai: false,
+          const { error } = await supabase.rpc('join_room_as_player', {
+            p_room_id: newRoomId,
           });
           if (error) {
             console.error('Failed to join new room:', error);
