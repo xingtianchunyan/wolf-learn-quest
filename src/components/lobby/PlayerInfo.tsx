@@ -1,20 +1,18 @@
+/**
+ * 文件级注释：大厅玩家信息面板
+ * 负责展示正式账号或游客账号的基础资料与头像信息。
+ */
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { User } from '@supabase/supabase-js';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import AvatarUpload from './AvatarUpload';
 import PlayerStats from './PlayerStats';
 
 interface PlayerInfoProps {
   className?: string;
-  currentUser: (User & { player_name?: string }) | null;
+  currentUser: (User & { player_name?: string; is_guest?: boolean }) | null;
 }
 
 const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
@@ -29,6 +27,9 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
     wins: 0,
     losses: 0,
   });
+  const isGuestUser = Boolean(
+    currentUser?.is_guest || currentUser?.user_metadata?.is_guest
+  );
 
   // Fetch player data and avatar from Supabase
   useEffect(() => {
@@ -61,6 +62,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
 
         const displayName =
           userData?.player_name ||
+          currentUser.player_name ||
           currentUser.user_metadata?.display_name ||
           currentUser.user_metadata?.player_name ||
           currentUser.email?.split('@')[0] ||
@@ -100,8 +102,6 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
     return { level: 1, nextLevelExp: 50 };
   };
 
-  const levelInfo = getLevelInfo(playerData.experience);
-
   return (
     <Card className={`bg-werewolf-card border-werewolf-purple/30 ${className}`}>
       <CardHeader className='text-center'>
@@ -121,6 +121,12 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
         <h3 className='text-xl font-bold mb-2 text-center'>
           {playerData.name}
         </h3>
+
+        {isGuestUser && (
+          <p className='text-xs text-werewolf-gold mb-2 text-center'>
+            {t('guest_account_badge')}
+          </p>
+        )}
 
         {/* Player ID - Centered below name */}
         {playerData.playerId && (

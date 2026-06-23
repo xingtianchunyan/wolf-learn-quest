@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：登录与游客登录对话框
+ * 提供邮箱密码登录、注册以及匿名游客入口。
+ */
 import React, { useState } from 'react';
 import { createLogger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
@@ -30,6 +34,9 @@ const LoginDialog: React.FC = () => {
   const { isLoggedIn, initializing, isLoginOpen, setIsLoginOpen } = useAuth();
   const logger = createLogger('LoginDialog');
 
+  /**
+   * 函数级注释：执行邮箱密码登录
+   */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,6 +77,9 @@ const LoginDialog: React.FC = () => {
     }
   };
 
+  /**
+   * 函数级注释：执行邮箱注册
+   */
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -172,6 +182,83 @@ const LoginDialog: React.FC = () => {
     }
   };
 
+  /**
+   * 函数级注释：执行游客匿名登录
+   */
+  const handleGuestLogin = async () => {
+    const guestPlayerId = playerId.trim();
+
+    if (!guestPlayerId) {
+      toast({
+        title: t('player_id_required'),
+        description: t('guest_player_id_required_desc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data: existingUserRows } = await supabase.rpc(
+        'get_public_user_by_name',
+        { p_name: guestPlayerId }
+      );
+
+      if (
+        existingUserRows &&
+        Array.isArray(existingUserRows) &&
+        existingUserRows.length > 0
+      ) {
+        toast({
+          title: t('player_id_taken'),
+          description: t('player_id_taken_desc'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { error } = await supabase.auth.signInAnonymously({
+        options: {
+          data: {
+            player_name: guestPlayerId,
+            display_name: guestPlayerId,
+            is_guest: true,
+          },
+        },
+      });
+
+      if (error) {
+        toast({
+          title: t('guest_login_failed'),
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: t('guest_login_success'),
+        description: t('guest_login_success_desc'),
+      });
+
+      setIsLoginOpen(false);
+      setPlayerId('');
+    } catch (error) {
+      logger.error('Guest login error:', error);
+      toast({
+        title: t('guest_login_failed'),
+        description: t('unexpected_error'),
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 函数级注释：执行退出登录
+   */
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -255,15 +342,40 @@ const LoginDialog: React.FC = () => {
                     className='bg-werewolf-dark/60 border-werewolf-purple/30'
                   />
                 </div>
+                <div className='border-t border-werewolf-purple/20 pt-4 space-y-2'>
+                  <Label htmlFor='guest-player-id'>{t('guest_player_id')}</Label>
+                  <Input
+                    id='guest-player-id'
+                    type='text'
+                    placeholder={t('placeholder_guest_player_id')}
+                    value={playerId}
+                    onChange={e => setPlayerId(e.target.value)}
+                    className='bg-werewolf-dark/60 border-werewolf-purple/30'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    {t('guest_login_hint')}
+                  </p>
+                </div>
               </div>
               <DialogFooter>
-                <Button
-                  type='submit'
-                  className='bg-werewolf-purple hover:bg-werewolf-light'
-                  disabled={loading}
-                >
-                  {loading ? t('signing_in') : t('signin')}
-                </Button>
+                <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='border-werewolf-purple/30 bg-werewolf-dark/40'
+                    disabled={loading}
+                    onClick={handleGuestLogin}
+                  >
+                    {loading ? t('guest_signing_in') : t('continue_as_guest')}
+                  </Button>
+                  <Button
+                    type='submit'
+                    className='bg-werewolf-purple hover:bg-werewolf-light'
+                    disabled={loading}
+                  >
+                    {loading ? t('signing_in') : t('signin')}
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           </TabsContent>

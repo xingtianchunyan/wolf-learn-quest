@@ -1,3 +1,7 @@
+/**
+ * 文件级注释：全局认证上下文
+ * 负责统一管理正式账号、游客账号与 Supabase 会话状态。
+ */
 import React, {
   createContext,
   useContext,
@@ -5,7 +9,10 @@ import React, {
   useState,
   useRef,
 } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  supabase,
+  SUPABASE_STORAGE_KEY,
+} from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
 
@@ -18,9 +25,15 @@ interface UserProfile {
   games_lost: number;
 }
 
+interface AuthUser extends User {
+  player_name?: string;
+  is_guest?: boolean;
+}
+
 interface AuthContextType {
-  currentUser: (User & { player_name?: string }) | null;
+  currentUser: AuthUser | null;
   isLoggedIn: boolean;
+  isAnonymous: boolean;
   initializing: boolean;
   isLoginOpen: boolean;
   setIsLoginOpen: (open: boolean) => void;
@@ -40,19 +53,69 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [currentUser, setCurrentUser] = useState<
-    (User & { player_name?: string }) | null
-  >(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const isSessionInitialized = useRef(false);
   const { toast } = useToast();
 
-  // Ensure user profile exists in users table
+  /**
+   * 函数级注释：清理当前项目之外的旧 Supabase token
+   * 避免浏览器残留旧项目登录态影响新项目认证判断。
+   */
+  const cleanupLegacySupabaseTokens = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const keysToRemove: string[] = [];
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (
+        key &&
+        key.startsWith('sb-') &&
+        key.endsWith('-auth-token') &&
+        key !== SUPABASE_STORAGE_KEY
+      ) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => window.localStorage.removeItem(key));
+  };
+
+  /**
+   * 函数级注释：为当前用户推导展示昵称
+   */
+  const resolvePlayerName = (user: User): string => {
+    const guestFallback = `Guest-${user.id.slice(0, 6)}`;
+    return (
+      user.user_metadata?.player_name ||
+      user.user_metadata?.display_name ||
+      user.email?.split('@')[0] ||
+      guestFallback
+    );
+  };
+
+  /**
+   * 函数级注释：构建上下文使用的认证用户对象
+   */
+  const buildAuthUser = (
+    user: User,
+    userProfile?: UserProfile | null
+  ): AuthUser => ({
+    ...user,
+    player_name: userProfile?.player_name || resolvePlayerName(user),
+    is_guest: Boolean(user.is_anonymous || user.user_metadata?.is_guest),
+  });
+
+  /**
+   * 函数级注释：确保 public.users 中存在当前用户资料
+   */
   const ensureUserProfile = async (user: User): Promise<UserProfile | null> => {
     try {
-      // Check if user profile exists
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
         .select('*')
@@ -64,19 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return null;
       }
 
-      // If user doesn't exist, create profile
       if (!existingUser) {
-        // Get player name from user metadata or display name, fallback to email
-        const playerName =
-          user.user_metadata?.player_name ||
-          user.user_metadata?.display_name ||
-          user.email?.split('@')[0] ||
-          'Player';
+        const playerName = resolvePlayerName(user);
 
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert({
-            id: user.id, // Add the required id field
+            id: user.id,
             user_id: user.id,
             player_name: playerName,
             level: 1,
@@ -123,7 +180,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
-    // Listen for auth changes
+    cleanupLegacySupabaseTokens();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -137,14 +195,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (session?.user) {
         const userProfile = await ensureUserProfile(session.user);
-        setCurrentUser({
-          ...session.user,
-          player_name: userProfile?.player_name,
-        });
+        setCurrentUser(buildAuthUser(session.user, userProfile));
         setIsLoggedIn(true);
+        setIsAnonymous(Boolean(session.user.is_anonymous));
       } else {
         setCurrentUser(null);
         setIsLoggedIn(false);
+        setIsAnonymous(false);
       }
 
       setInitializing(false);
@@ -156,6 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = {
     currentUser,
     isLoggedIn,
+    isAnonymous,
     initializing,
     isLoginOpen,
     setIsLoginOpen,

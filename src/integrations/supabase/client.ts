@@ -16,10 +16,20 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   );
 }
 
+const SUPABASE_PROJECT_ID =
+  import.meta.env.VITE_SUPABASE_PROJECT_ID ||
+  new URL(SUPABASE_URL).hostname.split('.')[0];
+export const SUPABASE_STORAGE_KEY = `sb-${SUPABASE_PROJECT_ID}-auth-token`;
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      storageKey: SUPABASE_STORAGE_KEY,
+    },
+  }
 );
