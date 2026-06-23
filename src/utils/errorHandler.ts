@@ -28,13 +28,13 @@ export enum ErrorCode {
 
 export class AppError extends Error {
   public readonly code: ErrorCode;
-  public readonly details?: any;
+  public readonly details?: unknown;
   public readonly timestamp: Date;
 
   constructor(
     message: string,
     code: ErrorCode = ErrorCode.UNKNOWN_ERROR,
-    details?: any
+    details?: unknown
   ) {
     super(message);
     this.name = 'AppError';
@@ -110,7 +110,7 @@ export const logError = (error: Error | AppError, context?: string): void => {
 /**
  * 包装异步函数，统一错误处理
  */
-export const withErrorHandler = <T extends any[], R>(
+export const withErrorHandler = <T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   context?: string
 ) => {

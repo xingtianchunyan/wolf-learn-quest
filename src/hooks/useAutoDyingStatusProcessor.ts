@@ -24,6 +24,12 @@ interface AutoProcessingConfig {
   answerCheckDelay: number; // 答题检查延迟(毫秒)
 }
 
+interface RoleStateRow {
+  user_id: string;
+  game_state_id: string;
+  role_status: number;
+}
+
 const DEFAULT_CONFIG: AutoProcessingConfig = {
   enableProtectionResolution: true,
   enableAnswerBasedResolution: true,
@@ -253,8 +259,8 @@ export const useAutoDyingStatusProcessor = (
           filter: `room_id=eq.${roomId}`,
         },
         payload => {
-          const newRecord = payload.new as any;
-          const oldRecord = payload.old as any;
+          const newRecord = payload.new as unknown as RoleStateRow;
+          const oldRecord = payload.old as unknown as RoleStateRow;
 
           // 检查是否有玩家新进入濒死状态
           if (newRecord.role_status === 2 && oldRecord.role_status !== 2) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -12,7 +13,7 @@ export interface ChatMessage {
   room_id: string;
 }
 
-export const useRoomChat = (roomId: string | null, currentUser: any) => {
+export const useRoomChat = (roomId: string | null, currentUser: User | null) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();

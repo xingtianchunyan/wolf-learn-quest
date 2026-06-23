@@ -45,7 +45,7 @@ export const useEnhancedErrorHandler = () => {
    * 处理错误的主要方法
    */
   const handleErrorEnhanced = useCallback(
-    async (error: any, options: EnhancedErrorOptions = {}) => {
+    async (error: unknown, options: EnhancedErrorOptions = {}) => {
       const {
         recovery,
         customMessage,
@@ -58,7 +58,10 @@ export const useEnhancedErrorHandler = () => {
       try {
         // 记录错误
         logger.error(`错误处理 [${category}]`, {
-          error: error.message || error,
+          error:
+            error && typeof error === 'object' && 'message' in error
+              ? (error as Error).message
+              : String(error),
           category,
           options,
         });
@@ -106,12 +109,17 @@ export const useEnhancedErrorHandler = () => {
    * 显示错误 Toast 提示
    */
   const showErrorToast = useCallback(
-    (error: any, customMessage?: string) => {
+    (error: unknown, customMessage?: string) => {
       let title = '操作失败';
       let description = customMessage || '发生了未知错误，请稍后重试';
 
       // 根据错误类型自定义消息
-      if (error.type) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'type' in error &&
+        typeof error.type === 'string'
+      ) {
         switch (error.type) {
           case UnifiedErrorType.NETWORK:
             title = '网络错误';
@@ -147,12 +155,19 @@ export const useEnhancedErrorHandler = () => {
    */
   const attemptRecovery = useCallback(
     async (
-      error: any,
+      error: unknown,
       recovery: ErrorRecoveryStrategy,
       category: string,
       maxRetries: number
     ) => {
-      const retryKey = `${category}_${error.code || 'unknown'}`;
+      const errorCode =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        typeof error.code === 'string'
+          ? error.code
+          : 'unknown';
+      const retryKey = `${category}_${errorCode}`;
       const currentRetries = retryCountRef.current.get(retryKey) || 0;
 
       try {
@@ -242,7 +257,7 @@ export const useEnhancedErrorHandler = () => {
    * 创建带错误处理的异步函数包装器
    */
   const withErrorHandling = useCallback(
-    <T extends any[], R>(
+    <T extends unknown[], R>(
       fn: (...args: T) => Promise<R>,
       options: EnhancedErrorOptions = {}
     ) => {
@@ -262,7 +277,7 @@ export const useEnhancedErrorHandler = () => {
    * 创建带重试的异步函数
    */
   const withRetry = useCallback(
-    <T extends any[], R>(
+    <T extends unknown[], R>(
       fn: (...args: T) => Promise<R>,
       retryOptions: {
         maxRetries?: number;
@@ -277,7 +292,7 @@ export const useEnhancedErrorHandler = () => {
       } = retryOptions;
 
       return async (...args: T): Promise<R | null> => {
-        let lastError: any;
+        let lastError: unknown;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
           try {
@@ -286,8 +301,15 @@ export const useEnhancedErrorHandler = () => {
             lastError = error;
 
             if (attempt < maxRetries) {
+              const errorMessage =
+                error &&
+                typeof error === 'object' &&
+                'message' in error &&
+                typeof error.message === 'string'
+                  ? error.message
+                  : String(error);
               logger.info(`重试操作 [${category}] - 第 ${attempt + 1} 次`, {
-                error: error.message,
+                error: errorMessage,
                 nextRetryIn: retryDelay,
               });
 
@@ -354,7 +376,7 @@ export const useErrorBoundary = () => {
   const { handleError } = useEnhancedErrorHandler();
 
   const captureError = useCallback(
-    (error: Error, errorInfo?: any) => {
+    (error: Error, errorInfo?: unknown) => {
       handleError(error, {
         category: 'error-boundary',
         customMessage: '组件渲染出现错误',

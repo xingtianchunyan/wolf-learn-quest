@@ -20,7 +20,7 @@ interface DyingPlayer {
   dyingReason?: string;
   dyingRound?: number;
   dyingPhase?: string;
-  statusEffects?: any;
+  statusEffects?: Record<string, unknown> | null;
 }
 
 export const useDyingStatusManager = (

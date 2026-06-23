@@ -3,6 +3,7 @@
  * 频道订阅名追加唯一后缀，避免房间页重复挂载时复用已订阅的 realtime channel。
  */
 import { useState, useEffect, useCallback } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessage } from '@/components/chat/ChatMessage';
@@ -18,7 +19,7 @@ import {
 
 interface UseMultiChannelChatProps {
   roomId: string | null;
-  currentUser: any;
+  currentUser: User | null;
   userRole?: string;
 }
 
@@ -313,9 +314,8 @@ export const useMultiChannelChat = ({
     if (currentChannel === 'system' || currentChannel === 'all') {
       filteredMessages = filteredMessages.filter(msg => {
         if (msg.chat_type !== 'system') return true;
-        const metadata = (msg as any).metadata as
-          | SystemAnnouncementMetadata
-          | undefined;
+        const metadata = (msg as { metadata?: SystemAnnouncementMetadata })
+          .metadata;
         return canViewSystemAnnouncement(metadata);
       });
     }

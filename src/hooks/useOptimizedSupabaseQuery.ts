@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useDataCache } from './useDataCache';
 import { createLogger } from '@/lib/logger';
 import { PerformanceMonitor } from '@/lib/debugUtils';
@@ -26,11 +27,11 @@ interface QueryState<T> {
 /**
  * 优化的 Supabase 查询 Hook
  */
-export const useOptimizedSupabaseQuery = <T = any>(
+export const useOptimizedSupabaseQuery = <T = unknown>(
   tableName: string,
   queryFn?: (
-    query: PostgrestFilterBuilder<any, any, any>
-  ) => PostgrestFilterBuilder<any, any, any>,
+    query: PostgrestFilterBuilder<any, any, T>
+  ) => PostgrestFilterBuilder<any, any, T>,
   options: QueryOptions = {}
 ) => {
   const {
@@ -56,7 +57,7 @@ export const useOptimizedSupabaseQuery = <T = any>(
 
   const abortControllerRef = useRef<AbortController>();
   const debounceTimeoutRef = useRef<ReturnType<typeof setInterval>>();
-  const subscriptionRef = useRef<any>();
+  const subscriptionRef = useRef<RealtimeChannel | null>(null);
 
   // 生成查询键
   const generateQueryKey = useCallback(() => {
@@ -99,7 +100,7 @@ export const useOptimizedSupabaseQuery = <T = any>(
         PerformanceMonitor.start(perfLabel);
 
         // 构建查询
-        let query = (supabase as any).from(tableName).select('*');
+        let query = supabase.from(tableName).select('*');
         if (queryFn) {
           query = queryFn(query);
         }

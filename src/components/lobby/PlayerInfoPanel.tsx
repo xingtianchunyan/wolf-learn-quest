@@ -1,11 +1,12 @@
 import React from 'react';
+import type { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PlayerInfo from '@/components/lobby/PlayerInfo';
 import { LogOut } from 'lucide-react';
 
 interface PlayerInfoPanelProps {
-  currentUser: any;
+  currentUser: User | null;
   playerRoom: {
     roomId: string | null;
     roomDbId: string | null;

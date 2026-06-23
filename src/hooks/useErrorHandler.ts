@@ -12,7 +12,7 @@ export const useErrorHandler = () => {
   const { toast } = useToast();
   const enhancedHandler = useEnhancedErrorHandler();
 
-  const handleError = (error: any, context?: string) => {
+  const handleError = (error: unknown, context?: string) => {
     // 记录操作（用于错误率计算）
     recordOperation();
 
@@ -28,7 +28,7 @@ export const useErrorHandler = () => {
   };
 
   const handleAsyncError = async (
-    asyncFn: () => Promise<any>,
+    asyncFn: () => Promise<unknown>,
     context?: string
   ) => {
     // 记录操作
@@ -39,7 +39,7 @@ export const useErrorHandler = () => {
     });
   };
 
-  const withErrorHandling = <T extends any[], R>(
+  const withErrorHandling = <T extends unknown[], R>(
     fn: (...args: T) => Promise<R>,
     context?: string
   ) => {

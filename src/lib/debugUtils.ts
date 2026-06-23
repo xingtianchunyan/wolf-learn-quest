@@ -14,24 +14,24 @@ export const isDevelopment = (): boolean => {
  * 安全的控制台日志 - 只在开发环境输出
  */
 export const devLog = {
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     if (isDevelopment()) {
     }
     logger.info(message, data);
   },
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     if (isDevelopment()) {
       console.warn(`[DEV] ${message}`, data || '');
     }
     logger.warn(message, data);
   },
-  error: (message: string, data?: any) => {
+  error: (message: string, data?: unknown) => {
     if (isDevelopment()) {
       console.error(`[DEV] ${message}`, data || '');
     }
     logger.error(message, data);
   },
-  debug: (message: string, data?: any) => {
+  debug: (message: string, data?: unknown) => {
     if (isDevelopment()) {
       console.debug(`[DEV] ${message}`, data || '');
     }
@@ -101,9 +101,15 @@ export class PerformanceMonitor {
 /**
  * 内存使用监控
  */
-export const getMemoryUsage = (): any => {
+interface MemoryInfo {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+export const getMemoryUsage = (): MemoryInfo | null => {
   if (isDevelopment() && 'memory' in performance) {
-    return (performance as any).memory;
+    return (performance as unknown as { memory?: MemoryInfo }).memory || null;
   }
   return null;
 };

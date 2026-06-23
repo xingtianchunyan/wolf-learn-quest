@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { useMultiChannelChat } from '@/hooks/useMultiChannelChat';
 
 interface MultiChannelChatProps {
   roomId: string | null;
-  currentUser: any;
+  currentUser: User | null;
   gamePhase?: string;
   gameRound?: number;
   userRole?: string;

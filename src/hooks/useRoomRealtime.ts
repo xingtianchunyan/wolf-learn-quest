@@ -12,6 +12,13 @@ interface RoomRealtimeData {
   lastUpdate: Date;
 }
 
+interface RoomsRow {
+  id: string;
+  max_players: number;
+  status: string;
+  judge_user_id: string | null;
+}
+
 /**
  * 函数级注释：监听房间基础字段变化
  */
@@ -36,7 +43,7 @@ export const useRoomRealtime = (roomId: string) => {
         },
         payload => {
           if (payload.new && typeof payload.new === 'object') {
-            const newData = payload.new as any;
+            const newData = payload.new as unknown as RoomsRow;
             if (
               newData.max_players !== undefined &&
               newData.status !== undefined

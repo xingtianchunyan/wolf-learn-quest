@@ -10,6 +10,32 @@ import type { GameState, GameSettings } from '@/types/game';
 
 export type { GameState, GameSettings } from '@/types/game';
 
+interface GameStatesRow {
+  id: string;
+  room_id: string;
+  status: string;
+  current_phase: number;
+  current_round: number;
+  phase_start_time: string;
+  phase_end_time: string | null;
+  is_paused: boolean;
+  paused_at: string | null;
+  total_paused_duration: number;
+  auto_advance: boolean;
+  phase_duration: number;
+  created_at: string;
+}
+
+interface GameSettingsRow {
+  id: string;
+  room_id: string;
+  is_auto_advance: boolean;
+  day_duration: number;
+  evening_duration: number;
+  night_duration: number;
+  dawn_duration: number;
+}
+
 /**
  * 函数级注释：读取并订阅指定房间的游戏状态与设置
  */
@@ -112,7 +138,7 @@ export const useGameState = (roomId: string) => {
         },
         payload => {
           if (payload.new && typeof payload.new === 'object') {
-            const newData = payload.new as any;
+            const newData = payload.new as unknown as GameStatesRow;
             setGameState({
               id: newData.id,
               roomId: newData.room_id,
@@ -149,7 +175,7 @@ export const useGameState = (roomId: string) => {
         },
         payload => {
           if (payload.new && typeof payload.new === 'object') {
-            const newData = payload.new as any;
+            const newData = payload.new as unknown as GameSettingsRow;
             setGameSettings({
               id: newData.id,
               roomId: newData.room_id,
@@ -377,7 +403,7 @@ export const useGameState = (roomId: string) => {
   ) => {
     if (!requireAuth() || !roomId) return false;
 
-    const dbUpdates: { [key: string]: any } = {};
+    const dbUpdates: Record<string, unknown> = {};
     if (settings.isAutoAdvance !== undefined)
       dbUpdates.is_auto_advance = settings.isAutoAdvance;
     if (settings.dayDuration !== undefined)

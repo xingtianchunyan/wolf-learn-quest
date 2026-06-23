@@ -7,7 +7,7 @@ interface PerformanceMetric {
   value: number;
   unit: string;
   timestamp: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 interface ComponentRenderMetric {
@@ -27,7 +27,7 @@ class PerformanceReporter {
     name: string,
     value: number,
     unit: string = 'ms',
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     const metric: PerformanceMetric = {
       name,
@@ -97,7 +97,7 @@ class PerformanceReporter {
       const fidObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'first-input') {
-            const fidEntry = entry as any;
+            const fidEntry = entry as PerformanceEventTiming;
             this.recordMetric(
               'FID',
               fidEntry.processingStart - fidEntry.startTime,
@@ -135,8 +135,9 @@ class PerformanceReporter {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const layoutShift = entry as LayoutShift;
+          if (!layoutShift.hadRecentInput) {
+            clsValue += layoutShift.value;
           }
         }
         this.recordMetric('CLS', clsValue, 'score');
@@ -152,7 +153,7 @@ class PerformanceReporter {
     // 使用Navigation Timing API记录其他指标
     window.addEventListener('load', () => {
       setTimeout(() => {
-        const nav = performance.getEntriesByType('navigation')[0] as any;
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
         if (nav) {
           this.recordMetric('TTFB', nav.responseStart - nav.requestStart, 'ms');
           this.recordMetric(

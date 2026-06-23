@@ -3,8 +3,8 @@
  * 通过唯一 presence 频道名避免重复挂载时复用已订阅频道。
  */
 import { useEffect, useState } from 'react';
+import type { RealtimeChannel, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface PlayerPresence {
   user_id: string;
@@ -12,10 +12,16 @@ interface PlayerPresence {
   online_at: string;
 }
 
+interface PresenceMeta {
+  user_id?: string;
+  player_name?: string;
+  online_at?: string;
+}
+
 /**
  * 函数级注释：维护房间在线玩家 presence 状态
  */
-export const usePlayerPresence = (roomId: string, currentUser: any) => {
+export const usePlayerPresence = (roomId: string, currentUser: User | null) => {
   const [onlinePlayers, setOnlinePlayers] = useState<PlayerPresence[]>([]);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
@@ -34,8 +40,8 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
 
         // 转换presence state为我们需要的格式
         const players: PlayerPresence[] = [];
-        Object.values(presenceState).forEach((presences: any) => {
-          presences.forEach((presence: any) => {
+        Object.values(presenceState).forEach((presences: PresenceMeta[]) => {
+          presences.forEach((presence: PresenceMeta) => {
             if (presence.user_id && presence.player_name) {
               players.push({
                 user_id: presence.user_id,
@@ -55,7 +61,9 @@ export const usePlayerPresence = (roomId: string, currentUser: any) => {
           // 订阅成功后，发送当前用户的在线状态
           const userStatus: PlayerPresence = {
             user_id: currentUser.id,
-            player_name: currentUser.player_name || 'Unknown',
+            player_name:
+              (currentUser.user_metadata?.player_name as string | undefined) ||
+              'Unknown',
             online_at: new Date().toISOString(),
           };
 

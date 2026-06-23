@@ -86,13 +86,22 @@ export const usePlayerRoom = () => {
         );
       }
 
-      // Check if room is now empty and delete it
-      const { data: remainingPlayers } = await supabase
-        .from('room_players')
-        .select('id')
-        .eq('room_id', playerRoom.roomDbId);
+      // Check if room is now empty and delete it. Use the SECURITY DEFINER RPC
+      // to get an accurate count; after the current user leaves, the RLS SELECT
+      // policy on room_players hides the remaining rows from them.
+      let remainingCount = 0;
+      const { data: playerCounts } = await supabase.rpc(
+        'get_waiting_room_player_counts'
+      );
+      if (playerCounts) {
+        const roomCount = playerCounts.find(
+          (item: { room_id: string; player_count: number }) =>
+            item.room_id === playerRoom.roomDbId
+        );
+        remainingCount = roomCount ? Number(roomCount.player_count) : 0;
+      }
 
-      if (!remainingPlayers || remainingPlayers.length === 0) {
+      if (remainingCount === 0) {
         await supabase.from('rooms').delete().eq('id', playerRoom.roomDbId);
       }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
@@ -12,7 +13,7 @@ export interface GameRoomData {
 }
 
 export interface UseGameRoomDataReturn {
-  currentUser: any;
+  currentUser: User | null;
   currentUserId: string | null;
   roomData: GameRoomData | null;
   judgeName: string | null;
@@ -28,7 +29,7 @@ export const useGameRoomData = (
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [roomData, setRoomData] = useState<GameRoomData | null>(null);
   const [judgeName, setJudgeName] = useState<string | null>(null);

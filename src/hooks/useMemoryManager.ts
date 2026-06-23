@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createLogger } from '@/lib/logger';
+import type { MemoryInfo } from '@/lib/debugUtils';
 
 const logger = createLogger('memory-manager');
 
@@ -76,7 +77,8 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
   // 内存检查函数
   const checkMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as unknown as { memory?: MemoryInfo }).memory;
+      if (!memory) return null;
       const usedMB = memory.usedJSHeapSize / (1024 * 1024);
 
       lastMemoryCheckRef.current = usedMB;
@@ -89,9 +91,10 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
         });
 
         // 触发垃圾回收（如果可用）
-        if (enableAutoCleanup && (globalThis as any)?.gc) {
+        const globalGc = (globalThis as unknown as { gc?: () => void }).gc;
+        if (enableAutoCleanup && globalGc) {
           try {
-            (globalThis as any).gc();
+            globalGc();
             logger.debug(`${componentName}触发垃圾回收`);
           } catch (error) {
             logger.debug('垃圾回收不可用');
@@ -165,7 +168,7 @@ export const useMemoryManager = (options: MemoryManagerOptions) => {
 
   // 创建安全的异步函数包装器
   const createSafeAsync = useCallback(
-    <T extends any[], R>(asyncFn: (...args: T) => Promise<R>) => {
+    <T extends unknown[], R>(asyncFn: (...args: T) => Promise<R>) => {
       let isMounted = true;
 
       registerCleanup(() => {
