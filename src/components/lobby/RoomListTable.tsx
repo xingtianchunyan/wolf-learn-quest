@@ -15,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { User, Gavel } from 'lucide-react';
+import { User as UserIcon, Gavel } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 
 interface GameRoom {
   id: string;
@@ -37,7 +38,7 @@ interface RoomListTableProps {
   t: (key: string) => string;
   joinRoom: (roomId: string) => Promise<void>;
   playAsJudge: (roomId: string) => Promise<void>;
-  currentUser: any;
+  currentUser: User | null;
 }
 
 const RoomListTable: React.FC<RoomListTableProps> = ({
@@ -97,6 +98,7 @@ const RoomListTable: React.FC<RoomListTableProps> = ({
               gameRooms.map(room => (
                 <TableRow
                   key={room.id}
+                  data-testid={`room-row-${room.id}`}
                   className='border-b border-werewolf-purple/10'
                 >
                   <TableCell className='font-medium'>{room.roomId}</TableCell>
@@ -128,6 +130,7 @@ const RoomListTable: React.FC<RoomListTableProps> = ({
                         variant='outline'
                         size='sm'
                         onClick={() => playAsJudge(room.id)}
+                        data-testid={`play-judge-${room.id}`}
                         className='bg-werewolf-dark/40 border-werewolf-purple/30 hover:bg-werewolf-purple/20'
                         disabled={!currentUser}
                       >
@@ -147,10 +150,11 @@ const RoomListTable: React.FC<RoomListTableProps> = ({
                         variant='default'
                         size='sm'
                         onClick={() => joinRoom(room.id)}
+                        data-testid={`join-room-${room.id}`}
                         className='bg-werewolf-purple hover:bg-werewolf-light'
                         disabled={!currentUser || !!playerRoom.roomDbId}
                       >
-                        <User className='h-3 w-3 mr-1' />
+                        <UserIcon className='h-3 w-3 mr-1' />
                         {t('join')}
                       </Button>
                     )}

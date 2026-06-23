@@ -41,7 +41,7 @@ interface PlayersListProps {
   onlinePlayers: string[];
   allPlayersSelectedRoles: boolean;
   canSelectRoles: boolean;
-  currentPlayerHasSelectedRole?: boolean; // 新增：当前玩家是否已选择角色
+  currentPlayerHasSelectedRole?: boolean;
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -96,7 +96,10 @@ const PlayersList: React.FC<PlayersListProps> = ({
   return (
     <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className='text-werewolf-purple flex items-center'>
+        <CardTitle
+          className='text-werewolf-purple flex items-center'
+          data-testid='players-list-title'
+        >
           <Users className='mr-2 h-5 w-5' />
           {t('players_list')} ({players.length}/{maxPlayers})
         </CardTitle>
@@ -112,11 +115,15 @@ const PlayersList: React.FC<PlayersListProps> = ({
                 size='sm'
                 onClick={() => onMaxPlayersChange(-1)}
                 disabled={maxPlayers <= 6}
+                data-testid='decrease-max-players'
                 className='h-6 w-6 p-0'
               >
                 <Minus className='h-3 w-3' />
               </Button>
-              <span className='text-sm font-bold w-8 text-center'>
+              <span
+                className='text-sm font-bold w-8 text-center'
+                data-testid='max-players-value'
+              >
                 {maxPlayers}
               </span>
               <Button
@@ -124,6 +131,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
                 size='sm'
                 onClick={() => onMaxPlayersChange(1)}
                 disabled={maxPlayers >= 12}
+                data-testid='increase-max-players'
                 className='h-6 w-6 p-0'
               >
                 <Plus className='h-3 w-3' />
@@ -244,6 +252,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
             <Button
               onClick={onAddAIPlayer}
               variant='outline'
+              data-testid='add-ai-player'
               className='w-full border-werewolf-purple/50 hover:bg-werewolf-purple/20'
             >
               <Plus className='mr-2 h-4 w-4' />
@@ -255,6 +264,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
           <Button
             onClick={onReadyToggle}
             disabled={!canToggleReady()}
+            data-testid='ready-button'
             className={`w-full ${
               isReady
                 ? 'bg-yellow-600 hover:bg-yellow-700'
@@ -271,6 +281,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
             <Button
               onClick={onStartGame}
               disabled={!allReady}
+              data-testid='start-game-room-button'
               className='w-full bg-werewolf-purple hover:bg-werewolf-light disabled:bg-gray-600'
             >
               {t('start_game')}
@@ -281,6 +292,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
           <Button
             onClick={onLeaveRoom}
             variant='destructive'
+            data-testid='leave-room-button'
             className='w-full'
           >
             {t('leave_room')}

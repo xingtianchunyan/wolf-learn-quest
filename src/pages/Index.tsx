@@ -20,6 +20,7 @@ const Index = () => {
 
           <Link
             to='/lobby'
+            data-testid='home-start-button'
             className='btn-primary btn-shake inline-block mb-16'
           >
             {t('start_game')}

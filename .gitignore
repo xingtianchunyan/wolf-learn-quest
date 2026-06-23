@@ -39,6 +39,10 @@ replacements.txt
 coverage/
 .venv-filterrepo/
 supabase/.temp/
+playwright/.auth/
+playwright-report/
+test-results/
+playwright/.cache/
 
 # AI IDE drafts
 .trae/
