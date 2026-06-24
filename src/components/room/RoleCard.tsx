@@ -6,16 +6,17 @@ import {
   SKILL_MAPPING_CONFIG,
 } from '@/utils/skillMappingConfig';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+import { HelpCircle, Sparkles } from 'lucide-react';
 
 interface RoleCardProps {
   role: ExpandedRole;
   roleDesign: RoleDesign | null;
   isSelected: boolean;
   isCurrentSelection: boolean;
+  isTakenByOther: boolean;
+  isRevealed: boolean;
   canSelect: boolean;
   imageUrl: string | null;
-  flipped: boolean;
-  onFlip: () => void;
   onSelect: () => void;
 }
 
@@ -24,10 +25,10 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   roleDesign,
   isSelected,
   isCurrentSelection,
+  isTakenByOther,
+  isRevealed,
   canSelect,
   imageUrl,
-  flipped,
-  onFlip,
   onSelect,
 }) => {
   const { t } = useLanguage();
@@ -53,12 +54,10 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   };
 
   const getSkillUsageText = () => {
-    // 优先使用角色设计数据，缺失时回退到技能配置
     const config = getSkillConfig(roleDesign?.role_name);
     const usage = roleDesign?.skill_usage;
 
     if (usage === -1 || usage === null || usage === undefined) {
-      // 角色设计的 -1 表示无限次；同时若配置中 usageLimit 为 'unlimited' 也视为无限
       if (config?.usageLimit === 'unlimited' || usage === -1) {
         return t('gameComponent.room.roleCard.unlimited');
       }
@@ -82,7 +81,6 @@ export const RoleCard: React.FC<RoleCardProps> = ({
 
     const translateType = (value: unknown): string => {
       if (typeof value !== 'string') return String(value);
-      // 数据库中的 'check' 对应中文的“查验”
       const normalizedValue = value === 'check' ? 'view' : value;
       const key = `game.skill.type.${normalizedValue}` as never;
       const translated = t(key);
@@ -105,7 +103,6 @@ export const RoleCard: React.FC<RoleCardProps> = ({
 
   const getSkillConfig = (roleName?: string) => {
     if (!roleName) return null;
-    // 处理 villager_1、werewolf_2 等实例名，归一化到基础角色名
     const baseName = roleName.replace(/_\d+$/, '');
     const skillId = ROLE_SKILL_MAPPING[baseName];
     return skillId ? SKILL_MAPPING_CONFIG[skillId] : null;
@@ -140,51 +137,102 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           t('gameComponent.room.roleCard.noDescription');
   };
 
+  // 迷雾层：未揭示的卡片始终覆盖迷雾；被其他玩家选中的卡片增加呼吸动画
+  const renderMistOverlay = () => {
+    const baseClasses =
+      'absolute inset-0 rounded-lg z-20 flex flex-col items-center justify-center transition-opacity duration-500';
+    const mistClasses = isTakenByOther
+      ? 'bg-slate-900/85 animate-mist-breathe'
+      : 'bg-slate-900/80';
+
+    return (
+      <div className={`${baseClasses} ${mistClasses}`}>
+        <div className='relative'>
+          <Sparkles className='w-10 h-10 text-werewolf-purple/60 mb-2' />
+          {isTakenByOther && (
+            <span className='absolute -top-1 -right-1 flex h-3 w-3'>
+              <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-werewolf-purple opacity-75'></span>
+              <span className='relative inline-flex rounded-full h-3 w-3 bg-werewolf-purple'></span>
+            </span>
+          )}
+        </div>
+        <HelpCircle className='w-12 h-12 text-gray-400 mb-3' />
+        <p className='text-gray-300 text-sm font-medium text-center px-4'>
+          {isTakenByOther
+            ? t('gameComponent.room.roleCard.takenByOther')
+            : t('gameComponent.room.roleCard.clickToDraw')}
+        </p>
+        {isTakenByOther && (
+          <p className='text-werewolf-purple text-xs mt-2'>
+            {t('gameComponent.room.roleCard.waitingForReveal')}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className={`relative transition-all duration-300 transform hover:scale-105 ${
         isCurrentSelection
           ? 'ring-2 ring-werewolf-purple'
           : isSelected
-            ? 'ring-2 ring-red-500'
+            ? 'ring-2 ring-werewolf-purple/50'
             : ''
       }`}
       style={{ perspective: '1000px' }}
     >
-      {isSelected && !isCurrentSelection && (
-        <div className='absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs'>
-          {t('gameComponent.room.roleCard.selected')}
-        </div>
-      )}
       {isCurrentSelection && (
-        <div className='absolute top-2 right-2 z-10 bg-werewolf-purple text-white px-2 py-1 rounded text-xs'>
+        <div className='absolute top-2 right-2 z-30 bg-werewolf-purple text-white px-2 py-1 rounded text-xs shadow-lg'>
           {t('gameComponent.room.roleCard.mySelection')}
         </div>
       )}
+      {isTakenByOther && (
+        <div className='absolute top-2 left-2 z-30 bg-slate-700 text-gray-200 px-2 py-1 rounded text-xs shadow-lg'>
+          {t('gameComponent.room.roleCard.selected')}
+        </div>
+      )}
+
       <div
         className={`relative w-full h-80 transition-transform duration-700 transform-style-preserve-3d ${
-          flipped ? 'rotate-y-180' : ''
+          isRevealed ? 'rotate-y-180' : ''
         }`}
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* 正面 - 角色形象和名称 */}
+        {/* 正面 - 迷雾覆盖的抽卡背面 */}
         <div
-          className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden ${
-            isCurrentSelection
-              ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
-              : isSelected
-                ? 'bg-red-900/30 border-2 border-red-500'
-                : 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
+          className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden cursor-pointer ${
+            canSelect && !isSelected
+              ? 'bg-werewolf-dark/40 hover:bg-werewolf-dark/60'
+              : 'bg-werewolf-dark/40 cursor-not-allowed'
           }`}
           style={{ backfaceVisibility: 'hidden' }}
+          onClick={() => canSelect && !isSelected && onSelect()}
+        >
+          <div className='h-full flex flex-col items-center justify-center relative overflow-hidden rounded-md border border-werewolf-purple/20 bg-gradient-to-br from-werewolf-dark/80 to-werewolf-purple/10'>
+            <div className='absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-werewolf-purple via-transparent to-transparent'></div>
+            <HelpCircle className='w-16 h-16 text-gray-500 mb-4' />
+            <p className='text-gray-400 text-sm'>
+              {t('gameComponent.room.roleCard.mysteryRole')}
+            </p>
+          </div>
+          {renderMistOverlay()}
+        </div>
+
+        {/* 背面 - 揭示后的角色详情 */}
+        <div
+          className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden rotate-y-180 ${
+            isCurrentSelection
+              ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
+              : 'bg-werewolf-dark/40 border-2 border-werewolf-purple/30'
+          }`}
+          style={{
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+          }}
         >
           <div className='h-full flex flex-col'>
-            <div
-              className={`flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative ${
-                canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-              }`}
-              onClick={() => canSelect && onSelect()}
-            >
+            <div className='flex-1 bg-werewolf-dark/60 rounded-md mb-3 flex items-center justify-center overflow-hidden relative'>
               {imageUrl ? (
                 <img
                   src={imageUrl}
@@ -209,38 +257,13 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                 🎭
               </div>
             </div>
-            <div className='text-center cursor-pointer' onClick={onFlip}>
-              <h3 className='font-bold text-lg text-white mb-2'>
-                {getRoleDisplayName(role.roleName)}
-              </h3>
-              <div className='text-xs text-gray-400'>
-                {t('gameComponent.room.roleCard.clickToSelect')}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* 背面 - 阵营和技能详情 */}
-        <div
-          className={`absolute inset-0 w-full h-full rounded-lg p-4 backface-hidden rotate-y-180 ${
-            isCurrentSelection
-              ? 'bg-werewolf-purple/30 border-2 border-werewolf-purple'
-              : isSelected
-                ? 'bg-red-900/30 border-2 border-red-500'
-                : 'bg-werewolf-dark/40'
-          }`}
-          style={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-          }}
-        >
-          <div className='h-full flex flex-col'>
-            <div className='text-center mb-4'>
-              <h3 className='font-bold text-lg text-white mb-2'>
+            <div className='text-center mb-2'>
+              <h3 className='font-bold text-lg text-white mb-1'>
                 {getRoleDisplayName(role.roleName)}
               </h3>
               <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                className={`inline-block px-3 py-0.5 rounded-full text-xs font-medium ${
                   roleDesign?.faction === false
                     ? 'bg-green-900/60 text-green-200'
                     : roleDesign?.faction === true
@@ -253,8 +276,8 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               </span>
             </div>
 
-            <div className='flex-1 bg-werewolf-dark/60 rounded-md p-2'>
-              <div className='space-y-2'>
+            <div className='bg-werewolf-dark/60 rounded-md p-2 flex-1 overflow-y-auto'>
+              <div className='space-y-1.5'>
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
                     {t('gameComponent.room.roleCard.skillName')}
@@ -271,25 +294,24 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                   </p>
                 </div>
 
-                <div>
-                  <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    {t('gameComponent.room.roleCard.skillUsage')}
-                  </h4>
-                  <p className='text-sm text-gray-300'>{getSkillUsageText()}</p>
+                <div className='flex gap-4'>
+                  <div>
+                    <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
+                      {t('gameComponent.room.roleCard.skillUsage')}
+                    </h4>
+                    <p className='text-xs text-gray-300'>
+                      {getSkillUsageText()}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
+                      {t('gameComponent.room.roleCard.skillType')}
+                    </h4>
+                    <p className='text-xs text-gray-300'>
+                      {getSkillTypeText()}
+                    </p>
+                  </div>
                 </div>
-
-                <div>
-                  <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    {t('gameComponent.room.roleCard.skillType')}
-                  </h4>
-                  <p className='text-sm text-gray-300'>{getSkillTypeText()}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className='text-center mt-3 cursor-pointer' onClick={onFlip}>
-              <div className='text-xs text-gray-400'>
-                {t('gameComponent.room.roleCard.flipBack')}
               </div>
             </div>
           </div>

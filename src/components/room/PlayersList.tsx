@@ -42,6 +42,7 @@ interface PlayersListProps {
   allPlayersSelectedRoles: boolean;
   canSelectRoles: boolean;
   currentPlayerHasSelectedRole?: boolean;
+  hideReadyButton?: boolean;
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -60,6 +61,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
   allPlayersSelectedRoles,
   canSelectRoles,
   currentPlayerHasSelectedRole = false,
+  hideReadyButton = false,
 }) => {
   const { t } = useLanguage();
 
@@ -268,21 +270,23 @@ const PlayersList: React.FC<PlayersListProps> = ({
             </Button>
           )}
 
-          {/* 准备按钮 */}
-          <Button
-            onClick={onReadyToggle}
-            disabled={!canToggleReady()}
-            data-testid='ready-button'
-            className={`w-full ${
-              isReady
-                ? 'bg-yellow-600 hover:bg-yellow-700'
-                : canToggleReady()
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-gray-600 cursor-not-allowed'
-            }`}
-          >
-            {getReadyButtonText()}
-          </Button>
+          {/* 准备按钮：抽卡模式下由选角自动触发，隐藏手动准备按钮 */}
+          {!hideReadyButton && (
+            <Button
+              onClick={onReadyToggle}
+              disabled={!canToggleReady()}
+              data-testid='ready-button'
+              className={`w-full ${
+                isReady
+                  ? 'bg-yellow-600 hover:bg-yellow-700'
+                  : canToggleReady()
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-gray-600 cursor-not-allowed'
+              }`}
+            >
+              {getReadyButtonText()}
+            </Button>
+          )}
 
           {/* 开始游戏按钮 - 只有房主可见 */}
           {players.find(p => p.name === 'You')?.isHost && (

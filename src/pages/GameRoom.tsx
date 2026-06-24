@@ -350,6 +350,23 @@ const GameRoom = () => {
     }
   };
 
+  // 抽卡模式：玩家点选角色卡片后自动进入已准备状态
+  const handleAutoReady = async () => {
+    if (!currentPlayerRecord) return;
+
+    try {
+      const success = await updatePlayerReady(currentPlayerRecord.id, true);
+      if (success) {
+        setIsReady(true);
+        if (aiPlayers.length > 0) {
+          await setAIPlayersReady(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error auto-readying after card draw:', error);
+    }
+  };
+
   const handleCharacterSelect = (characterId: string | null) => {
     // 如果已经准备，不能更改角色选择
     if (isReady && characterId !== selectedCharacter) {
@@ -449,6 +466,7 @@ const GameRoom = () => {
               allPlayersSelectedRoles={allHumanPlayersSelectedRoles}
               canSelectRoles={canSelectRoles()}
               currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
+              hideReadyButton={true}
               t={t}
               onReadyToggle={handleReadyToggle}
               onLeaveRoom={handleLeaveRoom}
@@ -465,6 +483,7 @@ const GameRoom = () => {
               currentPlayerCount={players.length}
               selectedCharacter={selectedCharacter}
               onCharacterSelect={handleCharacterSelect}
+              onAutoReady={handleAutoReady}
               roomId={roomData?.id || ''}
               currentPlayerId={currentUserId}
               isReady={isReady}

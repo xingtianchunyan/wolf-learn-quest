@@ -1,6 +1,9 @@
 /**
- * 文件级注释：房间角色选择组件
- * 在角色设计数据加载完成后再展开角色实例，避免加载阶段的空匹配告警。
+ * 文件级注释：房间角色选择组件（线下抽卡模式）
+ * - 角色卡片根据房间 ID 种子随机洗牌，所有客户端展示相同布局
+ * - 所有卡片初始覆盖迷雾，玩家只能看到自己点选卡片的内容
+ * - 被其他玩家选中的卡片保留迷雾并带有呼吸动画，防止重复选择
+ * - 点选后自动与角色绑定，并通过回调通知父组件进入已准备状态
  */
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,12 +18,14 @@ import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useToast } from '@/components/ui/use-toast';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { RoleCard } from './RoleCard';
+import { shuffleWithSeed } from '@/lib/utils';
 
 interface RoleSelectionProps {
   maxPlayers: number;
   currentPlayerCount: number;
   selectedCharacter: string | null;
   onCharacterSelect: (characterId: string | null) => void;
+  onAutoReady?: () => void;
   roomId: string;
   currentPlayerId: string | null;
   isReady: boolean;
@@ -31,6 +36,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   currentPlayerCount,
   selectedCharacter,
   onCharacterSelect,
+  onAutoReady,
   roomId,
   currentPlayerId,
   isReady,
@@ -55,9 +61,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     loading: roleDesignsLoading,
     getLocalImageByDesignId,
   } = useRoleDesigns();
-  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const {
+    roleSelections,
     selectRole,
     unselectRole,
     isRoleSelected,
@@ -72,19 +78,19 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     return expandRolesWithDesigns(roleConfigs, roleDesigns);
   }, [roleConfigs, roleDesigns, roleDesignsLoading]);
 
+  // 使用房间 ID 作为种子进行确定性洗牌，保证所有客户端卡片顺序一致
+  const shuffledRoles = useMemo(() => {
+    if (!expandedRoles.length || !roomId) return [];
+    return shuffleWithSeed(expandedRoles, roomId);
+  }, [expandedRoles, roomId]);
+
   const currentSelection = getCurrentPlayerSelection();
   const currentSelectedRoleId = currentSelection?.roleId || null;
+  const playerHasSelected = !!currentSelectedRoleId;
 
-  const handleCardFlip = (roleInstanceId: string) => {
-    setFlippedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(roleInstanceId)) {
-        newSet.delete(roleInstanceId);
-      } else {
-        newSet.add(roleInstanceId);
-      }
-      return newSet;
-    });
+  const getSelectionByRoleId = (roleDesignId?: string) => {
+    if (!roleDesignId) return undefined;
+    return roleSelections.find(selection => selection.role_id === roleDesignId);
   };
 
   const handleRoleSelect = async (role: ExpandedRole) => {
@@ -99,10 +105,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
-    if (isReady) {
+    // 每位人类玩家只能点选一次角色卡片
+    if (playerHasSelected || isReady) {
       toast({
-        title: getRoleSelectionToast('cannotSelectRole'),
-        description: getRoleSelectionToast('cancelReadyFirst'),
+        title: getRoleSelectionToast('alreadyDrewCard'),
+        description: getRoleSelectionToast('cannotRedraw'),
         variant: 'destructive',
       });
       return;
@@ -117,33 +124,14 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       return;
     }
 
-    if (
-      isRoleSelected(role.roleDesignId) &&
-      currentSelectedRoleId !== role.roleDesignId
-    ) {
+    // 防止选择已被其他玩家选中的卡片
+    const existingSelection = getSelectionByRoleId(role.roleDesignId);
+    if (existingSelection && existingSelection.user_id !== currentPlayerId) {
       toast({
         title: getRoleSelectionToast('roleAlreadySelected'),
-        description: getRoleSelectionToast('roleAlreadySelected'),
+        description: getRoleSelectionToast('chooseAnotherCard'),
         variant: 'destructive',
       });
-      return;
-    }
-
-    if (currentSelectedRoleId === role.roleDesignId) {
-      const success = await unselectRole();
-      if (success) {
-        onCharacterSelect(null);
-        toast({
-          title: getRoleSelectionToast('roleUnselected'),
-          description: getRoleSelectionToast('roleUnselectedDesc'),
-        });
-      } else {
-        toast({
-          title: t('common.error'),
-          description: getRoleSelectionToast('unselectFailed'),
-          variant: 'destructive',
-        });
-      }
       return;
     }
 
@@ -151,11 +139,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     if (success) {
       onCharacterSelect(role.roleDesignId);
       toast({
-        title: getRoleSelectionToast('roleSelected'),
+        title: getRoleSelectionToast('cardRevealed'),
         description: t('gameComponent.room.roleSelection.selectedRole', {
           roleName: getRoleDisplayName(role.roleName),
         }),
       });
+      // 抽卡成功后自动进入已准备状态
+      onAutoReady?.();
     } else {
       toast({
         title: t('common.error'),
@@ -165,15 +155,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     }
   };
 
-  const isFlipped = (roleInstanceId: string) =>
-    flippedCards.has(roleInstanceId);
-
   const getRoleDesignById = (roleDesignId: string | undefined) => {
     if (!roleDesignId) return null;
     return roleDesigns.find(design => design.id === roleDesignId);
   };
 
-  if (roleDesignsLoading) {
+  if (roleDesignsLoading || roleSelectionLoading) {
     return (
       <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>
         <CardHeader className='flex-shrink-0'>
@@ -197,7 +184,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
         <div className='space-y-2'>
           <p className='text-sm text-gray-400'>
             {t('current_config')}: {maxPlayers}
-            {t('players_game')} ({expandedRoles.length}
+            {t('players_game')} ({shuffledRoles.length}
             {t('roles')})
           </p>
           <p className='text-sm text-gray-400'>
@@ -220,22 +207,28 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
               })}
             </p>
           )}
+          {canSelectRoles() && !currentSelection && (
+            <p className='text-sm text-werewolf-purple'>
+              {t('gameComponent.room.roleSelection.clickCardToDraw')}
+            </p>
+          )}
         </div>
       </CardHeader>
       <CardContent className='flex-1 flex flex-col'>
         <ScrollArea className='flex-1 pr-4'>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px]'>
-            {expandedRoles.map(role => {
+            {shuffledRoles.map(role => {
               const roleDesign = getRoleDesignById(role.roleDesignId);
-              const isSelected = role.roleDesignId
-                ? isRoleSelected(role.roleDesignId)
-                : false;
-              const isCurrentSelection =
-                currentSelectedRoleId === role.roleDesignId;
+              const selection = getSelectionByRoleId(role.roleDesignId);
+              const isSelected = !!selection;
+              const isCurrentSelection = selection?.user_id === currentPlayerId;
+              const isTakenByOther = isSelected && !isCurrentSelection;
+              const isRevealed = isCurrentSelection;
               const canSelect =
                 canSelectRoles() &&
                 !isReady &&
-                (!isSelected || isCurrentSelection) &&
+                !playerHasSelected &&
+                !isSelected &&
                 role.roleDesignId;
               const imageUrl = role.roleDesignId
                 ? getLocalImageByDesignId(role.roleDesignId)
@@ -248,10 +241,10 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                   roleDesign={roleDesign || null}
                   isSelected={isSelected}
                   isCurrentSelection={isCurrentSelection}
+                  isTakenByOther={isTakenByOther}
+                  isRevealed={isRevealed}
                   canSelect={!!canSelect}
                   imageUrl={imageUrl}
-                  flipped={isFlipped(role.instanceId)}
-                  onFlip={() => handleCardFlip(role.instanceId)}
                   onSelect={() => handleRoleSelect(role)}
                 />
               );
