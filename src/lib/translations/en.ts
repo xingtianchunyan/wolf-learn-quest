@@ -142,6 +142,10 @@ export const en = {
   witch: 'Witch',
   seer: 'Seer (Prophet)',
   guard: 'Guard',
+  werewolf: 'Werewolf',
+  white_wolf: 'White Wolf',
+  warlock: 'Warlock',
+  demon: 'Demon',
   game_phases_title: 'Game Time and Action Phases',
   game_duration: 'Game Duration',
   game_duration_desc:

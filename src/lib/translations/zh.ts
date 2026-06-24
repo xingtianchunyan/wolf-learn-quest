@@ -136,6 +136,10 @@ export const zh = {
   witch: '女巫',
   seer: '预言家',
   guard: '守卫',
+  werewolf: '狼人',
+  white_wolf: '白狼王',
+  warlock: '术士',
+  demon: '恶魔',
   game_phases_title: '游戏时间与行动阶段',
   game_duration: '游戏时长',
   game_duration_desc:
