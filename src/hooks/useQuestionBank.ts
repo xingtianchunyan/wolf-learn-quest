@@ -1,8 +1,53 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { createLogger } from '@/lib/logger';
+import { createLogger, type ILogger } from '@/lib/logger';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
+
+const MAX_FETCH_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 1000;
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+const isNetworkError = (error: unknown): boolean => {
+  if (error instanceof TypeError) return true;
+  if (error instanceof Error && /fetch|network|abort|timeout/i.test(error.message)) {
+    return true;
+  }
+  return false;
+};
+
+const fetchWithRetry = async <T>(
+  operation: () => Promise<T>,
+  operationName: string,
+  logger: ILogger,
+  maxRetries = MAX_FETCH_RETRIES
+): Promise<T> => {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+
+      if (!isNetworkError(error) || attempt === maxRetries) {
+        if (attempt > 0) {
+          logger.warn(`${operationName} failed after ${attempt + 1} attempts:`, error);
+        }
+        throw error;
+      }
+
+      const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+      logger.warn(
+        `${operationName} failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`
+      );
+      await sleep(delay);
+    }
+  }
+
+  throw lastError;
+};
 
 export interface UploadedFile {
   id: string;
@@ -33,6 +78,8 @@ export interface UseQuestionBankReturn {
   isUploading: boolean;
   isProcessing: boolean;
   isGenerating: boolean;
+  isFetchingFiles: boolean;
+  isFilesLoaded: boolean;
   showQuestionBank: boolean;
   setShowQuestionBank: React.Dispatch<React.SetStateAction<boolean>>;
   error: string;
@@ -46,8 +93,14 @@ export interface UseQuestionBankReturn {
 
 export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
   const { t } = useLanguage();
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
   const { toast } = useToast();
-  const logger = createLogger('useQuestionBank');
+  const loggerRef = useRef(createLogger('useQuestionBank'));
+  const logger = loggerRef.current;
 
   const [selectedFile, setSelectedFile] = useState<string>('');
   const [selectedPreprocessedFile, setSelectedPreprocessedFile] =
@@ -62,10 +115,24 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
   const [error, setError] = useState<string>('');
+  const [isFetchingFiles, setIsFetchingFiles] = useState(false);
+  const [loadedFlags, setLoadedFlags] = useState({
+    uploaded: false,
+    preprocessed: false,
+  });
 
   // Use refs to access latest state in async callbacks and timeouts
   const isGeneratingRef = useRef(isGenerating);
   const isProcessingRef = useRef(isProcessing);
+  const fetchingCountRef = useRef(0);
+
+  const isFilesLoaded = loadedFlags.uploaded && loadedFlags.preprocessed;
+
+  useEffect(() => {
+    if (loadedFlags.uploaded && loadedFlags.preprocessed) {
+      setError('');
+    }
+  }, [loadedFlags]);
 
   useEffect(() => {
     isGeneratingRef.current = isGenerating;
@@ -79,31 +146,59 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     setError('');
   }, []);
 
+  const updateFetchingState = useCallback(() => {
+    setIsFetchingFiles(fetchingCountRef.current > 0);
+  }, []);
+
   const fetchUploadedFiles = useCallback(async () => {
+    fetchingCountRef.current += 1;
+    updateFetchingState();
+
     try {
       logger.debug('获取文件列表...');
-      const { data: uploadedData, error: uploadedError } = await supabase
-        .from('uploaded_files')
-        .select('*')
-        .order('uploaded_at', { ascending: false });
+
+      const { uploadedData, preprocessedData, generatedData, uploadedError } =
+        await fetchWithRetry(
+          async () => {
+            const { data: uploadedData, error: uploadedError } = await supabase
+              .from('uploaded_files')
+              .select('*')
+              .order('uploaded_at', { ascending: false });
+
+            if (uploadedError) {
+              return {
+                uploadedData: null,
+                preprocessedData: null,
+                generatedData: null,
+                uploadedError,
+              };
+            }
+
+            const [{ data: preprocessedData }, { data: generatedData }] =
+              await Promise.all([
+                supabase
+                  .from('preprocessed_files')
+                  .select('original_file_path'),
+                supabase
+                  .from('generated_questions')
+                  .select('original_file_path'),
+              ]);
+
+            return { uploadedData, preprocessedData, generatedData, uploadedError: null };
+          },
+          'fetchUploadedFiles',
+          logger
+        );
 
       if (uploadedError) {
         logger.error('Error fetching uploaded files:', uploadedError);
         setError(
-          t('judge.questionBank.errors.fetchUploaded', {
+          tRef.current('judge.questionBank.errors.fetchUploaded', {
             message: uploadedError.message,
           })
         );
         return;
       }
-
-      const { data: preprocessedData } = await supabase
-        .from('preprocessed_files')
-        .select('original_file_path');
-
-      const { data: generatedData } = await supabase
-        .from('generated_questions')
-        .select('original_file_path');
 
       const preprocessedPaths = new Set(
         preprocessedData?.map(p => p.original_file_path) || []
@@ -119,32 +214,51 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       }));
 
       setUploadedFiles(filesWithStatus);
+      setLoadedFlags(prev => ({ ...prev, uploaded: true }));
     } catch (error) {
       logger.error('Error fetching uploaded files:', error);
-      setError(t('judge.questionBank.errors.fetchUploadedGeneric'));
+      setError(tRef.current('judge.questionBank.errors.fetchUploadedGeneric'));
+    } finally {
+      fetchingCountRef.current -= 1;
+      updateFetchingState();
     }
-  }, [logger, t]);
+  }, [updateFetchingState]);
 
   const fetchPreprocessedFiles = useCallback(async () => {
+    fetchingCountRef.current += 1;
+    updateFetchingState();
+
     try {
-      const { data: preprocessedData, error } = await supabase
-        .from('preprocessed_files')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { preprocessedData, generatedData, error } = await fetchWithRetry(
+        async () => {
+          const { data: preprocessedData, error } = await supabase
+            .from('preprocessed_files')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            return { preprocessedData: null, generatedData: null, error };
+          }
+
+          const { data: generatedData } = await supabase
+            .from('generated_questions')
+            .select('original_file_path');
+
+          return { preprocessedData, generatedData, error: null };
+        },
+        'fetchPreprocessedFiles',
+        logger
+      );
 
       if (error) {
-        console.error('Error fetching preprocessed files:', error);
+        logger.error('Error fetching preprocessed files:', error);
         setError(
-          t('judge.questionBank.errors.fetchPreprocessed', {
+          tRef.current('judge.questionBank.errors.fetchPreprocessed', {
             message: error.message,
           })
         );
         return;
       }
-
-      const { data: generatedData } = await supabase
-        .from('generated_questions')
-        .select('original_file_path');
 
       const generatedPaths = new Set(
         generatedData?.map(g => g.original_file_path) || []
@@ -156,11 +270,15 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       }));
 
       setPreprocessedFiles(filesWithStatus);
+      setLoadedFlags(prev => ({ ...prev, preprocessed: true }));
     } catch (error) {
-      console.error('Error fetching preprocessed files:', error);
-      setError(t('judge.questionBank.errors.fetchPreprocessedGeneric'));
+      logger.error('Error fetching preprocessed files:', error);
+      setError(tRef.current('judge.questionBank.errors.fetchPreprocessedGeneric'));
+    } finally {
+      fetchingCountRef.current -= 1;
+      updateFetchingState();
     }
-  }, [t]);
+  }, [updateFetchingState]);
 
   useEffect(() => {
     fetchUploadedFiles();
@@ -221,7 +339,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       supabase.removeChannel(preprocessedChannel);
       supabase.removeChannel(generatedChannel);
     };
-  }, [toast, logger, fetchUploadedFiles, fetchPreprocessedFiles, clearError]);
+  }, [toast, fetchUploadedFiles, fetchPreprocessedFiles, clearError]);
 
   const sanitizeFileName = (fileName: string): string => {
     const lastDotIndex = fileName.lastIndexOf('.');
@@ -521,6 +639,8 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     isUploading,
     isProcessing,
     isGenerating,
+    isFetchingFiles,
+    isFilesLoaded,
     showQuestionBank,
     setShowQuestionBank,
     error,
