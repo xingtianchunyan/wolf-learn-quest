@@ -10,6 +10,7 @@ import GameLobby from './pages/GameLobby';
 import GameRoom from './pages/GameRoom';
 import GamePage from './pages/GamePage';
 import JudgePage from './pages/JudgePage';
+import AdminUsersPage from './pages/AdminUsersPage';
 import NotFound from './pages/NotFound';
 import { AuthProvider } from '@/providers/AuthProvider';
 
@@ -63,6 +64,7 @@ const App = () => (
                   </PermissionProvider>
                 }
               />
+              <Route path='/admin/users' element={<AdminUsersPage />} />
               <Route path='*' element={<NotFound />} />
             </Routes>
           </BrowserRouter>

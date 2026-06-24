@@ -8,11 +8,13 @@ import {
   ExternalLink,
   Users,
   Book,
+  Shield,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher, { useLanguage } from './LanguageSwitcher';
 import LoginDialog from '../dialogs/LoginDialog';
 import GameRulesDialog from '../dialogs/GameRulesDialog';
+import { useAuth } from '@/providers/AuthProvider';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +26,11 @@ const Navbar: React.FC = () => {
   const isGameRelatedPage = ['/room', '/game', '/judge'].includes(
     location.pathname
   );
+
+  const { currentUser } = useAuth();
+  const isAdmin =
+    currentUser?.app_metadata?.role === 'admin' ||
+    currentUser?.user_metadata?.role === 'admin';
 
   return (
     <nav className='bg-werewolf-dark/80 backdrop-blur-md p-4 shadow-md fixed top-0 w-full z-50'>
@@ -86,6 +93,16 @@ const Navbar: React.FC = () => {
               </Button>
             }
           />
+          {isAdmin && (
+            <Button
+              variant='ghost'
+              className='nav-link flex items-center'
+              onClick={() => navigate('/admin/users')}
+            >
+              <Shield size={20} className='mr-1' />
+              <span>Admin</span>
+            </Button>
+          )}
           <LanguageSwitcher />
           <LoginDialog />
         </div>
@@ -162,6 +179,19 @@ const Navbar: React.FC = () => {
                 </Button>
               }
             />
+            {isAdmin && (
+              <Button
+                variant='ghost'
+                className='nav-link flex items-center'
+                onClick={() => {
+                  navigate('/admin/users');
+                  setIsMenuOpen(false);
+                }}
+              >
+                <Shield size={20} className='mr-1' />
+                <span>Admin</span>
+              </Button>
+            )}
             <LanguageSwitcher />
             <LoginDialog />
           </div>
