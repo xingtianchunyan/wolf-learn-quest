@@ -77,6 +77,7 @@ const GameRoom = () => {
     loading: playersLoading,
     updatePlayerReady,
     addAIPlayer,
+    setAIPlayersReady,
   } = usePlayersRealtime(roomData?.id);
   const { gameState } = useGameState(roomData?.id || '');
   // 游戏结束后自动迁移到新房间
@@ -327,11 +328,10 @@ const GameRoom = () => {
 
       setIsReady(newReadyState);
 
-      // 当真实玩家准备时，自动将 AI 玩家设为已准备，避免 AI 无法准备导致游戏无法开始
+      // 当真实玩家准备时，通过 RPC 自动将 AI 玩家设为已准备
+      // 直接 UPDATE 会触发 RLS（AI 玩家的 user_id 为 NULL），因此需要 SECURITY DEFINER 函数
       if (newReadyState && aiPlayers.length > 0) {
-        await Promise.all(
-          aiPlayers.map(aiPlayer => updatePlayerReady(aiPlayer.id, true))
-        );
+        await setAIPlayersReady(true);
       }
 
       toast({

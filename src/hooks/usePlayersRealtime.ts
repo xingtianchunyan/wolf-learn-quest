@@ -186,10 +186,30 @@ export const usePlayersRealtime = (roomId: string) => {
     }
   };
 
+  const setAIPlayersReady = async (isReady: boolean) => {
+    try {
+      const { error } = await supabase.rpc('set_ai_players_ready', {
+        p_room_id: roomId,
+        p_ready: isReady,
+      });
+
+      if (error) {
+        console.error('Error setting AI players ready status:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error setting AI players ready status:', error);
+      return false;
+    }
+  };
+
   return {
     players,
     loading,
     updatePlayerReady,
     addAIPlayer,
+    setAIPlayersReady,
   };
 };
