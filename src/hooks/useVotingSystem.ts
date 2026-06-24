@@ -272,7 +272,9 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         // 检查是否是权限问题
         if (error instanceof Error) {
           if (error.message.includes('Authentication required')) {
-            console.error('User not authenticated, cannot create voting session');
+            console.error(
+              'User not authenticated, cannot create voting session'
+            );
             toast({
               title: t('hook.vote.auth_failed_title'),
               description: t('hook.vote.sign_in_required'),

@@ -389,7 +389,9 @@ export const useGameState = (roomId: string) => {
       }
 
       toast({
-        title: data ? t('hook.game.paused_title') : t('hook.game.resumed_title'),
+        title: data
+          ? t('hook.game.paused_title')
+          : t('hook.game.resumed_title'),
         description: data
           ? t('hook.game.paused_desc')
           : t('hook.game.resumed_desc'),

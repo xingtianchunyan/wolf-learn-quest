@@ -9,7 +9,8 @@ import {
 
 const logger = createLogger('monitoring-service');
 
-const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
+const getT = (language?: LanguageCode) =>
+  createTranslator(language || defaultLanguage);
 
 export interface PerformanceMetric {
   name: string;

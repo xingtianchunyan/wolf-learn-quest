@@ -126,10 +126,12 @@ export const useVoteResults = (roomId: string) => {
         ([votedPlayerId, { voters }]) => {
           return {
             votedPlayerId,
-            votedPlayerName: playerNamesMap.get(votedPlayerId) || t('common.unknown_player'),
+            votedPlayerName:
+              playerNamesMap.get(votedPlayerId) || t('common.unknown_player'),
             voteCount: voters.length,
             voters: voters.map(
-              voterId => playerNamesMap.get(voterId) || t('common.unknown_player')
+              voterId =>
+                playerNamesMap.get(voterId) || t('common.unknown_player')
             ),
           };
         }

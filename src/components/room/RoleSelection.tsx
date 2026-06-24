@@ -91,10 +91,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     if (!canSelectRoles()) {
       toast({
         title: getRoleSelectionToast('roleSelectionNotOpen'),
-        description: t(
-          'gameComponent.room.roleSelection.waitForMaxPlayers',
-          { maxPlayers }
-        ),
+        description: t('gameComponent.room.roleSelection.waitForMaxPlayers', {
+          maxPlayers,
+        }),
         variant: 'destructive',
       });
       return;
@@ -209,10 +208,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           </p>
           {!canSelectRoles() && (
             <p className='text-sm text-yellow-400'>
-              {t(
-                'gameComponent.room.roleSelection.waitingForRoleSelection',
-                { maxPlayers }
-              )}
+              {t('gameComponent.room.roleSelection.waitingForRoleSelection', {
+                maxPlayers,
+              })}
             </p>
           )}
           {canSelectRoles() && currentSelection && (

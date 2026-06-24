@@ -18,9 +18,11 @@ export const hook = {
     system_error_desc:
       'An exception occurred while handling the error. Please refresh the page and try again.',
     network_error_title: 'Network Error',
-    network_error_desc: 'Network connection abnormal, please check your network settings.',
+    network_error_desc:
+      'Network connection abnormal, please check your network settings.',
     permission_denied_title: 'Permission Denied',
-    permission_denied_desc: 'You do not have permission to perform this operation.',
+    permission_denied_desc:
+      'You do not have permission to perform this operation.',
     validation_error_title: 'Input Error',
     validation_error_desc: 'Input data format is incorrect.',
     skill_error_title: 'Skill Use Failed',
@@ -112,7 +114,7 @@ export const hook = {
     protection_unavailable_desc:
       'Protection potion is unavailable or already used.',
     protection_success_title: 'Protection Potion Used',
-    protection_success_desc: 'Antidote used, will save tonight\'s victim.',
+    protection_success_desc: "Antidote used, will save tonight's victim.",
     protection_failed_title: 'Protection Potion Failed',
     attack_unavailable_title: 'Cannot Use Attack Potion',
     attack_unavailable_desc: 'Attack potion is unavailable or already used.',
@@ -140,7 +142,8 @@ export const hook = {
 
   auto_dying: {
     protection_title: 'Auto-Protection Activated',
-    protection_desc: 'Player gained protection, dying status automatically resolved.',
+    protection_desc:
+      'Player gained protection, dying status automatically resolved.',
     answer_title: 'Auto-Answer Judgment',
     answer_status_desc: 'Based on answer result, player {status}.',
   },
@@ -224,13 +227,13 @@ export const hook = {
     performance_warning_desc:
       'Page rendering took {time}ms, which may affect user experience.',
     suggestion_pattern_title: 'Based on History',
-    suggestion_pattern_desc:
-      'You often use "{action}", need a shortcut?',
+    suggestion_pattern_desc: 'You often use "{action}", need a shortcut?',
     suggestion_performance_title: 'Performance Optimization Suggestion',
     suggestion_performance_desc:
       'Page rendering is slow, recommend enabling performance mode.',
     suggestion_error_title: 'High Error Frequency',
-    suggestion_error_desc: 'Recommend checking the guide or contacting support.',
+    suggestion_error_desc:
+      'Recommend checking the guide or contacting support.',
   },
 
   service: {

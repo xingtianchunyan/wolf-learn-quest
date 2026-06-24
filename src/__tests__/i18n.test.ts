@@ -69,21 +69,31 @@ describe('i18n utilities', () => {
       const original = translations.zh['meta.twitter_site'];
       delete (translations.zh as Record<string, string>)['meta.twitter_site'];
       expect(getTranslation('zh', 'meta.twitter_site')).toBe('@wolflearnquest');
-      (translations.zh as Record<string, string>)['meta.twitter_site'] = original;
+      (translations.zh as Record<string, string>)['meta.twitter_site'] =
+        original;
     });
 
     it('falls back to key name when translation is missing in both languages', () => {
-      expect(getTranslation('en', 'missing.key.that.does.not.exist' as TranslationKey)).toBe(
-        'missing.key.that.does.not.exist'
-      );
+      expect(
+        getTranslation(
+          'en',
+          'missing.key.that.does.not.exist' as TranslationKey
+        )
+      ).toBe('missing.key.that.does.not.exist');
     });
 
     it('supports interpolation for nested keys', () => {
       expect(
-        getTranslation('en', 'game.phase.round_phase', { round: 3, phase: 'day' })
+        getTranslation('en', 'game.phase.round_phase', {
+          round: 3,
+          phase: 'day',
+        })
       ).toBe('Round 3 - day');
       expect(
-        getTranslation('zh', 'game.phase.round_phase', { round: 3, phase: '白天' })
+        getTranslation('zh', 'game.phase.round_phase', {
+          round: 3,
+          phase: '白天',
+        })
       ).toBe('第3轮 白天');
     });
 
@@ -118,7 +128,9 @@ describe('i18n utilities', () => {
 
   describe('namespace coverage', () => {
     it('loads all nested namespaces', () => {
-      const nestedKeys = Object.keys(translations.en).filter(k => k.includes('.'));
+      const nestedKeys = Object.keys(translations.en).filter(k =>
+        k.includes('.')
+      );
       expect(nestedKeys.length).toBeGreaterThan(0);
       expect(nestedKeys).toContain('common.loading');
       expect(nestedKeys).toContain('game.phase.day');
@@ -128,7 +140,9 @@ describe('i18n utilities', () => {
     it('has matching nested namespaces in both languages', () => {
       const enKeys = new Set(Object.keys(translations.en));
       const zhKeys = new Set(Object.keys(translations.zh));
-      const nestedEnKeys = Object.keys(translations.en).filter(k => k.includes('.'));
+      const nestedEnKeys = Object.keys(translations.en).filter(k =>
+        k.includes('.')
+      );
       for (const key of nestedEnKeys) {
         expect(zhKeys.has(key)).toBe(true);
       }

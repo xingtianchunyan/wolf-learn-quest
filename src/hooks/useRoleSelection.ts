@@ -169,7 +169,8 @@ export const useRoleSelection = (
     return selection
       ? {
           roleId: selection.role_id,
-          roleName: selection.role_design?.role_name || t('common.unknown_role'),
+          roleName:
+            selection.role_design?.role_name || t('common.unknown_role'),
           roleDesign: selection.role_design,
         }
       : null;

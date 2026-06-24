@@ -65,7 +65,8 @@ export const gameComponent = {
     title: 'Game Settings',
     loading: 'Loading settings...',
     autoAdvance: 'Auto Advance Phase',
-    autoAdvanceDescription: 'Day/Night phases will automatically switch when enabled',
+    autoAdvanceDescription:
+      'Day/Night phases will automatically switch when enabled',
     durationTitle: 'Phase Duration (seconds)',
     answerSuffix: '(Quiz)',
     save: 'Save Settings',
@@ -95,7 +96,8 @@ export const gameComponent = {
     },
     guard: {
       title: 'Guard Skill - Protect',
-      description: 'During the night phase, you can choose a player to protect.',
+      description:
+        'During the night phase, you can choose a player to protect.',
       rule1: 'Protected player is immune to attacks that night',
       rule2: 'Can only protect once per night',
       targetTitle: 'Select Protection Target',
@@ -103,7 +105,8 @@ export const gameComponent = {
     },
     seer: {
       title: 'Seer Skill - Investigate',
-      description: 'During the night phase, you can investigate a player\'s identity.',
+      description:
+        "During the night phase, you can investigate a player's identity.",
       rule1: 'Can find out if the target is a werewolf',
       rule2: 'Can only investigate once per night',
       rule3: 'Click a player info card to select investigation target',
@@ -114,10 +117,12 @@ export const gameComponent = {
     },
     hunter: {
       title: 'Hunter Skill - Revenge',
-      description: 'When eliminated, you can choose a player to take out with you.',
+      description:
+        'When eliminated, you can choose a player to take out with you.',
       rule1: 'Can only be used when eliminated',
       rule2: 'This skill is passive',
-      autoActivate: 'Hunter skill automatically activates when you enter near-death state',
+      autoActivate:
+        'Hunter skill automatically activates when you enter near-death state',
     },
     villager: {
       title: 'Villager Skill - Sleep',
@@ -156,7 +161,7 @@ export const gameComponent = {
     witchPotionStatus: 'Witch Potion Status',
     antidote: 'Antidote',
     poison: 'Poison',
-    nightDeaths: 'Tonight\'s Death Info',
+    nightDeaths: "Tonight's Death Info",
     target: 'Target',
     skill: 'Skill',
     hunterStatus: 'Hunter Skill Status',
@@ -167,11 +172,14 @@ export const gameComponent = {
     hunterDyingActive:
       'Hunter near-death state activated, please select counterattack target within {seconds} seconds',
     passiveSkillsTitle: 'Passive Skill Notes',
-    passiveSkillDemonImmune: 'Demon is immune to werewolf attacks (auto-trigger)',
-    passiveSkillMultiProtect: 'Multiple protections cause target elimination (auto-detect)',
+    passiveSkillDemonImmune:
+      'Demon is immune to werewolf attacks (auto-trigger)',
+    passiveSkillMultiProtect:
+      'Multiple protections cause target elimination (auto-detect)',
     passiveSkillHunterRevenge:
       'Hunter near-death counterattack (manual trigger or auto-trigger on vote elimination)',
-    passiveSkillWitchPotion: 'Witch potion usage validation (based on tonight\'s death info)',
+    passiveSkillWitchPotion:
+      "Witch potion usage validation (based on tonight's death info)",
   },
   conflict: {
     title: 'Skill Conflict Resolution',
@@ -198,7 +206,8 @@ export const gameComponent = {
     unresolvedBadge: 'Unresolved',
     noHistory: 'No history conflict records',
     rulesTitle: 'Conflict Resolution Rules',
-    rule1: 'Lower priority skills execute first (smaller number = higher priority)',
+    rule1:
+      'Lower priority skills execute first (smaller number = higher priority)',
     rule2: 'Same priority conflicts are resolved by skill type',
     rule3: 'Judge can manually select the skill to execute',
   },
@@ -217,7 +226,8 @@ export const gameComponent = {
       'Witch antidote conflicts with werewolf attack: {witch} tried to save {target}, but {attacker} attacked the same target',
     defaultConflict: 'Multiple skills conflict, need to resolve by priority',
     solutionTitle: 'Solution:',
-    priorityRule: 'Resolve by skill priority: higher priority skill takes effect',
+    priorityRule:
+      'Resolve by skill priority: higher priority skill takes effect',
     cancelAllRule: 'All conflicting skills are cancelled',
     firstWinsRule: 'First used skill takes effect',
     defaultRule: 'Resolve conflict by default rule',
@@ -289,7 +299,8 @@ export const gameComponent = {
     skillErrorTitle: 'Skill Use Failed',
     skillErrorDesc: '{skillName} skill use failed: {reason}',
     skillConflictTitle: 'Skill Conflict',
-    skillConflictDesc: '{skillName} conflicts with other skills: {conflictReason}',
+    skillConflictDesc:
+      '{skillName} conflicts with other skills: {conflictReason}',
   },
   hints: {
     title: 'Smart Hints',
@@ -328,12 +339,13 @@ export const gameComponent = {
     },
     votingReminder: {
       title: 'Voting Reminder',
-      description: '{count} players have not voted yet, please wait for all players to finish voting.',
+      description:
+        '{count} players have not voted yet, please wait for all players to finish voting.',
     },
     beginnerDayPhase: {
       title: 'Day Phase Guide',
       description:
-        'Day phase is for discussion and voting. Observe other players\' speeches and look for suspicious behavior.',
+        "Day phase is for discussion and voting. Observe other players' speeches and look for suspicious behavior.",
     },
     beginnerNightPhase: {
       title: 'Night Phase Guide',
@@ -347,7 +359,8 @@ export const gameComponent = {
     },
     skillCooldown: {
       title: 'Skill Cooldown',
-      description: '{skillName} skill needs {cooldown} more rounds before it can be used again.',
+      description:
+        '{skillName} skill needs {cooldown} more rounds before it can be used again.',
     },
     conditionsTitle: 'Trigger Conditions:',
   },
@@ -373,8 +386,10 @@ export const gameComponent = {
     alreadySubmittedDesc: 'Cannot submit answer twice',
     notFound: {
       title: 'Question Load Failed',
-      description: 'Question for current phase (Round {round} {phase}) not found.',
-      expectedIndex: 'Expected question index: {index} (Total questions: {total})',
+      description:
+        'Question for current phase (Round {round} {phase}) not found.',
+      expectedIndex:
+        'Expected question index: {index} (Total questions: {total})',
       possibleReason:
         'Possible reasons: the judge has not set enough questions for this room, or the question index is out of range.',
     },
@@ -394,7 +409,8 @@ export const gameComponent = {
     title: 'Role Status',
     revenge: 'Counter {seconds}s',
     skillRemaining: 'Skill Remaining: {count}',
-    hunterRevengeState: 'Hunter counterattack state - you can use skill to counterattack!',
+    hunterRevengeState:
+      'Hunter counterattack state - you can use skill to counterattack!',
     actions: {
       chat: 'Chat',
       vote: 'Vote',
@@ -522,7 +538,8 @@ export const gameComponent = {
       selectRoleFailed: 'Select role failed, please try again',
       selectedRole: 'Selected role: {roleName}',
       currentPlayerCount: 'Current Players: {current} / {max}',
-      waitingForRoleSelection: 'Waiting for {maxPlayers} players to open role selection',
+      waitingForRoleSelection:
+        'Waiting for {maxPlayers} players to open role selection',
       currentSelection: 'Current Selection: {roleName}',
       cannotSelectRole: 'Cannot Select Role',
       roleSelected: 'Role Selected',

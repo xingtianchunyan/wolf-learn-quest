@@ -396,7 +396,9 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       }
 
       if (!data || !data.success) {
-        throw new Error(data?.error || t('judge.questionBank.errors.preprocessRetry'));
+        throw new Error(
+          data?.error || t('judge.questionBank.errors.preprocessRetry')
+        );
       }
     } catch (error) {
       const errorMsg =

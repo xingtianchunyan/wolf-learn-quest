@@ -90,8 +90,7 @@ export const judge = {
       updateSystem: 'Update Teacher System',
       linkSystem: 'Link Teacher System',
       selectedCount: 'Selected {count}/18 questions - Drag to reorder',
-      empty:
-        'Please select questions on the "Generated Questions" page first',
+      empty: 'Please select questions on the "Generated Questions" page first',
     },
     manual: {
       stemLabel: 'Question Stem',
@@ -119,8 +118,7 @@ export const judge = {
       usageLogicDesc:
         'Upload file → Select uploaded file → AI Preprocess → Select preprocessed file → AI Generate Questions → Open Question Bank',
       fileLimits: 'File Limits',
-      formats:
-        'Supported formats: TXT, DOC, DOCX, XLS, XLSX, PPTX, MD',
+      formats: 'Supported formats: TXT, DOC, DOCX, XLS, XLSX, PPTX, MD',
       maxSize: 'File size: up to 10MB',
       contentRequirement:
         'Content must include study materials or knowledge points',
@@ -138,7 +136,8 @@ export const judge = {
       fetchPreprocessed: 'Failed to fetch preprocessed files: {message}',
       fetchUploadedGeneric: 'Error fetching uploaded files',
       fetchPreprocessedGeneric: 'Error fetching preprocessed files',
-      invalidFileType: 'Please upload TXT, DOC, DOCX, XLS, XLSX, PPTX or MD files',
+      invalidFileType:
+        'Please upload TXT, DOC, DOCX, XLS, XLSX, PPTX or MD files',
       invalidFileTypeTitle: 'Unsupported File Format',
       fileTooLarge: 'File size cannot exceed 10MB',
       fileTooLargeTitle: 'File Too Large',
@@ -174,8 +173,7 @@ export const judge = {
       },
       addSuccess: {
         title: 'Question Added',
-        description:
-          'The manually edited question has been added to the bank',
+        description: 'The manually edited question has been added to the bank',
       },
       addError: {
         title: 'Failed to Add Question',
@@ -183,11 +181,13 @@ export const judge = {
       },
       preprocessComplete: {
         title: 'Preprocessing Complete',
-        description: 'File preprocessing is complete and page data has been updated',
+        description:
+          'File preprocessing is complete and page data has been updated',
       },
       generateComplete: {
         title: 'Question Generation Complete',
-        description: 'AI question generation is complete and page data has been updated',
+        description:
+          'AI question generation is complete and page data has been updated',
       },
       uploadSuccess: {
         title: 'Upload Successful',
@@ -333,8 +333,7 @@ export const judge = {
   },
   skillProgress: {
     title: 'Skill Execution Progress Tracking',
-    description:
-      'Real-time display of each step and status of skill execution',
+    description: 'Real-time display of each step and status of skill execution',
     noExecution: 'No skill execution in progress',
     skillName: {
       werewolf_attack: 'Werewolf Night Attack',

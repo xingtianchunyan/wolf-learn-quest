@@ -150,7 +150,8 @@ export const hook = {
 
   skill_stats: {
     conflicts_resolved_title: '技能冲突解决完成',
-    conflicts_resolved_desc: '解决了 {resolved} 个技能，取消了 {cancelled} 个冲突技能',
+    conflicts_resolved_desc:
+      '解决了 {resolved} 个技能，取消了 {cancelled} 个冲突技能',
     conflicts_failed_title: '冲突解决失败',
     conflicts_failed_desc: '无法解决技能冲突，请联系管理员',
   },

@@ -307,7 +307,9 @@ const StudentAnswerRecordPanel: React.FC<StudentAnswerRecordPanelProps> = ({
                               return gameState?.status === 'active' &&
                                 !isQuestionExpired
                                 ? t('gameComponent.answerRecord.waitingAnswer')
-                                : t('gameComponent.answerRecord.timeoutNoAnswer');
+                                : t(
+                                    'gameComponent.answerRecord.timeoutNoAnswer'
+                                  );
                             })()}
                           </span>
                         )}

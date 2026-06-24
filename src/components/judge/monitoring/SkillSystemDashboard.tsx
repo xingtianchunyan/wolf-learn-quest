@@ -162,7 +162,9 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               {systemStatus.message}
             </Badge>
           </CardTitle>
-          <CardDescription>{t('judge.skillDashboard.description')}</CardDescription>
+          <CardDescription>
+            {t('judge.skillDashboard.description')}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>

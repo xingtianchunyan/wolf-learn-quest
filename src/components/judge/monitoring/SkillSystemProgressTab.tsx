@@ -45,7 +45,9 @@ export const SkillSystemProgressTab: React.FC<SkillSystemProgressTabProps> = ({
           <CardTitle className='text-lg'>
             {t('judge.skillProgress.title')}
           </CardTitle>
-          <CardDescription>{t('judge.skillProgress.description')}</CardDescription>
+          <CardDescription>
+            {t('judge.skillProgress.description')}
+          </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
           {Object.entries(skillProgress).map(([skillName, steps]) => (

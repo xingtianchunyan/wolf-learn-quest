@@ -201,7 +201,9 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                 {/* 冲突技能展示 */}
                 <div className='space-y-3'>
                   <h4 className='font-medium text-sm'>
-                    {t('gameComponent.conflictVisualization.conflictingSkillsTitle')}
+                    {t(
+                      'gameComponent.conflictVisualization.conflictingSkillsTitle'
+                    )}
                   </h4>
                   <div className='grid gap-2'>
                     {conflict.conflictingSkills.map((skill, index) => (
@@ -221,9 +223,12 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                               {skill.skillName}
                             </span>
                             <Badge variant='outline'>
-                              {t('gameComponent.conflictVisualization.priority', {
-                                priority: skill.priority,
-                              })}
+                              {t(
+                                'gameComponent.conflictVisualization.priority',
+                                {
+                                  priority: skill.priority,
+                                }
+                              )}
                             </Badge>
                           </div>
                           <div className='text-sm text-muted-foreground truncate'>
@@ -261,9 +266,12 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                         {t('gameComponent.conflictVisualization.progressTitle')}
                       </span>
                       <span className='text-sm text-muted-foreground'>
-                        {t('gameComponent.conflictVisualization.progressPercent', {
-                          progress: resolutionProgress[conflict.id] || 0,
-                        })}
+                        {t(
+                          'gameComponent.conflictVisualization.progressPercent',
+                          {
+                            progress: resolutionProgress[conflict.id] || 0,
+                          }
+                        )}
                       </span>
                     </div>
                     <Progress
@@ -282,7 +290,9 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                         onResolveConflict(conflict.id, { action: 'priority' })
                       }
                     >
-                      {t('gameComponent.conflictVisualization.resolveByPriority')}
+                      {t(
+                        'gameComponent.conflictVisualization.resolveByPriority'
+                      )}
                     </Button>
                     <Button
                       size='sm'
@@ -323,16 +333,20 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                       className='space-y-2 text-sm text-muted-foreground'
                     >
                       <div>
-                        {t('gameComponent.conflictVisualization.conflictIdLabel')}:{' '}
-                        {conflict.id}
+                        {t(
+                          'gameComponent.conflictVisualization.conflictIdLabel'
+                        )}
+                        : {conflict.id}
                       </div>
                       <div>
                         {t('gameComponent.conflictVisualization.detectTime')}:{' '}
                         {new Date().toLocaleTimeString()}
                       </div>
                       <div>
-                        {t('gameComponent.conflictVisualization.gamePhaseLabel')}:{' '}
-                        {gamePhase}
+                        {t(
+                          'gameComponent.conflictVisualization.gamePhaseLabel'
+                        )}
+                        : {gamePhase}
                       </div>
                       <div>
                         {t('gameComponent.conflictVisualization.skillDetails')}:{' '}

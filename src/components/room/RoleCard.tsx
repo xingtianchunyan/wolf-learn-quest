@@ -92,9 +92,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   const getSkillName = () => {
     const config = getSkillConfig(roleDesign?.role_name);
     if (!config) {
-      return (
-        roleDesign?.skill_name || t('gameComponent.room.roleCard.noSkill')
-      );
+      return roleDesign?.skill_name || t('gameComponent.room.roleCard.noSkill');
     }
     const key = `skill_${config.englishName.toLowerCase()}` as never;
     const translated = t(key);
@@ -255,18 +253,14 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
                     {t('gameComponent.room.roleCard.skillUsage')}
                   </h4>
-                  <p className='text-sm text-gray-300'>
-                    {getSkillUsageText()}
-                  </p>
+                  <p className='text-sm text-gray-300'>{getSkillUsageText()}</p>
                 </div>
 
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
                     {t('gameComponent.room.roleCard.skillType')}
                   </h4>
-                  <p className='text-sm text-gray-300'>
-                    {getSkillTypeText()}
-                  </p>
+                  <p className='text-sm text-gray-300'>{getSkillTypeText()}</p>
                 </div>
               </div>
             </div>

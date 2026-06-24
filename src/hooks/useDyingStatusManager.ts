@@ -89,11 +89,15 @@ export const useDyingStatusManager = (
 
         if (success) {
           const resolutionMessages = {
-            [DyingResolutionType.PROTECTED]: t('hook.dying.resolution_protected'),
+            [DyingResolutionType.PROTECTED]: t(
+              'hook.dying.resolution_protected'
+            ),
             [DyingResolutionType.ANSWER_CORRECT]: t(
               'hook.dying.resolution_correct'
             ),
-            [DyingResolutionType.ANSWER_WRONG]: t('hook.dying.resolution_wrong'),
+            [DyingResolutionType.ANSWER_WRONG]: t(
+              'hook.dying.resolution_wrong'
+            ),
           };
 
           toast({

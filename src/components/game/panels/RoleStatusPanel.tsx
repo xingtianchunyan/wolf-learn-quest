@@ -196,7 +196,9 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
 
                       {isHunterRevengeState && (
                         <div className='text-yellow-400 font-medium'>
-                          {t('gameComponent.roleStatusPanel.hunterRevengeState')}
+                          {t(
+                            'gameComponent.roleStatusPanel.hunterRevengeState'
+                          )}
                         </div>
                       )}
 
@@ -224,7 +226,9 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                           ) &&
                             canUseSkillByStatus && (
                               <span className='px-1 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs'>
-                                {t('gameComponent.roleStatusPanel.actions.skill')}
+                                {t(
+                                  'gameComponent.roleStatusPanel.actions.skill'
+                                )}
                               </span>
                             )}
                           {canPerformAction(
@@ -232,7 +236,9 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                             'can_answer_questions'
                           ) && (
                             <span className='px-1 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs'>
-                              {t('gameComponent.roleStatusPanel.actions.answer')}
+                              {t(
+                                'gameComponent.roleStatusPanel.actions.answer'
+                              )}
                             </span>
                           )}
                         </div>

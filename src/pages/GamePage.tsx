@@ -106,7 +106,9 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>{t('page.game.login_required')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.game.login_required')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -125,7 +127,9 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>{t('page.game.room_id_missing')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.game.room_id_missing')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -139,7 +143,9 @@ const GamePage = () => {
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            <p className='text-gray-400 mb-4'>{t('page.game.checking_permissions')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.game.checking_permissions')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -152,7 +158,9 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>{t('page.game.not_participant')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.game.not_participant')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -261,7 +269,9 @@ const GamePage = () => {
                   {/* 等待阶段或游戏未开始 */}
                   {!gameState && (
                     <div className='text-center py-8'>
-                      <p className='text-gray-400'>{t('page.game.waiting_for_start')}</p>
+                      <p className='text-gray-400'>
+                        {t('page.game.waiting_for_start')}
+                      </p>
                     </div>
                   )}
                 </CardContent>

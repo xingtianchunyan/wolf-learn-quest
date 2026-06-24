@@ -316,7 +316,10 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
+      const result = await EnhancedSkillService.validateSkillUsage(
+        context,
+        'zh'
+      );
 
       // 验证结果
       expect(result.isValid).toBe(true);
@@ -353,7 +356,10 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
+      const result = await EnhancedSkillService.validateSkillUsage(
+        context,
+        'zh'
+      );
 
       // 验证结果
       expect(result.isValid).toBe(false);
@@ -638,7 +644,10 @@ describe('EnhancedSkillService', () => {
         },
       };
 
-      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
+      const result = await EnhancedSkillService.validateSkillUsage(
+        context,
+        'zh'
+      );
 
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('技能冲突');

@@ -10,7 +10,8 @@ import {
 
 const logger = createLogger('passive-skill-service');
 
-const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
+const getT = (language?: LanguageCode) =>
+  createTranslator(language || defaultLanguage);
 
 export interface SkillEffect {
   skillUseId: string;

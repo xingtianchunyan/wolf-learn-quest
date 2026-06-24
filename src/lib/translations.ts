@@ -93,6 +93,8 @@ export function getTranslation(
  * 直接传入当前语言代码即可获得 t 能力。
  */
 export function createTranslator(language: LanguageCode) {
-  return (key: TranslationKey, vars?: Record<string, string | number>): string =>
-    getTranslation(language, key, vars);
+  return (
+    key: TranslationKey,
+    vars?: Record<string, string | number>
+  ): string => getTranslation(language, key, vars);
 }

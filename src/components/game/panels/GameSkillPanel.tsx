@@ -82,11 +82,14 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     const translated = t(key);
     return translated !== key
       ? translated
-      : roleDesign?.skill_description || skillConfig?.description || englishName;
+      : roleDesign?.skill_description ||
+          skillConfig?.description ||
+          englishName;
   };
 
   const getEffectTypeLabel = (effectType: string) => {
-    const key = `gameComponent.gameSkillPanel.effectTypes.${effectType}` as never;
+    const key =
+      `gameComponent.gameSkillPanel.effectTypes.${effectType}` as never;
     const translated = t(key);
     return translated !== key ? translated : effectType;
   };

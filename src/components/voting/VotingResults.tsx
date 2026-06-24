@@ -237,9 +237,7 @@ export const VotingResults: React.FC<VotingResultsProps> = ({
                             variant='outline'
                             className='text-orange-400 border-orange-400'
                           >
-                            {getProcessingStatusLabel(
-                              result.processing_status
-                            )}
+                            {getProcessingStatusLabel(result.processing_status)}
                           </Badge>
                         )}
                       </div>

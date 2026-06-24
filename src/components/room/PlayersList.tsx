@@ -167,7 +167,9 @@ const PlayersList: React.FC<PlayersListProps> = ({
                 >
                   {allPlayersSelectedRoles
                     ? t('gameComponent.room.playersList.opened')
-                    : t('gameComponent.room.playersList.waitingForRoleSelection')}
+                    : t(
+                        'gameComponent.room.playersList.waitingForRoleSelection'
+                      )}
                 </span>
               </div>
             </div>

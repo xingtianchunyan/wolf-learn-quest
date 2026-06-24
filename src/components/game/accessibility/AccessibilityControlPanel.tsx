@@ -305,21 +305,15 @@ export const AccessibilityControlPanel: React.FC<
                 </h3>
                 <div className='grid gap-2 text-sm'>
                   <div className='flex justify-between'>
-                    <span>
-                      {t('gameComponent.accessibility.skipToMain')}
-                    </span>
+                    <span>{t('gameComponent.accessibility.skipToMain')}</span>
                     <Badge variant='outline'>Ctrl + 1</Badge>
                   </div>
                   <div className='flex justify-between'>
-                    <span>
-                      {t('gameComponent.accessibility.skipToNav')}
-                    </span>
+                    <span>{t('gameComponent.accessibility.skipToNav')}</span>
                     <Badge variant='outline'>Ctrl + 2</Badge>
                   </div>
                   <div className='flex justify-between'>
-                    <span>
-                      {t('gameComponent.accessibility.showHelp')}
-                    </span>
+                    <span>{t('gameComponent.accessibility.showHelp')}</span>
                     <Badge variant='outline'>Ctrl + /</Badge>
                   </div>
                 </div>

@@ -144,7 +144,8 @@ export const useQuestionBankDialog = ({
         explanation: q.explanation,
         difficulty: q.difficulty || 1,
         source_file:
-          q.generated_questions?.file_name || t('judge.questionBank.source.manual'),
+          q.generated_questions?.file_name ||
+          t('judge.questionBank.source.manual'),
         category:
           q.category || (q.generated_questions_id ? '生成题目' : '手动编辑'),
         generated_questions_id: q.generated_questions_id,
@@ -185,8 +186,7 @@ export const useQuestionBankDialog = ({
       toast({
         title: t('judge.questionBank.toast.fetchError.title'),
         description: t('judge.questionBank.toast.fetchError.description', {
-          message:
-            error instanceof Error ? error.message : t('common.unknown'),
+          message: error instanceof Error ? error.message : t('common.unknown'),
         }),
         variant: 'destructive',
       });
@@ -317,8 +317,7 @@ export const useQuestionBankDialog = ({
       toast({
         title: t('judge.questionBank.toast.addError.title'),
         description: t('judge.questionBank.toast.addError.description', {
-          message:
-            error instanceof Error ? error.message : t('common.unknown'),
+          message: error instanceof Error ? error.message : t('common.unknown'),
         }),
         variant: 'destructive',
       });

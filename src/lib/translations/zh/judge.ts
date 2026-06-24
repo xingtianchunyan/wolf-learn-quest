@@ -116,8 +116,7 @@ export const judge = {
       usageLogicDesc:
         '上传文件 → 选择已上传文件 → AI预处理 → 选择已预处理文件 → AI生成题目 → 打开题库',
       fileLimits: '文件限制',
-      formats:
-        '支持格式：TXT、DOC、DOCX、XLS、XLSX、PPTX、MD',
+      formats: '支持格式：TXT、DOC、DOCX、XLS、XLSX、PPTX、MD',
       maxSize: '文件大小：最大10MB',
       contentRequirement: '内容要求：包含学习材料或知识点',
       aiModel: 'AI模型',
@@ -134,7 +133,8 @@ export const judge = {
       fetchPreprocessed: '获取预处理文件列表失败: {message}',
       fetchUploadedGeneric: '获取文件列表时发生错误',
       fetchPreprocessedGeneric: '获取预处理文件列表时发生错误',
-      invalidFileType: '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件',
+      invalidFileType:
+        '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件',
       invalidFileTypeTitle: '文件格式不支持',
       fileTooLarge: '文件大小不能超过10MB',
       fileTooLargeTitle: '文件过大',
@@ -345,8 +345,7 @@ export const judge = {
       hitRate: '命中率',
       lastCleanup: '上次清理',
     },
-    judgeOnlyAlert:
-      '部分管理功能仅对游戏法官开放。如需完整权限，请联系法官。',
+    judgeOnlyAlert: '部分管理功能仅对游戏法官开放。如需完整权限，请联系法官。',
     monitor: {
       placeholder: '技能系统监控面板（待实现）',
       gameStateLabel: 'GameState: {id}',

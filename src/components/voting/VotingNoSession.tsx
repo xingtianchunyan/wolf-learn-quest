@@ -44,7 +44,9 @@ export const VotingNoSession: React.FC<VotingNoSessionProps> = ({
     <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader className='pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center justify-between'>
-          <div className='flex items-center'>{t('voting.no_session.title')}</div>
+          <div className='flex items-center'>
+            {t('voting.no_session.title')}
+          </div>
           <Badge
             variant='outline'
             className='text-yellow-400 border-yellow-400'

@@ -73,7 +73,8 @@ export class EnhancedSkillServiceError extends Error {
 
 const logger = createLogger('enhanced-skill-service');
 
-const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
+const getT = (language?: LanguageCode) =>
+  createTranslator(language || defaultLanguage);
 
 export class EnhancedSkillService {
   private static readonly PHASE_NAMES = [
@@ -804,7 +805,8 @@ export class EnhancedSkillService {
       return {
         canUse: false,
         suggestion:
-          validation.reason || t('hook.service.enhancedSkill.skill_unavailable'),
+          validation.reason ||
+          t('hook.service.enhancedSkill.skill_unavailable'),
         priority: 'low',
         timing: t('hook.service.enhancedSkill.cannot_use'),
       };

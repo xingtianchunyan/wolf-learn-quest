@@ -9,7 +9,8 @@ import {
 
 const logger = createLogger('analytics-service');
 
-const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
+const getT = (language?: LanguageCode) =>
+  createTranslator(language || defaultLanguage);
 
 export interface UserAction {
   userId: string;
@@ -275,8 +276,8 @@ class AnalyticsService {
             type: 'high_failure_rate',
             severity: 'high',
             description: t('hook.service.analytics.high_failure_rate', {
-            rate: (failureRate * 100).toFixed(1),
-          }),
+              rate: (failureRate * 100).toFixed(1),
+            }),
             affectedUsers: Array.from(
               new Set(failedSkills.map(s => s.user_id))
             ),
@@ -301,8 +302,8 @@ class AnalyticsService {
             type: 'low_activity',
             severity: 'medium',
             description: t('hook.service.analytics.low_activity', {
-            count: inactiveUsers.length,
-          }),
+              count: inactiveUsers.length,
+            }),
             affectedUsers: inactiveUsers,
           });
         }

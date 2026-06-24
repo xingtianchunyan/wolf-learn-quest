@@ -319,7 +319,9 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
   const getPriorityBadge = (priority: SmartHint['priority']) => {
     switch (priority) {
       case 'high':
-        return <Badge variant='destructive'>{getPriorityLabel(priority)}</Badge>;
+        return (
+          <Badge variant='destructive'>{getPriorityLabel(priority)}</Badge>
+        );
       case 'medium':
         return <Badge variant='default'>{getPriorityLabel(priority)}</Badge>;
       case 'low':

@@ -70,9 +70,7 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
               <p className='text-sm text-gray-400'>
                 {t('gameComponent.room.sidebar.judgeStatus')}
               </p>
-              <p>
-                {judgeName || t('gameComponent.room.sidebar.waitingJudge')}
-              </p>
+              <p>{judgeName || t('gameComponent.room.sidebar.waitingJudge')}</p>
             </div>
             <div>
               <p className='text-sm text-gray-400'>

@@ -99,7 +99,9 @@ export const VotingActions: React.FC<VotingActionsProps> = ({
                 data-testid='confirm-vote'
                 className='bg-werewolf-purple hover:bg-werewolf-purple/80 disabled:opacity-50'
               >
-                {loading ? t('common.voting') : t('voting.actions.confirm_vote')}
+                {loading
+                  ? t('common.voting')
+                  : t('voting.actions.confirm_vote')}
               </Button>
               <Button
                 onClick={() => onVote(undefined)}

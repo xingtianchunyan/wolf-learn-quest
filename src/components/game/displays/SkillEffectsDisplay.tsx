@@ -61,7 +61,9 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   );
 
   const _getPlayerName = (userId: string) => {
-    return players.find(p => p.userId === userId)?.name || t('common.unknown_player');
+    return (
+      players.find(p => p.userId === userId)?.name || t('common.unknown_player')
+    );
   };
 
   const _getEffectColor = (effectType: string) => {

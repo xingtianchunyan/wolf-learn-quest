@@ -80,7 +80,9 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
                     </label>
                   </div>
                   <span className='text-xs text-gray-400'>
-                    {t('judge.questionBank.source.count', { count: source.count })}
+                    {t('judge.questionBank.source.count', {
+                      count: source.count,
+                    })}
                   </span>
                 </div>
                 <Button

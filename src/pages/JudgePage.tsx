@@ -39,7 +39,9 @@ const JudgePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>{t('page.judge.login_required')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.judge.login_required')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -51,7 +53,9 @@ const JudgePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>{t('page.judge.room_id_missing')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.judge.room_id_missing')}
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -65,7 +69,9 @@ const JudgePage = () => {
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            <p className='text-gray-400 mb-4'>{t('page.judge.checking_permissions')}</p>
+            <p className='text-gray-400 mb-4'>
+              {t('page.judge.checking_permissions')}
+            </p>
           </div>
         </div>
       </PageLayout>

@@ -243,7 +243,9 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
       {showDyingStatusOnly && dyingPlayers.length > 0 && (
         <div className='flex items-center gap-2 text-red-400 text-sm font-medium'>
           <AlertTriangle className='h-4 w-4' />
-          <span>{t('gameComponent.playerStatusManager.dyingPlayersTitle')}</span>
+          <span>
+            {t('gameComponent.playerStatusManager.dyingPlayersTitle')}
+          </span>
         </div>
       )}
 

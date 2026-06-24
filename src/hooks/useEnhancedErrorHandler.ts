@@ -125,15 +125,18 @@ export const useEnhancedErrorHandler = () => {
         switch (error.type) {
           case UnifiedErrorType.NETWORK:
             title = t('hook.enhanced.network_error_title');
-            description = customMessage || t('hook.enhanced.network_error_desc');
+            description =
+              customMessage || t('hook.enhanced.network_error_desc');
             break;
           case UnifiedErrorType.PERMISSION:
             title = t('hook.enhanced.permission_denied_title');
-            description = customMessage || t('hook.enhanced.permission_denied_desc');
+            description =
+              customMessage || t('hook.enhanced.permission_denied_desc');
             break;
           case UnifiedErrorType.VALIDATION:
             title = t('hook.enhanced.validation_error_title');
-            description = customMessage || t('hook.enhanced.validation_error_desc');
+            description =
+              customMessage || t('hook.enhanced.validation_error_desc');
             break;
           case UnifiedErrorType.SKILL:
             title = t('hook.enhanced.skill_error_title');
@@ -323,7 +326,9 @@ export const useEnhancedErrorHandler = () => {
         // 所有重试都失败了
         await handleErrorEnhanced(lastError, {
           category,
-          customMessage: t('hook.enhanced.retry_exhausted', { count: maxRetries }),
+          customMessage: t('hook.enhanced.retry_exhausted', {
+            count: maxRetries,
+          }),
         });
 
         return null;

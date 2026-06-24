@@ -119,7 +119,9 @@ const RoomListTable: React.FC<RoomListTableProps> = ({
                   </TableCell>
                   <TableCell className='text-center'>
                     {room.hasAI ? (
-                      <span className='text-blue-400'>{t('page.roomList.ai_judge')}</span>
+                      <span className='text-blue-400'>
+                        {t('page.roomList.ai_judge')}
+                      </span>
                     ) : room.judgeUserId ? (
                       <span className='text-green-400'>
                         {t('page.roomList.has_judge')}

@@ -155,7 +155,8 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       setHasQuestionsInRoom(false);
       toast({
         title: t('gameComponent.question.fetchFailedTitle'),
-        description: error.message || t('gameComponent.question.fetchFailedDesc'),
+        description:
+          error.message || t('gameComponent.question.fetchFailedDesc'),
         variant: 'destructive',
       });
     } finally {

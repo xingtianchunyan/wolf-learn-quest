@@ -164,8 +164,7 @@ export const gameComponent = {
     normalState: '正常状态',
     canCounter: '可以进行反击',
     triggerDying: '触发濒死',
-    hunterDyingActive:
-      '猎人濒死状态已激活，请在{seconds}秒内选择反击目标',
+    hunterDyingActive: '猎人濒死状态已激活，请在{seconds}秒内选择反击目标',
     passiveSkillsTitle: '被动技能说明',
     passiveSkillDemonImmune: '恶魔免疫狼人攻击（自动触发）',
     passiveSkillMultiProtect: '多重保护导致目标淘汰（自动检测）',
@@ -323,8 +322,7 @@ export const gameComponent = {
     },
     timeWarning: {
       title: '时间紧迫',
-      description:
-        '距离{phase}阶段结束还有{seconds}秒，请尽快完成操作。',
+      description: '距离{phase}阶段结束还有{seconds}秒，请尽快完成操作。',
     },
     votingReminder: {
       title: '投票提醒',
@@ -337,13 +335,11 @@ export const gameComponent = {
     },
     beginnerNightPhase: {
       title: '夜晚阶段说明',
-      description:
-        '夜晚阶段各角色发动技能。根据你的角色执行相应的夜间行动。',
+      description: '夜晚阶段各角色发动技能。根据你的角色执行相应的夜间行动。',
     },
     gameBalanceWarning: {
       title: '游戏平衡警告',
-      description:
-        '狼人数量仍然较多，好人阵营需要加快找出狼人的步伐。',
+      description: '狼人数量仍然较多，好人阵营需要加快找出狼人的步伐。',
     },
     skillCooldown: {
       title: '技能冷却中',

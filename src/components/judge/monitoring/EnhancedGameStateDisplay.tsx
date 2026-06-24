@@ -189,8 +189,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
               {gameState.status === 'active' &&
                 gameState.currentPhase === 4 &&
                 t('game.phase.dawn_quiz')}
-              {gameState.status === 'ended' &&
-                t('judge.gameState.hint.ended')}
+              {gameState.status === 'ended' && t('judge.gameState.hint.ended')}
             </div>
           )}
         </div>

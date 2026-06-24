@@ -111,9 +111,7 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
 
           <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-2'>
-              <Label htmlFor='day-duration'>
-                {t('game.phase.day')}
-              </Label>
+              <Label htmlFor='day-duration'>{t('game.phase.day')}</Label>
               <Input
                 id='day-duration'
                 type='number'
@@ -141,9 +139,7 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='night-duration'>
-                {t('game.phase.night')}
-              </Label>
+              <Label htmlFor='night-duration'>{t('game.phase.night')}</Label>
               <Input
                 id='night-duration'
                 type='number'
@@ -201,9 +197,7 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='dawn-duration'>
-                {t('game.phase.dawn')}
-              </Label>
+              <Label htmlFor='dawn-duration'>{t('game.phase.dawn')}</Label>
               <Input
                 id='dawn-duration'
                 type='number'
@@ -237,9 +231,7 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
           className='w-full bg-werewolf-purple hover:bg-werewolf-light'
         >
           <Save className='h-4 w-4 mr-2' />
-          {saving
-            ? t('common.saving')
-            : t('gameComponent.settings.save')}
+          {saving ? t('common.saving') : t('gameComponent.settings.save')}
         </Button>
 
         {/* Info */}
