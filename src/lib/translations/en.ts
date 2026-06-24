@@ -137,7 +137,7 @@ export const en = {
   factions_title: 'Camp Description',
   good_guys_camp: 'Good Guys Camp',
   werewolf_camp: 'Werewolf Camp',
-  villagers: 'Villagers',
+  villager: 'Villager',
   hunter: 'Hunter',
   witch: 'Witch',
   seer: 'Seer (Prophet)',

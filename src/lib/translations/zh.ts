@@ -131,7 +131,7 @@ export const zh = {
   factions_title: '阵营说明',
   good_guys_camp: '好人阵营',
   werewolf_camp: '狼人阵营',
-  villagers: '村民',
+  villager: '村民',
   hunter: '猎人',
   witch: '女巫',
   seer: '预言家',
