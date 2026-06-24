@@ -61,16 +61,14 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
     <div className='fixed inset-0 z-50 pointer-events-none'>
       <div
         ref={dialogRef}
-        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl'
+        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl w-[95vw] max-w-[1000px] h-auto max-h-[90vh] lg:h-[700px] lg:max-h-[90vh] flex flex-col overflow-hidden'
         style={{
           left: `${position.x + 150}px`,
           top: `${position.y + 100}px`,
-          width: '1000px',
-          height: '700px',
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
+        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30 flex-shrink-0'>
           <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
             {t('judge.questionBank.dialog.title')}
           </h2>
@@ -82,13 +80,13 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
           </button>
         </div>
 
-        <div className='p-4 h-[calc(100%-80px)]'>
+        <div className='p-4 flex-1 min-h-0 overflow-hidden'>
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className='h-full'
+            className='h-full flex flex-col'
           >
-            <TabsList className='grid w-full grid-cols-3 bg-werewolf-dark/40'>
+            <TabsList className='grid w-full grid-cols-3 bg-werewolf-dark/40 flex-shrink-0'>
               <TabsTrigger
                 value='generated'
                 className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
@@ -109,8 +107,11 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value='generated' className='h-[calc(100%-60px)] mt-4'>
-              <div className='grid grid-cols-2 gap-4 h-full'>
+            <TabsContent
+              value='generated'
+              className='flex-1 min-h-0 mt-4 overflow-auto'
+            >
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 h-full min-h-0'>
                 <QuestionSourceList
                   questionSources={questionSources}
                   selectedSources={selectedSources}
@@ -130,7 +131,10 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               </div>
             </TabsContent>
 
-            <TabsContent value='manual' className='h-[calc(100%-60px)] mt-4'>
+            <TabsContent
+              value='manual'
+              className='flex-1 min-h-0 mt-4 overflow-auto'
+            >
               <ManualQuestionEditor
                 manualQuestion={manualQuestion}
                 onUpdateQuestion={updateManualQuestion}
@@ -138,7 +142,10 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value='order' className='h-[calc(100%-60px)] mt-4'>
+            <TabsContent
+              value='order'
+              className='flex-1 min-h-0 mt-4 overflow-auto'
+            >
               <QuestionOrderEditor
                 selectedQuestions={selectedQuestions}
                 onDragEnd={handleDragEnd}

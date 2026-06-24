@@ -52,10 +52,18 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
+      if (isDragging && dialogRef.current) {
+        const rect = dialogRef.current.getBoundingClientRect();
+        const rawX = e.clientX - dragStart.x;
+        const rawY = e.clientY - dragStart.y;
+        // 限制弹窗不拖出视口（考虑 left/top 的初始偏移量）
+        const minX = -100;
+        const minY = -50;
+        const maxX = window.innerWidth - rect.width - 100;
+        const maxY = window.innerHeight - rect.height - 50;
         setPosition({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
+          x: Math.max(minX, Math.min(rawX, maxX)),
+          y: Math.max(minY, Math.min(rawY, maxY)),
         });
       }
     };
@@ -120,16 +128,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
     <div className='fixed inset-0 z-50 pointer-events-none'>
       <div
         ref={dialogRef}
-        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl'
+        className='absolute pointer-events-auto bg-werewolf-card border-werewolf-purple/30 border rounded-lg shadow-xl w-[95vw] max-w-[900px] h-auto max-h-[90vh] lg:h-[600px] lg:max-h-[90vh] flex flex-col overflow-hidden'
         style={{
           left: `${position.x + 100}px`,
           top: `${position.y + 50}px`,
-          width: '900px',
-          height: '600px',
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
+        <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30 flex-shrink-0'>
           <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
             {t('judge.preparation.title')}
           </h2>
@@ -141,9 +147,9 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           </button>
         </div>
 
-        <div className='grid grid-cols-12 gap-4 p-4 h-[calc(100%-80px)]'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 overflow-auto flex-1 min-h-0'>
           {/* 左侧 - 房间信息和开始游戏按钮 */}
-          <div className='col-span-4 flex flex-col gap-4'>
+          <div className='lg:col-span-4 flex flex-col gap-4'>
             {/* 房间信息 */}
             <div className='flex-shrink-0'>
               <RoomInfoCard roomId={roomId} />
@@ -173,14 +179,14 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
           </div>
 
           {/* 右侧 - 题库和玩家状态 */}
-          <div className='col-span-8 flex flex-col gap-4'>
+          <div className='lg:col-span-8 flex flex-col gap-4 min-h-0'>
             {/* 题库管理 */}
-            <div className='flex-1'>
+            <div className='flex-1 min-h-0'>
               <QuestionBankPanel className='h-full' roomId={roomId} />
             </div>
 
             {/* 玩家状态 */}
-            <div className='flex-1'>
+            <div className='flex-1 min-h-0'>
               <PlayerStatusPanel roomId={roomId} className='h-full' />
             </div>
           </div>

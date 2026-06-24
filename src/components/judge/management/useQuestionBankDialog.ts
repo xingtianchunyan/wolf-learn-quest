@@ -64,10 +64,18 @@ export const useQuestionBankDialog = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
+      if (isDragging && dialogRef.current) {
+        const rect = dialogRef.current.getBoundingClientRect();
+        const rawX = e.clientX - dragStart.x;
+        const rawY = e.clientY - dragStart.y;
+        // 限制弹窗不拖出视口（考虑 left/top 的初始偏移量）
+        const minX = -150;
+        const minY = -100;
+        const maxX = window.innerWidth - rect.width - 150;
+        const maxY = window.innerHeight - rect.height - 100;
         setPosition({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
+          x: Math.max(minX, Math.min(rawX, maxX)),
+          y: Math.max(minY, Math.min(rawY, maxY)),
         });
       }
     };
