@@ -77,20 +77,20 @@ export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
             />
           </filter>
           <radialGradient id={gradientId} cx='50%' cy='50%' r='70%'>
-            <stop offset='0%' stopColor='#1a1a2e' stopOpacity='0.75' />
-            <stop offset='55%' stopColor='#0f172a' stopOpacity='0.55' />
-            <stop offset='100%' stopColor='#0f172a' stopOpacity='0.3' />
+            <stop offset='0%' stopColor='#52525e' stopOpacity='0.92' />
+            <stop offset='55%' stopColor='#3f3f4a' stopOpacity='0.86' />
+            <stop offset='100%' stopColor='#2a2a35' stopOpacity='0.78' />
           </radialGradient>
         </defs>
       </svg>
 
-      {/* 雾层主体：径向渐变 + 噪点位移 + 背景模糊 */}
+      {/* 雾层主体：灰色径向渐变 + 噪点位移 + 背景模糊 */}
       <div
         className={`absolute inset-0 backdrop-blur-[2px] ${
           isBreathing ? 'animate-mist-breathe' : ''
         }`}
         style={{
-          background: `radial-gradient(circle at center, rgba(26,26,46,0.75) 0%, rgba(15,23,42,0.55) 55%, rgba(15,23,42,0.3) 100%)`,
+          background: `radial-gradient(circle at center, rgba(82,82,94,0.92) 0%, rgba(63,63,74,0.86) 55%, rgba(42,42,53,0.78) 100%)`,
           filter: `url(#${filterId})`,
           animationDelay: `${delay}s`,
         }}

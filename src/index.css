@@ -99,15 +99,15 @@
   transform: rotateY(180deg);
 }
 
-/* 角色卡片团雾呼吸效果：opacity 0.6 ~ 0.9，scale 1.0 ~ 1.03 */
+/* 角色卡片团雾呼吸效果：灰色雾层 opacity 0.85 ~ 0.95，scale 1.0 ~ 1.03 */
 @keyframes mist-breathe {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.85;
     transform: scale(1);
   }
   50% {
-    opacity: 0.9;
+    opacity: 0.95;
     transform: scale(1.03);
   }
 }
@@ -121,7 +121,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-mist-breathe {
     animation: none;
-    opacity: 0.75;
+    opacity: 0.9;
     transform: scale(1);
   }
 }
