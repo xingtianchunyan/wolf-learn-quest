@@ -209,6 +209,7 @@ export const zh = {
   type_protect_or_attack: '保护或攻击',
   type_view: '查看',
   effect_none: '无',
+  effect_sleep: '村民在夜晚安全睡觉，无特殊能力',
   effect_dying_shot: '被淘汰前指定一名玩家进行攻击',
   effect_magic_potion: '指定一名玩家进行保护或攻击',
   effect_prophecy: '指定查看一名玩家的阵营信息',

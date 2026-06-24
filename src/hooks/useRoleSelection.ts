@@ -208,3 +208,5 @@ export const useRoleSelection = (
     clearAllRoleSelections,
   };
 };
+
+export type RoleSelectionItem = RoleSelection;

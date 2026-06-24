@@ -53,10 +53,26 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   };
 
   const getSkillUsageText = () => {
-    if (roleDesign?.skill_usage === -1) {
-      return t('gameComponent.room.roleCard.unlimited');
+    // 优先使用角色设计数据，缺失时回退到技能配置
+    const config = getSkillConfig(roleDesign?.role_name);
+    const usage = roleDesign?.skill_usage;
+
+    if (usage === -1 || usage === null || usage === undefined) {
+      // 角色设计的 -1 表示无限次；同时若配置中 usageLimit 为 'unlimited' 也视为无限
+      if (config?.usageLimit === 'unlimited' || usage === -1) {
+        return t('gameComponent.room.roleCard.unlimited');
+      }
     }
-    return roleDesign?.skill_usage || 0;
+
+    if (typeof usage === 'number' && usage > 0) {
+      return String(usage);
+    }
+
+    if (typeof config?.usageLimit === 'number') {
+      return String(config.usageLimit);
+    }
+
+    return t('gameComponent.room.roleCard.unlimited');
   };
 
   const getSkillTypeText = () => {
@@ -66,12 +82,17 @@ export const RoleCard: React.FC<RoleCardProps> = ({
 
     const translateType = (value: unknown): string => {
       if (typeof value !== 'string') return String(value);
-      const key = `game.skill.type.${value}` as never;
+      // 数据库中的 'check' 对应中文的“查验”
+      const normalizedValue = value === 'check' ? 'view' : value;
+      const key = `game.skill.type.${normalizedValue}` as never;
       const translated = t(key);
       return translated !== key ? translated : value;
     };
 
     if (Array.isArray(roleDesign.skill_type)) {
+      if (roleDesign.skill_type.length === 0) {
+        return t('gameComponent.room.roleCard.none');
+      }
       return roleDesign.skill_type.map(translateType).join(', ');
     }
 
@@ -84,6 +105,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
 
   const getSkillConfig = (roleName?: string) => {
     if (!roleName) return null;
+    // 处理 villager_1、werewolf_2 等实例名，归一化到基础角色名
     const baseName = roleName.replace(/_\d+$/, '');
     const skillId = ROLE_SKILL_MAPPING[baseName];
     return skillId ? SKILL_MAPPING_CONFIG[skillId] : null;

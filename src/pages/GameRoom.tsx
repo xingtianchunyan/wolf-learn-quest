@@ -107,6 +107,7 @@ const GameRoom = () => {
     allPlayersSelectedRoles,
     clearAllRoleSelections,
     getCurrentPlayerSelection,
+    roleSelections,
   } = useRoleSelection(
     roomData?.id || '',
     currentUserId,
@@ -117,7 +118,21 @@ const GameRoom = () => {
   // 获取当前玩家是否已选择角色
   const currentPlayerHasSelectedRole = !!getCurrentPlayerSelection();
 
-  const allReady = players.every(player => player.isReady);
+  // 区分人类玩家与 AI 玩家（AI 玩家无 user_id，无法通过 role_selections 选角）
+  const humanPlayers = players.filter(player => !player.isAI);
+  const aiPlayers = players.filter(player => player.isAI);
+  const humanPlayerIds = new Set(
+    humanPlayers.map(player => player.userId).filter(Boolean)
+  );
+  const selectedHumanCount = roleSelections.filter(selection =>
+    humanPlayerIds.has(selection.user_id)
+  ).length;
+  const allHumanPlayersSelectedRoles =
+    humanPlayers.length > 0 && selectedHumanCount >= humanPlayers.length;
+
+  // 所有真实玩家已准备，AI 玩家会在真实玩家准备时自动准备
+  const allReady =
+    humanPlayers.length > 0 && humanPlayers.every(player => player.isReady);
 
   // Add room cleanup functionality
   useRoomCleanup();
@@ -272,7 +287,8 @@ const GameRoom = () => {
       return;
     }
 
-    if (!allPlayersSelectedRoles()) {
+    // AI 玩家无法通过 role_selections 选角，因此只要求所有真实人类玩家已选角
+    if (!allHumanPlayersSelectedRoles) {
       toast({
         title: t('page.gameRoom.cannot_ready'),
         description: t('page.gameRoom.waiting_for_all_roles'),
@@ -294,26 +310,36 @@ const GameRoom = () => {
     const newReadyState = !isReady;
 
     try {
+      // 同步更新当前玩家准备状态
       const success = await updatePlayerReady(
         currentPlayerRecord.id,
         newReadyState
       );
 
-      if (success) {
-        setIsReady(newReadyState);
-        toast({
-          title: newReadyState ? t('ready') : t('not_ready'),
-          description: newReadyState
-            ? t('you_are_ready')
-            : t('you_are_not_ready'),
-        });
-      } else {
+      if (!success) {
         toast({
           title: t('error'),
           description: t('page.gameRoom.failed_to_update_status'),
           variant: 'destructive',
         });
+        return;
       }
+
+      setIsReady(newReadyState);
+
+      // 当真实玩家准备时，自动将 AI 玩家设为已准备，避免 AI 无法准备导致游戏无法开始
+      if (newReadyState && aiPlayers.length > 0) {
+        await Promise.all(
+          aiPlayers.map(aiPlayer => updatePlayerReady(aiPlayer.id, true))
+        );
+      }
+
+      toast({
+        title: newReadyState ? t('ready') : t('not_ready'),
+        description: newReadyState
+          ? t('you_are_ready')
+          : t('you_are_not_ready'),
+      });
     } catch (error) {
       console.error('Error updating ready status:', error);
       toast({
@@ -420,7 +446,7 @@ const GameRoom = () => {
               allReady={allReady}
               selectedCharacter={selectedCharacter}
               playersLoading={playersLoading}
-              allPlayersSelectedRoles={allPlayersSelectedRoles()}
+              allPlayersSelectedRoles={allHumanPlayersSelectedRoles}
               canSelectRoles={canSelectRoles()}
               currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
               t={t}

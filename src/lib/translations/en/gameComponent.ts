@@ -522,6 +522,7 @@ export const gameComponent = {
       skillEffect: 'Skill Effect',
       skillUsage: 'Skill Usage',
       skillType: 'Skill Type',
+      unlimited: 'Unlimited',
       noSkill: 'No Skill',
       noDescription: 'No detailed description',
       none: 'None',

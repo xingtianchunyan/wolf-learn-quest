@@ -502,6 +502,7 @@ export const gameComponent = {
       skillEffect: '技能效果',
       skillUsage: '使用次数',
       skillType: '技能类型',
+      unlimited: '不限次数',
       noSkill: '无技能',
       noDescription: '暂无详细说明',
       none: '无',

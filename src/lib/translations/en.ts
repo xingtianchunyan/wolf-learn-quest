@@ -221,6 +221,7 @@ export const en = {
   type_protect_or_attack: 'Protect or Attack',
   type_view: 'View',
   effect_none: 'None',
+  effect_sleep: 'The villager sleeps safely at night with no special ability',
   effect_dying_shot: 'Designate a player to attack before being eliminated',
   effect_magic_potion: 'Designate a player to protect or attack',
   effect_prophecy: "Specify to view one player's camp information",
