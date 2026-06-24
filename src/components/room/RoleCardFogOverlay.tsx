@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { HelpCircle } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoleCardFogOverlayProps {
   /** 是否显示雾层 */
@@ -11,17 +13,19 @@ interface RoleCardFogOverlayProps {
 
 /**
  * 角色卡片团雾覆盖层
- * - 使用 SVG feTurbulence + feDisplacementMap 生成真实雾气颗粒
- * - 径向渐变实现中心厚、边缘薄的体积感
- * - 呼吸动画：opacity 波动 + feTurbulence baseFrequency 漂移 + 轻微 scale
- * - 支持 prefers-reduced-motion（CSS 层停止呼吸，保留静态雾）
+ * - 使用深灰色完全不透明背景完全遮盖底层角色卡片
+ * - SVG feTurbulence 仅作为极淡的纹理叠加，避免脏污感
+ * - 呼吸动画通过 scale + brightness 实现（不透明层无法使用 opacity 波动）
+ * - 支持 prefers-reduced-motion
  */
 export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
   isActive,
   isBreathing = false,
   seed,
 }) => {
-  const { filterId, gradientId, delay } = useMemo(() => {
+  const { t } = useLanguage();
+
+  const { filterId, delay } = useMemo(() => {
     let hash = 0;
     const base = seed || 'default';
     for (let i = 0; i < base.length; i++) {
@@ -31,8 +35,7 @@ export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
     }
     const positiveHash = Math.abs(hash);
     return {
-      filterId: `fog-filter-${positiveHash}`,
-      gradientId: `fog-gradient-${positiveHash}`,
+      filterId: `fog-noise-${positiveHash}`,
       delay: (positiveHash % 3000) / 1000,
     };
   }, [seed]);
@@ -44,14 +47,14 @@ export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
       className='absolute inset-0 z-20 pointer-events-none rounded-lg overflow-hidden'
       aria-hidden='true'
     >
-      {/* SVG 滤镜定义 */}
+      {/* SVG 噪点纹理定义（极淡，仅增加雾的颗粒感，不做位移扭曲） */}
       <svg className='absolute w-0 h-0'>
         <defs>
-          <filter id={filterId} x='-20%' y='-20%' width='140%' height='140%'>
+          <filter id={filterId} x='0' y='0' width='100%' height='100%'>
             <feTurbulence
               type='fractalNoise'
-              baseFrequency='0.01'
-              numOctaves='4'
+              baseFrequency='0.015'
+              numOctaves='3'
               seed={
                 Math.abs(
                   seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
@@ -61,40 +64,50 @@ export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
             >
               <animate
                 attributeName='baseFrequency'
-                values='0.01;0.015;0.012;0.018;0.01'
+                values='0.015;0.018;0.015'
                 dur='6s'
                 repeatCount='indefinite'
                 calcMode='spline'
-                keySplines='0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1'
+                keySplines='0.4 0 0.2 1;0.4 0 0.2 1'
               />
             </feTurbulence>
-            <feDisplacementMap
-              in='SourceGraphic'
-              in2='noise'
-              scale='18'
-              xChannelSelector='R'
-              yChannelSelector='G'
+            <feColorMatrix
+              type='matrix'
+              values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.08 0'
+              in='noise'
+              result='softNoise'
             />
+            <feComposite in='softNoise' in2='SourceGraphic' operator='over' />
           </filter>
-          <radialGradient id={gradientId} cx='50%' cy='50%' r='70%'>
-            <stop offset='0%' stopColor='#52525e' stopOpacity='0.92' />
-            <stop offset='55%' stopColor='#3f3f4a' stopOpacity='0.86' />
-            <stop offset='100%' stopColor='#2a2a35' stopOpacity='0.78' />
-          </radialGradient>
         </defs>
       </svg>
 
-      {/* 雾层主体：灰色径向渐变 + 噪点位移 + 背景模糊 */}
+      {/* 雾层主体：深灰色完全不透明径向渐变 */}
       <div
-        className={`absolute inset-0 backdrop-blur-[2px] ${
+        className={`absolute inset-0 ${
           isBreathing ? 'animate-mist-breathe' : ''
         }`}
         style={{
-          background: `radial-gradient(circle at center, rgba(82,82,94,0.92) 0%, rgba(63,63,74,0.86) 55%, rgba(42,42,53,0.78) 100%)`,
+          background: `radial-gradient(circle at center, #222228 0%, #1a1a1f 55%, #141418 100%)`,
           filter: `url(#${filterId})`,
           animationDelay: `${delay}s`,
         }}
       />
+
+      {/* 迷雾表面的提示图标与文字 */}
+      <div className='absolute inset-0 flex flex-col items-center justify-center z-10'>
+        <HelpCircle className='w-14 h-14 text-gray-500 mb-3' />
+        <p className='text-gray-400 text-sm font-medium text-center px-4'>
+          {isBreathing
+            ? t('gameComponent.room.roleCard.takenByOther')
+            : t('gameComponent.room.roleCard.clickToDraw')}
+        </p>
+        {isBreathing && (
+          <p className='text-gray-500 text-xs mt-2'>
+            {t('gameComponent.room.roleCard.waitingForReveal')}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
