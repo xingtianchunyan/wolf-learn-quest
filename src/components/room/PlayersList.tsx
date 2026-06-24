@@ -82,13 +82,15 @@ const PlayersList: React.FC<PlayersListProps> = ({
 
   const getReadyButtonText = () => {
     if (!canSelectRoles) {
-      return `等待人数达到${maxPlayers}人`;
+      return t('gameComponent.room.playersList.waitingForMaxPlayers', {
+        maxPlayers,
+      });
     }
     if (!allPlayersSelectedRoles) {
-      return '等待所有玩家选择角色';
+      return t('gameComponent.room.playersList.waitingAllSelected');
     }
     if (!isReady && !currentPlayerHasSelectedRole) {
-      return '请先选择角色';
+      return t('gameComponent.room.playersList.selectRoleFirst');
     }
     return isReady ? t('cancel_ready') : t('ready');
   };
@@ -143,17 +145,19 @@ const PlayersList: React.FC<PlayersListProps> = ({
           <div className='p-2 bg-werewolf-dark/20 rounded'>
             <div className='text-xs text-gray-400 space-y-1'>
               <div className='flex justify-between'>
-                <span>角色选择:</span>
+                <span>{t('gameComponent.room.playersList.roleSelection')}</span>
                 <span
                   className={
                     canSelectRoles ? 'text-green-400' : 'text-yellow-400'
                   }
                 >
-                  {canSelectRoles ? '已开放' : '等待人数'}
+                  {canSelectRoles
+                    ? t('gameComponent.room.playersList.opened')
+                    : t('gameComponent.room.playersList.waitingForPlayers')}
                 </span>
               </div>
               <div className='flex justify-between'>
-                <span>准备功能:</span>
+                <span>{t('gameComponent.room.playersList.readyFunction')}</span>
                 <span
                   className={
                     allPlayersSelectedRoles
@@ -161,7 +165,9 @@ const PlayersList: React.FC<PlayersListProps> = ({
                       : 'text-yellow-400'
                   }
                 >
-                  {allPlayersSelectedRoles ? '已开放' : '等待选角'}
+                  {allPlayersSelectedRoles
+                    ? t('gameComponent.room.playersList.opened')
+                    : t('gameComponent.room.playersList.waitingForRoleSelection')}
                 </span>
               </div>
             </div>
@@ -256,7 +262,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
               className='w-full border-werewolf-purple/50 hover:bg-werewolf-purple/20'
             >
               <Plus className='mr-2 h-4 w-4' />
-              {t('add_ai_player')}
+              {t('gameComponent.room.playersList.addAiPlayer')}
             </Button>
           )}
 

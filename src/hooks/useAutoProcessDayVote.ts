@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 // Minimal shape to avoid importing full GameState type
 interface MinimalGameState {
@@ -14,6 +15,7 @@ export const useAutoProcessDayVote = (
   gameState?: MinimalGameState | null
 ) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const processingRef = useRef(false);
   const lastProcessedKeyRef = useRef<string | null>(null);
 
@@ -110,8 +112,8 @@ export const useAutoProcessDayVote = (
 
         lastProcessedKeyRef.current = processKey;
         toast({
-          title: '投票结果已自动处理',
-          description: '已根据规则更新玩家状态',
+          title: t('hook.auto_vote.processed_title'),
+          description: t('hook.auto_vote.processed_desc'),
         });
       } catch (e) {
         console.error('自动处理投票结果时出错:', e);

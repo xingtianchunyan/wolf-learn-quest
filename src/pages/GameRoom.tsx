@@ -170,8 +170,8 @@ const GameRoom = () => {
           setSelectedCharacter(null);
           setIsReady(false);
           toast({
-            title: '角色选择已重置',
-            description: '由于最大玩家数变化，所有角色选择已重置',
+            title: t('page.gameRoom.roles_reset'),
+            description: t('page.gameRoom.roles_reset_reason'),
           });
         }
       };
@@ -208,7 +208,9 @@ const GameRoom = () => {
 
       toast({
         title: t('max_players_updated'),
-        description: `${t('max_players_set')} ${newMaxPlayers}`,
+        description: t('page.gameRoom.max_players_set_to', {
+          count: newMaxPlayers,
+        }),
       });
     } catch (error) {
       console.error('Error updating max players:', error);
@@ -261,8 +263,10 @@ const GameRoom = () => {
     // 检查是否满足准备条件
     if (!canSelectRoles()) {
       toast({
-        title: '无法准备',
-        description: `需要等待房间人数达到${currentMaxPlayers}人`,
+        title: t('page.gameRoom.cannot_ready'),
+        description: t('page.gameRoom.waiting_for_players', {
+          count: currentMaxPlayers,
+        }),
         variant: 'destructive',
       });
       return;
@@ -270,8 +274,8 @@ const GameRoom = () => {
 
     if (!allPlayersSelectedRoles()) {
       toast({
-        title: '无法准备',
-        description: '需要等待所有玩家选择角色',
+        title: t('page.gameRoom.cannot_ready'),
+        description: t('page.gameRoom.waiting_for_all_roles'),
         variant: 'destructive',
       });
       return;
@@ -281,7 +285,7 @@ const GameRoom = () => {
     if (!isReady && !currentPlayerHasSelectedRole) {
       toast({
         title: t('select_character_first'),
-        description: '请先选择角色才能进入准备状态',
+        description: t('page.gameRoom.select_character_before_ready'),
         variant: 'destructive',
       });
       return;
@@ -306,7 +310,7 @@ const GameRoom = () => {
       } else {
         toast({
           title: t('error'),
-          description: t('failed_to_update_status'),
+          description: t('page.gameRoom.failed_to_update_status'),
           variant: 'destructive',
         });
       }
@@ -314,7 +318,7 @@ const GameRoom = () => {
       console.error('Error updating ready status:', error);
       toast({
         title: t('error'),
-        description: t('failed_to_update_status'),
+        description: t('page.gameRoom.failed_to_update_status'),
         variant: 'destructive',
       });
     }
@@ -324,8 +328,8 @@ const GameRoom = () => {
     // 如果已经准备，不能更改角色选择
     if (isReady && characterId !== selectedCharacter) {
       toast({
-        title: t('cannot_change_character'),
-        description: '请先取消准备状态才能更换角色',
+        title: t('page.gameRoom.cannot_change_character'),
+        description: t('page.gameRoom.cancel_ready_before_change'),
         variant: 'destructive',
       });
       return;

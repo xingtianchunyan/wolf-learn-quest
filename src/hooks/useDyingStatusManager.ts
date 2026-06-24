@@ -12,6 +12,7 @@ import {
 } from '@/services/dyingStatusService';
 import { ROLE_STATUS } from '@/utils/roleStateHelpers';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface DyingPlayer {
   userId: string;
@@ -30,6 +31,7 @@ export const useDyingStatusManager = (
   const { currentUser } = useAuth();
   const { roleStates } = useRoleStates(roomId);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dyingPlayers, setDyingPlayers] = useState<DyingPlayer[]>([]);
   const [isResolving, setIsResolving] = useState<Record<string, boolean>>({});
 
@@ -69,8 +71,8 @@ export const useDyingStatusManager = (
     ): Promise<boolean> => {
       if (!gameStateId) {
         toast({
-          title: '错误',
-          description: '游戏状态ID不存在',
+          title: t('common.error'),
+          description: t('hook.dying.missing_game_state'),
           variant: 'destructive',
         });
         return false;
@@ -87,30 +89,35 @@ export const useDyingStatusManager = (
 
         if (success) {
           const resolutionMessages = {
-            [DyingResolutionType.PROTECTED]: '获得保护，恢复正常状态',
-            [DyingResolutionType.ANSWER_CORRECT]: '答题正确，转为虚弱状态',
-            [DyingResolutionType.ANSWER_WRONG]: '答题错误，已被淘汰',
+            [DyingResolutionType.PROTECTED]: t('hook.dying.resolution_protected'),
+            [DyingResolutionType.ANSWER_CORRECT]: t(
+              'hook.dying.resolution_correct'
+            ),
+            [DyingResolutionType.ANSWER_WRONG]: t('hook.dying.resolution_wrong'),
           };
 
           toast({
-            title: '状态更新成功',
-            description: `${userName || '玩家'}${resolutionMessages[resolutionType]}`,
+            title: t('hook.dying.update_success_title'),
+            description: t('hook.dying.update_success_desc', {
+              userName: userName || t('common.unknown_player'),
+              resolution: resolutionMessages[resolutionType],
+            }),
           });
 
           return true;
         } else {
           toast({
-            title: '状态更新失败',
-            description: '请稍后重试',
+            title: t('hook.dying.update_failed_title'),
+            description: t('common.retry_later'),
             variant: 'destructive',
           });
           return false;
         }
       } catch (error) {
-        console.error('解除濒死状态失败:', error);
+        console.error('Failed to resolve dying status:', error);
         toast({
-          title: '操作失败',
-          description: '网络错误，请检查连接后重试',
+          title: t('common.operation_failed'),
+          description: t('common.network_error'),
           variant: 'destructive',
         });
         return false;
@@ -118,7 +125,7 @@ export const useDyingStatusManager = (
         setIsResolving(prev => ({ ...prev, [userId]: false }));
       }
     },
-    [gameStateId, toast]
+    [gameStateId, toast, t]
   );
 
   /**

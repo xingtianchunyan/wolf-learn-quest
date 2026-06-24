@@ -5,8 +5,8 @@ import { Clock, Info } from 'lucide-react';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import {
-  getRoleStatusName,
   getRoleStatusColor,
   canPerformAction,
   getSkillUsesRemaining,
@@ -30,6 +30,7 @@ interface RoleStatusPanelProps {
 }
 
 const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const { roleStates, loading } = useRoleStates(roomId);
   const { players } = usePlayersRealtime(roomId);
   const { roleDesigns, getSkillEffects, getRoleAttributes } = useRoleDesigns();
@@ -47,6 +48,31 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
     return () => clearInterval(timer);
   }, []);
 
+  const getRoleDisplayName = (roleName: string) => {
+    const baseName = roleName.replace(/_\d+$/, '');
+    const keyMap: Record<string, string> = {
+      whitewolf: 'game.role.white_wolf',
+    };
+    const key = keyMap[baseName] || `game.role.${baseName}`;
+    const translated = t(key as never);
+    return translated !== key ? translated : roleName;
+  };
+
+  const getLocalizedStatusName = (status: number) => {
+    switch (status) {
+      case 1:
+        return t('game.status.normal');
+      case 2:
+        return t('game.status.dying');
+      case 3:
+        return t('game.status.weakened');
+      case 4:
+        return t('game.status.eliminated');
+      default:
+        return t('common.unknown');
+    }
+  };
+
   const togglePlayerExpansion = (playerId: string) => {
     setExpandedPlayers(prev => {
       const newSet = new Set(prev);
@@ -63,12 +89,14 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
     return (
       <Card className='bg-werewolf-card border-werewolf-purple/30'>
         <CardHeader>
-          <CardTitle className='text-werewolf-purple'>角色状态</CardTitle>
+          <CardTitle className='text-werewolf-purple'>
+            {t('gameComponent.roleStatusPanel.title')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center text-gray-400 py-4'>
             <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto'></div>
-            <p className='mt-2'>加载中...</p>
+            <p className='mt-2'>{t('common.loading')}</p>
           </div>
         </CardContent>
       </Card>
@@ -78,7 +106,9 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
   return (
     <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className='text-werewolf-purple'>角色状态</CardTitle>
+        <CardTitle className='text-werewolf-purple'>
+          {t('gameComponent.roleStatusPanel.title')}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className='space-y-3'>
@@ -123,11 +153,13 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                     <div className='flex justify-between items-start mb-2'>
                       <div>
                         <div className='font-medium text-gray-300 flex items-center'>
-                          {player?.name || '未知玩家'}
+                          {player?.name || t('common.unknown_player')}
                           <Info className='h-3 w-3 ml-2 text-gray-500' />
                         </div>
                         <div className='text-sm text-gray-400'>
-                          {role?.role_name || '未知角色'}
+                          {role?.role_name
+                            ? getRoleDisplayName(role.role_name)
+                            : t('common.unknown_role')}
                         </div>
                       </div>
                       <div className='flex flex-col items-end space-y-1'>
@@ -135,7 +167,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                           variant='outline'
                           className={`${getRoleStatusColor(roleState.role_status)} border-current`}
                         >
-                          {getRoleStatusName(roleState.role_status)}
+                          {getLocalizedStatusName(roleState.role_status)}
                         </Badge>
 
                         {isHunterRevengeState && revengeTimeLeft > 0 && (
@@ -144,7 +176,9 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                             className='text-yellow-400 border-yellow-400 animate-pulse'
                           >
                             <Clock className='h-3 w-3 mr-1' />
-                            反击 {revengeTimeLeft}s
+                            {t('gameComponent.roleStatusPanel.revenge', {
+                              seconds: revengeTimeLeft,
+                            })}
                           </Badge>
                         )}
                       </div>
@@ -152,15 +186,17 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
 
                     <div className='text-xs text-gray-500 space-y-1'>
                       <div>
-                        技能剩余:{' '}
-                        {skillRemaining === 'unlimited'
-                          ? '无限'
-                          : skillRemaining}
+                        {t('gameComponent.roleStatusPanel.skillRemaining', {
+                          count:
+                            skillRemaining === 'unlimited'
+                              ? t('common.unlimited')
+                              : skillRemaining,
+                        })}
                       </div>
 
                       {isHunterRevengeState && (
                         <div className='text-yellow-400 font-medium'>
-                          猎人反击状态 - 可使用技能反击！
+                          {t('gameComponent.roleStatusPanel.hunterRevengeState')}
                         </div>
                       )}
 
@@ -171,7 +207,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                             'can_chat'
                           ) && (
                             <span className='px-1 py-0.5 bg-green-500/20 text-green-400 rounded text-xs'>
-                              聊天
+                              {t('gameComponent.roleStatusPanel.actions.chat')}
                             </span>
                           )}
                           {canPerformAction(
@@ -179,7 +215,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                             'can_vote'
                           ) && (
                             <span className='px-1 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs'>
-                              投票
+                              {t('gameComponent.roleStatusPanel.actions.vote')}
                             </span>
                           )}
                           {canPerformAction(
@@ -188,7 +224,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                           ) &&
                             canUseSkillByStatus && (
                               <span className='px-1 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs'>
-                                技能
+                                {t('gameComponent.roleStatusPanel.actions.skill')}
                               </span>
                             )}
                           {canPerformAction(
@@ -196,7 +232,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                             'can_answer_questions'
                           ) && (
                             <span className='px-1 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs'>
-                              答题
+                              {t('gameComponent.roleStatusPanel.actions.answer')}
                             </span>
                           )}
                         </div>
@@ -207,7 +243,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
                   <CollapsibleContent>
                     <div className='px-3 pb-3'>
                       <RoleSkillInfo
-                        roleName={role?.role_name || '未知角色'}
+                        roleName={role?.role_name || 'unknown'}
                         skillEffects={skillEffects || undefined}
                         roleAttributes={roleAttributes || undefined}
                       />
@@ -220,7 +256,7 @@ const RoleStatusPanel: React.FC<RoleStatusPanelProps> = ({ roomId }) => {
 
           {roleStates.length === 0 && (
             <div className='text-center text-gray-400 py-4'>
-              暂无角色状态数据
+              {t('gameComponent.roleStatusPanel.noData')}
             </div>
           )}
         </div>

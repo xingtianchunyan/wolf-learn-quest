@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 export interface ChatMessage {
   id: string;
@@ -20,6 +21,7 @@ export const useRoomChat = (
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // 获取历史聊天消息
   useEffect(() => {
@@ -46,7 +48,7 @@ export const useRoomChat = (
         if (error) {
           console.error('Error fetching chat messages:', error);
           toast({
-            title: '加载聊天记录失败',
+            title: t('hook.chat.load_failed_title'),
             description: error.message,
             variant: 'destructive',
           });
@@ -64,7 +66,7 @@ export const useRoomChat = (
             const senderName =
               Array.isArray(userData) && userData.length > 0
                 ? userData[0].player_name
-                : 'Unknown';
+                : t('common.unknown_player');
 
             return {
               ...msg,
@@ -108,7 +110,7 @@ export const useRoomChat = (
           const senderName =
             Array.isArray(userData) && userData.length > 0
               ? userData[0].player_name
-              : 'Unknown';
+              : t('common.unknown_player');
 
           const newMessage = {
             ...payload.new,
@@ -137,8 +139,8 @@ export const useRoomChat = (
       if (!user) {
         console.error('No authenticated user found');
         toast({
-          title: '发送消息失败',
-          description: '用户未认证',
+          title: t('hook.chat.send_failed_title'),
+          description: t('hook.chat.unauthenticated'),
           variant: 'destructive',
         });
         return false;
@@ -154,7 +156,7 @@ export const useRoomChat = (
       if (error) {
         console.error('Error sending message:', error);
         toast({
-          title: '发送消息失败',
+          title: t('hook.chat.send_failed_title'),
           description: error.message,
           variant: 'destructive',
         });
@@ -165,8 +167,8 @@ export const useRoomChat = (
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
-        title: '发送消息失败',
-        description: '请稍后重试',
+        title: t('hook.chat.send_failed_title'),
+        description: t('common.retry_later'),
         variant: 'destructive',
       });
       return false;

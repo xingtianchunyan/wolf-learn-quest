@@ -10,6 +10,7 @@ import {
   isHunterRole,
 } from '@/utils/roleUtils';
 import PlayerStatusManager from '../panels/PlayerStatusManager';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface Player {
   id: string;
@@ -37,6 +38,7 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   canSelectTargets = false,
   currentPhase,
 }) => {
+  const { t } = useLanguage();
   const { currentUser } = useAuth();
   const { roleStates } = useRoleStates(roomId);
   const { getSelectedRoleByUser } = useRoleSelection(
@@ -67,13 +69,23 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
   const _isCurrentUserDemon = isDemonRole(currentUserRole || '');
   const isCurrentUserHunter = isHunterRole(currentUserRole || '');
 
+  const getRoleDisplayName = (roleName: string) => {
+    const baseName = roleName.replace(/_\d+$/, '');
+    const keyMap: Record<string, string> = {
+      whitewolf: 'game.role.white_wolf',
+    };
+    const key = keyMap[baseName] || `game.role.${baseName}`;
+    const translated = t(key as never);
+    return translated !== key ? translated : roleName;
+  };
+
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < players.length) {
       return players[i];
     } else {
       return {
         id: `placeholder-${i}`,
-        name: '等待玩家',
+        name: t('gameComponent.playerStatus.waitingPlayer'),
         avatar: '',
         userId: undefined,
       };
@@ -109,7 +121,9 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
     // 当前玩家总是能看到自己的角色
     if (isCurrentPlayer) {
       return {
-        roleName: selectedRole?.roleName || '未分配角色',
+        roleName: selectedRole?.roleName
+          ? getRoleDisplayName(selectedRole.roleName)
+          : t('gameComponent.playerStatus.unassignedRole'),
         roleImageUrl: selectedRole?.roleDesign
           ? getLocalImageByDesignId(selectedRole.roleDesign.id)
           : null,
@@ -131,7 +145,9 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
       )
     ) {
       return {
-        roleName: selectedRole?.roleName || '未分配角色',
+        roleName: selectedRole?.roleName
+          ? getRoleDisplayName(selectedRole.roleName)
+          : t('gameComponent.playerStatus.unassignedRole'),
         roleImageUrl: selectedRole?.roleDesign
           ? getLocalImageByDesignId(selectedRole.roleDesign.id)
           : null,
@@ -146,17 +162,19 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
       currentUserRoleState?.role_status === 2
     ) {
       return {
-        roleName: selectedRole?.roleName || '未分配角色',
+        roleName: selectedRole?.roleName
+          ? getRoleDisplayName(selectedRole.roleName)
+          : t('gameComponent.playerStatus.unassignedRole'),
         roleImageUrl: selectedRole?.roleDesign
           ? getLocalImageByDesignId(selectedRole.roleDesign.id)
           : null,
         showRole: true,
-        specialStatus: '濒死状态 - 可使用技能',
+        specialStatus: t('gameComponent.playerStatus.dyingStatus'),
       };
     }
 
     return {
-      roleName: '未知角色',
+      roleName: t('gameComponent.playerStatus.unknownRole'),
       roleImageUrl: null,
       showRole: false,
     };
@@ -262,7 +280,9 @@ const GamePlayerStatusDisplay: React.FC<GamePlayerStatusDisplayProps> = ({
                     </p>
                   )}
                   {player.userId === currentUser?.id && (
-                    <div className='text-xs text-yellow-400 mt-1'>你</div>
+                    <div className='text-xs text-yellow-400 mt-1'>
+                      {t('gameComponent.playerStatus.you')}
+                    </div>
                   )}
                 </div>
 

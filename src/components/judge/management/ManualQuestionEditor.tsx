@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ManualQuestionForm } from '../types/questionBank';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface ManualQuestionEditorProps {
   manualQuestion: ManualQuestionForm;
@@ -25,17 +26,20 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
   onUpdateQuestion,
   onSubmit,
 }) => {
+  const { t } = useLanguage();
   return (
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30 h-full'>
       <CardContent className='p-6 h-full'>
         <ScrollArea className='h-full'>
           <div className='space-y-4 pr-4'>
             <div>
-              <label className='text-white font-medium mb-2 block'>题干</label>
+              <label className='text-white font-medium mb-2 block'>
+                {t('judge.questionBank.manual.stemLabel')}
+              </label>
               <Textarea
                 value={manualQuestion.question}
                 onChange={e => onUpdateQuestion({ question: e.target.value })}
-                placeholder='请输入题目内容...'
+                placeholder={t('judge.questionBank.manual.stemPlaceholder')}
                 className='bg-werewolf-dark border-werewolf-purple/30 text-white resize-none'
                 rows={3}
               />
@@ -44,7 +48,7 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
             <div className='grid grid-cols-2 gap-4'>
               <div>
                 <label className='text-white font-medium mb-2 block'>
-                  题目难度
+                  {t('judge.questionBank.manual.difficultyLabel')}
                 </label>
                 <Select
                   value={manualQuestion.difficulty.toString()}
@@ -60,31 +64,31 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
                       value='1'
                       className='text-white hover:bg-werewolf-purple/20'
                     >
-                      简单
+                      {t('game.difficulty.very_easy')}
                     </SelectItem>
                     <SelectItem
                       value='2'
                       className='text-white hover:bg-werewolf-purple/20'
                     >
-                      容易
+                      {t('game.difficulty.easy')}
                     </SelectItem>
                     <SelectItem
                       value='3'
                       className='text-white hover:bg-werewolf-purple/20'
                     >
-                      中等
+                      {t('game.difficulty.medium')}
                     </SelectItem>
                     <SelectItem
                       value='4'
                       className='text-white hover:bg-werewolf-purple/20'
                     >
-                      困难
+                      {t('game.difficulty.hard')}
                     </SelectItem>
                     <SelectItem
                       value='5'
                       className='text-white hover:bg-werewolf-purple/20'
                     >
-                      极难
+                      {t('game.difficulty.very_hard')}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -100,12 +104,17 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
                       if (checked) onUpdateQuestion({ correct_option: 1 });
                     }}
                   />
-                  <label className='text-white font-medium'>选项 A</label>
+                  <label className='text-white font-medium'>
+                    {t('judge.questionBank.manual.optionA')}
+                  </label>
                 </div>
                 <Input
                   value={manualQuestion.option_a}
                   onChange={e => onUpdateQuestion({ option_a: e.target.value })}
-                  placeholder='选项 A 内容'
+                  placeholder={t(
+                    'judge.questionBank.manual.optionPlaceholder',
+                    { option: 'A' }
+                  )}
                   className='bg-werewolf-dark border-werewolf-purple/30 text-white'
                 />
               </div>
@@ -118,12 +127,17 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
                       if (checked) onUpdateQuestion({ correct_option: 2 });
                     }}
                   />
-                  <label className='text-white font-medium'>选项 B</label>
+                  <label className='text-white font-medium'>
+                    {t('judge.questionBank.manual.optionB')}
+                  </label>
                 </div>
                 <Input
                   value={manualQuestion.option_b}
                   onChange={e => onUpdateQuestion({ option_b: e.target.value })}
-                  placeholder='选项 B 内容'
+                  placeholder={t(
+                    'judge.questionBank.manual.optionPlaceholder',
+                    { option: 'B' }
+                  )}
                   className='bg-werewolf-dark border-werewolf-purple/30 text-white'
                 />
               </div>
@@ -137,13 +151,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
                     }}
                   />
                   <label className='text-white font-medium'>
-                    选项 C（可选）
+                    {t('judge.questionBank.manual.optionC')}
                   </label>
                 </div>
                 <Input
                   value={manualQuestion.option_c}
                   onChange={e => onUpdateQuestion({ option_c: e.target.value })}
-                  placeholder='选项 C 内容（可选）'
+                  placeholder={t(
+                    'judge.questionBank.manual.optionPlaceholder',
+                    { option: 'C' }
+                  )}
                   className='bg-werewolf-dark border-werewolf-purple/30 text-white'
                 />
               </div>
@@ -157,13 +174,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
                     }}
                   />
                   <label className='text-white font-medium'>
-                    选项 D（可选）
+                    {t('judge.questionBank.manual.optionD')}
                   </label>
                 </div>
                 <Input
                   value={manualQuestion.option_d}
                   onChange={e => onUpdateQuestion({ option_d: e.target.value })}
-                  placeholder='选项 D 内容（可选）'
+                  placeholder={t(
+                    'judge.questionBank.manual.optionPlaceholder',
+                    { option: 'D' }
+                  )}
                   className='bg-werewolf-dark border-werewolf-purple/30 text-white'
                 />
               </div>
@@ -171,14 +191,16 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
 
             <div>
               <label className='text-white font-medium mb-2 block'>
-                题目解析
+                {t('judge.questionBank.manual.explanationLabel')}
               </label>
               <Textarea
                 value={manualQuestion.explanation}
                 onChange={e =>
                   onUpdateQuestion({ explanation: e.target.value })
                 }
-                placeholder='请输入题目解析（可选）...'
+                placeholder={t(
+                  'judge.questionBank.manual.explanationPlaceholder'
+                )}
                 className='bg-werewolf-dark border-werewolf-purple/30 text-white resize-none'
                 rows={3}
               />
@@ -188,7 +210,7 @@ const ManualQuestionEditor: React.FC<ManualQuestionEditorProps> = ({
               onClick={onSubmit}
               className='w-full bg-werewolf-purple hover:bg-werewolf-light text-white'
             >
-              提交题目
+              {t('judge.questionBank.manual.submit')}
             </Button>
           </div>
         </ScrollArea>

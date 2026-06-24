@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Heart, Skull, Target } from 'lucide-react';
 import { useWitchPotionManager } from '@/hooks/useWitchPotionManager';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { SkillData } from '@/types/skill.types';
 
 interface UnifiedWitchSkillInterfaceProps {
@@ -33,6 +34,7 @@ export const UnifiedWitchSkillInterface: React.FC<
   onUseSkill,
   availableTargets,
 }) => {
+  const { t } = useLanguage();
   const [showTargetSelection, setShowTargetSelection] = useState(false);
   const [potionType, setPotionType] = useState<'attack' | 'protection'>(
     'attack'
@@ -86,18 +88,24 @@ export const UnifiedWitchSkillInterface: React.FC<
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-green-400'>
             <Heart className='w-5 h-5' />
-            女巫技能
+            {t('gameComponent.witch.title')}
             <Badge variant='default' className='ml-2 text-xs bg-green-600'>
-              夜晚专用
+              {t('gameComponent.witch.nightOnly')}
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           <div className='text-sm text-gray-300'>
-            <p>你拥有解药和毒药各一瓶，可以在夜晚使用。</p>
-            <p className='text-green-400 mt-2'>• 解药：救活当晚死亡的玩家</p>
-            <p className='text-red-400'>• 毒药：毒死一名玩家</p>
-            <p className='text-yellow-400'>• 每种药剂最多使用一次</p>
+            <p>{t('gameComponent.witch.description')}</p>
+            <p className='text-green-400 mt-2'>
+              • {t('gameComponent.witch.antidoteDesc')}
+            </p>
+            <p className='text-red-400'>
+              • {t('gameComponent.witch.poisonDesc')}
+            </p>
+            <p className='text-yellow-400'>
+              • {t('gameComponent.witch.potionRule')}
+            </p>
           </div>
 
           <div className='space-y-3'>
@@ -116,10 +124,10 @@ export const UnifiedWitchSkillInterface: React.FC<
               }
             >
               <Heart className='w-4 h-4 mr-2' />
-              解药
+              {t('gameComponent.witch.antidote')}
               {potionStatus.protectionUsed && (
                 <Badge variant='secondary' className='ml-auto text-xs'>
-                  已使用
+                  {t('common.used')}
                 </Badge>
               )}
             </Button>
@@ -140,10 +148,10 @@ export const UnifiedWitchSkillInterface: React.FC<
               }
             >
               <Skull className='w-4 h-4 mr-2' />
-              毒药
+              {t('gameComponent.witch.poison')}
               {potionStatus.attackUsed && (
                 <Badge variant='secondary' className='ml-auto text-xs'>
-                  已使用
+                  {t('common.used')}
                 </Badge>
               )}
             </Button>
@@ -157,11 +165,13 @@ export const UnifiedWitchSkillInterface: React.FC<
           <DialogHeader>
             <DialogTitle className='text-red-400'>
               <Skull className='w-5 h-5 inline mr-2' />
-              选择毒药目标
+              {t('gameComponent.witch.dialogTitle')}
             </DialogTitle>
           </DialogHeader>
           <div className='space-y-3'>
-            <p className='text-sm text-gray-300'>选择要毒杀的目标玩家：</p>
+            <p className='text-sm text-gray-300'>
+              {t('gameComponent.witch.selectTarget')}
+            </p>
             <div className='grid grid-cols-1 gap-2'>
               {availableTargets.map(target => (
                 <Button
@@ -172,7 +182,7 @@ export const UnifiedWitchSkillInterface: React.FC<
                   disabled={loading}
                 >
                   <Target className='w-4 h-4 mr-2' />
-                  毒杀 {target.name}
+                  {t('gameComponent.witch.killTarget', { target: target.name })}
                 </Button>
               ))}
             </div>

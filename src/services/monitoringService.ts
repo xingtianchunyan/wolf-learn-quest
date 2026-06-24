@@ -1,8 +1,15 @@
 // 实时性能监控服务
 import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  createTranslator,
+  defaultLanguage,
+  type LanguageCode,
+} from '@/lib/translations';
 
 const logger = createLogger('monitoring-service');
+
+const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
 
 export interface PerformanceMetric {
   name: string;
@@ -46,7 +53,7 @@ class MonitoringService {
   /**
    * 记录性能指标
    */
-  recordMetric(metric: PerformanceMetric): void {
+  recordMetric(metric: PerformanceMetric, language?: LanguageCode): void {
     this.metrics.push({
       ...metric,
       timestamp: Date.now(),
@@ -58,7 +65,7 @@ class MonitoringService {
     }
 
     // 检查是否需要触发告警
-    this.checkThresholds(metric);
+    this.checkThresholds(metric, language);
 
     logger.debug('性能指标记录', metric);
   }
@@ -66,7 +73,11 @@ class MonitoringService {
   /**
    * 检查指标阈值并触发告警
    */
-  private checkThresholds(metric: PerformanceMetric): void {
+  private checkThresholds(
+    metric: PerformanceMetric,
+    language?: LanguageCode
+  ): void {
+    const t = getT(language);
     let alert: Alert | null = null;
 
     switch (metric.name) {
@@ -78,7 +89,9 @@ class MonitoringService {
               metric.value > this.ALERT_THRESHOLDS.responseTime * 2
                 ? 'critical'
                 : 'warning',
-            message: `响应时间过长: ${metric.value}ms`,
+            message: t('hook.service.monitoring.response_time_alert', {
+              value: metric.value,
+            }),
             timestamp: Date.now(),
             resolved: false,
           };
@@ -90,7 +103,9 @@ class MonitoringService {
           alert = {
             id: `alert-${Date.now()}`,
             severity: 'warning',
-            message: `内存使用过高: ${(metric.value / 1024 / 1024).toFixed(2)}MB`,
+            message: t('hook.service.monitoring.memory_usage_alert', {
+              value: (metric.value / 1024 / 1024).toFixed(2),
+            }),
             timestamp: Date.now(),
             resolved: false,
           };
@@ -102,7 +117,9 @@ class MonitoringService {
           alert = {
             id: `alert-${Date.now()}`,
             severity: 'error',
-            message: `错误率过高: ${(metric.value * 100).toFixed(2)}%`,
+            message: t('hook.service.monitoring.error_rate_alert', {
+              value: (metric.value * 100).toFixed(2),
+            }),
             timestamp: Date.now(),
             resolved: false,
           };

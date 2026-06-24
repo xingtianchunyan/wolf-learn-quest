@@ -1,8 +1,15 @@
 // 用户行为分析服务
 import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  createTranslator,
+  defaultLanguage,
+  type LanguageCode,
+} from '@/lib/translations';
 
 const logger = createLogger('analytics-service');
+
+const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
 
 export interface UserAction {
   userId: string;
@@ -228,7 +235,10 @@ class AnalyticsService {
   /**
    * 识别潜在问题
    */
-  async detectPotentialIssues(gameStateId: string): Promise<{
+  async detectPotentialIssues(
+    gameStateId: string,
+    language?: LanguageCode
+  ): Promise<{
     issues: Array<{
       type: string;
       severity: 'low' | 'medium' | 'high';
@@ -236,6 +246,7 @@ class AnalyticsService {
       affectedUsers?: string[];
     }>;
   }> {
+    const t = getT(language);
     const issues: Array<{
       type: string;
       severity: 'low' | 'medium' | 'high';
@@ -263,7 +274,9 @@ class AnalyticsService {
           issues.push({
             type: 'high_failure_rate',
             severity: 'high',
-            description: `技能失败率过高: ${(failureRate * 100).toFixed(1)}%`,
+            description: t('hook.service.analytics.high_failure_rate', {
+            rate: (failureRate * 100).toFixed(1),
+          }),
             affectedUsers: Array.from(
               new Set(failedSkills.map(s => s.user_id))
             ),
@@ -287,7 +300,9 @@ class AnalyticsService {
           issues.push({
             type: 'low_activity',
             severity: 'medium',
-            description: `${inactiveUsers.length} 个用户活跃度过低`,
+            description: t('hook.service.analytics.low_activity', {
+            count: inactiveUsers.length,
+          }),
             affectedUsers: inactiveUsers,
           });
         }
@@ -306,7 +321,7 @@ class AnalyticsService {
         issues.push({
           type: 'slow_response',
           severity: 'high',
-          description: '系统响应速度过慢',
+          description: t('hook.service.analytics.slow_response'),
           affectedUsers: Array.from(new Set(slowActions.map(a => a.userId))),
         });
       }
@@ -323,7 +338,8 @@ class AnalyticsService {
    */
   async generateAnalyticsReport(
     gameStateId: string,
-    timeRange: number = 86400000
+    timeRange: number = 86400000,
+    language?: LanguageCode
   ): Promise<{
     summary: {
       totalActions: number;
@@ -335,7 +351,7 @@ class AnalyticsService {
     potentialIssues: any;
   }> {
     const skillStats = await this.getSkillUsageStats(gameStateId, timeRange);
-    const issues = await this.detectPotentialIssues(gameStateId);
+    const issues = await this.detectPotentialIssues(gameStateId, language);
 
     const now = Date.now();
     const recentActions = this.actions.filter(

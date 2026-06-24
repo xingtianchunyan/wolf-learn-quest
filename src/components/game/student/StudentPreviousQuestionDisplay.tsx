@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface Question {
   id: string;
@@ -18,6 +19,7 @@ interface StudentPreviousQuestionDisplayProps {
 const StudentPreviousQuestionDisplay: React.FC<
   StudentPreviousQuestionDisplayProps
 > = ({ previousQuestion }) => {
+  const { t } = useLanguage();
   const getOptionLabel = (index: number) => {
     return ['A', 'B', 'C', 'D'][index - 1];
   };
@@ -26,7 +28,7 @@ const StudentPreviousQuestionDisplay: React.FC<
     <>
       <div className='p-4 bg-werewolf-dark/40 rounded-md'>
         <h3 className='font-semibold text-werewolf-purple mb-2'>
-          上一阶段题目
+          {t('gameComponent.previousQuestion.title')}
         </h3>
         <p className='text-gray-300 leading-relaxed'>
           {previousQuestion.question}
@@ -34,7 +36,9 @@ const StudentPreviousQuestionDisplay: React.FC<
       </div>
 
       <div className='space-y-2'>
-        <h3 className='font-semibold text-werewolf-purple'>选项及答案</h3>
+        <h3 className='font-semibold text-werewolf-purple'>
+          {t('gameComponent.previousQuestion.optionsAndAnswers')}
+        </h3>
         {[1, 2, 3, 4].map(optionNum => {
           const optionText =
             optionNum === 1
@@ -57,12 +61,14 @@ const StudentPreviousQuestionDisplay: React.FC<
               }`}
             >
               <span className='font-semibold mr-2'>
-                {getOptionLabel(optionNum)}.
+                {t('gameComponent.question.optionLabel', {
+                  label: getOptionLabel(optionNum),
+                })}
               </span>
               {optionText}
               {isCorrect && (
                 <span className='ml-2 text-green-400 font-bold'>
-                  ✓ 正确答案
+                  {t('gameComponent.previousQuestion.correctAnswer')}
                 </span>
               )}
             </div>
@@ -71,7 +77,9 @@ const StudentPreviousQuestionDisplay: React.FC<
       </div>
 
       <div className='p-4 bg-werewolf-dark/40 rounded-md'>
-        <h3 className='font-semibold text-werewolf-purple mb-2'>答案解析</h3>
+        <h3 className='font-semibold text-werewolf-purple mb-2'>
+          {t('gameComponent.previousQuestion.explanationTitle')}
+        </h3>
         <p className='text-gray-300 leading-relaxed'>
           {previousQuestion.explanation}
         </p>

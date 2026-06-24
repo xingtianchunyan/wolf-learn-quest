@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { GameState } from '@/types/game';
 
 interface StudentTimerDisplayProps {
@@ -19,6 +20,8 @@ const StudentTimerDisplay: React.FC<StudentTimerDisplayProps> = ({
   isAnsweringPhase,
   gameState,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <>
       {/* 剩余答题时间或时间结束提示 */}
@@ -37,14 +40,18 @@ const StudentTimerDisplay: React.FC<StudentTimerDisplayProps> = ({
             }`}
           >
             {timeIsUp
-              ? '答题时间已结束'
-              : `剩余时间: ${formatTime(timeRemaining)}`}
+              ? t('gameComponent.timer.timeUp')
+              : t('gameComponent.timer.timeRemaining', {
+                  time: formatTime(timeRemaining),
+                })}
           </span>
         </div>
       )}
       {gameState?.isPaused && isAnsweringPhase && (
         <div className='flex items-center justify-center p-3 bg-yellow-900/30 rounded-md'>
-          <span className='text-lg font-bold text-yellow-400'>游戏已暂停</span>
+          <span className='text-lg font-bold text-yellow-400'>
+            {t('gameComponent.timer.gamePaused')}
+          </span>
         </div>
       )}
     </>

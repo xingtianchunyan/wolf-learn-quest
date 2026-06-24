@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/providers/AuthProvider';
 import { useGameState } from '@/hooks/useGameState';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 
 interface Question {
@@ -51,8 +52,19 @@ export interface UseStudentSystemReturn {
 
 export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName } =
     useGameState(roomId);
+
+  const phaseKeyMap: Record<number, string> = {
+    1: 'game.phase.day',
+    2: 'game.phase.evening',
+    3: 'game.phase.night',
+    4: 'game.phase.dawn',
+  };
+
+  const getLocalizedPhaseName = (phase: number) =>
+    t((phaseKeyMap[phase] as never) ?? 'common.unknown');
   const { toast } = useToast();
 
   const [roomQuestions, setRoomQuestions] = useState<RoomQuestion[]>([]);
@@ -142,8 +154,8 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
       setRoomQuestions([]);
       setHasQuestionsInRoom(false);
       toast({
-        title: '获取题目失败',
-        description: error.message || '请稍后重试',
+        title: t('gameComponent.question.fetchFailedTitle'),
+        description: error.message || t('gameComponent.question.fetchFailedDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -289,8 +301,8 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
 
     if (timeRemaining <= 0 && showTimer) {
       toast({
-        title: '答题时间已结束',
-        description: '无法提交答案',
+        title: t('gameComponent.question.timeUpTitle'),
+        description: t('gameComponent.question.timeUpDesc'),
         variant: 'destructive',
       });
       return;
@@ -331,7 +343,10 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
             if (existing) {
               setSelectedOption(existing.selected_option);
               setHasSubmitted(true);
-              toast({ title: '已提交过该题', description: '不能重复提交答案' });
+              toast({
+                title: t('gameComponent.question.alreadySubmittedTitle'),
+                description: t('gameComponent.question.alreadySubmittedDesc'),
+              });
               return;
             }
           } catch (e) {
@@ -339,23 +354,23 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
           }
         }
         toast({
-          title: '保存答案失败',
-          description: '请稍后重试',
+          title: t('gameComponent.question.submitFailedTitle'),
+          description: t('gameComponent.question.submitFailedDesc'),
           variant: 'destructive',
         });
         setSelectedOption(null);
       } else {
         setHasSubmitted(true);
         toast({
-          title: '答案已提交',
-          description: '您的答案已成功保存',
+          title: t('gameComponent.question.submitted'),
+          description: t('gameComponent.question.submitSuccessDesc'),
         });
       }
     } catch (error) {
       logger.error('学生系统：提交答案时发生错误:', error);
       toast({
-        title: '提交答案时发生错误',
-        description: '请稍后重试',
+        title: t('gameComponent.question.submitErrorTitle'),
+        description: t('gameComponent.question.submitFailedDesc'),
         variant: 'destructive',
       });
       setSelectedOption(null);
@@ -366,8 +381,8 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
 
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState
-    ? getPhaseDisplayName(gameState.currentPhase)
-    : '等待中';
+    ? getLocalizedPhaseName(gameState.currentPhase)
+    : t('common.waiting');
   const isAnsweringPhase =
     gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4);
   const showTimer =
@@ -375,12 +390,16 @@ export const useStudentSystem = (roomId: string): UseStudentSystemReturn => {
   const timeIsUp = timeRemaining <= 0 && showTimer;
 
   const gameStatusInfo = (() => {
-    if (!gameState) return '游戏准备中';
-    if (gameState.status === 'waiting') return '游戏准备中';
+    if (!gameState || gameState.status === 'waiting')
+      return t('gameComponent.studentSystem.status.preparing');
     if (gameState.status === 'active')
-      return `游戏进行中 - 第${roundNumber}轮 ${phaseName}阶段`;
-    if (gameState.status === 'ended') return '游戏已结束';
-    return '未知状态';
+      return t('gameComponent.studentSystem.status.inProgress', {
+        round: roundNumber,
+        phase: phaseName,
+      });
+    if (gameState.status === 'ended')
+      return t('gameComponent.studentSystem.status.ended');
+    return t('gameComponent.studentSystem.status.unknown');
   })();
 
   return {

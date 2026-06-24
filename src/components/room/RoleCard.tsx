@@ -1,6 +1,11 @@
 import React from 'react';
 import type { ExpandedRole } from '@/utils/roleConfiguration';
 import type { RoleDesign } from '@/hooks/useRoleDesigns';
+import {
+  ROLE_SKILL_MAPPING,
+  SKILL_MAPPING_CONFIG,
+} from '@/utils/skillMappingConfig';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoleCardProps {
   role: ExpandedRole;
@@ -25,6 +30,96 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   onFlip,
   onSelect,
 }) => {
+  const { t } = useLanguage();
+
+  const getFactionLabel = () => {
+    if (roleDesign?.faction === false) {
+      return t('gameComponent.room.roleCard.villagerFaction');
+    }
+    if (roleDesign?.faction === true) {
+      return t('gameComponent.room.roleCard.werewolfFaction');
+    }
+    return t('gameComponent.room.roleCard.unknownFaction');
+  };
+
+  const getRoleDisplayName = (roleName: string) => {
+    const baseName = roleName.replace(/_\d+$/, '');
+    const keyMap: Record<string, string> = {
+      whitewolf: 'game.role.white_wolf',
+    };
+    const key = keyMap[baseName] || `game.role.${baseName}`;
+    const translated = t(key as never);
+    return translated !== key ? translated : role.displayName;
+  };
+
+  const getSkillUsageText = () => {
+    if (roleDesign?.skill_usage === -1) {
+      return t('gameComponent.room.roleCard.unlimited');
+    }
+    return roleDesign?.skill_usage || 0;
+  };
+
+  const getSkillTypeText = () => {
+    if (!roleDesign?.skill_type) {
+      return t('gameComponent.room.roleCard.none');
+    }
+
+    const translateType = (value: unknown): string => {
+      if (typeof value !== 'string') return String(value);
+      const key = `game.skill.type.${value}` as never;
+      const translated = t(key);
+      return translated !== key ? translated : value;
+    };
+
+    if (Array.isArray(roleDesign.skill_type)) {
+      return roleDesign.skill_type.map(translateType).join(', ');
+    }
+
+    if (typeof roleDesign.skill_type === 'string') {
+      return translateType(roleDesign.skill_type);
+    }
+
+    return JSON.stringify(roleDesign.skill_type);
+  };
+
+  const getSkillConfig = (roleName?: string) => {
+    if (!roleName) return null;
+    const baseName = roleName.replace(/_\d+$/, '');
+    const skillId = ROLE_SKILL_MAPPING[baseName];
+    return skillId ? SKILL_MAPPING_CONFIG[skillId] : null;
+  };
+
+  const getSkillName = () => {
+    const config = getSkillConfig(roleDesign?.role_name);
+    if (!config) {
+      return (
+        roleDesign?.skill_name || t('gameComponent.room.roleCard.noSkill')
+      );
+    }
+    const key = `skill_${config.englishName.toLowerCase()}` as never;
+    const translated = t(key);
+    return translated !== key
+      ? translated
+      : roleDesign?.skill_name || config.chineseName;
+  };
+
+  const getSkillDescription = () => {
+    const config = getSkillConfig(roleDesign?.role_name);
+    if (!config) {
+      return (
+        roleDesign?.skill_description ||
+        t('gameComponent.room.roleCard.noDescription')
+      );
+    }
+    const key = `effect_${config.englishName.toLowerCase()}` as never;
+    const translated = t(key);
+    return translated !== key
+      ? translated
+      : roleDesign?.skill_description ||
+          config.description ||
+          t('gameComponent.room.roleCard.noDescription');
+  };
+
   return (
     <div
       className={`relative transition-all duration-300 transform hover:scale-105 ${
@@ -38,12 +133,12 @@ export const RoleCard: React.FC<RoleCardProps> = ({
     >
       {isSelected && !isCurrentSelection && (
         <div className='absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded text-xs'>
-          已选择
+          {t('gameComponent.room.roleCard.selected')}
         </div>
       )}
       {isCurrentSelection && (
         <div className='absolute top-2 right-2 z-10 bg-werewolf-purple text-white px-2 py-1 rounded text-xs'>
-          我的选择
+          {t('gameComponent.room.roleCard.mySelection')}
         </div>
       )}
       <div
@@ -73,7 +168,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               {imageUrl ? (
                 <img
                   src={imageUrl}
-                  alt={role.displayName}
+                  alt={getRoleDisplayName(role.roleName)}
                   className='w-full h-full object-cover rounded-md'
                   onError={e => {
                     console.error('Image failed to load:', imageUrl);
@@ -96,10 +191,10 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             </div>
             <div className='text-center cursor-pointer' onClick={onFlip}>
               <h3 className='font-bold text-lg text-white mb-2'>
-                {role.displayName}
+                {getRoleDisplayName(role.roleName)}
               </h3>
               <div className='text-xs text-gray-400'>
-                单击图片选中，单击名称翻面
+                {t('gameComponent.room.roleCard.clickToSelect')}
               </div>
             </div>
           </div>
@@ -122,7 +217,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           <div className='h-full flex flex-col'>
             <div className='text-center mb-4'>
               <h3 className='font-bold text-lg text-white mb-2'>
-                {role.displayName}
+                {getRoleDisplayName(role.roleName)}
               </h3>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
@@ -133,12 +228,8 @@ export const RoleCard: React.FC<RoleCardProps> = ({
                       : 'bg-purple-900/60 text-purple-200'
                 }`}
               >
-                {roleDesign?.faction === false
-                  ? '村民'
-                  : roleDesign?.faction === true
-                    ? '狼人'
-                    : '未知'}
-                阵营
+                {getFactionLabel()}
+                {t('gameComponent.room.roleCard.factionSuffix')}
               </span>
             </div>
 
@@ -146,50 +237,44 @@ export const RoleCard: React.FC<RoleCardProps> = ({
               <div className='space-y-2'>
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    技能名称
+                    {t('gameComponent.room.roleCard.skillName')}
                   </h4>
-                  <p className='text-xs text-gray-300'>
-                    {roleDesign?.skill_name || '无技能'}
-                  </p>
+                  <p className='text-xs text-gray-300'>{getSkillName()}</p>
                 </div>
 
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    技能效果
+                    {t('gameComponent.room.roleCard.skillEffect')}
                   </h4>
                   <p className='text-xs text-gray-300 leading-tight'>
-                    {roleDesign?.skill_description || '暂无详细说明'}
+                    {getSkillDescription()}
                   </p>
                 </div>
 
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    使用次数
+                    {t('gameComponent.room.roleCard.skillUsage')}
                   </h4>
                   <p className='text-sm text-gray-300'>
-                    {roleDesign?.skill_usage === -1
-                      ? '无限制'
-                      : roleDesign?.skill_usage || 0}
+                    {getSkillUsageText()}
                   </p>
                 </div>
 
                 <div>
                   <h4 className='text-xs text-werewolf-purple font-semibold mb-0.5'>
-                    技能类型
+                    {t('gameComponent.room.roleCard.skillType')}
                   </h4>
                   <p className='text-sm text-gray-300'>
-                    {roleDesign?.skill_type
-                      ? Array.isArray(roleDesign.skill_type)
-                        ? roleDesign.skill_type.join(', ')
-                        : JSON.stringify(roleDesign.skill_type)
-                      : '无'}
+                    {getSkillTypeText()}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className='text-center mt-3 cursor-pointer' onClick={onFlip}>
-              <div className='text-xs text-gray-400'>单击返回正面</div>
+              <div className='text-xs text-gray-400'>
+                {t('gameComponent.room.roleCard.flipBack')}
+              </div>
             </div>
           </div>
         </div>

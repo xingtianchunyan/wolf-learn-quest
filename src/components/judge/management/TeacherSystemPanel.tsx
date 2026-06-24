@@ -5,12 +5,14 @@ import { GraduationCap, Clock } from 'lucide-react';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { Question } from '../types/questionBank';
 import { useGameState } from '@/hooks/useGameState';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface TeacherSystemPanelProps {
   roomId: string;
 }
 
 const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const { linkedQuestions, isSystemLinked } = useJudgePage();
   const { gameState, timeRemaining, formatTime, getPhaseDisplayName } =
     useGameState(roomId);
@@ -75,10 +77,25 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
     }
   };
 
+  const getPhaseName = (phase: number) => {
+    switch (phase) {
+      case 1:
+        return t('game.phase.day_discussion');
+      case 2:
+        return t('game.phase.evening_quiz');
+      case 3:
+        return t('game.phase.night_action');
+      case 4:
+        return t('game.phase.dawn_quiz');
+      default:
+        return t('common.unknown');
+    }
+  };
+
   const roundNumber = gameState?.currentRound ?? 1;
   const phaseName = gameState
-    ? getPhaseDisplayName(gameState.currentPhase)
-    : '等待中';
+    ? getPhaseName(gameState.currentPhase)
+    : t('common.waiting');
   // 修复答题阶段判断：使用数字比较
   const isAnsweringPhase =
     gameState && (gameState.currentPhase === 2 || gameState.currentPhase === 4); // 2=傍晚, 4=黎明
@@ -90,12 +107,17 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
 
   // 显示游戏状态信息
   const getGameStatusInfo = () => {
-    if (!gameState) return '游戏准备中';
-    if (gameState.status === 'waiting') return '游戏准备中';
+    if (!gameState) return t('judge.teacherSystem.status.preparing');
+    if (gameState.status === 'waiting')
+      return t('judge.teacherSystem.status.preparing');
     if (gameState.status === 'active')
-      return `游戏进行中 - 第${roundNumber}轮 ${phaseName}阶段`;
-    if (gameState.status === 'ended') return '游戏已结束';
-    return '未知状态';
+      return t('judge.teacherSystem.status.active', {
+        round: roundNumber,
+        phase: phaseName,
+      });
+    if (gameState.status === 'ended')
+      return t('judge.teacherSystem.status.ended');
+    return t('common.unknown');
   };
 
   return (
@@ -103,7 +125,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
       <CardHeader className='flex-shrink-0 pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center text-lg'>
           <GraduationCap className='mr-2 h-5 w-5' />
-          教师系统 - {getGameStatusInfo()}
+          {t('judge.teacherSystem.title', { status: getGameStatusInfo() })}
         </CardTitle>
       </CardHeader>
 
@@ -115,14 +137,16 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
               <div className='flex items-center justify-center p-3 bg-werewolf-dark/40 rounded-md'>
                 <Clock className='mr-2 h-5 w-5 text-werewolf-purple' />
                 <span className='text-lg font-bold text-werewolf-purple'>
-                  剩余时间: {formatTime(timeRemaining)}
+                  {t('judge.teacherSystem.timeRemaining', {
+                    time: formatTime(timeRemaining),
+                  })}
                 </span>
               </div>
             )}
             {gameState?.isPaused && isAnsweringPhase && (
               <div className='flex items-center justify-center p-3 bg-yellow-900/30 rounded-md'>
                 <span className='text-lg font-bold text-yellow-400'>
-                  游戏已暂停
+                  {t('judge.teacherSystem.paused')}
                 </span>
               </div>
             )}
@@ -132,7 +156,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                 {/* 题目题干 */}
                 <div className='p-4 bg-werewolf-dark/40 rounded-md'>
                   <h3 className='font-semibold text-werewolf-purple mb-2'>
-                    题目
+                    {t('judge.teacherSystem.questionLabel')}
                   </h3>
                   <p className='text-gray-300 leading-relaxed'>
                     {currentQuestion.question}
@@ -141,7 +165,9 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
 
                 {/* 选项列表 */}
                 <div className='space-y-2'>
-                  <h3 className='font-semibold text-werewolf-purple'>选项</h3>
+                  <h3 className='font-semibold text-werewolf-purple'>
+                    {t('judge.teacherSystem.optionsLabel')}
+                  </h3>
                   {[1, 2, 3, 4].map(optionNum => (
                     <div
                       key={optionNum}
@@ -157,7 +183,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                       {getOptionText(optionNum)}
                       {optionNum === currentQuestion.correct_option && (
                         <span className='ml-2 text-green-400 font-bold'>
-                          ✓ 正确答案
+                          {t('judge.questionBank.preview.correctAnswer')}
                         </span>
                       )}
                     </div>
@@ -167,7 +193,7 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
                 {/* 正确答案解析 */}
                 <div className='p-4 bg-werewolf-dark/40 rounded-md'>
                   <h3 className='font-semibold text-werewolf-purple mb-2'>
-                    答案解析
+                    {t('judge.teacherSystem.explanationLabel')}
                   </h3>
                   <p className='text-gray-300 leading-relaxed'>
                     {currentQuestion.explanation}
@@ -177,14 +203,14 @@ const TeacherSystemPanel: React.FC<TeacherSystemPanelProps> = ({ roomId }) => {
             ) : (
               <div className='text-center text-gray-400 py-8 h-full flex items-center justify-center'>
                 {!gameState || gameState.status === 'waiting'
-                  ? '游戏尚未开始，请先开始游戏'
+                  ? t('judge.teacherSystem.empty.gameNotStarted')
                   : !isSystemLinked
-                    ? '请先在 准备阶段管理 -> 题库管理 中链接题目'
+                    ? t('judge.teacherSystem.empty.notLinked')
                     : gameState.status === 'ended'
-                      ? '游戏已结束'
+                      ? t('judge.teacherSystem.empty.gameEnded')
                       : !isAnsweringPhase
-                        ? '当前非答题阶段'
-                        : '当前阶段的题目未找到，请检查题库与题目顺序设置'}
+                        ? t('judge.teacherSystem.empty.notAnsweringPhase')
+                        : t('judge.teacherSystem.empty.questionNotFound')}
               </div>
             )}
           </div>

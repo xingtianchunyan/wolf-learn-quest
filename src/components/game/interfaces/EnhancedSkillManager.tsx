@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
 import { EnhancedSkillService } from '@/services/enhancedSkillService';
 import { PassiveSkillService } from '@/services/passiveSkillService';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { Tables } from '@/integrations/supabase/types';
 
 const logger = createLogger('enhanced-skill-manager');
@@ -60,6 +61,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
   roleDesign,
   roleState,
 }) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [conflictData, setConflictData] = useState<{
@@ -74,6 +76,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
 
   const phaseName =
     ['day', 'evening', 'night', 'dawn'][currentPhase - 1] || 'day';
+  const phaseDisplayName = t(`game.phase.${phaseName}` as never);
   const isWitch = roleDesign?.role_name === 'witch';
   const isHunter = roleDesign?.role_name === 'hunter';
 
@@ -86,28 +89,31 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
       const result = await EnhancedSkillService.detectSkillConflicts(
         gameStateId,
         currentRound,
-        phaseName
+        phaseName,
+        language
       );
 
       setConflictData(result);
 
       if (result.conflicts > 0) {
         toast({
-          title: '检测到技能冲突',
-          description: `发现 ${result.conflicts} 个技能冲突，请处理`,
+          title: t('gameComponent.skillManager.conflictDetected'),
+          description: t('gameComponent.skillManager.conflictCountDesc', {
+            count: result.conflicts,
+          }),
           variant: 'destructive',
         });
       } else {
         toast({
-          title: '无技能冲突',
-          description: '当前轮次没有技能冲突',
+          title: t('gameComponent.skillManager.noConflict'),
+          description: t('gameComponent.skillManager.noConflictDesc'),
         });
       }
     } catch (error) {
       logger.error('技能冲突检测失败', error);
       toast({
-        title: '检测失败',
-        description: '技能冲突检测失败，请重试',
+        title: t('gameComponent.skillManager.detectFailed'),
+        description: t('gameComponent.skillManager.detectFailedDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -124,14 +130,18 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
       const protectionResult = await EnhancedSkillService.validateWitchPotion(
         userId,
         gameStateId,
-        'protection'
+        'protection',
+        undefined,
+        language
       );
 
       // 检查毒药
       const attackResult = await EnhancedSkillService.validateWitchPotion(
         userId,
         gameStateId,
-        'attack'
+        'attack',
+        undefined,
+        language
       );
 
       setWitchPotionState({
@@ -166,15 +176,15 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
       if (success) {
         setHunterDyingActive(true);
         toast({
-          title: '猎人濒死技能激活',
-          description: '猎人进入濒死状态，可以进行反击',
+          title: t('gameComponent.skillManager.hunterStatus'),
+          description: t('gameComponent.skillManager.canCounter'),
         });
       }
     } catch (error) {
       logger.error('猎人濒死技能触发失败', error);
       toast({
-        title: '触发失败',
-        description: '猎人濒死技能触发失败',
+        title: t('gameComponent.skillManager.detectFailed'),
+        description: t('gameComponent.skillManager.detectFailedDesc'),
         variant: 'destructive',
       });
     }
@@ -201,10 +211,13 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
         <CardTitle className='flex items-center justify-between text-werewolf-purple'>
           <div className='flex items-center gap-2'>
             <Zap className='w-5 h-5' />
-            增强技能管理
+            {t('gameComponent.skillManager.title')}
           </div>
           <Badge variant='outline' className='border-werewolf-purple/30'>
-            第{currentRound}轮 - {phaseName}
+            {t('gameComponent.skillManager.roundPhaseBadge', {
+              round: currentRound,
+              phase: phaseDisplayName,
+            })}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -214,7 +227,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
           <div className='space-y-3'>
             <h4 className='text-sm font-medium text-werewolf-purple flex items-center gap-2'>
               <AlertTriangle className='w-4 h-4' />
-              技能冲突检测
+              {t('gameComponent.skillManager.conflictDetection')}
             </h4>
 
             <div className='flex gap-2'>
@@ -228,12 +241,12 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                 {loading ? (
                   <>
                     <Clock className='w-4 h-4 mr-2 animate-spin' />
-                    检测中...
+                    {t('gameComponent.skillManager.detecting')}
                   </>
                 ) : (
                   <>
                     <Zap className='w-4 h-4 mr-2' />
-                    检测冲突
+                    {t('gameComponent.skillManager.detectConflicts')}
                   </>
                 )}
               </Button>
@@ -250,8 +263,10 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                 <AlertTriangle className='h-4 w-4' />
                 <AlertDescription>
                   {conflictData.conflicts > 0
-                    ? `检测到 ${conflictData.conflicts} 个技能冲突需要处理`
-                    : '当前回合无技能冲突'}
+                    ? t('gameComponent.skillManager.conflictCountDesc', {
+                        count: conflictData.conflicts,
+                      })
+                    : t('gameComponent.skillManager.noConflictDesc')}
                 </AlertDescription>
               </Alert>
             )}
@@ -265,7 +280,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
           <div className='space-y-3'>
             <h4 className='text-sm font-medium text-purple-400 flex items-center gap-2'>
               <Beaker className='w-4 h-4' />
-              女巫药剂状态
+              {t('gameComponent.skillManager.witchPotionStatus')}
             </h4>
 
             <div className='grid grid-cols-2 gap-3'>
@@ -277,7 +292,9 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'>
                       <Heart className='w-4 h-4 text-green-400' />
-                      <span className='text-sm font-medium'>解药</span>
+                      <span className='text-sm font-medium'>
+                        {t('gameComponent.skillManager.antidote')}
+                      </span>
                     </div>
                     <Badge
                       variant={
@@ -286,7 +303,9 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                           : 'secondary'
                       }
                     >
-                      {witchPotionState.canUseProtection ? '可用' : '不可用'}
+                      {witchPotionState.canUseProtection
+                        ? t('common.available')
+                        : t('common.unavailable')}
                     </Badge>
                   </div>
                   {witchPotionState.protectionReason && (
@@ -305,7 +324,9 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'>
                       <Skull className='w-4 h-4 text-red-400' />
-                      <span className='text-sm font-medium'>毒药</span>
+                      <span className='text-sm font-medium'>
+                        {t('gameComponent.skillManager.poison')}
+                      </span>
                     </div>
                     <Badge
                       variant={
@@ -314,7 +335,9 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                           : 'secondary'
                       }
                     >
-                      {witchPotionState.canUseAttack ? '可用' : '不可用'}
+                      {witchPotionState.canUseAttack
+                        ? t('common.available')
+                        : t('common.unavailable')}
                     </Badge>
                   </div>
                   {witchPotionState.attackReason && (
@@ -331,7 +354,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
               witchPotionState.nightDeaths.length > 0 && (
                 <div className='bg-werewolf-dark/30 p-3 rounded-lg'>
                   <h5 className='text-xs font-medium text-red-400 mb-2'>
-                    当夜死亡信息
+                    {t('gameComponent.skillManager.nightDeaths')}
                   </h5>
                   <ScrollArea className='h-20'>
                     <div className='space-y-1'>
@@ -348,8 +371,10 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                             key={index}
                             className='text-xs text-gray-300 p-1 bg-werewolf-dark/50 rounded'
                           >
-                            目标: {(death.target_user_id as string)?.slice(-8)}{' '}
-                            | 技能: {death.skill_name as string}
+                            {t('gameComponent.skillManager.target')}:{' '}
+                            {(death.target_user_id as string)?.slice(-8)} |{' '}
+                            {t('gameComponent.skillManager.skill')}:{' '}
+                            {death.skill_name as string}
                           </div>
                         )
                       )}
@@ -367,7 +392,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
           <div className='space-y-3'>
             <h4 className='text-sm font-medium text-orange-400 flex items-center gap-2'>
               <Target className='w-4 h-4' />
-              猎人技能状态
+              {t('gameComponent.skillManager.hunterStatus')}
             </h4>
 
             <div className='flex items-center justify-between'>
@@ -375,10 +400,14 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                 <Badge
                   variant={hunterDyingActive ? 'destructive' : 'secondary'}
                 >
-                  {hunterDyingActive ? '濒死状态' : '正常状态'}
+                  {hunterDyingActive
+                    ? t('gameComponent.skillManager.dyingState')
+                    : t('gameComponent.skillManager.normalState')}
                 </Badge>
                 {hunterDyingActive && (
-                  <span className='text-xs text-orange-400'>可以进行反击</span>
+                  <span className='text-xs text-orange-400'>
+                    {t('gameComponent.skillManager.canCounter')}
+                  </span>
                 )}
               </div>
 
@@ -390,7 +419,7 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
                   className='text-xs'
                 >
                   <Skull className='w-3 h-3 mr-1' />
-                  触发濒死
+                  {t('gameComponent.skillManager.triggerDying')}
                 </Button>
               )}
             </div>
@@ -399,7 +428,9 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
               <Alert className='border-orange-500/30 bg-orange-500/10'>
                 <Target className='h-4 w-4' />
                 <AlertDescription className='text-xs'>
-                  猎人濒死状态已激活，请在40秒内选择反击目标
+                  {t('gameComponent.skillManager.hunterDyingActive', {
+                    seconds: 40,
+                  })}
                 </AlertDescription>
               </Alert>
             )}
@@ -409,13 +440,13 @@ export const EnhancedSkillManager: React.FC<EnhancedSkillManagerProps> = ({
         {/* 被动技能说明 */}
         <div className='bg-werewolf-dark/30 p-3 rounded-lg'>
           <h5 className='text-xs font-medium text-werewolf-purple mb-2'>
-            被动技能说明
+            {t('gameComponent.skillManager.passiveSkillsTitle')}
           </h5>
           <div className='text-xs text-gray-400 space-y-1'>
-            <p>• 恶魔免疫狼人攻击（自动触发）</p>
-            <p>• 多重保护导致目标淘汰（自动检测）</p>
-            <p>• 猎人濒死反击机制（需要手动触发或投票淘汰时自动触发）</p>
-            <p>• 女巫药剂使用验证（基于当夜死亡信息）</p>
+            <p>• {t('gameComponent.skillManager.passiveSkillDemonImmune')}</p>
+            <p>• {t('gameComponent.skillManager.passiveSkillMultiProtect')}</p>
+            <p>• {t('gameComponent.skillManager.passiveSkillHunterRevenge')}</p>
+            <p>• {t('gameComponent.skillManager.passiveSkillWitchPotion')}</p>
           </div>
         </div>
       </CardContent>

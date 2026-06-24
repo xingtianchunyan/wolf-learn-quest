@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { EnhancedSkillUse } from '@/hooks/skill/useSkillData';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface SkillSystemOverviewTabProps {
   skillUses: EnhancedSkillUse[];
@@ -18,16 +19,55 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
   skillUses,
   stats,
 }) => {
+  const { t } = useLanguage();
+
+  const getPhaseName = (phase?: string) => {
+    if (!phase) return '';
+    switch (phase.toLowerCase()) {
+      case 'day':
+      case 'day_discussion':
+        return t('game.phase.day_discussion');
+      case 'evening':
+      case 'evening_quiz':
+        return t('game.phase.evening_quiz');
+      case 'night':
+      case 'night_action':
+        return t('game.phase.night_action');
+      case 'dawn':
+      case 'dawn_quiz':
+        return t('game.phase.dawn_quiz');
+      default:
+        return phase;
+    }
+  };
+
+  const getExecutionStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return t('judge.skillOverview.executionStatus.completed');
+      case 'pending':
+        return t('judge.skillOverview.executionStatus.pending');
+      case 'failed':
+        return t('judge.skillOverview.executionStatus.failed');
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className='space-y-4'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
         <Card>
           <CardHeader>
-            <CardTitle className='text-lg'>当前活跃技能</CardTitle>
+            <CardTitle className='text-lg'>
+              {t('judge.skillOverview.currentActiveSkills')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {skillUses.length === 0 ? (
-              <div className='text-center text-gray-500 py-4'>暂无活跃技能</div>
+              <div className='text-center text-gray-500 py-4'>
+                {t('judge.skillOverview.noActiveSkills')}
+              </div>
             ) : (
               <div className='space-y-2'>
                 {skillUses.slice(0, 5).map((skill: EnhancedSkillUse) => (
@@ -40,7 +80,10 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
                         {skill.chinese_name || skill.skill_name}
                       </span>
                       <span className='text-sm text-gray-500 ml-2'>
-                        第{skill.round_number}轮 - {skill.phase}
+                        {t('judge.skillOverview.roundPhase', {
+                          round: skill.round_number,
+                          phase: getPhaseName(skill.phase),
+                        })}
                       </span>
                     </div>
                     <Badge
@@ -52,7 +95,7 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
                             : 'destructive'
                       }
                     >
-                      {skill.execution_status}
+                      {getExecutionStatusLabel(skill.execution_status)}
                     </Badge>
                   </div>
                 ))}
@@ -63,20 +106,22 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
 
         <Card>
           <CardHeader>
-            <CardTitle className='text-lg'>效果队列状态</CardTitle>
+            <CardTitle className='text-lg'>
+              {t('judge.skillOverview.effectQueue.title')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-3'>
               <div className='flex justify-between'>
-                <span>排队中</span>
+                <span>{t('judge.skillOverview.effectQueue.queued')}</span>
                 <Badge variant='secondary'>{stats.queuedEffects}</Badge>
               </div>
               <div className='flex justify-between'>
-                <span>已完成</span>
+                <span>{t('judge.skillOverview.effectQueue.completed')}</span>
                 <Badge variant='default'>{stats.completedEffects}</Badge>
               </div>
               <div className='flex justify-between'>
-                <span>冲突解决</span>
+                <span>{t('judge.skillOverview.effectQueue.conflicts')}</span>
                 <Badge variant='outline'>{stats.conflictCount}</Badge>
               </div>
             </div>
@@ -86,12 +131,14 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
 
       <Card>
         <CardHeader>
-          <CardTitle className='text-lg'>最近技能活动</CardTitle>
+          <CardTitle className='text-lg'>
+            {t('judge.skillOverview.recentActivity')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {skillUses.length === 0 ? (
             <div className='text-center text-gray-500 py-4'>
-              暂无技能活动记录
+              {t('judge.skillOverview.noActivity')}
             </div>
           ) : (
             <div className='space-y-2'>
@@ -105,11 +152,16 @@ export const SkillSystemOverviewTab: React.FC<SkillSystemOverviewTabProps> = ({
                       {skill.chinese_name || skill.skill_name}
                     </div>
                     <div className='text-sm text-gray-600'>
-                      {new Date(skill.created_at).toLocaleString()} - 第
-                      {skill.round_number}轮{skill.phase}阶段
+                      {t('judge.skillOverview.activityLine', {
+                        date: new Date(skill.created_at).toLocaleString(),
+                        round: skill.round_number,
+                        phase: getPhaseName(skill.phase),
+                      })}
                     </div>
                   </div>
-                  <Badge>{skill.execution_status}</Badge>
+                  <Badge>
+                    {getExecutionStatusLabel(skill.execution_status)}
+                  </Badge>
                 </div>
               ))}
             </div>

@@ -1,6 +1,7 @@
 // 技能数据获取和管理
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
@@ -53,6 +54,7 @@ export const useSkillData = (gameStateId?: string) => {
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
 
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // 统一数据获取函数
   const fetchAllSkillData = useCallback(async () => {
@@ -111,16 +113,16 @@ export const useSkillData = (gameStateId?: string) => {
 
       setLastSyncTime(new Date());
     } catch (error) {
-      logger.error('获取技能数据失败', error);
+      logger.error('Failed to load skill data', error);
       toast({
-        title: '数据加载失败',
-        description: '无法获取技能系统数据，请刷新页面重试',
+        title: t('hook.skill_data.load_failed_title'),
+        description: t('hook.skill_data.load_failed_desc'),
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  }, [gameStateId, toast]);
+  }, [gameStateId, toast, t]);
 
   // 初始数据加载
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   SkillProgressIndicator,
   SKILL_EXECUTION_STEPS,
 } from '@/components/ui/skill-progress-indicator';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface SkillProgressStep {
   label: string;
@@ -24,25 +25,34 @@ interface SkillSystemProgressTabProps {
 export const SkillSystemProgressTab: React.FC<SkillSystemProgressTabProps> = ({
   skillProgress,
 }) => {
+  const { t } = useLanguage();
+
+  const getSkillDisplayName = (skillName: string) => {
+    switch (skillName) {
+      case 'werewolf_attack':
+        return t('judge.skillProgress.skillName.werewolf_attack');
+      case 'guard_vigil':
+        return t('judge.skillProgress.skillName.guard_vigil');
+      default:
+        return skillName;
+    }
+  };
+
   return (
     <div className='space-y-4'>
       <Card>
         <CardHeader>
-          <CardTitle className='text-lg'>技能执行进度跟踪</CardTitle>
-          <CardDescription>实时显示技能执行的各个步骤和状态</CardDescription>
+          <CardTitle className='text-lg'>
+            {t('judge.skillProgress.title')}
+          </CardTitle>
+          <CardDescription>{t('judge.skillProgress.description')}</CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
           {Object.entries(skillProgress).map(([skillName, steps]) => (
             <SkillProgressIndicator
               key={skillName}
               skillName={skillName}
-              skillChineseName={
-                skillName === 'werewolf_attack'
-                  ? '狼人夜袭'
-                  : skillName === 'guard_vigil'
-                    ? '守卫守夜'
-                    : skillName
-              }
+              skillChineseName={getSkillDisplayName(skillName)}
               steps={steps}
               showProgress={true}
               showStepDetails={true}
@@ -51,7 +61,7 @@ export const SkillSystemProgressTab: React.FC<SkillSystemProgressTabProps> = ({
 
           {Object.keys(skillProgress).length === 0 && (
             <div className='text-center text-gray-500 py-8'>
-              暂无进行中的技能执行
+              {t('judge.skillProgress.noExecution')}
             </div>
           )}
         </CardContent>

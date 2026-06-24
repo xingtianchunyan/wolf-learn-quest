@@ -8,6 +8,7 @@ import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface EnhancedGameStateDisplayProps {
   roomId: string;
@@ -16,6 +17,22 @@ interface EnhancedGameStateDisplayProps {
 const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   roomId,
 }) => {
+  const { t } = useLanguage();
+
+  const getPhaseName = (phase: number) => {
+    switch (phase) {
+      case 1:
+        return t('game.phase.day_discussion');
+      case 2:
+        return t('game.phase.evening_quiz');
+      case 3:
+        return t('game.phase.night_action');
+      case 4:
+        return t('game.phase.dawn_quiz');
+      default:
+        return t('common.unknown');
+    }
+  };
   const { gameState, getPhaseDisplayName, formatTime, timeRemaining } =
     useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
@@ -69,7 +86,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     } else {
       return {
         id: `placeholder-${i}`,
-        name: '等待玩家',
+        name: t('judge.gameState.waitingPlayer'),
         role: '',
         status: 'waiting' as const,
         avatar: '',
@@ -80,17 +97,20 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   });
 
   const getGameStatusDisplay = () => {
-    if (!gameState) return '准备阶段 - 等待中';
+    if (!gameState) return t('judge.gameState.status.waiting');
 
     switch (gameState.status) {
       case 'waiting':
-        return '准备阶段 - 等待开始';
+        return t('judge.gameState.status.waiting');
       case 'active':
-        return `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}阶段`;
+        return t('judge.gameState.status.active', {
+          round: gameState.currentRound,
+          phase: getPhaseName(gameState.currentPhase),
+        });
       case 'ended':
-        return '游戏已结束';
+        return t('judge.gameState.status.ended');
       default:
-        return '未知状态';
+        return t('common.unknown');
     }
   };
 
@@ -105,19 +125,19 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <GamepadIcon className='mr-2 h-5 w-5' />
-            游戏信息
+            {t('judge.gameState.title')}
           </div>
           {gameState?.status === 'active' && (
             <div className='flex items-center text-sm'>
               {gameState.isPaused ? (
                 <div className='flex items-center text-yellow-400'>
                   <Pause className='h-4 w-4 mr-1' />
-                  已暂停
+                  {t('judge.gameState.paused')}
                 </div>
               ) : (
                 <div className='flex items-center text-green-400'>
                   <Play className='h-4 w-4 mr-1' />
-                  进行中
+                  {t('judge.gameState.inProgress')}
                 </div>
               )}
             </div>
@@ -145,7 +165,9 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
                       : 'text-werewolf-purple'
                 }`}
               >
-                剩余时间: {formatTime(timeRemaining)}
+                {t('judge.gameState.timeRemaining', {
+                  time: formatTime(timeRemaining),
+                })}
               </span>
             </div>
           )}
@@ -153,20 +175,22 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
           {/* 游戏状态说明 */}
           {gameState && (
             <div className='text-sm text-gray-400 mt-2'>
-              {gameState.status === 'waiting' && '等待法官开始游戏'}
+              {gameState.status === 'waiting' &&
+                t('judge.gameState.hint.waitingForJudge')}
               {gameState.status === 'active' &&
                 gameState.currentPhase === 1 &&
-                '白天讨论阶段'}
+                t('game.phase.day_discussion')}
               {gameState.status === 'active' &&
                 gameState.currentPhase === 2 &&
-                '傍晚答题阶段'}
+                t('game.phase.evening_quiz')}
               {gameState.status === 'active' &&
                 gameState.currentPhase === 3 &&
-                '夜晚行动阶段'}
+                t('game.phase.night_action')}
               {gameState.status === 'active' &&
                 gameState.currentPhase === 4 &&
-                '黎明答题阶段'}
-              {gameState.status === 'ended' && '游戏结束，可查看结算'}
+                t('game.phase.dawn_quiz')}
+              {gameState.status === 'ended' &&
+                t('judge.gameState.hint.ended')}
             </div>
           )}
         </div>
@@ -174,23 +198,25 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
         {/* 玩家角色和状态 */}
         <div className='space-y-3'>
           <div className='flex items-center justify-between'>
-            <h3 className='font-semibold text-werewolf-purple'>玩家状态</h3>
+            <h3 className='font-semibold text-werewolf-purple'>
+              {t('judge.gameState.playerStatusTitle')}
+            </h3>
             <div className='flex items-center gap-3 text-xs text-gray-400'>
               <span className='inline-flex items-center gap-1'>
                 <span className='inline-block w-3 h-3 rounded-full border-2 border-green-400'></span>
-                正常
+                {t('game.status.normal')}
               </span>
               <span className='inline-flex items-center gap-1'>
                 <span className='inline-block w-3 h-3 rounded-full border-2 border-yellow-400'></span>
-                虚弱
+                {t('game.status.weakened')}
               </span>
               <span className='inline-flex items-center gap-1'>
                 <span className='inline-block w-3 h-3 rounded-full border-2 border-red-400 animate-pulse'></span>
-                濒死
+                {t('game.status.dying')}
               </span>
               <span className='inline-flex items-center gap-1'>
                 <span className='inline-block w-3 h-3 rounded-full border-2 border-white'></span>
-                淘汰
+                {t('game.status.eliminated')}
               </span>
             </div>
           </div>

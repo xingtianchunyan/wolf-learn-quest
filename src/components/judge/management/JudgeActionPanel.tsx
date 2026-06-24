@@ -31,6 +31,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 import { useJudgePage } from '@/contexts/JudgePageContext';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import EnhancedVotingManager from '@/components/voting/EnhancedVotingManager';
 
 const logger = createLogger('judge-action-panel');
@@ -40,6 +41,7 @@ interface JudgeActionPanelProps {
 }
 
 const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const [isPreparationDialogOpen, setIsPreparationDialogOpen] = useState(false);
   const [isLeavingJudge, setIsLeavingJudge] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
@@ -88,14 +90,14 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
       await refreshLinkedQuestions();
 
       toast({
-        title: '题目更新成功',
-        description: '已重新加载题目信息',
+        title: t('judge.actionPanel.toast.updateSuccess.title'),
+        description: t('judge.actionPanel.toast.updateSuccess.description'),
       });
     } catch (error) {
       logger.error('更新题目失败:', error);
       toast({
-        title: '题目更新失败',
-        description: '请稍后重试',
+        title: t('judge.actionPanel.toast.updateError.title'),
+        description: t('common.retry_later'),
         variant: 'destructive',
       });
     } finally {
@@ -109,8 +111,8 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
     // 如果游戏正在进行中，提示用户
     if (gameState?.status === 'active') {
       toast({
-        title: '无法退出',
-        description: '游戏进行中无法停止扮演法官，请先结束游戏',
+        title: t('judge.actionPanel.toast.cannotQuit.title'),
+        description: t('judge.actionPanel.toast.cannotQuit.description'),
         variant: 'destructive',
       });
       return;
@@ -127,7 +129,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
 
       if (error) {
         toast({
-          title: '退出法官失败',
+          title: t('judge.actionPanel.toast.quitError.title'),
           description: error.message,
           variant: 'destructive',
         });
@@ -138,7 +140,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
       navigate('/lobby');
     } catch (err) {
       toast({
-        title: '退出法官时发生错误',
+        title: t('judge.actionPanel.toast.quitErrorGeneric.title'),
         variant: 'destructive',
       });
     } finally {
@@ -156,7 +158,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
           <div className='flex items-center justify-between'>
             <CardTitle className='text-werewolf-purple flex items-center text-lg'>
               <Gavel className='mr-2 h-5 w-5' />
-              法官行动
+              {t('judge.actionPanel.title')}
             </CardTitle>
             <div className='flex space-x-2'>
               {/* 根据游戏状态显示不同按钮 */}
@@ -170,7 +172,9 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   disabled={isUpdatingQuestions}
                 >
                   <RefreshCw className='h-4 w-4 mr-2' />
-                  {isUpdatingQuestions ? '更新中...' : '更新题目'}
+                  {isUpdatingQuestions
+                    ? t('common.updating')
+                    : t('judge.actionPanel.updateQuestions')}
                 </Button>
               ) : (
                 <Button
@@ -181,7 +185,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                   className='border-werewolf-purple/50 hover:bg-werewolf-purple/20'
                 >
                   <Settings className='h-4 w-4 mr-2' />
-                  准备阶段
+                  {t('judge.actionPanel.preparationPhase')}
                 </Button>
               )}
               <Button
@@ -193,7 +197,9 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
                 disabled={!canQuitJudge || isLeavingJudge}
               >
                 <Square className='h-4 w-4 mr-2' />
-                {isLeavingJudge ? '正在退出...' : '停止扮演法官'}
+                {isLeavingJudge
+                  ? t('common.quitting')
+                  : t('judge.actionPanel.quitJudge')}
               </Button>
             </div>
           </div>
@@ -219,7 +225,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               disabled={!isGameActive || isAdvancing}
             >
               <SkipForward className='h-4 w-4 mr-2' />
-              进入下个阶段
+              {t('judge.actionPanel.nextPhase')}
             </Button>
 
             <Button
@@ -235,7 +241,9 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               ) : (
                 <Pause className='h-4 w-4 mr-2' />
               )}
-              {gameState?.isPaused ? '恢复游戏' : '暂停游戏'}
+              {gameState?.isPaused
+                ? t('judge.actionPanel.resumeGame')
+                : t('judge.actionPanel.pauseGame')}
             </Button>
 
             <Button
@@ -247,7 +255,7 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               disabled={!isGameActive || isEnding}
             >
               <Square className='h-4 w-4 mr-2' />
-              结束游戏
+              {t('judge.actionPanel.endGame')}
             </Button>
 
             <Button
@@ -257,14 +265,14 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
               disabled={gameState?.status === 'active'}
             >
               <Calculator className='h-4 w-4 mr-2' />
-              游戏结算
+              {t('judge.actionPanel.gameSettlement')}
             </Button>
           </div>
 
           {/* 游戏进行中的提示信息 */}
           {gameState?.status === 'active' && (
             <div className='text-center text-sm text-gray-400 p-2 bg-werewolf-dark/20 rounded-md flex-shrink-0'>
-              游戏进行中，部分功能已禁用
+              {t('judge.actionPanel.activeGameHint')}
             </div>
           )}
         </CardContent>

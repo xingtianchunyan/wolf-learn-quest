@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { VotingService } from '@/services/votingService';
 import { useAuth } from '@/providers/AuthProvider';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('voting-system');
@@ -55,6 +56,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
   const [results, setResults] = useState<VotingResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { requireAuth } = useAuth();
 
   // 获取当前投票会话
@@ -259,8 +261,8 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         await fetchCurrentSession(roundNumber, phase);
 
         toast({
-          title: '投票开始',
-          description: '新的投票会话已创建',
+          title: t('hook.vote.session_started_title'),
+          description: t('hook.vote.session_started_desc'),
         });
 
         return sessionId;
@@ -270,23 +272,23 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         // 检查是否是权限问题
         if (error instanceof Error) {
           if (error.message.includes('Authentication required')) {
-            console.error('用户未认证，无法创建投票会话');
+            console.error('User not authenticated, cannot create voting session');
             toast({
-              title: '认证失败',
-              description: '请先登录后再试',
+              title: t('hook.vote.auth_failed_title'),
+              description: t('hook.vote.sign_in_required'),
               variant: 'destructive',
             });
           } else if (error.message.includes('not a participant')) {
-            console.error('用户不是房间参与者，无法创建投票会话');
+            console.error('User is not a room participant');
             toast({
-              title: '权限不足',
-              description: '您不是房间参与者，无法创建投票会话',
+              title: t('hook.vote.not_participant_title'),
+              description: t('hook.vote.not_participant_desc'),
               variant: 'destructive',
             });
           } else {
             toast({
-              title: '创建投票会话失败',
-              description: '请重试',
+              title: t('hook.vote.create_failed_title'),
+              description: t('common.retry_later'),
               variant: 'destructive',
             });
           }
@@ -296,7 +298,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [gameStateId, roomId, toast, requireAuth]
+    [gameStateId, roomId, toast, t, requireAuth]
   );
 
   // 确保白天阶段投票会话存在
@@ -328,8 +330,10 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
             // 重新获取创建的会话
             await fetchCurrentSession(roundNumber, phase);
             toast({
-              title: '投票会话已创建',
-              description: `第${roundNumber}轮白天投票已开始`,
+              title: t('hook.vote.session_created_title'),
+              description: t('hook.vote.session_created_desc', {
+                round: roundNumber,
+              }),
             });
           } else {
             logger.error('创建投票会话失败 - 未返回会话ID');
@@ -346,7 +350,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         });
       }
     },
-    [gameStateId, roomId, fetchCurrentSession, createVotingSession, toast]
+    [gameStateId, roomId, fetchCurrentSession, createVotingSession, toast, t]
   );
 
   // 投票
@@ -363,21 +367,23 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         await fetchVotes(currentSession.id);
 
         toast({
-          title: '投票成功',
-          description: targetId ? '您已成功投票' : '您已弃权',
+          title: t('hook.vote.cast_success_title'),
+          description: targetId
+            ? t('hook.vote.cast_voted_desc')
+            : t('hook.vote.cast_abstain_desc'),
         });
 
         return true;
       } catch (error) {
-        logger.error('投票失败', {
+        logger.error('Vote failed', {
           error,
           voterId,
           targetId,
           sessionId: currentSession?.id,
         });
         toast({
-          title: '投票失败',
-          description: '请重试',
+          title: t('hook.vote.cast_failed_title'),
+          description: t('common.retry_later'),
           variant: 'destructive',
         });
         return false;
@@ -385,7 +391,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [currentSession, fetchVotes, toast]
+    [currentSession, fetchVotes, toast, t]
   );
 
   // 计算投票结果
@@ -405,16 +411,19 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         await fetchResults(targetSessionId);
 
         toast({
-          title: '投票结果已计算',
-          description: '投票结果统计完成',
+          title: t('hook.vote.results_calculated_title'),
+          description: t('hook.vote.results_calculated_desc'),
         });
 
         return true;
       } catch (error) {
-        logger.error('计算投票结果失败', { error, sessionId: targetSessionId });
+        logger.error('Failed to calculate vote results', {
+          error,
+          sessionId: targetSessionId,
+        });
         toast({
-          title: '计算投票结果失败',
-          description: '请重试',
+          title: t('hook.vote.calculate_failed_title'),
+          description: t('common.retry_later'),
           variant: 'destructive',
         });
         return false;
@@ -422,7 +431,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [currentSession, fetchVotes, fetchResults, toast]
+    [currentSession, fetchVotes, fetchResults, toast, t]
   );
 
   // 处理投票结果
@@ -434,16 +443,16 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         await VotingService.processVotingResult(resultId);
 
         toast({
-          title: '投票结果处理完成',
-          description: '玩家状态已更新',
+          title: t('hook.vote.result_processed_title'),
+          description: t('hook.vote.result_processed_desc'),
         });
 
         return true;
       } catch (error) {
-        logger.error('处理投票结果失败', { error, resultId });
+        logger.error('Failed to process vote result', { error, resultId });
         toast({
-          title: '处理投票结果失败',
-          description: '请重试',
+          title: t('hook.vote.process_failed_title'),
+          description: t('common.retry_later'),
           variant: 'destructive',
         });
         return false;
@@ -451,7 +460,7 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast, t]
   );
 
   // 获取用户投票
@@ -547,10 +556,13 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
           .eq('processing_status', 'pending');
 
         if (resultsError) {
-          logger.error('获取投票结果失败', { error: resultsError, sessionId });
+          logger.error('Failed to get vote results', {
+            error: resultsError,
+            sessionId,
+          });
           toast({
-            title: '处理失败',
-            description: '无法获取投票结果',
+            title: t('hook.vote.process_error_title'),
+            description: t('hook.vote.process_error_desc'),
             variant: 'destructive',
           });
           return false;
@@ -558,8 +570,8 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
 
         if (!votingResults || votingResults.length === 0) {
           toast({
-            title: '无需处理',
-            description: '没有待处理的投票结果',
+            title: t('hook.vote.no_pending_title'),
+            description: t('hook.vote.no_pending_desc'),
           });
           return true;
         }
@@ -576,48 +588,51 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
             );
 
             if (processError) {
-              logger.error('处理投票结果失败', {
+              logger.error('Failed to process vote result', {
                 error: processError,
                 resultId: result.id,
               });
               allSuccess = false;
             }
           } catch (error) {
-            logger.error('处理投票结果异常', { error, resultId: result.id });
+            logger.error('Exception processing vote result', {
+              error,
+              resultId: result.id,
+            });
             allSuccess = false;
           }
         }
 
         if (allSuccess) {
           toast({
-            title: '投票结果处理完成',
-            description: '所有投票结果已按照游戏规则处理完成',
+            title: t('hook.vote.all_processed_title'),
+            description: t('hook.vote.all_processed_desc'),
           });
         } else {
           toast({
-            title: '部分处理失败',
-            description: '某些投票结果处理时发生错误',
+            title: t('hook.vote.partial_failed_title'),
+            description: t('hook.vote.partial_failed_desc'),
             variant: 'destructive',
           });
         }
 
         return allSuccess;
       } catch (error) {
-        logger.error('处理增强投票结果时发生错误', {
+        logger.error('Error processing enhanced vote result', {
           error,
           sessionId,
           roomId,
           gameStateId,
         });
         toast({
-          title: '投票结果处理错误',
-          description: '系统错误，请联系管理员',
+          title: t('hook.vote.process_system_error_title'),
+          description: t('hook.vote.process_system_error_desc'),
           variant: 'destructive',
         });
         return false;
       }
     },
-    [toast]
+    [toast, t]
   );
 
   // 计算并处理投票结果
@@ -643,21 +658,21 @@ export const useVotingSystem = (gameStateId?: string, roomId?: string) => {
           gameStateId
         );
       } catch (error) {
-        logger.error('计算并处理投票结果时发生错误', {
+        logger.error('Error calculating and processing vote results', {
           error,
           sessionId,
           roomId,
           gameStateId,
         });
         toast({
-          title: '投票处理错误',
-          description: '计算或处理投票结果时发生错误',
+          title: t('hook.vote.handle_error_title'),
+          description: t('hook.vote.handle_error_desc'),
           variant: 'destructive',
         });
         return false;
       }
     },
-    [calculateResults, processEnhancedVotingResult, toast]
+    [calculateResults, processEnhancedVotingResult, toast, t]
   );
 
   return {

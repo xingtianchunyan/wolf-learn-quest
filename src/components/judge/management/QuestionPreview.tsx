@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Question } from '../types/questionBank';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface QuestionPreviewProps {
   questions: Question[];
@@ -22,6 +23,7 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
   onIndexChange,
   onToggleSelection,
 }) => {
+  const { t } = useLanguage();
   const getDifficultyColor = (difficulty: number) => {
     switch (difficulty) {
       case 1:
@@ -42,24 +44,27 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
   const getDifficultyLabel = (difficulty: number) => {
     switch (difficulty) {
       case 1:
-        return '简单';
+        return t('game.difficulty.very_easy');
       case 2:
-        return '容易';
+        return t('game.difficulty.easy');
       case 3:
-        return '中等';
+        return t('game.difficulty.medium');
       case 4:
-        return '困难';
+        return t('game.difficulty.hard');
       case 5:
-        return '极难';
+        return t('game.difficulty.very_hard');
       default:
-        return '未知';
+        return t('game.difficulty.unknown');
     }
   };
 
   const getPhaseLabel = (index: number) => {
     const round = Math.floor(index / 2) + 1;
-    const phase = index % 2 === 0 ? '傍晚' : '黎明';
-    return `第${round}轮 ${phase}阶段`;
+    const phase =
+      index % 2 === 0
+        ? t('game.phase.evening_quiz')
+        : t('game.phase.dawn_quiz');
+    return t('judge.answerRecord.roundPhase', { round, phase });
   };
 
   const currentQuestion = questions[currentIndex];
@@ -67,19 +72,25 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
   return (
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30'>
       <CardHeader className='pb-3'>
-        <CardTitle className='text-werewolf-purple text-lg'>题目预览</CardTitle>
+        <CardTitle className='text-werewolf-purple text-lg'>
+          {t('judge.questionBank.preview.title')}
+        </CardTitle>
         <p className='text-gray-400 text-sm'>
-          已选择 {selectedQuestions.length}/18 道题目
+          {t('judge.questionBank.preview.selectedCount', {
+            count: selectedQuestions.length,
+          })}
         </p>
       </CardHeader>
       <CardContent className='h-[calc(100%-100px)] flex flex-col'>
         {loading ? (
           <div className='flex items-center justify-center flex-1'>
-            <p className='text-gray-400'>加载中...</p>
+            <p className='text-gray-400'>{t('common.loading')}</p>
           </div>
         ) : questions.length === 0 ? (
           <div className='flex items-center justify-center flex-1'>
-            <p className='text-gray-400'>暂无题目</p>
+            <p className='text-gray-400'>
+              {t('judge.questionBank.preview.empty')}
+            </p>
           </div>
         ) : (
           <>
@@ -98,7 +109,9 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center space-x-2'>
                       <CardTitle className='text-werewolf-purple text-lg'>
-                        题目 {currentIndex + 1}
+                        {t('judge.questionBank.preview.questionLabel', {
+                          index: currentIndex + 1,
+                        })}
                       </CardTitle>
                       {currentQuestion && (
                         <Badge
@@ -130,13 +143,17 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
                   {currentQuestion && (
                     <>
                       <div>
-                        <h3 className='text-white font-medium mb-2'>题干：</h3>
+                        <h3 className='text-white font-medium mb-2'>
+                          {t('judge.questionBank.preview.stemLabel')}
+                        </h3>
                         <p className='text-gray-300 text-sm'>
                           {currentQuestion.question}
                         </p>
                       </div>
                       <div className='space-y-2'>
-                        <h4 className='text-white font-medium'>选项：</h4>
+                        <h4 className='text-white font-medium'>
+                          {t('judge.questionBank.preview.optionsLabel')}
+                        </h4>
                         <div className='space-y-1 text-sm'>
                           <p
                             className={`text-gray-300 ${currentQuestion.correct_option === 1 ? 'text-green-400 font-medium' : ''}`}
@@ -166,11 +183,13 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({
                       </div>
                       {currentQuestion.explanation && (
                         <div className='text-xs text-gray-400'>
-                          解释：{currentQuestion.explanation}
+                          {t('judge.questionBank.preview.explanationLabel')}
+                          {currentQuestion.explanation}
                         </div>
                       )}
                       <div className='text-xs text-gray-500'>
-                        来源：{currentQuestion.source_file}
+                        {t('judge.questionBank.preview.sourceLabel')}
+                        {currentQuestion.source_file}
                       </div>
                     </>
                   )}

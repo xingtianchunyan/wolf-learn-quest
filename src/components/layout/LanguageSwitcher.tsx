@@ -8,21 +8,24 @@ import {
 import { Check, Languages } from 'lucide-react';
 import {
   defaultLanguage,
+  getTranslation,
   languages,
   translations,
   type LanguageCode,
+  type TranslationKey,
 } from '@/lib/translations';
+import { updateDocumentMeta } from '@/lib/i18n/meta';
 
 interface LanguageContextType {
   language: LanguageCode;
   setLanguage: (code: LanguageCode) => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   language: defaultLanguage,
   setLanguage: () => {},
-  t: (key: string) => key,
+  t: key => key as string,
 });
 
 export const useLanguage = () => useContext(LanguageContext);
@@ -38,6 +41,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   const setLanguage = (code: LanguageCode) => {
     setLanguageState(code);
     localStorage.setItem('language', code);
+    updateDocumentMeta(code);
   };
 
   useEffect(() => {
@@ -45,9 +49,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     if (saved && translations[saved] && saved !== language) {
       setLanguageState(saved);
     }
-  }, []);
+    updateDocumentMeta(language);
+  }, [language]);
 
-  const t = (key: string): string => translations[language]?.[key] ?? key;
+  const t = (key: TranslationKey, vars?: Record<string, string | number>) =>
+    getTranslation(language, key, vars);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

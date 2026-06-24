@@ -15,6 +15,7 @@ import QuestionPreview from './QuestionPreview';
 import ManualQuestionEditor from './ManualQuestionEditor';
 import QuestionOrderEditor from './QuestionOrderEditor';
 import { useQuestionBankDialog } from './useQuestionBankDialog';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface QuestionBankDialogProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
   onClose,
   roomId,
 }) => {
+  const { t } = useLanguage();
   const {
     dialogRef,
     position,
@@ -70,7 +72,7 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
       >
         <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
           <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
-            题库管理
+            {t('judge.questionBank.dialog.title')}
           </h2>
           <button
             onClick={onClose}
@@ -91,19 +93,19 @@ const QuestionBankDialog: React.FC<QuestionBankDialogProps> = ({
                 value='generated'
                 className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
               >
-                已生成题目
+                {t('judge.questionBank.tabs.generated')}
               </TabsTrigger>
               <TabsTrigger
                 value='manual'
                 className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
               >
-                手动编辑题目
+                {t('judge.questionBank.tabs.manual')}
               </TabsTrigger>
               <TabsTrigger
                 value='order'
                 className='data-[state=active]:bg-werewolf-purple data-[state=active]:text-white'
               >
-                题目顺序编辑
+                {t('judge.questionBank.tabs.order')}
               </TabsTrigger>
             </TabsList>
 

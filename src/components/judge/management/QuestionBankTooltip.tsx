@@ -6,8 +6,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const QuestionBankTooltip: React.FC = () => {
+  const { t } = useLanguage();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -21,33 +23,32 @@ const QuestionBankTooltip: React.FC = () => {
           <div className='space-y-3'>
             <div>
               <h4 className='font-semibold text-werewolf-purple mb-2'>
-                使用逻辑
+                {t('judge.questionBank.tooltip.usageLogic')}
               </h4>
               <p className='text-sm text-gray-300'>
-                上传文件 → 选择已上传文件 → AI预处理 → 选择已预处理文件 →
-                AI生成题目 → 打开题库
+                {t('judge.questionBank.tooltip.usageLogicDesc')}
               </p>
             </div>
 
             <div>
               <h4 className='font-semibold text-werewolf-purple mb-2'>
-                文件限制
+                {t('judge.questionBank.tooltip.fileLimits')}
               </h4>
               <ul className='text-sm text-gray-300 space-y-1'>
-                <li>• 支持格式：TXT、DOC、DOCX、XLS、XLSX、PPTX、MD</li>
-                <li>• 文件大小：最大10MB</li>
-                <li>• 内容要求：包含学习材料或知识点</li>
+                <li>• {t('judge.questionBank.tooltip.formats')}</li>
+                <li>• {t('judge.questionBank.tooltip.maxSize')}</li>
+                <li>• {t('judge.questionBank.tooltip.contentRequirement')}</li>
               </ul>
             </div>
 
             <div>
               <h4 className='font-semibold text-werewolf-purple mb-2'>
-                AI模型
+                {t('judge.questionBank.tooltip.aiModel')}
               </h4>
               <div className='text-sm text-gray-300 space-y-1'>
-                <p>• 预处理：Qwen/Qwen3-30B-A3B</p>
-                <p>• 生成题目：Qwen/Qwen3-30B-A3B</p>
-                <p>• 上下文长度：128K tokens</p>
+                <p>• {t('judge.questionBank.tooltip.preprocessModel')}</p>
+                <p>• {t('judge.questionBank.tooltip.generateModel')}</p>
+                <p>• {t('judge.questionBank.tooltip.contextLength')}</p>
               </div>
             </div>
           </div>

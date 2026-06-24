@@ -1,5 +1,6 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { LanguageContext } from '@/components/layout/LanguageSwitcher';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -130,100 +131,141 @@ export class ErrorBoundary extends Component<
         return this.props.fallback;
       }
 
-      const { error, retryCount, showDetails, isRecovering } = this.state;
-      const maxRetries = this.props.maxRetries || 3;
-      const canRetry = retryCount < maxRetries;
-
       return (
-        <div className='min-h-screen flex items-center justify-center bg-gray-50 px-4'>
-          <div className='max-w-md w-full bg-white rounded-lg shadow-lg p-6'>
-            <div className='flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full'>
-              <AlertTriangle className='w-6 h-6 text-red-600' />
-            </div>
-
-            <div className='mt-4 text-center'>
-              <h3 className='text-lg font-medium text-gray-900'>
-                页面出现错误
-              </h3>
-              <p className='mt-2 text-sm text-gray-500'>
-                {this.props.componentName
-                  ? `${this.props.componentName} 组件`
-                  : '应用程序'}
-                遇到了一个意外错误
-              </p>
-            </div>
-
-            {error && showDetails && (
-              <div className='mt-4 p-3 bg-gray-100 rounded text-sm'>
-                <p className='font-medium text-gray-700'>错误详情:</p>
-                <p className='mt-1 text-gray-600 break-words'>
-                  {error.message}
-                </p>
-                {error.stack && (
-                  <details className='mt-2'>
-                    <summary className='cursor-pointer text-gray-500 hover:text-gray-700'>
-                      查看堆栈跟踪
-                    </summary>
-                    <pre className='mt-2 text-xs text-gray-600 whitespace-pre-wrap overflow-x-auto'>
-                      {error.stack}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            )}
-
-            <div className='mt-6 flex flex-col space-y-3'>
-              {canRetry && (
-                <button
-                  onClick={this.handleRetry}
-                  disabled={isRecovering}
-                  className='w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-                >
-                  {isRecovering ? (
-                    <>
-                      <RefreshCw className='w-4 h-4 mr-2 animate-spin' />
-                      恢复中...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className='w-4 h-4 mr-2' />
-                      重试 ({retryCount}/{maxRetries})
-                    </>
-                  )}
-                </button>
-              )}
-
-              <button
-                onClick={this.handleReset}
-                className='w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors'
-              >
-                <Home className='w-4 h-4 mr-2' />
-                重置应用
-              </button>
-
-              <button
-                onClick={this.toggleDetails}
-                className='w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors'
-              >
-                {showDetails ? '隐藏' : '显示'}错误详情
-              </button>
-            </div>
-
-            {retryCount > 0 && (
-              <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded'>
-                <p className='text-sm text-yellow-800'>
-                  已尝试 {retryCount} 次重试。如果问题持续存在，请联系技术支持。
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <LanguageContext.Consumer>
+          {({ t }) => (
+            <ErrorBoundaryFallback
+              t={t}
+              componentName={this.props.componentName}
+              error={this.state.error}
+              retryCount={this.state.retryCount}
+              showDetails={this.state.showDetails}
+              isRecovering={this.state.isRecovering}
+              maxRetries={this.props.maxRetries || 3}
+              onRetry={this.handleRetry}
+              onReset={this.handleReset}
+              onToggleDetails={this.toggleDetails}
+            />
+          )}
+        </LanguageContext.Consumer>
       );
     }
 
     return this.props.children;
   }
 }
+
+interface ErrorBoundaryFallbackProps {
+  t: (key: import('@/lib/translations').TranslationKey) => string;
+  componentName?: string;
+  error: Error | null;
+  retryCount: number;
+  showDetails: boolean;
+  isRecovering: boolean;
+  maxRetries: number;
+  onRetry: () => void;
+  onReset: () => void;
+  onToggleDetails: () => void;
+}
+
+const ErrorBoundaryFallback: React.FC<ErrorBoundaryFallbackProps> = ({
+  t,
+  componentName,
+  error,
+  retryCount,
+  showDetails,
+  isRecovering,
+  maxRetries,
+  onRetry,
+  onReset,
+  onToggleDetails,
+}) => {
+  const canRetry = retryCount < maxRetries;
+
+  return (
+    <div className='min-h-screen flex items-center justify-center bg-gray-50 px-4'>
+      <div className='max-w-md w-full bg-white rounded-lg shadow-lg p-6'>
+        <div className='flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full'>
+          <AlertTriangle className='w-6 h-6 text-red-600' />
+        </div>
+
+        <div className='mt-4 text-center'>
+          <h3 className='text-lg font-medium text-gray-900'>
+            {t('page_error')}
+          </h3>
+          <p className='mt-2 text-sm text-gray-500'>
+            {componentName
+              ? `${componentName} ${t('component_error_suffix')}`
+              : t('app_component_error')}
+            {t('encountered_unexpected_error')}
+          </p>
+        </div>
+
+        {error && showDetails && (
+          <div className='mt-4 p-3 bg-gray-100 rounded text-sm'>
+            <p className='font-medium text-gray-700'>{t('error_details')}:</p>
+            <p className='mt-1 text-gray-600 break-words'>{error.message}</p>
+            {error.stack && (
+              <details className='mt-2'>
+                <summary className='cursor-pointer text-gray-500 hover:text-gray-700'>
+                  {t('view_stack_trace')}
+                </summary>
+                <pre className='mt-2 text-xs text-gray-600 whitespace-pre-wrap overflow-x-auto'>
+                  {error.stack}
+                </pre>
+              </details>
+            )}
+          </div>
+        )}
+
+        <div className='mt-6 flex flex-col space-y-3'>
+          {canRetry && (
+            <button
+              onClick={onRetry}
+              disabled={isRecovering}
+              className='w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+            >
+              {isRecovering ? (
+                <>
+                  <RefreshCw className='w-4 h-4 mr-2 animate-spin' />
+                  {t('recovering')}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className='w-4 h-4 mr-2' />
+                  {t('retry')} ({retryCount}/{maxRetries})
+                </>
+              )}
+            </button>
+          )}
+
+          <button
+            onClick={onReset}
+            className='w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors'
+          >
+            <Home className='w-4 h-4 mr-2' />
+            {t('reset_app')}
+          </button>
+
+          <button
+            onClick={onToggleDetails}
+            className='w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors'
+          >
+            {showDetails ? t('hide_error_details') : t('show_error_details')}
+          </button>
+        </div>
+
+        {retryCount > 0 && (
+          <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded'>
+            <p className='text-sm text-yellow-800'>
+              {t('retry_attempts_notice')}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,

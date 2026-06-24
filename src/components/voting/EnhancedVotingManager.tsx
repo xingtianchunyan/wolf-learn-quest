@@ -17,6 +17,7 @@ import { useVotingSystem } from '@/hooks/useVotingSystem';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { useEnhancedVotingAnalysis } from './useEnhancedVotingAnalysis';
 import { EnhancedVotingRecordsTable } from './EnhancedVotingRecordsTable';
 
@@ -47,6 +48,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
   } = useVotingSystem(gameStateId, roomId);
 
   const { toast } = useToast();
+  const { t } = useLanguage();
   const votingSummary = getVotingSummary();
 
   React.useEffect(() => {
@@ -64,8 +66,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
   const handleCalculateResults = async () => {
     if (!currentSession || !gameStateId) {
       toast({
-        title: '计算失败',
-        description: '没有活跃的投票会话',
+        title: t('voting.manager.calculate_failed'),
+        description: t('voting.manager.no_active_session'),
         variant: 'destructive',
       });
       return;
@@ -76,15 +78,15 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
       if (calculateResults) {
         await calculateResults(currentSession.id);
         toast({
-          title: '计算完成',
-          description: '投票结果已计算完成',
+          title: t('voting.manager.calculate_success'),
+          description: t('voting.manager.calculate_success_desc'),
         });
       }
     } catch (error) {
       console.error('计算投票结果失败:', error);
       toast({
-        title: '计算失败',
-        description: '计算投票结果时发生错误',
+        title: t('voting.manager.calculate_failed'),
+        description: t('voting.manager.calculate_error_desc'),
         variant: 'destructive',
       });
     } finally {
@@ -96,8 +98,8 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
     const targetSessionId = currentSession?.id || lastSessionId;
     if (!targetSessionId || !gameStateId) {
       toast({
-        title: '处理失败',
-        description: '没有可处理的投票会话',
+        title: t('voting.manager.process_failed'),
+        description: t('voting.manager.no_session_to_process'),
         variant: 'destructive',
       });
       return;
@@ -107,14 +109,14 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
     try {
       await processEnhancedVotingResult(targetSessionId, roomId, gameStateId);
       toast({
-        title: '处理完成',
-        description: '投票结果已处理',
+        title: t('voting.manager.process_success'),
+        description: t('voting.manager.process_success_desc'),
       });
     } catch (error) {
       console.error('处理投票结果失败:', error);
       toast({
-        title: '处理失败',
-        description: '处理投票结果时发生错误',
+        title: t('voting.manager.process_failed'),
+        description: t('voting.manager.process_error_desc'),
         variant: 'destructive',
       });
     } finally {
@@ -128,7 +130,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <Gavel className='mr-2 h-5 w-5' />
-            增强投票管理
+            {t('voting.manager.title')}
           </div>
           <div className='flex items-center gap-2'>
             {currentSession && (
@@ -136,7 +138,7 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
                 variant='outline'
                 className='border-green-500 text-green-400'
               >
-                会话活跃
+                {t('voting.manager.session_active')}
               </Badge>
             )}
           </div>
@@ -185,7 +187,9 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
                 disabled={isCalculating || votesLoading}
               >
                 <Calculator className='h-4 w-4 mr-2' />
-                {isCalculating ? '计算中...' : '计算结果'}
+                {isCalculating
+                  ? t('voting.manager.calculating')
+                  : t('voting.manager.calculate_results')}
               </Button>
 
               <Button
@@ -197,7 +201,9 @@ const EnhancedVotingManager: React.FC<EnhancedVotingManagerProps> = ({
                 }
               >
                 <Gavel className='h-4 w-4 mr-2' />
-                {isProcessing ? '处理中...' : '处理结果'}
+                {isProcessing
+                  ? t('common.processing')
+                  : t('voting.manager.process_results')}
               </Button>
             </div>
           )}

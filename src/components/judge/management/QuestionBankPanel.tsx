@@ -22,6 +22,7 @@ import {
 import { useQuestionBank } from '@/hooks/useQuestionBank';
 import QuestionBankDialog from './QuestionBankDialog';
 import QuestionBankTooltip from './QuestionBankTooltip';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface QuestionBankPanelProps {
   className?: string;
@@ -32,6 +33,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
   className,
   roomId,
 }) => {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     uploadedFiles,
@@ -72,7 +74,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
           <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
             <div className='flex items-center'>
               <BookOpen className='mr-2 h-5 w-5' />
-              题库管理 (硅基流动AI)
+              {t('judge.questionBank.panel.title')}
             </div>
             <QuestionBankTooltip />
           </CardTitle>
@@ -102,7 +104,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                   className='bg-werewolf-purple hover:bg-werewolf-light text-white flex-1'
                 >
                   <Upload className='mr-2 h-4 w-4' />
-                  {isUploading ? '上传中...' : '上传文件'}
+                  {isUploading
+                    ? t('common.uploading')
+                    : t('judge.questionBank.uploadFile')}
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -115,7 +119,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
 
               <Select value={selectedFile} onValueChange={setSelectedFile}>
                 <SelectTrigger className='bg-werewolf-dark border-werewolf-purple/30'>
-                  <SelectValue placeholder='选择已上传文件' />
+                  <SelectValue
+                    placeholder={t('judge.questionBank.selectUploaded')}
+                  />
                 </SelectTrigger>
                 <SelectContent className='bg-werewolf-dark border-werewolf-purple/30 max-h-40'>
                   <ScrollArea className='h-full'>
@@ -130,13 +136,13 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                             {file.is_preprocessed && (
                               <span className='text-green-400 text-xs bg-green-900/20 px-2 py-1 rounded'>
                                 <CheckCircle className='inline-block w-3 h-3 mr-1' />
-                                已预处理
+                                {t('judge.questionBank.preprocessed')}
                               </span>
                             )}
                             {file.is_generated && (
                               <span className='text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded'>
                                 <Sparkles className='inline-block w-3 h-3 mr-1' />
-                                已生成题目
+                                {t('judge.questionBank.generated')}
                               </span>
                             )}
                           </div>
@@ -156,7 +162,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                   className='bg-blue-600 hover:bg-blue-700 text-white flex-1'
                 >
                   <Database className='mr-2 h-4 w-4' />
-                  {isProcessing ? '处理中...' : 'AI预处理'}
+                  {isProcessing
+                    ? t('common.processing')
+                    : t('judge.questionBank.preprocess')}
                 </Button>
 
                 <Button
@@ -165,7 +173,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                   className='bg-green-600 hover:bg-green-700 text-white flex-1'
                 >
                   <Sparkles className='mr-2 h-4 w-4' />
-                  {isGenerating ? '生成中...' : 'AI生成题目'}
+                  {isGenerating
+                    ? t('common.generating')
+                    : t('judge.questionBank.generate')}
                 </Button>
               </div>
 
@@ -174,7 +184,9 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                 onValueChange={setSelectedPreprocessedFile}
               >
                 <SelectTrigger className='bg-werewolf-dark border-werewolf-purple/30'>
-                  <SelectValue placeholder='选择已预处理文件' />
+                  <SelectValue
+                    placeholder={t('judge.questionBank.selectPreprocessed')}
+                  />
                 </SelectTrigger>
                 <SelectContent className='bg-werewolf-dark border-werewolf-purple/30 max-h-40'>
                   <ScrollArea className='h-full'>
@@ -193,7 +205,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                           {file.is_generated && (
                             <span className='text-blue-400 text-xs bg-blue-900/20 px-2 py-1 rounded ml-4'>
                               <Sparkles className='inline-block w-3 h-3 mr-1' />
-                              已生成题目
+                              {t('judge.questionBank.generated')}
                             </span>
                           )}
                         </div>
@@ -217,7 +229,7 @@ const QuestionBankPanel: React.FC<QuestionBankPanelProps> = ({
                 className='w-full bg-werewolf-purple hover:bg-werewolf-light text-white'
               >
                 <BookOpen className='mr-2 h-4 w-4' />
-                打开题库
+                {t('judge.questionBank.openBank')}
               </Button>
             </div>
           </div>

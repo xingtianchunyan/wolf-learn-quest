@@ -15,6 +15,7 @@ import {
 import { canAccessWerewolfChannel, isDemonRole } from '@/utils/roleUtils';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, Heart } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface Player {
   id: string;
@@ -58,6 +59,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
   allowedRoles = DYING_STATUS_VISIBLE_ROLES,
   className = '',
 }) => {
+  const { t } = useLanguage();
   const { currentUser } = useAuth();
   const { roleStates } = useRoleStates(roomId);
   const { getSelectedRoleByUser } = useRoleSelection(
@@ -168,6 +170,22 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  // 状态名称本地化
+  const getLocalizedStatusName = (status: number) => {
+    switch (status) {
+      case ROLE_STATUS.NORMAL:
+        return t('game.status.normal');
+      case ROLE_STATUS.DYING:
+        return t('game.status.dying');
+      case ROLE_STATUS.WEAK:
+        return t('game.status.weakened');
+      case ROLE_STATUS.ELIMINATED:
+        return t('game.status.eliminated');
+      default:
+        return t('common.unknown');
+    }
+  };
+
   // 获取玩家状态显示信息
   const getPlayerStatusInfo = (player: Player) => {
     if (!player.userId) return null;
@@ -181,7 +199,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
 
     return {
       status: roleState.role_status,
-      statusName: getRoleStatusName(roleState.role_status),
+      statusName: getLocalizedStatusName(roleState.role_status),
       statusColor: getRoleStatusColor(roleState.role_status),
       isRecentChange,
       recentChange,
@@ -225,7 +243,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
       {showDyingStatusOnly && dyingPlayers.length > 0 && (
         <div className='flex items-center gap-2 text-red-400 text-sm font-medium'>
           <AlertTriangle className='h-4 w-4' />
-          <span>濒死状态玩家：</span>
+          <span>{t('gameComponent.playerStatusManager.dyingPlayersTitle')}</span>
         </div>
       )}
 
@@ -281,8 +299,12 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
                   </div>
                   {statusInfo.isRecentChange && statusInfo.recentChange && (
                     <div className='text-xs text-gray-400'>
-                      {getRoleStatusName(statusInfo.recentChange.fromStatus)} →{' '}
-                      {statusInfo.statusName}
+                      {t('gameComponent.playerStatusManager.statusChange', {
+                        from: getLocalizedStatusName(
+                          statusInfo.recentChange.fromStatus
+                        ),
+                        to: statusInfo.statusName,
+                      })}
                     </div>
                   )}
                 </div>
@@ -305,7 +327,7 @@ const PlayerStatusManager: React.FC<PlayerStatusManagerProps> = ({
 
                 {statusInfo.isRecentChange && (
                   <div className='text-xs text-yellow-400 animate-pulse'>
-                    新状态
+                    {t('gameComponent.playerStatusManager.newStatus')}
                   </div>
                 )}
               </div>

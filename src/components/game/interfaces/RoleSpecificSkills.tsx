@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { UnifiedWitchSkillInterface } from './UnifiedWitchSkillInterface';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { RoleSpecificSkillsProps } from '@/types/skill.types';
 
 type InvestigationResult =
@@ -41,6 +42,8 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
   currentRound = 1,
   fullSkillUses = [],
 }) => {
+  const { t } = useLanguage();
+
   // 检查是否已在当晚使用过技能（女巫除外）
   const hasUsedSkillTonight = () => {
     const roleNameLower = roleName?.toLowerCase() || '';
@@ -74,26 +77,34 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
       <CardHeader>
         <CardTitle className='flex items-center gap-2 text-red-400'>
           <Skull className='w-5 h-5' />
-          狼人技能 - 噬咬
+          {t('gameComponent.roleSkills.werewolf.title')}
           {hasUsedSkillTonight() && currentPhase === 3 && (
             <Badge variant='secondary' className='ml-2 text-xs'>
-              今夜已使用
+              {t('gameComponent.roleSkills.common.usedTonight')}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
         <div className='text-sm text-gray-300'>
-          <p>在夜晚阶段，你可以选择一名玩家进行攻击。</p>
-          <p className='text-red-400 mt-2'>• 每晚只能攻击一次</p>
-          <p className='text-red-400'>• 攻击会在夜晚结束时生效</p>
+          <p>{t('gameComponent.roleSkills.werewolf.description')}</p>
+          <p className='text-red-400 mt-2'>
+            • {t('gameComponent.roleSkills.werewolf.rule1')}
+          </p>
+          <p className='text-red-400'>
+            • {t('gameComponent.roleSkills.werewolf.rule2')}
+          </p>
           {hasUsedSkillTonight() && currentPhase === 3 && (
-            <p className='text-yellow-400'>• 你今夜已经使用过技能</p>
+            <p className='text-yellow-400'>
+              • {t('gameComponent.roleSkills.common.usedTonightHint')}
+            </p>
           )}
         </div>
 
         <div className='space-y-2'>
-          <h4 className='text-sm font-medium text-red-400'>选择目标</h4>
+          <h4 className='text-sm font-medium text-red-400'>
+            {t('gameComponent.roleSkills.werewolf.targetTitle')}
+          </h4>
           <div className='grid grid-cols-1 gap-2'>
             {availableTargets.map(target => (
               <Button
@@ -110,7 +121,9 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                 disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
               >
                 <Target className='w-4 h-4 mr-2' />
-                攻击 {target.name}
+                {t('gameComponent.roleSkills.werewolf.attack', {
+                  target: target.name,
+                })}
               </Button>
             ))}
           </div>
@@ -125,26 +138,34 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
       <CardHeader>
         <CardTitle className='flex items-center gap-2 text-blue-400'>
           <Shield className='w-5 h-5' />
-          守卫技能 - 保护
+          {t('gameComponent.roleSkills.guard.title')}
           {hasUsedSkillTonight() && currentPhase === 3 && (
             <Badge variant='secondary' className='ml-2 text-xs'>
-              今夜已使用
+              {t('gameComponent.roleSkills.common.usedTonight')}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
         <div className='text-sm text-gray-300'>
-          <p>在夜晚阶段，你可以选择一名玩家进行保护。</p>
-          <p className='text-blue-400 mt-2'>• 被保护的玩家免疫当夜的攻击</p>
-          <p className='text-blue-400'>• 每晚只能保护一次</p>
+          <p>{t('gameComponent.roleSkills.guard.description')}</p>
+          <p className='text-blue-400 mt-2'>
+            • {t('gameComponent.roleSkills.guard.rule1')}
+          </p>
+          <p className='text-blue-400'>
+            • {t('gameComponent.roleSkills.guard.rule2')}
+          </p>
           {hasUsedSkillTonight() && currentPhase === 3 && (
-            <p className='text-yellow-400'>• 你今夜已经使用过技能</p>
+            <p className='text-yellow-400'>
+              • {t('gameComponent.roleSkills.common.usedTonightHint')}
+            </p>
           )}
         </div>
 
         <div className='space-y-2'>
-          <h4 className='text-sm font-medium text-blue-400'>选择保护目标</h4>
+          <h4 className='text-sm font-medium text-blue-400'>
+            {t('gameComponent.roleSkills.guard.targetTitle')}
+          </h4>
           <div className='grid grid-cols-1 gap-2'>
             {availableTargets.map(target => (
               <Button
@@ -161,7 +182,9 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                 disabled={isSkillDisabled(!canUseSkill || currentPhase !== 3)}
               >
                 <Shield className='w-4 h-4 mr-2' />
-                保护 {target.name}
+                {t('gameComponent.roleSkills.guard.protect', {
+                  target: target.name,
+                })}
               </Button>
             ))}
           </div>
@@ -184,29 +207,29 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
     // 获取目标玩家姓名的辅助函数
     const getTargetName = (targetUserId: string) => {
       const target = availableTargets.find(t => t.userId === targetUserId);
-      return target?.name || '未知玩家';
+      return target?.name || t('common.unknown_player');
     };
 
     // 解析查验结果的辅助函数
     const parseInvestigationResult = (result: InvestigationResult | null) => {
-      if (!result) return '未知';
+      if (!result) return t('common.unknown');
 
       // 处理不同格式的查验结果
       if (typeof result === 'string') {
         return result.includes('狼人') || result.includes('werewolf')
-          ? '狼人'
-          : '好人';
+          ? t('gameComponent.roleSkills.seer.werewolf')
+          : t('gameComponent.roleSkills.seer.good');
       }
 
       if (typeof result === 'object' && result !== null) {
         if (result.faction === 'werewolf' || result.isWerewolf === true)
-          return '狼人';
+          return t('gameComponent.roleSkills.seer.werewolf');
         if (result.faction === 'villager' || result.isWerewolf === false)
-          return '好人';
+          return t('gameComponent.roleSkills.seer.good');
         if (result.result) return parseInvestigationResult(result.result);
       }
 
-      return '未知';
+      return t('common.unknown');
     };
 
     return (
@@ -214,39 +237,50 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-purple-400'>
             <Eye className='w-5 h-5' />
-            预言家技能 - 查验
+            {t('gameComponent.roleSkills.seer.title')}
             {hasUsedSkillTonight() && currentPhase === 3 && (
               <Badge variant='secondary' className='ml-2 text-xs'>
-                今夜已使用
+                {t('gameComponent.roleSkills.common.usedTonight')}
               </Badge>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           <div className='text-sm text-gray-300'>
-            <p>在夜晚阶段，你可以查验一名玩家的身份。</p>
-            <p className='text-purple-400 mt-2'>• 可以得知目标是否为狼人</p>
-            <p className='text-purple-400'>• 每晚只能查验一次</p>
-            <p className='text-blue-400'>• 点击玩家信息卡片选择查验目标</p>
+            <p>{t('gameComponent.roleSkills.seer.description')}</p>
+            <p className='text-purple-400 mt-2'>
+              • {t('gameComponent.roleSkills.seer.rule1')}
+            </p>
+            <p className='text-purple-400'>
+              • {t('gameComponent.roleSkills.seer.rule2')}
+            </p>
+            <p className='text-blue-400'>
+              • {t('gameComponent.roleSkills.seer.rule3')}
+            </p>
             {hasUsedSkillTonight() && currentPhase === 3 && (
-              <p className='text-yellow-400'>• 你今夜已经使用过技能</p>
+              <p className='text-yellow-400'>
+                • {t('gameComponent.roleSkills.common.usedTonightHint')}
+              </p>
             )}
           </div>
 
           <div className='space-y-2'>
-            <h4 className='text-sm font-medium text-purple-400'>查验结果</h4>
+            <h4 className='text-sm font-medium text-purple-400'>
+              {t('gameComponent.roleSkills.seer.resultTitle')}
+            </h4>
             <div className='space-y-2'>
               {seerInvestigations.length === 0 ? (
                 <div className='text-sm text-gray-400 p-3 bg-gray-800/30 rounded-lg border border-gray-600/30'>
-                  暂无查验记录
+                  {t('gameComponent.roleSkills.common.noRecords')}
                 </div>
               ) : (
                 seerInvestigations.map((investigation, index) => {
                   const targetName = investigation.target_user_id
                     ? getTargetName(investigation.target_user_id)
-                    : '未知目标';
+                    : t('common.unknown_target');
                   const result = parseInvestigationResult(investigation.result);
-                  const isWerewolf = result === '狼人';
+                  const isWerewolf =
+                    result === t('gameComponent.roleSkills.seer.werewolf');
 
                   return (
                     <div
@@ -259,7 +293,13 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
                     >
                       <div className='flex items-center justify-between'>
                         <span className='text-sm text-gray-300'>
-                          第{investigation.round_number}轮查验：{targetName}
+                          {t(
+                            'gameComponent.roleSkills.seer.roundInvestigation',
+                            {
+                              round: investigation.round_number,
+                              target: targetName,
+                            }
+                          )}
                         </span>
                         <Badge
                           variant={isWerewolf ? 'destructive' : 'default'}
@@ -300,20 +340,24 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
       <CardHeader>
         <CardTitle className='flex items-center gap-2 text-orange-400'>
           <Target className='w-5 h-5' />
-          猎人技能 - 复仇
+          {t('gameComponent.roleSkills.hunter.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
         <div className='text-sm text-gray-300'>
-          <p>当你被淘汰时，可以选择一名玩家一起出局。</p>
-          <p className='text-orange-400 mt-2'>• 只能在被淘汰时使用</p>
-          <p className='text-red-400'>• 此技能为被动技能</p>
+          <p>{t('gameComponent.roleSkills.hunter.description')}</p>
+          <p className='text-orange-400 mt-2'>
+            • {t('gameComponent.roleSkills.hunter.rule1')}
+          </p>
+          <p className='text-red-400'>
+            • {t('gameComponent.roleSkills.hunter.rule2')}
+          </p>
         </div>
 
         <div className='space-y-2'>
           <AlertTriangle className='w-5 h-5 text-yellow-400' />
           <p className='text-sm text-yellow-400'>
-            猎人技能会在你进入濒死状态时自动激活
+            {t('gameComponent.roleSkills.hunter.autoActivate')}
           </p>
         </div>
       </CardContent>
@@ -337,15 +381,21 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-gray-400'>
             <Moon className='w-5 h-5' />
-            村民技能 - 睡觉
+            {t('gameComponent.roleSkills.villager.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-sm text-gray-300'>
-            <p>夜晚阶段会自动进入睡眠状态。</p>
-            <p className='text-gray-400 mt-2'>• 睡觉技能会自动触发</p>
-            <p className='text-gray-400'>• 你的任务是在白天发言和投票</p>
-            <p className='text-gray-400'>• 帮助好人阵营找出狼人</p>
+            <p>{t('gameComponent.roleSkills.villager.description')}</p>
+            <p className='text-gray-400 mt-2'>
+              • {t('gameComponent.roleSkills.villager.rule1')}
+            </p>
+            <p className='text-gray-400'>
+              • {t('gameComponent.roleSkills.villager.rule2')}
+            </p>
+            <p className='text-gray-400'>
+              • {t('gameComponent.roleSkills.villager.rule3')}
+            </p>
           </div>
 
           <div className='mt-3'>
@@ -355,7 +405,7 @@ export const RoleSpecificSkills: React.FC<RoleSpecificSkillsProps> = ({
               disabled={true}
             >
               <Moon className='w-4 h-4 mr-2' />
-              睡觉（自动触发）
+              {t('gameComponent.roleSkills.villager.sleep')}
             </Button>
           </div>
         </CardContent>

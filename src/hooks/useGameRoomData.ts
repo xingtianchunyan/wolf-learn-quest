@@ -48,7 +48,7 @@ export const useGameRoomData = (
         setJudgeName(data[0].player_name);
       } else {
         console.error('Error fetching judge name for realtime update', error);
-        setJudgeName('未知');
+        setJudgeName(t('common.unknown'));
       }
     };
 
@@ -110,7 +110,7 @@ export const useGameRoomData = (
           }
 
           if (roomDataRaw) {
-            let hostPlayerName = 'Unknown';
+            let hostPlayerName = t('common.unknown_player');
             if (roomDataRaw.host_id) {
               const { data: hostData } = await supabase.rpc(
                 'get_public_user_profile',
@@ -154,7 +154,7 @@ export const useGameRoomData = (
           if (roomPlayerData?.rooms) {
             const room = roomPlayerData.rooms;
 
-            let hostPlayerName = 'Unknown';
+            let hostPlayerName = t('common.unknown_player');
             if (room.host_id) {
               const { data: hostData } = await supabase.rpc(
                 'get_public_user_profile',

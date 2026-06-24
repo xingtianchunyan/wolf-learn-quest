@@ -26,6 +26,7 @@ import { useRoleSelection } from '@/hooks/useRoleSelection';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const logger = createLogger('player-status-panel');
 
@@ -49,6 +50,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
   roomId,
   className,
 }) => {
+  const { t } = useLanguage();
   const { currentUser } = useAuth();
   const { players, loading: playersLoading } = usePlayersRealtime(roomId);
   const { getOnlinePlayers } = usePlayerPresence(roomId, currentUser);
@@ -97,35 +99,35 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
     switch (status) {
       case 1: // 正常
         return {
-          label: '正常',
+          label: t('game.status.normal'),
           barClass: 'bg-green-400',
           badgeClass: 'text-green-400 border-green-400',
           breath: false,
         };
       case 3: // 虚弱
         return {
-          label: '虚弱',
+          label: t('game.status.weakened'),
           barClass: 'bg-yellow-400',
           badgeClass: 'text-yellow-400 border-yellow-400',
           breath: false,
         };
       case 2: // 濒死
         return {
-          label: '濒死',
+          label: t('game.status.dying'),
           barClass: 'bg-red-400',
           badgeClass: 'text-red-400 border-red-400',
           breath: true,
         };
       case 4: // 淘汰
         return {
-          label: '淘汰',
+          label: t('game.status.eliminated'),
           barClass: 'bg-white',
           badgeClass: 'text-white border-white',
           breath: false,
         };
       default:
         return {
-          label: '未知',
+          label: t('common.unknown'),
           barClass: 'bg-gray-400',
           badgeClass: 'text-gray-400 border-gray-400',
           breath: false,
@@ -152,7 +154,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
       <CardHeader className='pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center text-lg'>
           <Users className='mr-2 h-5 w-5' />
-          玩家状态
+          {t('judge.playerStatus.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className='p-4 pt-0 h-[calc(100%-80px)]'>
@@ -161,16 +163,20 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
             <Table>
               <TableHeader>
                 <TableRow className='border-werewolf-purple/30'>
-                  <TableHead className='text-werewolf-purple'>玩家ID</TableHead>
-                  <TableHead className='text-werewolf-purple'>角色</TableHead>
                   <TableHead className='text-werewolf-purple'>
-                    在线状态
+                    {t('judge.playerStatus.headers.playerId')}
                   </TableHead>
                   <TableHead className='text-werewolf-purple'>
-                    准备状态
+                    {t('judge.playerStatus.headers.role')}
                   </TableHead>
                   <TableHead className='text-werewolf-purple'>
-                    特殊标识
+                    {t('judge.playerStatus.headers.onlineStatus')}
+                  </TableHead>
+                  <TableHead className='text-werewolf-purple'>
+                    {t('judge.playerStatus.headers.readyStatus')}
+                  </TableHead>
+                  <TableHead className='text-werewolf-purple'>
+                    {t('judge.playerStatus.headers.special')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -181,7 +187,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                       colSpan={5}
                       className='text-center text-gray-400 py-4'
                     >
-                      加载中...
+                      {t('common.loading')}
                     </TableCell>
                   </TableRow>
                 ) : players.length === 0 ? (
@@ -190,7 +196,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                       colSpan={5}
                       className='text-center text-gray-400 py-4'
                     >
-                      暂无玩家
+                      {t('judge.playerStatus.empty')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -199,7 +205,8 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                     const selectedRole = player.userId
                       ? getSelectedRoleByUser(player.userId)
                       : null;
-                    const roleName = selectedRole?.roleName || '未选择';
+                    const roleName =
+                      selectedRole?.roleName || t('judge.playerStatus.noRole');
                     const statusNum = getPlayerRoleStatus(player.userId);
                     const meta = getStatusMeta(statusNum);
 
@@ -230,7 +237,9 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                             <span
                               className={`text-sm ${playerOnline ? 'text-green-400' : 'text-red-400'}`}
                             >
-                              {playerOnline ? '在线' : '离线'}
+                              {playerOnline
+                                ? t('game.status.online')
+                                : t('game.status.offline')}
                             </span>
                           </div>
                         </TableCell>
@@ -244,7 +253,9 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                             <span
                               className={`text-sm ${player.isReady ? 'text-green-400' : 'text-red-400'}`}
                             >
-                              {player.isReady ? '已准备' : '未准备'}
+                              {player.isReady
+                                ? t('game.status.ready')
+                                : t('game.status.not_ready')}
                             </span>
                           </div>
                         </TableCell>

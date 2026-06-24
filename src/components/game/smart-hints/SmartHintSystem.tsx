@@ -18,6 +18,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface GameState {
   phase: 'day' | 'evening' | 'night' | 'dawn';
@@ -72,6 +73,7 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
   userExperience,
   showTutorialHints,
 }) => {
+  const { t } = useLanguage();
   const [dismissedHints, setDismissedHints] = useState<Set<string>>(new Set());
   const [expandedHints, setExpandedHints] = useState<Set<string>>(new Set());
 
@@ -89,11 +91,10 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'werewolf_night_action',
           type: 'opportunity',
           priority: 'high',
-          title: '狼人夜间行动',
-          description:
-            '现在是夜晚阶段，你可以选择一个目标进行攻击。建议优先选择威胁性较大的角色。',
+          title: t('gameComponent.hints.werewolfNightAction.title'),
+          description: t('gameComponent.hints.werewolfNightAction.description'),
           action: 'use_night_attack',
-          actionLabel: '使用夜杀',
+          actionLabel: t('gameComponent.hints.werewolfNightAction.actionLabel'),
           dismissible: true,
         });
       }
@@ -109,9 +110,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'vigil_protection',
           type: 'strategy',
           priority: 'high',
-          title: '守卫保护建议',
-          description:
-            '选择保护对象时，优先考虑重要的神职角色，避免连续保护同一人。',
+          title: t('gameComponent.hints.vigilProtection.title'),
+          description: t('gameComponent.hints.vigilProtection.description'),
           dismissible: true,
         });
       }
@@ -127,9 +127,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'witch_potion_usage',
           type: 'strategy',
           priority: 'medium',
-          title: '女巫药剂使用策略',
-          description:
-            '解药应谨慎使用，毒药可以在关键时刻淘汰怀疑对象。记住每种药剂只能使用一次。',
+          title: t('gameComponent.hints.witchPotionUsage.title'),
+          description: t('gameComponent.hints.witchPotionUsage.description'),
           dismissible: true,
         });
       }
@@ -141,8 +140,11 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
         id: 'time_warning',
         type: 'warning',
         priority: 'high',
-        title: '时间紧迫',
-        description: `距离${gameState.phase}阶段结束还有${gameState.timeRemaining}秒，请尽快完成操作。`,
+        title: t('gameComponent.hints.timeWarning.title'),
+        description: t('gameComponent.hints.timeWarning.description', {
+          phase: t(`game.phase.${gameState.phase}` as never),
+          seconds: gameState.timeRemaining,
+        }),
         dismissible: false,
         autoExpire: gameState.timeRemaining * 1000,
       });
@@ -156,8 +158,10 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'voting_reminder',
           type: 'timing',
           priority: 'medium',
-          title: '投票提醒',
-          description: `还有${unreadyPlayers}名玩家未投票，请等待所有玩家完成投票。`,
+          title: t('gameComponent.hints.votingReminder.title'),
+          description: t('gameComponent.hints.votingReminder.description', {
+            count: unreadyPlayers,
+          }),
           dismissible: true,
         });
       }
@@ -170,9 +174,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'beginner_day_phase',
           type: 'tutorial',
           priority: 'medium',
-          title: '白天阶段说明',
-          description:
-            '白天阶段是讨论和投票的时间。观察其他玩家的发言，寻找可疑的行为。',
+          title: t('gameComponent.hints.beginnerDayPhase.title'),
+          description: t('gameComponent.hints.beginnerDayPhase.description'),
           dismissible: true,
         });
       }
@@ -182,9 +185,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'beginner_night_phase',
           type: 'tutorial',
           priority: 'medium',
-          title: '夜晚阶段说明',
-          description:
-            '夜晚阶段各角色发动技能。根据你的角色执行相应的夜间行动。',
+          title: t('gameComponent.hints.beginnerNightPhase.title'),
+          description: t('gameComponent.hints.beginnerNightPhase.description'),
           dismissible: true,
         });
       }
@@ -204,8 +206,8 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: 'game_balance_warning',
           type: 'warning',
           priority: 'high',
-          title: '游戏平衡警告',
-          description: '狼人数量仍然较多，好人阵营需要加快找出狼人的步伐。',
+          title: t('gameComponent.hints.gameBalanceWarning.title'),
+          description: t('gameComponent.hints.gameBalanceWarning.description'),
           dismissible: true,
         });
       }
@@ -218,8 +220,11 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
           id: `skill_cooldown_${skill.name}`,
           type: 'timing',
           priority: 'low',
-          title: '技能冷却中',
-          description: `${skill.name} 技能还需等待 ${skill.cooldown} 回合才能再次使用。`,
+          title: t('gameComponent.hints.skillCooldown.title'),
+          description: t('gameComponent.hints.skillCooldown.description', {
+            skillName: skill.name,
+            cooldown: skill.cooldown,
+          }),
           dismissible: true,
         });
       }
@@ -286,6 +291,14 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
     }
   };
 
+  const getTypeLabel = (type: SmartHint['type']) => {
+    return t(`gameComponent.hints.types.${type}` as never);
+  };
+
+  const getPriorityLabel = (priority: SmartHint['priority']) => {
+    return t(`gameComponent.hints.priority.${priority}` as never);
+  };
+
   const getTypeColor = (type: SmartHint['type']) => {
     switch (type) {
       case 'strategy':
@@ -306,11 +319,11 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
   const getPriorityBadge = (priority: SmartHint['priority']) => {
     switch (priority) {
       case 'high':
-        return <Badge variant='destructive'>高</Badge>;
+        return <Badge variant='destructive'>{getPriorityLabel(priority)}</Badge>;
       case 'medium':
-        return <Badge variant='default'>中</Badge>;
+        return <Badge variant='default'>{getPriorityLabel(priority)}</Badge>;
       case 'low':
-        return <Badge variant='secondary'>低</Badge>;
+        return <Badge variant='secondary'>{getPriorityLabel(priority)}</Badge>;
     }
   };
 
@@ -322,7 +335,9 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
     <div className='space-y-3'>
       <div className='flex items-center gap-2'>
         <Lightbulb className='w-5 h-5 text-blue-600' />
-        <h3 className='font-semibold text-sm'>智能提示</h3>
+        <h3 className='font-semibold text-sm'>
+          {t('gameComponent.hints.title')}
+        </h3>
         <Badge variant='outline'>{smartHints.length}</Badge>
       </div>
 
@@ -376,7 +391,9 @@ const SmartHintSystem: React.FC<SmartHintSystemProps> = ({
 
                       {hint.conditions && hint.conditions.length > 0 && (
                         <div className='mb-3'>
-                          <p className='text-xs font-medium mb-1'>触发条件：</p>
+                          <p className='text-xs font-medium mb-1'>
+                            {t('gameComponent.hints.conditionsTitle')}
+                          </p>
                           <ul className='text-xs text-muted-foreground space-y-1'>
                             {hint.conditions.map((condition, index) => (
                               <li

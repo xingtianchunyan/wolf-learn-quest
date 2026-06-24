@@ -1,6 +1,7 @@
 // 技能系统统计和数据分析
 import { useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 import { EnhancedSkillService } from '@/services/enhancedSkillService';
 import { matchesEffectType } from '@/utils/skillEffectStandardization';
@@ -29,6 +30,7 @@ export const useSkillStats = (
   gameStateId?: string
 ) => {
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   // 计算统计数据
   const stats = useMemo((): SkillSystemStats => {
@@ -78,26 +80,30 @@ export const useSkillStats = (
       try {
         const result = await EnhancedSkillService.resolveSkillConflictsInRound(
           gameStateId,
-          roundNumber
+          roundNumber,
+          language
         );
 
         toast({
-          title: '技能冲突解决完成',
-          description: `解决了 ${result.resolved} 个技能，取消了 ${result.cancelled} 个冲突技能`,
+          title: t('hook.skill_stats.conflicts_resolved_title'),
+          description: t('hook.skill_stats.conflicts_resolved_desc', {
+            resolved: result.resolved,
+            cancelled: result.cancelled,
+          }),
         });
 
         return result;
       } catch (error) {
-        logger.error('解决技能冲突失败', error);
+        logger.error('Failed to resolve skill conflicts', error);
         toast({
-          title: '冲突解决失败',
-          description: '无法解决技能冲突，请联系管理员',
+          title: t('hook.skill_stats.conflicts_failed_title'),
+          description: t('hook.skill_stats.conflicts_failed_desc'),
           variant: 'destructive',
         });
         return { resolved: 0, cancelled: 0 };
       }
     },
-    [gameStateId, toast]
+    [gameStateId, language, toast, t]
   );
 
   // 检查是否有活跃效果
