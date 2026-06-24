@@ -61,6 +61,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     loading: roleDesignsLoading,
     getLocalImageByDesignId,
   } = useRoleDesigns();
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const {
     roleSelections,
@@ -87,6 +88,21 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const currentSelection = getCurrentPlayerSelection();
   const currentSelectedRoleId = currentSelection?.roleId || null;
   const playerHasSelected = !!currentSelectedRoleId;
+
+  const handleCardFlip = (roleInstanceId: string) => {
+    setFlippedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(roleInstanceId)) {
+        newSet.delete(roleInstanceId);
+      } else {
+        newSet.add(roleInstanceId);
+      }
+      return newSet;
+    });
+  };
+
+  const isFlipped = (roleInstanceId: string) =>
+    flippedCards.has(roleInstanceId);
 
   const getSelectionByRoleId = (roleDesignId?: string) => {
     if (!roleDesignId) return undefined;
@@ -138,6 +154,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     const success = await selectRole(role.roleDesignId);
     if (success) {
       onCharacterSelect(role.roleDesignId);
+      // 选角成功后自动翻面，让玩家直接看到角色详情
+      setFlippedCards(prev => new Set([...prev, role.instanceId]));
       toast({
         title: getRoleSelectionToast('cardRevealed'),
         description: t('gameComponent.room.roleSelection.selectedRole', {
@@ -245,6 +263,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
                   isRevealed={isRevealed}
                   canSelect={!!canSelect}
                   imageUrl={imageUrl}
+                  flipped={isFlipped(role.instanceId)}
+                  onFlip={() => handleCardFlip(role.instanceId)}
                   onSelect={() => handleRoleSelect(role)}
                 />
               );
