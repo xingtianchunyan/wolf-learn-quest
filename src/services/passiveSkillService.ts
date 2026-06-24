@@ -2,8 +2,15 @@
 import { supabase } from '@/integrations/supabase/client';
 import { SystemAnnouncementService } from './systemAnnouncementService';
 import { createLogger } from '@/lib/logger';
+import {
+  createTranslator,
+  defaultLanguage,
+  type LanguageCode,
+} from '@/lib/translations';
 
 const logger = createLogger('passive-skill-service');
+
+const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
 
 export interface SkillEffect {
   skillUseId: string;
@@ -22,8 +29,10 @@ export class PassiveSkillService {
     targetUserId: string,
     attackerUserId: string,
     gameStateId: string,
-    roomId: string
+    roomId: string,
+    language?: LanguageCode
   ): Promise<{ isImmune: boolean; reason?: string }> {
+    const t = getT(language);
     try {
       logger.debug('检查恶魔免疫', {
         targetUserId,
@@ -52,10 +61,10 @@ export class PassiveSkillService {
         await SystemAnnouncementService.createSkillUsageAnnouncement({
           type: 'skill_usage',
           actorUserId: targetUserId,
-          actorName: 'Unknown', // 需要获取实际姓名
+          actorName: t('common.unknown_player'), // 需要获取实际姓名
           actorRole: 'demon',
-          skillName: '恶魔被动',
-          skillType: '免疫',
+          skillName: t('hook.service.passiveSkill.demon_passive'),
+          skillType: t('hook.service.passiveSkill.immunity'),
           roomId,
           gameRound: 1, // 需要获取实际轮次
           gamePhase: 'night',
@@ -63,7 +72,7 @@ export class PassiveSkillService {
 
         return {
           isImmune: true,
-          reason: '恶魔免疫狼人攻击',
+          reason: t('hook.service.passiveSkill.demon_immune_reason'),
         };
       }
 
@@ -81,8 +90,10 @@ export class PassiveSkillService {
     targetUserId: string,
     gameStateId: string,
     roomId: string,
-    currentRound: number
+    currentRound: number,
+    language?: LanguageCode
   ): Promise<{ shouldEliminate: boolean; reason?: string }> {
+    const t = getT(language);
     try {
       logger.debug('检查多重保护', { targetUserId, gameStateId, currentRound });
 
@@ -114,11 +125,11 @@ export class PassiveSkillService {
           actorName: '',
           actorRole: '',
           targetUserId,
-          targetName: 'Unknown', // 需要获取实际姓名
-          targetRole: 'Unknown', // 需要获取实际角色
-          skillName: '多重保护',
-          skillType: '特殊判定',
-          finalStatus: '淘汰',
+          targetName: t('common.unknown_player'), // 需要获取实际姓名
+          targetRole: t('common.unknown_role'), // 需要获取实际角色
+          skillName: t('hook.service.passiveSkill.multiple_protection'),
+          skillType: t('hook.service.passiveSkill.special_judgment'),
+          finalStatus: t('hook.service.passiveSkill.eliminated'),
           roomId,
           gameRound: currentRound,
           gamePhase: 'night',
@@ -126,7 +137,9 @@ export class PassiveSkillService {
 
         return {
           shouldEliminate: true,
-          reason: (data as any)?.reason || '多重保护导致淘汰',
+          reason:
+            (data as any)?.reason ||
+            t('hook.service.passiveSkill.multiple_protection_reason'),
         };
       }
 
@@ -144,8 +157,10 @@ export class PassiveSkillService {
     hunterUserId: string,
     gameStateId: string,
     roomId: string,
-    triggerReason: string = 'elimination'
+    triggerReason: string = 'elimination',
+    language?: LanguageCode
   ): Promise<boolean> {
+    const t = getT(language);
     try {
       logger.debug('触发猎人濒死技能', {
         hunterUserId,
@@ -174,7 +189,7 @@ export class PassiveSkillService {
         await SystemAnnouncementService.createHunterDeathBroadcast({
           type: 'hunter_broadcast',
           actorUserId: hunterUserId,
-          actorName: 'Unknown', // 需要获取实际姓名
+          actorName: t('common.unknown_player'), // 需要获取实际姓名
           actorRole: 'hunter',
           roomId,
           gameRound: 1, // 需要获取实际轮次
@@ -194,8 +209,10 @@ export class PassiveSkillService {
    */
   static async resolveSkillConflicts(
     conflictingSkills: SkillEffect[],
-    gameStateId: string
+    gameStateId: string,
+    language?: LanguageCode
   ): Promise<SkillEffect[]> {
+    const t = getT(language);
     try {
       // 按优先级排序（数字越小优先级越高）
       const sortedSkills = conflictingSkills.sort(
@@ -231,7 +248,7 @@ export class PassiveSkillService {
           .from('skill_uses')
           .update({
             execution_status: 'cancelled',
-            failure_reason: '技能冲突，优先级较低',
+            failure_reason: t('hook.service.passiveSkill.conflict_reason'),
           })
           .eq('id', skill.skillUseId);
       }

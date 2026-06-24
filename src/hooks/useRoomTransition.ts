@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 /**
  * Auto transition players to a fresh room after game ends.
@@ -17,6 +18,7 @@ export const useRoomTransition = (
 ) => {
   const { currentUser, requireAuth } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const handledRef = useRef(false);
 
@@ -62,18 +64,21 @@ export const useRoomTransition = (
           if (error) {
             console.error('Failed to join new room:', error);
             toast({
-              title: '进入新房间失败',
+              title: t('hook.room_transition.join_failed_title'),
               description: error.message,
               variant: 'destructive',
             });
             return;
           }
-          toast({ title: '已进入新房间', description: '请重新选择角色并准备' });
+          toast({
+            title: t('hook.room_transition.entered_title'),
+            description: t('hook.room_transition.entered_desc'),
+          });
           navigate(`/room/${newRoomId}`);
         } else {
           toast({
-            title: '已创建新房间',
-            description: '您已进入新一局的法官页面',
+            title: t('hook.room_transition.created_title'),
+            description: t('hook.room_transition.created_desc'),
           });
           navigate(`/room/${newRoomId}/judge`);
         }

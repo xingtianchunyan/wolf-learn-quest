@@ -5,6 +5,7 @@ import GamePlayerStatusDisplay from '../displays/GamePlayerStatusDisplay';
 import { useGameState } from '@/hooks/useGameState';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface GameInfoPanelProps {
   roomId: string;
@@ -19,10 +20,20 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
   onTargetSelect,
   canSelectTargets = false,
 }) => {
-  const { gameState, getPhaseDisplayName, formatTime, timeRemaining } =
-    useGameState(roomId);
+  const { t } = useLanguage();
+  const { gameState, formatTime, timeRemaining } = useGameState(roomId);
   const { players: realPlayers } = usePlayersRealtime(roomId);
   const [maxPlayers, setMaxPlayers] = useState(8);
+
+  const phaseKeyMap: Record<number, string> = {
+    1: 'game.phase.day',
+    2: 'game.phase.evening',
+    3: 'game.phase.night',
+    4: 'game.phase.dawn',
+  };
+
+  const getPhaseDisplayName = (phase: number) =>
+    t((phaseKeyMap[phase] as never) ?? 'common.unknown');
 
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -41,17 +52,20 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
   }, [roomId]);
 
   const getGameStatusDisplay = () => {
-    if (!gameState) return '准备阶段 - 等待中';
+    if (!gameState) return t('gameComponent.infoPanel.waiting');
 
     switch (gameState.status) {
       case 'waiting':
-        return '准备阶段 - 等待开始';
+        return t('gameComponent.infoPanel.waitingForStart');
       case 'active':
-        return `第${gameState.currentRound}轮 - ${getPhaseDisplayName(gameState.currentPhase)}阶段`;
+        return t('game.phase.round_phase', {
+          round: gameState.currentRound,
+          phase: getPhaseDisplayName(gameState.currentPhase),
+        });
       case 'ended':
-        return '游戏已结束';
+        return t('gameComponent.infoPanel.gameEnded');
       default:
-        return '未知状态';
+        return t('common.unknown_status');
     }
   };
 
@@ -66,19 +80,19 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <GamepadIcon className='mr-2 h-5 w-5' />
-            游戏信息
+            {t('gameComponent.infoPanel.title')}
           </div>
           {gameState?.status === 'active' && (
             <div className='flex items-center text-sm'>
               {gameState.isPaused ? (
                 <div className='flex items-center text-yellow-400'>
                   <Pause className='h-4 w-4 mr-1' />
-                  已暂停
+                  {t('gameComponent.infoPanel.paused')}
                 </div>
               ) : (
                 <div className='flex items-center text-green-400'>
                   <Play className='h-4 w-4 mr-1' />
-                  进行中
+                  {t('gameComponent.infoPanel.inProgress')}
                 </div>
               )}
             </div>
@@ -105,7 +119,9 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
                     : 'text-werewolf-purple'
               }`}
             >
-              剩余时间: {formatTime(timeRemaining)}
+              {t('gameComponent.infoPanel.timeRemaining', {
+                time: formatTime(timeRemaining),
+              })}
             </span>
           </div>
         )}
@@ -113,20 +129,22 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
         {/* 游戏状态说明 */}
         {gameState && (
           <div className='text-xs text-gray-400 mt-1'>
-            {gameState.status === 'waiting' && '等待法官开始游戏'}
+            {gameState.status === 'waiting' &&
+              t('gameComponent.infoPanel.waitingDescription')}
             {gameState.status === 'active' &&
               gameState.currentPhase === 1 &&
-              '白天讨论阶段'}
+              t('game.phase.day_discussion')}
             {gameState.status === 'active' &&
               gameState.currentPhase === 2 &&
-              '傍晚答题阶段'}
+              t('game.phase.evening_quiz')}
             {gameState.status === 'active' &&
               gameState.currentPhase === 3 &&
-              '夜晚行动阶段'}
+              t('game.phase.night_action')}
             {gameState.status === 'active' &&
               gameState.currentPhase === 4 &&
-              '黎明答题阶段'}
-            {gameState.status === 'ended' && '游戏结束，可查看结算'}
+              t('game.phase.dawn_quiz')}
+            {gameState.status === 'ended' &&
+              t('gameComponent.infoPanel.endedDescription')}
           </div>
         )}
       </div>
@@ -134,24 +152,25 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({
       {/* 玩家状态标题 */}
       <div className='flex items-center justify-between flex-shrink-0 mx-4 mb-3'>
         <h3 className='font-semibold text-werewolf-purple text-sm'>
-          玩家状态 {canSelectTargets && '(点击选择目标)'}
+          {t('gameComponent.infoPanel.playerStatusTitle')}{' '}
+          {canSelectTargets && t('gameComponent.infoPanel.clickToSelect')}
         </h3>
         <div className='flex items-center gap-2 text-xs text-gray-400'>
           <span className='inline-flex items-center gap-1'>
             <span className='inline-block w-2 h-2 rounded-full border border-green-400'></span>
-            正常
+            {t('game.status.normal')}
           </span>
           <span className='inline-flex items-center gap-1'>
             <span className='inline-block w-2 h-2 rounded-full border border-yellow-400'></span>
-            虚弱
+            {t('game.status.weakened')}
           </span>
           <span className='inline-flex items-center gap-1'>
             <span className='inline-block w-2 h-2 rounded-full border border-red-400 animate-pulse'></span>
-            濒死
+            {t('game.status.dying')}
           </span>
           <span className='inline-flex items-center gap-1'>
             <span className='inline-block w-2 h-2 rounded-full border border-white'></span>
-            淘汰
+            {t('game.status.eliminated')}
           </span>
         </div>
       </div>

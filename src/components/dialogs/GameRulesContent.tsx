@@ -192,7 +192,7 @@ const GameRulesContent: React.FC = () => {
                   {t('good_guys_camp')}
                 </h4>
                 <ul className='space-y-1 text-sm'>
-                  <li>• {t('villagers')}</li>
+                  <li>• {t('villager')}</li>
                   <li>• {t('hunter')}</li>
                   <li>• {t('witch')}</li>
                   <li>• {t('seer')}</li>

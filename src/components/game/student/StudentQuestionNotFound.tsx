@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface StudentQuestionNotFoundProps {
   roundNumber: number;
@@ -13,16 +14,26 @@ const StudentQuestionNotFound: React.FC<StudentQuestionNotFoundProps> = ({
   expectedQuestionIndex,
   totalQuestions,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className='text-center text-red-400 py-8'>
       <div className='p-4 bg-red-900/20 rounded-md border border-red-500/30'>
-        <h3 className='font-semibold mb-2'>题目加载失败</h3>
+        <h3 className='font-semibold mb-2'>
+          {t('gameComponent.question.notFound.title')}
+        </h3>
         <p className='text-sm'>
-          当前阶段（第{roundNumber}轮{phaseName}）的题目未找到。
+          {t('gameComponent.question.notFound.description', {
+            round: roundNumber,
+            phase: phaseName,
+          })}
           <br />
-          期望题目序号：{expectedQuestionIndex + 1} (总题目数: {totalQuestions})
+          {t('gameComponent.question.notFound.expectedIndex', {
+            index: expectedQuestionIndex + 1,
+            total: totalQuestions,
+          })}
           <br />
-          可能原因：法官尚未为此房间设置足够的题目，或题目序号超出范围。
+          {t('gameComponent.question.notFound.possibleReason')}
         </p>
       </div>
     </div>

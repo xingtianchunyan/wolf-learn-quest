@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { getSkillConfigByEnglish } from '@/utils/skillMappingConfig';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { Tables } from '@/integrations/supabase/types';
 
 /**
@@ -60,6 +61,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
   selectedTargetId,
   onTargetSelect,
 }) => {
+  const { t } = useLanguage();
   const {
     skillUses,
     loading,
@@ -67,6 +69,33 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     getUserSkillData,
     canUseSkill: canUseSkillFromHook,
   } = useEnhancedSkillSystem(roomId, gameStateId, userId);
+
+  // 将技能英文名映射到已有的翻译 key（en.ts / zh.ts 中的 skill_*/effect_*）
+  const getSkillName = (englishName: string) => {
+    const key = `skill_${englishName.toLowerCase()}` as never;
+    const translated = t(key);
+    return translated !== key ? translated : englishName;
+  };
+
+  const getSkillDescription = (englishName: string) => {
+    const key = `effect_${englishName.toLowerCase()}` as never;
+    const translated = t(key);
+    return translated !== key
+      ? translated
+      : roleDesign?.skill_description || skillConfig?.description || englishName;
+  };
+
+  const getEffectTypeLabel = (effectType: string) => {
+    const key = `gameComponent.gameSkillPanel.effectTypes.${effectType}` as never;
+    const translated = t(key);
+    return translated !== key ? translated : effectType;
+  };
+
+  const getTargetTypeLabel = (targetType: string) => {
+    const key = `gameComponent.skillInfo.targetTypes.${targetType}` as never;
+    const translated = t(key);
+    return translated !== key ? translated : targetType;
+  };
 
   // 获取技能配置
   const skillConfig = useMemo(() => {
@@ -107,6 +136,7 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
         const currentRoleName = roleDesign.role_name.toLowerCase();
         if (
           currentRoleName.includes('werewolf') ||
+          currentRoleName.includes('wolf') ||
           currentRoleName.includes('狼人')
         ) {
           // 需要获取目标玩家的角色信息来判断是否为狼人阵营
@@ -146,10 +176,12 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
     return (
       <Card className='bg-werewolf-card border-werewolf-purple/30 h-full'>
         <CardHeader>
-          <CardTitle>技能面板</CardTitle>
+          <CardTitle>{t('gameComponent.gameSkillPanel.title')}</CardTitle>
         </CardHeader>
         <CardContent className='h-full overflow-y-auto'>
-          <p className='text-sm text-muted-foreground'>没有可用的技能</p>
+          <p className='text-sm text-muted-foreground'>
+            {t('gameComponent.gameSkillPanel.noSkill')}
+          </p>
         </CardContent>
       </Card>
     );
@@ -160,9 +192,11 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
           <Target className='w-4 h-4' />
-          技能面板
+          {t('gameComponent.gameSkillPanel.title')}
           <Badge variant='outline' className='ml-auto'>
-            优先级: {skillConfig.priority}
+            {t('gameComponent.gameSkillPanel.priority', {
+              priority: skillConfig.priority,
+            })}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -171,19 +205,23 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
             <span className='font-medium text-werewolf-purple'>
-              {skillConfig.chineseName}
+              {getSkillName(skillConfig.englishName)}
             </span>
             <div className='flex gap-1'>
               {skillConfig.effectType.map((type, index) => (
                 <Badge key={index} variant='secondary' className='text-xs'>
-                  {type}
+                  {getEffectTypeLabel(type)}
                 </Badge>
               ))}
             </div>
           </div>
 
           <p className='text-sm text-muted-foreground'>
-            {roleDesign.skill_description}
+            {getSkillDescription(skillConfig.englishName)}
+          </p>
+          <p className='text-xs text-muted-foreground'>
+            {t('gameComponent.skillInfo.targetType')}:{' '}
+            {getTargetTypeLabel(skillConfig.targetType)}
           </p>
         </div>
 
@@ -192,13 +230,15 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           <div className='bg-werewolf-dark/30 border border-werewolf-purple/20 rounded-lg p-3'>
             <p className='text-sm text-gray-300 mb-1'>
               <Target className='inline w-4 h-4 mr-1' />
-              请在左侧玩家列表中点击选择目标玩家
+              {t('gameComponent.gameSkillPanel.targetHint')}
             </p>
             {selectedTargetId && (
               <p className='text-sm text-werewolf-purple'>
-                已选择:{' '}
-                {availableTargets.find(p => p.userId === selectedTargetId)
-                  ?.name || '未知玩家'}
+                {t('gameComponent.gameSkillPanel.selectedTarget', {
+                  target:
+                    availableTargets.find(p => p.userId === selectedTargetId)
+                      ?.name || t('common.unknown_player'),
+                })}
               </p>
             )}
           </div>
@@ -217,16 +257,20 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
           {loading ? (
             <>
               <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              使用中...
+              {t('gameComponent.gameSkillPanel.using')}
             </>
           ) : (
-            `使用 ${skillConfig.chineseName}`
+            t('gameComponent.gameSkillPanel.useSkill', {
+              skillName: getSkillName(skillConfig.englishName),
+            })
           )}
         </Button>
 
         {/* 当前效果 */}
         <div className='space-y-2'>
-          <h4 className='text-sm font-medium text-gray-300'>当前效果</h4>
+          <h4 className='text-sm font-medium text-gray-300'>
+            {t('gameComponent.gameSkillPanel.currentEffects')}
+          </h4>
           {userSkillData.targets.length > 0 ? (
             <div className='space-y-2'>
               {userSkillData.targets.map(effect => (
@@ -234,18 +278,26 @@ const GameSkillPanel: React.FC<GameSkillPanelProps> = ({
                   key={effect.id}
                   className='flex items-center justify-between text-xs p-2 bg-werewolf-dark/40 rounded'
                 >
-                  <span>{effect.target_type}</span>
+                  <span>
+                    {effect.target_type
+                      ? getEffectTypeLabel(effect.target_type)
+                      : effect.target_type}
+                  </span>
                   <Badge
                     variant={effect.is_active ? 'default' : 'secondary'}
                     className='text-xs'
                   >
-                    {effect.is_active ? '生效中' : '已失效'}
+                    {effect.is_active
+                      ? t('gameComponent.gameSkillPanel.active')
+                      : t('gameComponent.gameSkillPanel.inactive')}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className='text-xs text-muted-foreground'>暂无活跃效果</p>
+            <p className='text-xs text-muted-foreground'>
+              {t('gameComponent.gameSkillPanel.noActiveEffects')}
+            </p>
           )}
         </div>
       </CardContent>

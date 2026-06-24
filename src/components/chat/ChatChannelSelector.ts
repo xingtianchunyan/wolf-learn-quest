@@ -3,6 +3,7 @@
  * 统一使用字符串频道模型，与 `useMultiChannelChat` 返回值保持一致，避免运行时契约漂移。
  */
 import React from 'react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 /**
  * 类型注释：聊天频道
@@ -25,12 +26,15 @@ interface ChatChannelSelectorProps {
   isGameRoom?: boolean;
 }
 
-const channelLabels: Record<ChatChannel, string> = {
-  public: '公共',
-  team: '小队',
-  judge_private: '法官私聊',
-  system: '系统',
-  all: '全部',
+const channelLabelKeys: Record<
+  ChatChannel,
+  import('@/lib/translations').TranslationKey
+> = {
+  public: 'channel_public',
+  team: 'channel_team',
+  judge_private: 'channel_judge_private',
+  system: 'channel_system',
+  all: 'channel_all',
 };
 
 /**
@@ -42,6 +46,8 @@ const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
   onChannelChange,
   isGameRoom: _isGameRoom = false,
 }) => {
+  const { t } = useLanguage();
+
   return React.createElement(
     'div',
     { className: 'flex gap-2 p-2' },
@@ -57,7 +63,7 @@ const ChatChannelSelector: React.FC<ChatChannelSelectorProps> = ({
               : 'bg-secondary text-secondary-foreground'
           }`,
         },
-        channelLabels[channel]
+        t(channelLabelKeys[channel])
       )
     )
   );

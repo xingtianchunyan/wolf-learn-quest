@@ -105,8 +105,8 @@ export const useGameLobby = () => {
           return {
             id: room.id,
             roomId: room.room_id,
-            name: `Game Room ${room.room_id}`,
-            host: room.users?.player_name || 'Unknown',
+            name: t('hook.lobby.game_room_name', { roomId: room.room_id }),
+            host: room.users?.player_name || t('common.unknown_player'),
             players: playerCount,
             maxPlayers: room.max_players || 8,
             hasAI: !room.human_judge,
@@ -423,8 +423,8 @@ export const useGameLobby = () => {
   const playAsJudge = async (roomId: string) => {
     if (!currentUser) {
       toast({
-        title: 'Authentication required',
-        description: 'Please sign in to play as judge',
+        title: t('auth_required'),
+        description: t('hook.lobby.sign_in_to_judge'),
         variant: 'destructive',
       });
       return;
@@ -440,8 +440,8 @@ export const useGameLobby = () => {
       if (error) {
         console.error('Error setting judge:', error);
         toast({
-          title: 'Failed to become judge',
-          description: 'Another player may have already become the judge',
+          title: t('hook.lobby.become_judge_failed'),
+          description: t('hook.lobby.judge_taken'),
           variant: 'destructive',
         });
         return;
@@ -452,8 +452,8 @@ export const useGameLobby = () => {
     } catch (error) {
       console.error('Error playing as judge:', error);
       toast({
-        title: 'Failed to join as judge',
-        description: 'An unexpected error occurred',
+        title: t('hook.lobby.join_judge_failed'),
+        description: t('hook.lobby.join_judge_error'),
         variant: 'destructive',
       });
     }

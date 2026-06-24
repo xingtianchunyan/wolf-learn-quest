@@ -8,6 +8,7 @@ import React from 'react';
 import { useVotingSystem } from '../useVotingSystem';
 import { supabase } from '@/integrations/supabase/client';
 import { VotingService } from '@/services/votingService';
+import { LanguageProvider } from '@/components/layout/LanguageSwitcher';
 
 // Mock useToast
 const mockToast = vi.fn();
@@ -108,7 +109,11 @@ const MockAuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 // Test wrapper component
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return React.createElement(MockAuthProvider, {}, children);
+  return React.createElement(
+    LanguageProvider,
+    {},
+    React.createElement(MockAuthProvider, {}, children)
+  );
 };
 
 describe('useVotingSystem', () => {
@@ -118,10 +123,14 @@ describe('useVotingSystem', () => {
 
     // 重置模拟的 toast 函数
     mockToast.mockClear();
+
+    // 固定测试语言为中文，使翻译断言与旧硬编码文案保持一致
+    localStorage.setItem('language', 'zh');
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   describe('初始化和数据获取', () => {
@@ -510,8 +519,8 @@ describe('useVotingSystem', () => {
       // 验证错误处理
       expect(newSession).toBeNull();
       expect(mockToast).toHaveBeenCalledWith({
-        title: '创建投票会话失败',
-        description: '请重试',
+        title: 'Failed to Create Voting Session',
+        description: 'Please try again later.',
         variant: 'destructive',
       });
 

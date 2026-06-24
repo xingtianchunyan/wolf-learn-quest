@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { Player } from '@/hooks/usePlayersRealtime';
 
 interface VoteSummary {
@@ -28,6 +29,11 @@ export const useEnhancedVotingAnalysis = (
   votingSummary: VoteSummary,
   getVotersForTarget: (targetId: string) => Array<{ voterId: string }>
 ) => {
+  const { t } = useLanguage();
+
+  const getPlayerName = (userId?: string) =>
+    players.find(p => p.userId === userId)?.name || t('common.unknown_player');
+
   const voteRecords = useMemo(() => {
     if (!votingSummary.hasVotes) return [];
 
@@ -36,16 +42,12 @@ export const useEnhancedVotingAnalysis = (
     for (const [targetId, voteCount] of Object.entries(
       votingSummary.votesByTarget
     )) {
-      const targetPlayer = players.find(p => p.userId === targetId);
       const voters = getVotersForTarget(targetId);
-      const voterNames = voters.map(
-        voter =>
-          players.find(p => p.userId === voter.voterId)?.name || '未知玩家'
-      );
+      const voterNames = voters.map(voter => getPlayerName(voter.voterId));
 
       records.push({
         votedPlayerId: targetId,
-        votedPlayerName: targetPlayer?.name || '未知玩家',
+        votedPlayerName: getPlayerName(targetId),
         voteCount,
         voters: voterNames,
         isHighest: false,
@@ -54,13 +56,13 @@ export const useEnhancedVotingAnalysis = (
 
     if (votingSummary.abstentions > 0) {
       const abstentionVoters = votingSummary.voteDetails?.['abstention'] || [];
-      const abstentionVoterNames = abstentionVoters.map(
-        vote => players.find(p => p.userId === vote.voterId)?.name || '未知玩家'
+      const abstentionVoterNames = abstentionVoters.map(vote =>
+        getPlayerName(vote.voterId)
       );
 
       records.push({
         votedPlayerId: 'abstention',
-        votedPlayerName: '弃权',
+        votedPlayerName: t('voting.results.abstention'),
         voteCount: votingSummary.abstentions,
         voters: abstentionVoterNames,
         isHighest: false,
@@ -80,7 +82,7 @@ export const useEnhancedVotingAnalysis = (
 
   const resultAnalysis = useMemo((): VotingResultAnalysis => {
     if (voteRecords.length === 0) {
-      return { type: 'no_votes', message: '暂无投票记录' };
+      return { type: 'no_votes', message: t('voting.analysis.no_votes') };
     }
 
     const maxVotes = Math.max(...voteRecords.map(r => r.voteCount));
@@ -89,11 +91,17 @@ export const useEnhancedVotingAnalysis = (
     );
 
     if (topVotedPlayers.length === 0) {
-      return { type: 'only_abstention', message: '仅有弃权票' };
+      return {
+        type: 'only_abstention',
+        message: t('voting.analysis.only_abstention'),
+      };
     } else if (topVotedPlayers.length === 1) {
       return {
         type: 'unique_winner',
-        message: `${topVotedPlayers[0].votedPlayerName} 获得最高票数 (${maxVotes} 票)`,
+        message: t('voting.analysis.unique_winner', {
+          name: topVotedPlayers[0].votedPlayerName,
+          count: maxVotes,
+        }),
         winner: topVotedPlayers[0],
       };
     } else {
@@ -102,11 +110,14 @@ export const useEnhancedVotingAnalysis = (
         .join('、');
       return {
         type: 'tie',
-        message: `平票：${tiedPlayerNames} 各获得 ${maxVotes} 票`,
+        message: t('voting.analysis.tie', {
+          names: tiedPlayerNames,
+          count: maxVotes,
+        }),
         tiedPlayers: topVotedPlayers,
       };
     }
-  }, [voteRecords]);
+  }, [voteRecords, t]);
 
   return { voteRecords, resultAnalysis };
 };

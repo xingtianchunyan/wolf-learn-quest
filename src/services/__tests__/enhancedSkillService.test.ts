@@ -63,7 +63,7 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = EnhancedSkillService.getRoleSkillConfig(roleDesign);
+      const result = EnhancedSkillService.getRoleSkillConfig(roleDesign, 'zh');
 
       // 验证结果
       expect(result).toBeDefined();
@@ -86,7 +86,7 @@ describe('EnhancedSkillService', () => {
 
       // 执行测试并验证错误
       expect(() => {
-        EnhancedSkillService.getRoleSkillConfig(roleDesign);
+        EnhancedSkillService.getRoleSkillConfig(roleDesign, 'zh');
       }).toThrow(SkillServiceError);
     });
 
@@ -105,10 +105,10 @@ describe('EnhancedSkillService', () => {
 
       // 执行测试并验证错误
       expect(() => {
-        EnhancedSkillService.getRoleSkillConfig(roleDesign);
+        EnhancedSkillService.getRoleSkillConfig(roleDesign, 'zh');
       }).toThrow(SkillServiceError);
       expect(() => {
-        EnhancedSkillService.getRoleSkillConfig(roleDesign);
+        EnhancedSkillService.getRoleSkillConfig(roleDesign, 'zh');
       }).toThrow('未找到技能配置: unknown_skill');
     });
   });
@@ -316,7 +316,7 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = await EnhancedSkillService.validateSkillUsage(context);
+      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
 
       // 验证结果
       expect(result.isValid).toBe(true);
@@ -353,7 +353,7 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = await EnhancedSkillService.validateSkillUsage(context);
+      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
 
       // 验证结果
       expect(result.isValid).toBe(false);
@@ -406,7 +406,7 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行测试
-      const result = await EnhancedSkillService.useSkillEnhanced(context);
+      const result = await EnhancedSkillService.useSkillEnhanced(context, 'zh');
 
       // 验证结果
       expect(result).toBe('skill_use_success');
@@ -462,7 +462,7 @@ describe('EnhancedSkillService', () => {
 
       // 执行测试并验证错误
       await expect(
-        EnhancedSkillService.useSkillEnhanced(context)
+        EnhancedSkillService.useSkillEnhanced(context, 'zh')
       ).rejects.toThrow('用户未登录');
     });
   });
@@ -563,7 +563,7 @@ describe('EnhancedSkillService', () => {
       };
 
       // 执行操作
-      EnhancedSkillService.getRoleSkillConfig(roleDesign);
+      EnhancedSkillService.getRoleSkillConfig(roleDesign, 'zh');
 
       // 验证性能监控被调用
       // 注意：这里需要根据实际的 performanceMonitoringService mock 来验证
@@ -638,7 +638,7 @@ describe('EnhancedSkillService', () => {
         },
       };
 
-      const result = await EnhancedSkillService.validateSkillUsage(context);
+      const result = await EnhancedSkillService.validateSkillUsage(context, 'zh');
 
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('技能冲突');
@@ -687,7 +687,7 @@ describe('EnhancedSkillService', () => {
       });
 
       await expect(
-        EnhancedSkillService.useSkillEnhanced(context)
+        EnhancedSkillService.useSkillEnhanced(context, 'zh')
       ).rejects.toThrow('技能使用失败: 数据库连接失败');
     });
 
@@ -731,7 +731,7 @@ describe('EnhancedSkillService', () => {
       });
 
       await expect(
-        EnhancedSkillService.useSkillEnhanced(context)
+        EnhancedSkillService.useSkillEnhanced(context, 'zh')
       ).rejects.toThrow('网络连接失败');
     });
   });

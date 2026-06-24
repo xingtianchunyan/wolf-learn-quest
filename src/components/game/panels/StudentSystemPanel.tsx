@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap } from 'lucide-react';
 import { useStudentSystem } from '@/hooks/useStudentSystem';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import StudentTimerDisplay from '../student/StudentTimerDisplay';
 import StudentQuestionDisplay from '../student/StudentQuestionDisplay';
 import StudentPreviousQuestionDisplay from '../student/StudentPreviousQuestionDisplay';
@@ -13,6 +14,7 @@ interface StudentSystemPanelProps {
 }
 
 const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const {
     roomQuestions,
     currentQuestion,
@@ -41,7 +43,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
       <CardHeader className='flex-shrink-0 pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center text-lg'>
           <GraduationCap className='mr-2 h-5 w-5' />
-          学生系统 - {gameStatusInfo}
+          {t('gameComponent.studentSystem.title', { status: gameStatusInfo })}
         </CardTitle>
       </CardHeader>
 
@@ -61,18 +63,22 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
             {/* 主要内容显示 */}
             {isLoadingQuestions ? (
               <div className='text-center text-gray-400 py-8'>
-                正在加载题目信息...
+                {t('gameComponent.studentSystem.loadingQuestions')}
               </div>
             ) : !hasQuestionsInRoom ? (
               <div className='text-center text-yellow-400 py-8'>
                 <div className='p-4 bg-yellow-900/20 rounded-md border border-yellow-500/30'>
-                  <h3 className='font-semibold mb-2'>房间未设置题目</h3>
+                  <h3 className='font-semibold mb-2'>
+                    {t('gameComponent.studentSystem.noQuestionsTitle')}
+                  </h3>
                   <p className='text-sm'>
-                    此房间尚未设置题目。请联系法官为房间设置题目后再开始游戏。
+                    {t('gameComponent.studentSystem.noQuestionsDesc')}
                   </p>
                   <div className='mt-2 text-xs text-gray-500'>
-                    调试信息：roomQuestions长度={roomQuestions.length},
-                    hasQuestionsInRoom={hasQuestionsInRoom.toString()}
+                    {t('gameComponent.studentSystem.debugInfo', {
+                      length: roomQuestions.length,
+                      hasQuestions: hasQuestionsInRoom.toString(),
+                    })}
                   </div>
                 </div>
               </div>
@@ -95,7 +101,7 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
                 />
               ) : (
                 <div className='text-center text-gray-400 py-8'>
-                  正在准备题目...
+                  {t('gameComponent.studentSystem.preparingQuestion')}
                 </div>
               )
             ) : previousQuestion && !isAnsweringPhase ? (
@@ -105,12 +111,12 @@ const StudentSystemPanel: React.FC<StudentSystemPanelProps> = ({ roomId }) => {
             ) : (
               <div className='text-center text-gray-400 py-8 h-full flex items-center justify-center'>
                 {!gameState || gameState.status === 'waiting'
-                  ? '游戏尚未开始，请等待法官开始游戏'
+                  ? t('gameComponent.studentSystem.gameNotStarted')
                   : gameState.status === 'ended'
-                    ? '游戏已结束'
+                    ? t('gameComponent.studentSystem.gameEnded')
                     : !isAnsweringPhase
-                      ? '当前非答题阶段'
-                      : '正在准备题目...'}
+                      ? t('gameComponent.studentSystem.notAnsweringPhase')
+                      : t('gameComponent.studentSystem.preparingQuestion')}
               </div>
             )}
           </div>

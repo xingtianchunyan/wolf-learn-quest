@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const logger = createLogger('skill-effect-processor');
 
@@ -46,6 +47,7 @@ export const useSkillEffectProcessor = (
 
   const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingRef = useRef(false);
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
@@ -116,8 +118,10 @@ export const useSkillEffectProcessor = (
       if (stats.failureCount % 5 === 4) {
         // 每5次失败显示一次
         toast({
-          title: '技能效果处理异常',
-          description: `已连续失败 ${stats.failureCount + 1} 次，请检查系统状态`,
+          title: t('hook.skill_effect.process_error_title'),
+          description: t('hook.skill_effect.process_error_desc', {
+            count: stats.failureCount + 1,
+          }),
           variant: 'destructive',
         });
       }
@@ -126,7 +130,7 @@ export const useSkillEffectProcessor = (
     } finally {
       processingRef.current = false;
     }
-  }, [gameStateId, finalConfig.enableLogging, stats.failureCount, toast]);
+  }, [gameStateId, finalConfig.enableLogging, stats.failureCount, toast, t]);
 
   // 清理过期效果
   const cleanupExpiredEffects = useCallback(async (): Promise<void> => {
@@ -153,20 +157,22 @@ export const useSkillEffectProcessor = (
       const processed = await processEffects();
 
       toast({
-        title: '手动处理完成',
-        description: `处理了 ${processed} 个技能效果`,
+        title: t('hook.skill_effect.manual_success_title'),
+        description: t('hook.skill_effect.manual_success_desc', {
+          count: processed,
+        }),
       });
 
       return processed;
     } catch (error: any) {
       toast({
-        title: '手动处理失败',
+        title: t('hook.skill_effect.manual_failed_title'),
         description: error.message,
         variant: 'destructive',
       });
       return 0;
     }
-  }, [processEffects, toast]);
+  }, [processEffects, toast, t]);
 
   // 启动自动处理
   const startAutoProcess = useCallback(() => {

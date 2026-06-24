@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Settings, Save } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface GameSettingsPanelProps {
   roomId: string;
 }
 
 const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const { gameSettings, updateGameSettings } = useGameState(roomId);
   const { toast } = useToast();
   const [localSettings, setLocalSettings] = useState(gameSettings);
@@ -37,13 +39,13 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
 
       if (success) {
         toast({
-          title: '设置已保存',
-          description: '游戏设置已成功更新',
+          title: t('gameComponent.settings.saveSuccessTitle'),
+          description: t('gameComponent.settings.saveSuccessDesc'),
         });
       } else {
         toast({
-          title: '保存失败',
-          description: '无法保存游戏设置，请重试',
+          title: t('gameComponent.settings.saveFailedTitle'),
+          description: t('gameComponent.settings.saveFailedDesc'),
           variant: 'destructive',
         });
       }
@@ -58,13 +60,13 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
         <CardHeader>
           <CardTitle className='text-werewolf-purple flex items-center'>
             <Settings className='h-5 w-5 mr-2' />
-            游戏设置
+            {t('gameComponent.settings.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center text-gray-400'>
             <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            加载设置...
+            {t('gameComponent.settings.loading')}
           </div>
         </CardContent>
       </Card>
@@ -76,16 +78,18 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
       <CardHeader>
         <CardTitle className='text-werewolf-purple flex items-center'>
           <Settings className='h-5 w-5 mr-2' />
-          游戏设置
+          {t('gameComponent.settings.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
         {/* Auto Advance Toggle */}
         <div className='flex items-center justify-between'>
           <div className='space-y-1'>
-            <Label htmlFor='auto-advance'>自动切换阶段</Label>
+            <Label htmlFor='auto-advance'>
+              {t('gameComponent.settings.autoAdvance')}
+            </Label>
             <p className='text-xs text-gray-400'>
-              开启后白天/夜晚阶段将自动切换
+              {t('gameComponent.settings.autoAdvanceDescription')}
             </p>
           </div>
           <Switch
@@ -102,12 +106,14 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
         {/* Phase Duration Settings */}
         <div className='space-y-4'>
           <h4 className='text-sm font-semibold text-werewolf-purple'>
-            阶段时长设置（秒）
+            {t('gameComponent.settings.durationTitle')}
           </h4>
 
           <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-2'>
-              <Label htmlFor='day-duration'>白天阶段</Label>
+              <Label htmlFor='day-duration'>
+                {t('game.phase.day')}
+              </Label>
               <Input
                 id='day-duration'
                 type='number'
@@ -127,13 +133,17 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
                 className='bg-werewolf-dark/40 border-werewolf-purple/30'
               />
               <p className='text-xs text-gray-400'>
-                {Math.floor(localSettings.dayDuration / 60)}分
-                {localSettings.dayDuration % 60}秒
+                {t('common.duration_minutes_seconds', {
+                  min: Math.floor(localSettings.dayDuration / 60),
+                  sec: localSettings.dayDuration % 60,
+                })}
               </p>
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='night-duration'>夜晚阶段</Label>
+              <Label htmlFor='night-duration'>
+                {t('game.phase.night')}
+              </Label>
               <Input
                 id='night-duration'
                 type='number'
@@ -153,13 +163,17 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
                 className='bg-werewolf-dark/40 border-werewolf-purple/30'
               />
               <p className='text-xs text-gray-400'>
-                {Math.floor(localSettings.nightDuration / 60)}分
-                {localSettings.nightDuration % 60}秒
+                {t('common.duration_minutes_seconds', {
+                  min: Math.floor(localSettings.nightDuration / 60),
+                  sec: localSettings.nightDuration % 60,
+                })}
               </p>
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='evening-duration'>傍晚阶段</Label>
+              <Label htmlFor='evening-duration'>
+                {t('game.phase.evening')}
+              </Label>
               <Input
                 id='evening-duration'
                 type='number'
@@ -179,12 +193,17 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
                 className='bg-werewolf-dark/40 border-werewolf-purple/30'
               />
               <p className='text-xs text-gray-400'>
-                {localSettings.eveningDuration}秒 (答题)
+                {t('common.seconds', {
+                  seconds: localSettings.eveningDuration,
+                })}{' '}
+                {t('gameComponent.settings.answerSuffix')}
               </p>
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='dawn-duration'>黎明阶段</Label>
+              <Label htmlFor='dawn-duration'>
+                {t('game.phase.dawn')}
+              </Label>
               <Input
                 id='dawn-duration'
                 type='number'
@@ -204,7 +223,8 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
                 className='bg-werewolf-dark/40 border-werewolf-purple/30'
               />
               <p className='text-xs text-gray-400'>
-                {localSettings.dawnDuration}秒 (答题)
+                {t('common.seconds', { seconds: localSettings.dawnDuration })}{' '}
+                {t('gameComponent.settings.answerSuffix')}
               </p>
             </div>
           </div>
@@ -217,13 +237,15 @@ const GameSettingsPanel: React.FC<GameSettingsPanelProps> = ({ roomId }) => {
           className='w-full bg-werewolf-purple hover:bg-werewolf-light'
         >
           <Save className='h-4 w-4 mr-2' />
-          {saving ? '保存中...' : '保存设置'}
+          {saving
+            ? t('common.saving')
+            : t('gameComponent.settings.save')}
         </Button>
 
         {/* Info */}
         <div className='p-3 bg-werewolf-dark/20 rounded-md'>
           <p className='text-xs text-gray-400'>
-            ⚠️ 设置更改将在下次游戏开始时生效。傍晚和黎明阶段始终自动切换。
+            ⚠️ {t('gameComponent.settings.settingsNote')}
           </p>
         </div>
       </CardContent>

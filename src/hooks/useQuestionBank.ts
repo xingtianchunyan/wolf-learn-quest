@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 export interface UploadedFile {
   id: string;
@@ -44,6 +45,7 @@ export interface UseQuestionBankReturn {
 }
 
 export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const logger = createLogger('useQuestionBank');
 
@@ -87,7 +89,11 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
       if (uploadedError) {
         logger.error('Error fetching uploaded files:', uploadedError);
-        setError(`获取文件列表失败: ${uploadedError.message}`);
+        setError(
+          t('judge.questionBank.errors.fetchUploaded', {
+            message: uploadedError.message,
+          })
+        );
         return;
       }
 
@@ -115,9 +121,9 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       setUploadedFiles(filesWithStatus);
     } catch (error) {
       logger.error('Error fetching uploaded files:', error);
-      setError('获取文件列表时发生错误');
+      setError(t('judge.questionBank.errors.fetchUploadedGeneric'));
     }
-  }, [logger]);
+  }, [logger, t]);
 
   const fetchPreprocessedFiles = useCallback(async () => {
     try {
@@ -128,7 +134,11 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
       if (error) {
         console.error('Error fetching preprocessed files:', error);
-        setError(`获取预处理文件列表失败: ${error.message}`);
+        setError(
+          t('judge.questionBank.errors.fetchPreprocessed', {
+            message: error.message,
+          })
+        );
         return;
       }
 
@@ -148,9 +158,9 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       setPreprocessedFiles(filesWithStatus);
     } catch (error) {
       console.error('Error fetching preprocessed files:', error);
-      setError('获取预处理文件列表时发生错误');
+      setError(t('judge.questionBank.errors.fetchPreprocessedGeneric'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchUploadedFiles();
@@ -168,8 +178,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         payload => {
           logger.debug('检测到新的预处理文件:', payload);
           toast({
-            title: '预处理完成',
-            description: '文件预处理已完成，页面数据已更新',
+            title: t('judge.questionBank.toast.preprocessComplete.title'),
+            description: t(
+              'judge.questionBank.toast.preprocessComplete.description'
+            ),
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
@@ -191,8 +203,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         payload => {
           logger.debug('检测到新的生成题目:', payload);
           toast({
-            title: '题目生成完成',
-            description: 'AI题目生成已完成，页面数据已更新',
+            title: t('judge.questionBank.toast.generateComplete.title'),
+            description: t(
+              'judge.questionBank.toast.generateComplete.description'
+            ),
           });
           fetchPreprocessedFiles();
           fetchUploadedFiles();
@@ -242,11 +256,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     const fileExtension = `.${file.name.split('.').pop()?.toLowerCase()}`;
 
     if (!allowedFormats.includes(fileExtension)) {
-      const errorMsg =
-        '请上传 TXT、DOC、DOCX、XLS、XLSX、PPTX 或 MD 格式的文件';
+      const errorMsg = t('judge.questionBank.errors.invalidFileType');
       setError(errorMsg);
       toast({
-        title: '文件格式不支持',
+        title: t('judge.questionBank.errors.invalidFileTypeTitle'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -254,10 +267,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      const errorMsg = '文件大小不能超过10MB';
+      const errorMsg = t('judge.questionBank.errors.fileTooLarge');
       setError(errorMsg);
       toast({
-        title: '文件过大',
+        title: t('judge.questionBank.errors.fileTooLargeTitle'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -266,10 +279,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
     const existingFile = uploadedFiles.find(f => f.file_name === file.name);
     if (existingFile) {
-      const errorMsg = '该文件已经上传过了';
+      const errorMsg = t('judge.questionBank.errors.duplicateFile');
       setError(errorMsg);
       toast({
-        title: '文件重复',
+        title: t('judge.questionBank.errors.duplicateFileTitle'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -277,7 +290,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
     }
 
     setIsUploading(true);
-    setStatus('文件上传中...');
+    setStatus(t('common.uploading_status'));
 
     try {
       const originalName = file.name;
@@ -293,7 +306,11 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         });
 
       if (error) {
-        throw new Error(`上传失败: ${error.message}`);
+        throw new Error(
+          t('judge.questionBank.errors.uploadFailed', {
+            message: error.message,
+          })
+        );
       }
 
       const { error: dbError } = await supabase.from('uploaded_files').insert({
@@ -302,20 +319,29 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       });
 
       if (dbError) {
-        throw new Error(`保存文件信息失败: ${dbError.message}`);
+        throw new Error(
+          t('judge.questionBank.errors.saveFileInfoFailed', {
+            message: dbError.message,
+          })
+        );
       }
 
       toast({
-        title: '上传成功',
-        description: `文件 "${originalName}" 已成功上传`,
+        title: t('judge.questionBank.toast.uploadSuccess.title'),
+        description: t('judge.questionBank.toast.uploadSuccess.description', {
+          name: originalName,
+        }),
       });
 
       await fetchUploadedFiles();
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : '文件上传失败';
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t('judge.questionBank.errors.uploadFailedGeneric');
       setError(errorMsg);
       toast({
-        title: '上传失败',
+        title: t('judge.questionBank.errors.uploadFailedGeneric'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -328,10 +354,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
   const handlePreprocessFile = async () => {
     if (!selectedFile) {
-      const errorMsg = '请先选择要预处理的文件';
+      const errorMsg = t('judge.questionBank.errors.selectFileToPreprocess');
       setError(errorMsg);
       toast({
-        title: '请选择文件',
+        title: t('common.select_file'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -342,12 +368,12 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
     clearError();
     setIsProcessing(true);
-    setStatus('使用Qwen2.5-72B模型预处理文件中...');
+    setStatus(t('judge.questionBank.status.preprocessing'));
 
     try {
       const selectedFileData = uploadedFiles.find(f => f.id === selectedFile);
       if (!selectedFileData) {
-        throw new Error('选择的文件不存在');
+        throw new Error(t('judge.questionBank.errors.fileNotFound'));
       }
 
       const { data, error } = await supabase.functions.invoke(
@@ -362,18 +388,26 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       );
 
       if (error) {
-        throw new Error(`API调用失败: ${error.message}`);
+        throw new Error(
+          t('judge.questionBank.errors.preprocessApiFailed', {
+            message: error.message,
+          })
+        );
       }
 
       if (!data || !data.success) {
-        throw new Error(data?.error || '预处理失败，请重试');
+        throw new Error(data?.error || t('judge.questionBank.errors.preprocessRetry'));
       }
     } catch (error) {
       const errorMsg =
-        error instanceof Error ? error.message : '文件预处理失败';
-      setError(`预处理失败: ${errorMsg}`);
+        error instanceof Error
+          ? error.message
+          : t('judge.questionBank.errors.preprocessFailedGeneric');
+      setError(
+        t('judge.questionBank.errors.preprocessFailed', { message: errorMsg })
+      );
       toast({
-        title: '预处理失败',
+        title: t('judge.questionBank.errors.preprocessFailedGeneric'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -384,10 +418,10 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
   const handleGenerateQuestions = async () => {
     if (!selectedPreprocessedFile) {
-      const errorMsg = '请选择已预处理的文件';
+      const errorMsg = t('judge.questionBank.errors.selectFileToGenerate');
       setError(errorMsg);
       toast({
-        title: '请选择已预处理文件',
+        title: t('judge.questionBank.selectPreprocessed'),
         description: errorMsg,
         variant: 'destructive',
       });
@@ -398,7 +432,7 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
 
     clearError();
     setIsGenerating(true);
-    setStatus('使用Qwen2.5-72B模型生成题目中...');
+    setStatus(t('judge.questionBank.status.generating'));
 
     try {
       const { data, error } = await supabase.functions.invoke(
@@ -417,10 +451,16 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
           if (isGeneratingRef.current) {
             setIsGenerating(false);
             setStatus('');
-            const errorMsg = `API调用失败: ${error.message}`;
-            setError(`生成失败: ${errorMsg}`);
+            const errorMsg = t('judge.questionBank.errors.generateApiFailed', {
+              message: error.message,
+            });
+            setError(
+              t('judge.questionBank.errors.generateFailed', {
+                message: errorMsg,
+              })
+            );
             toast({
-              title: '生成失败',
+              title: t('judge.questionBank.errors.generateFailedGeneric'),
               description: errorMsg,
               variant: 'destructive',
             });
@@ -430,14 +470,19 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       }
 
       if (!data || !data.success) {
-        const errorMsg = data?.error || '题目生成失败';
+        const errorMsg =
+          data?.error || t('judge.questionBank.errors.generateFailedGeneric');
         setTimeout(() => {
           if (isGeneratingRef.current) {
             setIsGenerating(false);
             setStatus('');
-            setError(`生成失败: ${errorMsg}`);
+            setError(
+              t('judge.questionBank.errors.generateFailed', {
+                message: errorMsg,
+              })
+            );
             toast({
-              title: '生成失败',
+              title: t('judge.questionBank.errors.generateFailedGeneric'),
               description: errorMsg,
               variant: 'destructive',
             });
@@ -446,10 +491,15 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
         return;
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : '题目生成失败';
-      setError(`生成失败: ${errorMsg}`);
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t('judge.questionBank.errors.generateFailedGeneric');
+      setError(
+        t('judge.questionBank.errors.generateFailed', { message: errorMsg })
+      );
       toast({
-        title: '生成失败',
+        title: t('judge.questionBank.errors.generateFailedGeneric'),
         description: errorMsg,
         variant: 'destructive',
       });

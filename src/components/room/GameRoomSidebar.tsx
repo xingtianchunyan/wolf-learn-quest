@@ -67,11 +67,17 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
               <p>{roomData.hostPlayerId}</p>
             </div>
             <div>
-              <p className='text-sm text-gray-400'>法官状态</p>
-              <p>{judgeName || '等待法官加入'}</p>
+              <p className='text-sm text-gray-400'>
+                {t('gameComponent.room.sidebar.judgeStatus')}
+              </p>
+              <p>
+                {judgeName || t('gameComponent.room.sidebar.waitingJudge')}
+              </p>
             </div>
             <div>
-              <p className='text-sm text-gray-400'>在线玩家</p>
+              <p className='text-sm text-gray-400'>
+                {t('gameComponent.room.sidebar.onlinePlayers')}
+              </p>
               <p>
                 {onlinePlayers.length} / {players.length}
               </p>

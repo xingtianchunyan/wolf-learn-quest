@@ -106,7 +106,7 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>请先登录以访问游戏</p>
+            <p className='text-gray-400 mb-4'>{t('page.game.login_required')}</p>
           </div>
         </div>
       </PageLayout>
@@ -125,7 +125,7 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>房间ID不存在</p>
+            <p className='text-gray-400 mb-4'>{t('page.game.room_id_missing')}</p>
           </div>
         </div>
       </PageLayout>
@@ -139,7 +139,7 @@ const GamePage = () => {
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            <p className='text-gray-400 mb-4'>检查权限中...</p>
+            <p className='text-gray-400 mb-4'>{t('page.game.checking_permissions')}</p>
           </div>
         </div>
       </PageLayout>
@@ -152,7 +152,7 @@ const GamePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>您不是此房间的参与者</p>
+            <p className='text-gray-400 mb-4'>{t('page.game.not_participant')}</p>
           </div>
         </div>
       </PageLayout>
@@ -188,7 +188,7 @@ const GamePage = () => {
               <Card className='bg-werewolf-card border-werewolf-purple/30 h-full'>
                 <CardContent className='p-6 h-full overflow-y-auto'>
                   <h2 className='text-2xl font-bold text-werewolf-purple mb-4'>
-                    游戏主界面
+                    {t('page.game.main_title')}
                   </h2>
 
                   {/* 根据游戏阶段显示不同的系统 */}
@@ -244,7 +244,7 @@ const GamePage = () => {
                           )
                           .map(p => ({
                             userId: p.userId || p.id,
-                            name: p.name || '未知玩家',
+                            name: p.name || t('common.unknown_player'),
                             roleStatus:
                               roleStates.find(rs => rs.user_id === p.userId)
                                 ?.role_status || 1,
@@ -261,7 +261,7 @@ const GamePage = () => {
                   {/* 等待阶段或游戏未开始 */}
                   {!gameState && (
                     <div className='text-center py-8'>
-                      <p className='text-gray-400'>等待游戏开始...</p>
+                      <p className='text-gray-400'>{t('page.game.waiting_for_start')}</p>
                     </div>
                   )}
                 </CardContent>
@@ -290,7 +290,7 @@ const GamePage = () => {
                 gameRound={gameState?.currentRound}
                 userRole={currentRoleDesign?.role_name}
                 isGameRoom={true}
-                title='游戏聊天'
+                title={t('page.game.chat_title')}
                 height='100%'
               />
             </div>

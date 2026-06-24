@@ -1,5 +1,10 @@
 // 增强的技能服务 - 使用统一验证和错误处理
 import { supabase } from '@/integrations/supabase/client';
+import {
+  createTranslator,
+  defaultLanguage,
+  type LanguageCode,
+} from '@/lib/translations';
 import { skillSystemValidation } from './skillSystemValidation';
 import { performanceMonitoringService } from './performanceMonitoringService';
 import { createLogger } from '@/lib/logger';
@@ -68,6 +73,8 @@ export class EnhancedSkillServiceError extends Error {
 
 const logger = createLogger('enhanced-skill-service');
 
+const getT = (language?: LanguageCode) => createTranslator(language || defaultLanguage);
+
 export class EnhancedSkillService {
   private static readonly PHASE_NAMES = [
     'day',
@@ -79,12 +86,18 @@ export class EnhancedSkillService {
   /**
    * 验证用户权限
    */
-  private static async validateUserAuth(): Promise<boolean> {
+  private static async validateUserAuth(
+    language?: LanguageCode
+  ): Promise<boolean> {
+    const t = getT(language);
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      throw new EnhancedSkillServiceError('用户未登录', 'AUTH_REQUIRED');
+      throw new EnhancedSkillServiceError(
+        t('hook.service.enhancedSkill.auth_required'),
+        'AUTH_REQUIRED'
+      );
     }
     return true;
   }
@@ -95,13 +108,17 @@ export class EnhancedSkillService {
    * @returns 技能配置对象
    * @throws {SkillServiceError} 当角色设计无效或技能配置不存在时
    */
-  static getRoleSkillConfig(roleDesign: RoleDesign): SkillConfigType {
+  static getRoleSkillConfig(
+    roleDesign: RoleDesign,
+    language?: LanguageCode
+  ): SkillConfigType {
     const startTime = performance.now();
+    const t = getT(language);
 
     try {
       if (!roleDesign?.skill_name) {
         throw new SkillServiceError(
-          '角色设计缺少技能名称',
+          t('hook.service.enhancedSkill.missing_skill_name'),
           'MISSING_SKILL_NAME',
           undefined,
           undefined
@@ -139,7 +156,9 @@ export class EnhancedSkillService {
       }
 
       throw new SkillServiceError(
-        `未找到技能配置: ${roleDesign.skill_name}`,
+        t('hook.service.enhancedSkill.config_not_found', {
+          skillName: roleDesign.skill_name,
+        }),
         'SKILL_CONFIG_NOT_FOUND',
         roleDesign.skill_name,
         undefined
@@ -157,14 +176,16 @@ export class EnhancedSkillService {
    * 验证技能使用条件 - 使用统一验证模块
    */
   public static async validateSkillUsage(
-    context: SkillUsageContext
+    context: SkillUsageContext,
+    language?: LanguageCode
   ): Promise<SkillValidationResult> {
+    const t = getT(language);
     const { userId, gameStateId, currentPhase, targetUserId } = context;
 
     // 获取技能配置
     let skillConfig;
     try {
-      skillConfig = this.getRoleSkillConfig(context.roleDesign);
+      skillConfig = this.getRoleSkillConfig(context.roleDesign, language);
     } catch (error) {
       logger.warn('技能配置获取失败', {
         roleDesign: context.roleDesign,
@@ -172,8 +193,8 @@ export class EnhancedSkillService {
       });
       return {
         isValid: false,
-        reason: '未找到技能配置',
-        suggestedAction: '请检查角色设计配置',
+        reason: t('hook.service.enhancedSkill.config_missing_reason'),
+        suggestedAction: t('hook.service.enhancedSkill.check_role_design'),
       };
     }
 
@@ -181,8 +202,8 @@ export class EnhancedSkillService {
       logger.warn('技能配置获取失败', { roleDesign: context.roleDesign });
       return {
         isValid: false,
-        reason: '未找到技能配置',
-        suggestedAction: '请检查角色设计配置',
+        reason: t('hook.service.enhancedSkill.config_missing_reason'),
+        suggestedAction: t('hook.service.enhancedSkill.check_role_design'),
       };
     }
 
@@ -213,7 +234,9 @@ export class EnhancedSkillService {
     return {
       isValid: validation.valid,
       reason: validation.reason,
-      suggestedAction: validation.valid ? undefined : '请检查技能使用条件',
+      suggestedAction: validation.valid
+        ? undefined
+        : t('hook.service.enhancedSkill.check_usage_conditions'),
     };
   }
 
@@ -353,19 +376,22 @@ export class EnhancedSkillService {
    * 使用技能 - 增强版本，带错误处理
    */
   public static async useSkillEnhanced(
-    context: SkillUsageContext
+    context: SkillUsageContext,
+    language?: LanguageCode
   ): Promise<string> {
-    await this.validateUserAuth();
+    const t = getT(language);
+    await this.validateUserAuth(language);
 
     // 验证技能使用条件
-    const validation = await this.validateSkillUsage(context);
+    const validation = await this.validateSkillUsage(context, language);
     if (!validation.isValid) {
       const skillError = SkillErrorHandler.createError(
         SkillErrorType.VALIDATION_ERROR,
         'VALIDATION_FAILED',
-        validation.reason || '技能使用条件不满足',
+        validation.reason ||
+          t('hook.service.enhancedSkill.usage_conditions_not_met'),
         validation,
-        this.getRoleSkillConfig(context.roleDesign)?.chineseName,
+        this.getRoleSkillConfig(context.roleDesign, language)?.chineseName,
         context.userId,
         context.gameStateId
       );
@@ -373,9 +399,12 @@ export class EnhancedSkillService {
       throw skillError;
     }
 
-    const skillConfig = this.getRoleSkillConfig(context.roleDesign);
+    const skillConfig = this.getRoleSkillConfig(context.roleDesign, language);
     if (!skillConfig) {
-      throw new EnhancedSkillServiceError('技能配置不存在', 'CONFIG_NOT_FOUND');
+      throw new EnhancedSkillServiceError(
+        t('hook.service.enhancedSkill.config_not_exist'),
+        'CONFIG_NOT_FOUND'
+      );
     }
 
     try {
@@ -399,7 +428,9 @@ export class EnhancedSkillService {
         const skillError = SkillErrorHandler.createError(
           SkillErrorType.EXECUTION_ERROR,
           error.code || 'EXECUTION_FAILED',
-          `技能使用失败: ${error.message}`,
+          t('hook.service.enhancedSkill.use_failed', {
+            message: error.message,
+          }),
           error,
           skillConfig.chineseName,
           context.userId,
@@ -419,7 +450,9 @@ export class EnhancedSkillService {
       return data;
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : '技能使用失败';
+        error instanceof Error
+          ? error.message
+          : t('hook.service.enhancedSkill.use_failed', { message: '' });
       const errorCode =
         error instanceof SkillServiceError ? error.code : 'SKILL_USE_ERROR';
 
@@ -431,7 +464,7 @@ export class EnhancedSkillService {
         const networkError = SkillErrorHandler.createError(
           SkillErrorType.NETWORK_ERROR,
           'NETWORK_ERROR',
-          '网络连接失败',
+          t('hook.service.enhancedSkill.network_error'),
           error,
           skillConfig.chineseName,
           context.userId,
@@ -578,9 +611,11 @@ export class EnhancedSkillService {
   public static async detectSkillConflicts(
     gameStateId: string,
     roundNumber: number,
-    phaseName: string
+    phaseName: string,
+    language?: LanguageCode
   ): Promise<{ conflicts: number; details: any }> {
-    await this.validateUserAuth();
+    const t = getT(language);
+    await this.validateUserAuth(language);
 
     logger.debug('开始检测技能冲突', { gameStateId, roundNumber, phaseName });
 
@@ -594,7 +629,9 @@ export class EnhancedSkillService {
     if (error) {
       logger.error('技能冲突检测失败', error);
       throw new EnhancedSkillServiceError(
-        `冲突检测失败: ${error.message}`,
+        t('hook.service.enhancedSkill.conflict_detect_failed', {
+          message: error.message,
+        }),
         error.code
       );
     }
@@ -613,9 +650,11 @@ export class EnhancedSkillService {
     userId: string,
     gameStateId: string,
     potionType: 'protection' | 'attack',
-    targetUserId?: string
+    targetUserId?: string,
+    language?: LanguageCode
   ): Promise<{ canUse: boolean; reason?: string; nightDeaths?: any[] }> {
-    await this.validateUserAuth();
+    const t = getT(language);
+    await this.validateUserAuth(language);
 
     const { data, error } = await supabase.rpc('validate_witch_potion_usage', {
       p_user_id: userId,
@@ -627,7 +666,9 @@ export class EnhancedSkillService {
     if (error) {
       logger.error('女巫药剂验证失败', error);
       throw new EnhancedSkillServiceError(
-        `药剂验证失败: ${error.message}`,
+        t('hook.service.enhancedSkill.potion_validate_failed', {
+          message: error.message,
+        }),
         error.code
       );
     }
@@ -747,46 +788,49 @@ export class EnhancedSkillService {
    * 获取技能使用建议
    */
   public static async getSkillUsageSuggestion(
-    context: SkillUsageContext
+    context: SkillUsageContext,
+    language?: LanguageCode
   ): Promise<{
     canUse: boolean;
     suggestion: string;
     priority: 'high' | 'medium' | 'low';
     timing: string;
   }> {
-    const validation = await this.validateSkillUsage(context);
-    const skillConfig = this.getRoleSkillConfig(context.roleDesign);
+    const t = getT(language);
+    const validation = await this.validateSkillUsage(context, language);
+    const skillConfig = this.getRoleSkillConfig(context.roleDesign, language);
 
     if (!validation.isValid || !skillConfig) {
       return {
         canUse: false,
-        suggestion: validation.reason || '技能不可用',
+        suggestion:
+          validation.reason || t('hook.service.enhancedSkill.skill_unavailable'),
         priority: 'low',
-        timing: '无法使用',
+        timing: t('hook.service.enhancedSkill.cannot_use'),
       };
     }
 
     // 根据技能类型提供使用建议
     const suggestions = {
-      elimination: '建议选择关键目标，优先淘汰威胁最大的对手',
-      protection: '建议保护重要角色，如预言家或确认的好人',
-      investigation: '建议调查可疑目标，获取关键信息',
-      status_change: '建议在适当时机使用，改变游戏局势',
-      passive: '被动技能，系统将自动触发',
+      elimination: t('hook.service.enhancedSkill.suggestion_elimination'),
+      protection: t('hook.service.enhancedSkill.suggestion_protection'),
+      investigation: t('hook.service.enhancedSkill.suggestion_investigation'),
+      status_change: t('hook.service.enhancedSkill.suggestion_status_change'),
+      passive: t('hook.service.enhancedSkill.suggestion_passive'),
     };
 
     const timing =
       skillConfig.phase === 'night'
-        ? '夜晚行动阶段'
+        ? t('hook.service.enhancedSkill.timing_night')
         : skillConfig.phase === 'day'
-          ? '白天讨论阶段'
-          : '特定阶段';
+          ? t('hook.service.enhancedSkill.timing_day')
+          : t('hook.service.enhancedSkill.timing_specific');
 
     return {
       canUse: true,
       suggestion:
         suggestions[skillConfig.effectType[0] as keyof typeof suggestions] ||
-        '请合理使用技能',
+        t('hook.service.enhancedSkill.suggestion_default'),
       priority:
         skillConfig.priority <= 3
           ? 'high'

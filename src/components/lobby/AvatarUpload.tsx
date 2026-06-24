@@ -49,7 +49,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       if (!file.type.startsWith('image/')) {
         toast({
           title: t('upload_failed'),
-          description: '请选择图片文件',
+          description: t('page.avatarUpload.image_file_required'),
           variant: 'destructive',
         });
         return;
@@ -59,7 +59,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       if (file.size > 1 * 1024 * 1024) {
         toast({
           title: t('upload_failed'),
-          description: '图片大小不能超过1MB',
+          description: t('page.avatarUpload.image_size_limit'),
           variant: 'destructive',
         });
         return;

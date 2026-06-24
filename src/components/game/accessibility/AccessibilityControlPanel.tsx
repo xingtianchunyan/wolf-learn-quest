@@ -25,6 +25,7 @@ import {
   useAccessibility,
   type AccessibilitySettings,
 } from './AccessibilityProvider';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface AccessibilityControlPanelProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface AccessibilityControlPanelProps {
 export const AccessibilityControlPanel: React.FC<
   AccessibilityControlPanelProps
 > = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
   const { settings, updateSetting } = useAccessibility();
 
   if (!isOpen) return null;
@@ -58,7 +60,7 @@ export const AccessibilityControlPanel: React.FC<
             <div className='flex items-center justify-between'>
               <CardTitle className='flex items-center gap-2'>
                 <Eye className='w-5 h-5' />
-                无障碍设置
+                {t('gameComponent.accessibility.title')}
               </CardTitle>
               <Button variant='ghost' onClick={onClose}>
                 ×
@@ -71,12 +73,14 @@ export const AccessibilityControlPanel: React.FC<
             <div className='space-y-4'>
               <h3 className='font-semibold flex items-center gap-2'>
                 <Monitor className='w-4 h-4' />
-                视觉设置
+                {t('gameComponent.accessibility.visualSettings')}
               </h3>
 
               <div className='grid gap-4'>
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>主题</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.theme')}
+                  </label>
                   <Select
                     value={settings.theme}
                     onValueChange={(value: AccessibilitySettings['theme']) =>
@@ -87,17 +91,27 @@ export const AccessibilityControlPanel: React.FC<
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='auto'>自动</SelectItem>
-                      <SelectItem value='light'>浅色</SelectItem>
-                      <SelectItem value='dark'>深色</SelectItem>
-                      <SelectItem value='high-contrast'>高对比度</SelectItem>
+                      <SelectItem value='auto'>
+                        {t('gameComponent.accessibility.themeAuto')}
+                      </SelectItem>
+                      <SelectItem value='light'>
+                        {t('gameComponent.accessibility.themeLight')}
+                      </SelectItem>
+                      <SelectItem value='dark'>
+                        {t('gameComponent.accessibility.themeDark')}
+                      </SelectItem>
+                      <SelectItem value='high-contrast'>
+                        {t('gameComponent.accessibility.themeHighContrast')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className='space-y-2'>
                   <label className='text-sm font-medium'>
-                    字体大小: {settings.fontSize}px
+                    {t('gameComponent.accessibility.fontSize', {
+                      size: settings.fontSize,
+                    })}
                   </label>
                   <Slider
                     value={[settings.fontSize]}
@@ -110,7 +124,9 @@ export const AccessibilityControlPanel: React.FC<
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>减少动画</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.reducedMotion')}
+                  </label>
                   <Switch
                     checked={settings.reducedMotion}
                     onCheckedChange={checked =>
@@ -125,12 +141,14 @@ export const AccessibilityControlPanel: React.FC<
             <div className='space-y-4'>
               <h3 className='font-semibold flex items-center gap-2'>
                 <Volume2 className='w-4 h-4' />
-                听觉设置
+                {t('gameComponent.accessibility.audioSettings')}
               </h3>
 
               <div className='grid gap-4'>
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>启用声音</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.soundEnabled')}
+                  </label>
                   <Switch
                     checked={settings.soundEnabled}
                     onCheckedChange={checked =>
@@ -142,7 +160,9 @@ export const AccessibilityControlPanel: React.FC<
                 {settings.soundEnabled && (
                   <div className='space-y-2'>
                     <label className='text-sm font-medium'>
-                      音量: {settings.soundVolume}%
+                      {t('gameComponent.accessibility.volume', {
+                        volume: settings.soundVolume,
+                      })}
                     </label>
                     <Slider
                       value={[settings.soundVolume]}
@@ -158,7 +178,9 @@ export const AccessibilityControlPanel: React.FC<
                 )}
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>语音播报</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.voiceAnnouncements')}
+                  </label>
                   <Switch
                     checked={settings.voiceAnnouncements}
                     onCheckedChange={checked =>
@@ -173,12 +195,14 @@ export const AccessibilityControlPanel: React.FC<
             <div className='space-y-4'>
               <h3 className='font-semibold flex items-center gap-2'>
                 <Keyboard className='w-4 h-4' />
-                交互设置
+                {t('gameComponent.accessibility.interactionSettings')}
               </h3>
 
               <div className='grid gap-4'>
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>键盘导航</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.keyboardNavigation')}
+                  </label>
                   <Switch
                     checked={settings.keyboardNavigation}
                     onCheckedChange={checked =>
@@ -188,7 +212,9 @@ export const AccessibilityControlPanel: React.FC<
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>焦点指示器</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.focusIndicators')}
+                  </label>
                   <Switch
                     checked={settings.focusIndicators}
                     onCheckedChange={checked =>
@@ -198,7 +224,9 @@ export const AccessibilityControlPanel: React.FC<
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>点击区域</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.clickAreas')}
+                  </label>
                   <Select
                     value={settings.clickAreas}
                     onValueChange={(
@@ -209,9 +237,15 @@ export const AccessibilityControlPanel: React.FC<
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='normal'>正常</SelectItem>
-                      <SelectItem value='large'>大</SelectItem>
-                      <SelectItem value='extra-large'>特大</SelectItem>
+                      <SelectItem value='normal'>
+                        {t('gameComponent.accessibility.clickAreaNormal')}
+                      </SelectItem>
+                      <SelectItem value='large'>
+                        {t('gameComponent.accessibility.clickAreaLarge')}
+                      </SelectItem>
+                      <SelectItem value='extra-large'>
+                        {t('gameComponent.accessibility.clickAreaExtraLarge')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -220,11 +254,15 @@ export const AccessibilityControlPanel: React.FC<
 
             {/* 认知辅助 */}
             <div className='space-y-4'>
-              <h3 className='font-semibold'>认知辅助</h3>
+              <h3 className='font-semibold'>
+                {t('gameComponent.accessibility.cognitiveAssist')}
+              </h3>
 
               <div className='grid gap-4'>
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>游戏说明</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.gameInstructions')}
+                  </label>
                   <Switch
                     checked={settings.gameInstructions}
                     onCheckedChange={checked =>
@@ -234,7 +272,9 @@ export const AccessibilityControlPanel: React.FC<
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>工具提示</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.tooltipsEnabled')}
+                  </label>
                   <Switch
                     checked={settings.tooltipsEnabled}
                     onCheckedChange={checked =>
@@ -244,7 +284,9 @@ export const AccessibilityControlPanel: React.FC<
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <label className='text-sm font-medium'>操作确认</label>
+                  <label className='text-sm font-medium'>
+                    {t('gameComponent.accessibility.confirmActions')}
+                  </label>
                   <Switch
                     checked={settings.confirmActions}
                     onCheckedChange={checked =>
@@ -258,18 +300,26 @@ export const AccessibilityControlPanel: React.FC<
             {/* 快捷键说明 */}
             {settings.keyboardNavigation && (
               <div className='space-y-4'>
-                <h3 className='font-semibold'>快捷键</h3>
+                <h3 className='font-semibold'>
+                  {t('gameComponent.accessibility.shortcuts')}
+                </h3>
                 <div className='grid gap-2 text-sm'>
                   <div className='flex justify-between'>
-                    <span>跳转到主要内容</span>
+                    <span>
+                      {t('gameComponent.accessibility.skipToMain')}
+                    </span>
                     <Badge variant='outline'>Ctrl + 1</Badge>
                   </div>
                   <div className='flex justify-between'>
-                    <span>跳转到导航</span>
+                    <span>
+                      {t('gameComponent.accessibility.skipToNav')}
+                    </span>
                     <Badge variant='outline'>Ctrl + 2</Badge>
                   </div>
                   <div className='flex justify-between'>
-                    <span>显示帮助</span>
+                    <span>
+                      {t('gameComponent.accessibility.showHelp')}
+                    </span>
                     <Badge variant='outline'>Ctrl + /</Badge>
                   </div>
                 </div>

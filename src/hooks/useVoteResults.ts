@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGameState } from './useGameState';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 export interface VoteRecord {
   votedPlayerId: string;
@@ -38,6 +39,7 @@ const getPlayerNames = async (
 export const useVoteResults = (roomId: string) => {
   const [voteRecords, setVoteRecords] = useState<VoteRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
   const { gameState } = useGameState(roomId);
 
   const fetchVoteResults = useCallback(async () => {
@@ -124,10 +126,10 @@ export const useVoteResults = (roomId: string) => {
         ([votedPlayerId, { voters }]) => {
           return {
             votedPlayerId,
-            votedPlayerName: playerNamesMap.get(votedPlayerId) || '未知玩家',
+            votedPlayerName: playerNamesMap.get(votedPlayerId) || t('common.unknown_player'),
             voteCount: voters.length,
             voters: voters.map(
-              voterId => playerNamesMap.get(voterId) || '未知玩家'
+              voterId => playerNamesMap.get(voterId) || t('common.unknown_player')
             ),
           };
         }
@@ -142,7 +144,7 @@ export const useVoteResults = (roomId: string) => {
     } finally {
       setLoading(false);
     }
-  }, [roomId, gameState]);
+  }, [roomId, gameState, t]);
 
   useEffect(() => {
     fetchVoteResults();

@@ -7,6 +7,7 @@ import { useJudgePage } from '@/contexts/JudgePageContext';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
 import { useGameState } from '@/hooks/useGameState';
 import { useRoomAnswers } from '@/hooks/useRoomAnswers';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface AnswerRecordPanelProps {
   roomId: string;
@@ -23,17 +24,30 @@ interface PlayerAnswer {
 interface AnswerRecord {
   round: number;
   phase: string;
+  phaseNum: number;
   questionText: string;
   correctOption: number;
   answers: PlayerAnswer[];
 }
 
 const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(0);
   const { linkedQuestions } = useJudgePage();
   const { players } = usePlayersRealtime(roomId);
   const { gameState } = useGameState(roomId);
   const { roomAnswers } = useRoomAnswers(roomId);
+
+  const getPhaseName = (phaseNum: number) => {
+    switch (phaseNum) {
+      case 2:
+        return t('game.phase.evening_quiz');
+      case 4:
+        return t('game.phase.dawn_quiz');
+      default:
+        return t('common.unknown');
+    }
+  };
 
   const answerRecords: AnswerRecord[] = useMemo(() => {
     if (!linkedQuestions || linkedQuestions.length === 0) {
@@ -44,7 +58,8 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       const { question_order, question } = linkedQuestion;
       const round = Math.floor((question_order - 1) / 2) + 1;
       // 基于question_order计算阶段：奇数=傍晚，偶数=黎明
-      const phase = question_order % 2 === 1 ? '傍晚' : '黎明';
+      const phaseNum = question_order % 2 === 1 ? 2 : 4;
+      const phase = getPhaseName(phaseNum);
 
       const answersForQuestion: PlayerAnswer[] = players.map(player => {
         const playerAnswerData = roomAnswers.find(
@@ -74,6 +89,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
       return {
         round,
         phase,
+        phaseNum,
         questionText: question.question,
         correctOption: question.correct_option,
         answers: answersForQuestion,
@@ -106,11 +122,12 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
   };
 
   const getStatusMessage = () => {
-    if (!gameState) return '游戏尚未开始';
-    if (gameState.status === 'waiting') return '游戏尚未开始';
+    if (!gameState) return t('judge.answerRecord.gameNotStarted');
+    if (gameState.status === 'waiting')
+      return t('judge.answerRecord.gameNotStarted');
     if (!linkedQuestions || linkedQuestions.length === 0)
-      return '请先在准备阶段链接题目';
-    if (answerRecords.length === 0) return '暂无答题记录';
+      return t('judge.answerRecord.notLinked');
+    if (answerRecords.length === 0) return t('judge.answerRecord.noRecords');
     return null;
   };
 
@@ -122,9 +139,11 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <ClipboardList className='mr-2 h-5 w-5' />
-            答题记录
+            {t('judge.answerRecord.title')}
             {gameState?.status === 'active' && (
-              <span className='ml-2 text-sm text-green-400'>(实时更新)</span>
+              <span className='ml-2 text-sm text-green-400'>
+                {t('judge.answerRecord.liveUpdate')}
+              </span>
             )}
           </div>
           <div className='flex items-center gap-2'>
@@ -166,10 +185,15 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
             <div className='p-3 bg-werewolf-dark/40 rounded-md flex-shrink-0'>
               <div className='flex justify-between items-center mb-2'>
                 <h3 className='font-semibold text-werewolf-purple'>
-                  第{currentRecord.round}轮 - {currentRecord.phase}阶段
+                  {t('judge.answerRecord.roundPhase', {
+                    round: currentRecord.round,
+                    phase: currentRecord.phase,
+                  })}
                 </h3>
                 <span className='text-sm text-gray-400'>
-                  正确答案: {getOptionLabel(currentRecord.correctOption)}
+                  {t('judge.answerRecord.correctAnswer', {
+                    option: getOptionLabel(currentRecord.correctOption),
+                  })}
                 </span>
               </div>
               <p className='text-sm text-gray-300'>
@@ -207,7 +231,9 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                           {answer.isCorrect !== null ? (
                             <>
                               <span className='text-sm text-gray-400'>
-                                用时: {formatTime(answer.responseTime!)}
+                                {t('judge.answerRecord.timeUsed', {
+                                  time: formatTime(answer.responseTime!),
+                                })}
                               </span>
                               {answer.isCorrect ? (
                                 <span className='text-green-400'>✓</span>
@@ -219,8 +245,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                             <span className='text-sm'>
                               {(() => {
                                 const questionRound = currentRecord.round;
-                                const questionPhaseNum =
-                                  currentRecord.phase === '傍晚' ? 2 : 4; // 傍晚=2, 黎明=4
+                                const questionPhaseNum = currentRecord.phaseNum;
                                 const cr = gameState?.currentRound ?? 1;
                                 const cp = gameState?.currentPhase ?? 1;
                                 const isActive = gameState?.status === 'active';
@@ -230,10 +255,12 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
                                   (questionRound === cr &&
                                     questionPhaseNum < cp);
                                 return isExpired ? (
-                                  <span className='text-red-500'>超时未答</span>
+                                  <span className='text-red-500'>
+                                    {t('judge.answerRecord.timeout')}
+                                  </span>
                                 ) : (
                                   <span className='text-gray-500'>
-                                    等待答题...
+                                    {t('judge.answerRecord.waitingAnswer')}
                                   </span>
                                 );
                               })()}
@@ -249,7 +276,7 @@ const AnswerRecordPanel: React.FC<AnswerRecordPanelProps> = ({ roomId }) => {
           </div>
         ) : (
           <div className='text-center text-gray-400 py-8 h-full flex items-center justify-center'>
-            正在加载数据...
+            {t('common.loading_data')}
           </div>
         )}
       </CardContent>

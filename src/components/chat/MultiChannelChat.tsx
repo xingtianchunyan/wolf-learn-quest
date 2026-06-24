@@ -8,6 +8,7 @@ import { MessageSquareText } from 'lucide-react';
 import ChatChannelSelector, { ChatChannel } from './ChatChannelSelector';
 import ChatMessageComponent from './ChatMessage';
 import { useMultiChannelChat } from '@/hooks/useMultiChannelChat';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface MultiChannelChatProps {
   roomId: string | null;
@@ -28,12 +29,15 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
   gameRound,
   userRole,
   isGameRoom = false,
-  title = '聊天',
+  title,
   className = '',
   height = '500px',
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { t } = useLanguage();
+  const displayTitle = title ?? t('chat');
 
   const {
     messages,
@@ -80,16 +84,16 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
     setCurrentChannel(channel);
   };
 
-  const getChannelDisplayName = () => {
-    const channelNames = {
-      public: '公共',
-      team: '小队',
-      judge_private: '法官私聊',
-      system: '系统',
-      all: '全部',
-    };
-    return channelNames[currentChannel] || '公共';
-  };
+  const channelLabelKeys = {
+    public: 'channel_public',
+    team: 'channel_team',
+    judge_private: 'channel_judge_private',
+    system: 'channel_system',
+    all: 'channel_all',
+  } as const;
+
+  const getChannelDisplayName = () =>
+    t(channelLabelKeys[currentChannel] || 'channel_public');
 
   return (
     <Card
@@ -100,7 +104,7 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <MessageSquareText className='mr-2 h-5 w-5' />
-            {title}
+            {displayTitle}
           </div>
           <ChatChannelSelector
             currentChannel={currentChannel}
@@ -118,11 +122,11 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
               {isLoading ? (
                 <div className='text-center text-gray-400 py-8'>
                   <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-                  加载聊天记录...
+                  {t('loading_chat_history')}
                 </div>
               ) : messages.length === 0 ? (
                 <div className='text-center text-gray-400 py-8'>
-                  暂无{getChannelDisplayName()}消息
+                  {t('no_channel_messages')}
                 </div>
               ) : (
                 messages.map(message => (
@@ -142,7 +146,7 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
         <form onSubmit={handleSendMessage} className='flex-shrink-0'>
           <div className='flex gap-2'>
             <Input
-              placeholder={`发送${getChannelDisplayName()}消息...`}
+              placeholder={t('send_channel_message')}
               value={newMessage}
               onChange={e => setNewMessage(e.target.value)}
               className='bg-werewolf-dark/40 border-werewolf-purple/30 flex-1'
@@ -158,12 +162,12 @@ const MultiChannelChat: React.FC<MultiChannelChatProps> = ({
                 currentChannel === 'system'
               }
             >
-              发送
+              {t('send')}
             </Button>
           </div>
           {newMessage.length > 450 && (
             <p className='text-xs text-gray-400 mt-1'>
-              {newMessage.length}/500 字符
+              {newMessage.length}/500 {t('characters')}
             </p>
           )}
         </form>

@@ -100,7 +100,7 @@ const Navbar: React.FC = () => {
               onClick={() => navigate('/admin/users')}
             >
               <Shield size={20} className='mr-1' />
-              <span>Admin</span>
+              <span>{t('page.navbar.admin')}</span>
             </Button>
           )}
           <LanguageSwitcher />
@@ -189,7 +189,7 @@ const Navbar: React.FC = () => {
                 }}
               >
                 <Shield size={20} className='mr-1' />
-                <span>Admin</span>
+                <span>{t('page.navbar.admin')}</span>
               </Button>
             )}
             <LanguageSwitcher />

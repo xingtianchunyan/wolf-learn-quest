@@ -9,6 +9,7 @@ import {
   Settings,
   AlertTriangle,
 } from 'lucide-react';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface CacheStats {
   totalSize: number;
@@ -33,6 +34,7 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
   onRefreshData,
   onClearCache,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className='space-y-4'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
@@ -40,7 +42,7 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Database className='h-5 w-5' />
-              数据管理
+              {t('judge.skillAdmin.dataManagement.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className='space-y-4'>
@@ -53,7 +55,9 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
                 <RefreshCw
                   className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
                 />
-                {loading ? '刷新中...' : '刷新数据'}
+                {loading
+                  ? t('common.refreshing')
+                  : t('judge.skillAdmin.refreshData')}
               </Button>
 
               <Button
@@ -61,7 +65,7 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
                 variant='outline'
                 className='w-full'
               >
-                清理缓存
+                {t('judge.skillAdmin.clearCache')}
               </Button>
             </div>
           </CardContent>
@@ -71,32 +75,32 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Gauge className='h-5 w-5' />
-              缓存统计
+              {t('judge.skillAdmin.cacheStats.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-2'>
               <div className='flex justify-between'>
-                <span>缓存条目</span>
+                <span>{t('judge.skillAdmin.cacheStats.totalSize')}</span>
                 <span>{cacheStats.totalSize}</span>
               </div>
               <div className='flex justify-between'>
-                <span>命中次数</span>
+                <span>{t('judge.skillAdmin.cacheStats.hitCount')}</span>
                 <span>{cacheStats.hitCount}</span>
               </div>
               <div className='flex justify-between'>
-                <span>未命中次数</span>
+                <span>{t('judge.skillAdmin.cacheStats.missCount')}</span>
                 <span>{cacheStats.missCount}</span>
               </div>
               <div className='flex justify-between'>
-                <span>命中率</span>
+                <span>{t('judge.skillAdmin.cacheStats.hitRate')}</span>
                 <span className='font-medium text-green-600'>
                   {cacheStats.hitRate.toFixed(1)}%
                 </span>
               </div>
               {cacheStats.lastCleanup && (
                 <div className='flex justify-between text-sm text-gray-600'>
-                  <span>上次清理</span>
+                  <span>{t('judge.skillAdmin.cacheStats.lastCleanup')}</span>
                   <span>{cacheStats.lastCleanup.toLocaleTimeString()}</span>
                 </div>
               )}
@@ -109,7 +113,7 @@ export const SkillSystemAdminTab: React.FC<SkillSystemAdminTabProps> = ({
         <Alert>
           <AlertTriangle className='h-4 w-4' />
           <AlertDescription>
-            部分管理功能仅对游戏法官开放。如需完整权限，请联系法官。
+            {t('judge.skillAdmin.judgeOnlyAlert')}
           </AlertDescription>
         </Alert>
       )}

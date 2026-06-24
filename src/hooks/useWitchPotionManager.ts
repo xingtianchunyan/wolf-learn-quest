@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('witch-potion-manager');
@@ -28,6 +29,7 @@ export const useWitchPotionManager = (
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // 检查魔药使用状态
   const checkPotionStatus = useCallback(async () => {
@@ -101,8 +103,8 @@ export const useWitchPotionManager = (
     async (targetUserId?: string) => {
       if (!potionStatus.canUseProtection) {
         toast({
-          title: '无法使用保护魔药',
-          description: '保护魔药不可用或已使用',
+          title: t('hook.witch.protection_unavailable_title'),
+          description: t('hook.witch.protection_unavailable_desc'),
           variant: 'destructive',
         });
         return false;
@@ -122,7 +124,7 @@ export const useWitchPotionManager = (
 
         if (error) {
           toast({
-            title: '保护魔药使用失败',
+            title: t('hook.witch.protection_failed_title'),
             description: error.message,
             variant: 'destructive',
           });
@@ -130,18 +132,18 @@ export const useWitchPotionManager = (
         }
 
         toast({
-          title: '保护魔药使用成功',
-          description: '解药已使用，将拯救今夜的死者',
+          title: t('hook.witch.protection_success_title'),
+          description: t('hook.witch.protection_success_desc'),
         });
 
         // 刷新状态
         await checkPotionStatus();
         return true;
       } catch (error: any) {
-        logger.error('使用保护魔药失败', error);
+        logger.error('Protection potion failed', error);
         toast({
-          title: '保护魔药使用失败',
-          description: error.message || '系统错误',
+          title: t('hook.witch.protection_failed_title'),
+          description: error.message || t('common.system_error'),
           variant: 'destructive',
         });
         return false;
@@ -149,7 +151,7 @@ export const useWitchPotionManager = (
         setLoading(false);
       }
     },
-    [gameStateId, potionStatus.canUseProtection, toast, checkPotionStatus]
+    [gameStateId, potionStatus.canUseProtection, toast, t, checkPotionStatus]
   );
 
   // 使用攻击魔药
@@ -157,8 +159,8 @@ export const useWitchPotionManager = (
     async (targetUserId: string) => {
       if (!potionStatus.canUseAttack) {
         toast({
-          title: '无法使用攻击魔药',
-          description: '攻击魔药不可用或已使用',
+          title: t('hook.witch.attack_unavailable_title'),
+          description: t('hook.witch.attack_unavailable_desc'),
           variant: 'destructive',
         });
         return false;
@@ -166,8 +168,8 @@ export const useWitchPotionManager = (
 
       if (!targetUserId) {
         toast({
-          title: '请选择目标',
-          description: '使用攻击魔药需要选择一个目标',
+          title: t('hook.witch.select_target_title'),
+          description: t('hook.witch.select_target_desc'),
           variant: 'destructive',
         });
         return false;
@@ -187,7 +189,7 @@ export const useWitchPotionManager = (
 
         if (error) {
           toast({
-            title: '攻击魔药使用失败',
+            title: t('hook.witch.attack_failed_title'),
             description: error.message,
             variant: 'destructive',
           });
@@ -195,18 +197,18 @@ export const useWitchPotionManager = (
         }
 
         toast({
-          title: '攻击魔药使用成功',
-          description: '毒药已使用，目标将在夜晚结束时死亡',
+          title: t('hook.witch.attack_success_title'),
+          description: t('hook.witch.attack_success_desc'),
         });
 
         // 刷新状态
         await checkPotionStatus();
         return true;
       } catch (error: any) {
-        logger.error('使用攻击魔药失败', error);
+        logger.error('Attack potion failed', error);
         toast({
-          title: '攻击魔药使用失败',
-          description: error.message || '系统错误',
+          title: t('hook.witch.attack_failed_title'),
+          description: error.message || t('common.system_error'),
           variant: 'destructive',
         });
         return false;
@@ -214,7 +216,7 @@ export const useWitchPotionManager = (
         setLoading(false);
       }
     },
-    [gameStateId, potionStatus.canUseAttack, toast, checkPotionStatus]
+    [gameStateId, potionStatus.canUseAttack, toast, t, checkPotionStatus]
   );
 
   // 初始化时检查状态

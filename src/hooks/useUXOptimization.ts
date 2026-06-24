@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useOperationFeedback } from '@/components/game/feedback/OperationFeedback';
 import { useAccessibility } from '@/components/game/accessibility/AccessibilityEnhancement';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface UXOptimizationConfig {
   // 操作确认
@@ -47,6 +48,7 @@ export const useUXOptimization = (
   config: Partial<UXOptimizationConfig> = {}
 ) => {
   const finalConfig = { ...defaultConfig, ...config };
+  const { t } = useLanguage();
   const { announceText } = useAccessibility();
   const { showSuccess, showError, showWarning, showLoading, removeMessage } =
     useOperationFeedback();
@@ -110,13 +112,14 @@ export const useUXOptimization = (
       );
       setIsDirty(true);
 
-      announceText(`操作已记录: ${action}`);
+      announceText(t('hook.ux.operation_recorded', { action }));
     },
     [
       currentIndex,
       finalConfig.enableUndo,
       finalConfig.undoStackSize,
       announceText,
+      t,
     ]
   );
 
@@ -126,13 +129,19 @@ export const useUXOptimization = (
 
     const operation = operationHistory[currentIndex];
     if (!operation.canUndo) {
-      showWarning('无法撤销', '此操作不支持撤销');
+      showWarning(
+        t('hook.ux.cannot_undo_title'),
+        t('hook.ux.cannot_undo_desc')
+      );
       return null;
     }
 
     setCurrentIndex(prev => prev - 1);
-    announceText(`已撤销操作: ${operation.action}`);
-    showSuccess('操作已撤销', `撤销了: ${operation.action}`);
+    announceText(t('hook.ux.undone', { action: operation.action }));
+    showSuccess(
+      t('hook.ux.undo_success_title'),
+      t('hook.ux.undo_success_desc', { action: operation.action })
+    );
 
     return operation;
   }, [
@@ -142,6 +151,7 @@ export const useUXOptimization = (
     showWarning,
     showSuccess,
     announceText,
+    t,
   ]);
 
   // 重做操作
@@ -151,8 +161,11 @@ export const useUXOptimization = (
 
     const operation = operationHistory[currentIndex + 1];
     setCurrentIndex(prev => prev + 1);
-    announceText(`已重做操作: ${operation.action}`);
-    showSuccess('操作已重做', `重做了: ${operation.action}`);
+    announceText(t('hook.ux.redone', { action: operation.action }));
+    showSuccess(
+      t('hook.ux.redo_success_title'),
+      t('hook.ux.redo_success_desc', { action: operation.action })
+    );
 
     return operation;
   }, [
@@ -161,6 +174,7 @@ export const useUXOptimization = (
     finalConfig.enableUndo,
     showSuccess,
     announceText,
+    t,
   ]);
 
   // 确认关键操作
@@ -175,32 +189,40 @@ export const useUXOptimization = (
         return true;
       }
 
-      const confirmed = window.confirm(`确认要${action}吗？\n\n${message}`);
+      const confirmed = window.confirm(
+        t('hook.ux.confirm_message', { action, message })
+      );
       if (confirmed) {
         try {
           await onConfirm();
-          announceText(`已确认并执行: ${action}`);
+          announceText(t('hook.ux.confirmed', { action }));
           return true;
         } catch (error) {
-          showError('操作失败', `执行${action}时发生错误: ${error}`);
+          showError(
+            t('hook.ux.critical_failed_title'),
+            t('hook.ux.critical_failed_desc', { action, error })
+          );
           return false;
         }
       }
 
-      announceText(`已取消操作: ${action}`);
+      announceText(t('hook.ux.cancelled', { action }));
       return false;
     },
-    [finalConfig.confirmCriticalActions, showError, announceText]
+    [finalConfig.confirmCriticalActions, showError, announceText, t]
   );
 
   // 智能加载状态管理
   const startLoading = useCallback(
     (operationId: string, message: string) => {
       setLoadingStates(prev => new Map(prev).set(operationId, message));
-      const messageId = showLoading(message, `正在执行: ${operationId}`);
+      const messageId = showLoading(
+        message,
+        t('hook.ux.loading_detail', { operationId })
+      );
       return { operationId, messageId };
     },
-    [showLoading]
+    [showLoading, t]
   );
 
   const finishLoading = useCallback(
@@ -219,12 +241,18 @@ export const useUXOptimization = (
       removeMessage(messageId);
 
       if (success) {
-        showSuccess('操作完成', result || `${operationId} 执行成功`);
+        showSuccess(
+          t('common.success'),
+          result || t('hook.ux.operation_success_desc', { operationId })
+        );
       } else {
-        showError('操作失败', result || `${operationId} 执行失败`);
+        showError(
+          t('common.operation_failed'),
+          result || t('hook.ux.operation_failed_desc', { operationId })
+        );
       }
     },
-    [removeMessage, showSuccess, showError]
+    [removeMessage, showSuccess, showError, t]
   );
 
   // 自动保存功能
@@ -242,12 +270,15 @@ export const useUXOptimization = (
         );
         setLastSaveTime(Date.now());
         setIsDirty(false);
-        announceText('数据已自动保存');
+        announceText(t('hook.ux.auto_save_success'));
       } catch (error) {
-        showError('自动保存失败', '无法保存数据到本地存储');
+        showError(
+          t('hook.ux.auto_save_failed_title'),
+          t('hook.ux.auto_save_failed_desc')
+        );
       }
     },
-    [isDirty, showError, announceText]
+    [isDirty, showError, announceText, t]
   );
 
   // 获取自动保存的数据
@@ -256,10 +287,13 @@ export const useUXOptimization = (
       const saved = localStorage.getItem('auto-save-data');
       return saved ? JSON.parse(saved) : null;
     } catch (error) {
-      showError('读取保存数据失败', '无法从本地存储读取数据');
+      showError(
+        t('hook.ux.read_saved_failed_title'),
+        t('hook.ux.read_saved_failed_desc')
+      );
       return null;
     }
-  }, [showError]);
+  }, [showError, t]);
 
   // 性能监控开始
   const startPerformanceMonitoring = useCallback(() => {
@@ -302,11 +336,13 @@ export const useUXOptimization = (
     // 如果渲染时间过长，显示警告
     if (renderTime > 100) {
       showWarning(
-        '性能警告',
-        `页面渲染耗时${renderTime.toFixed(2)}ms，可能影响用户体验`
+        t('hook.ux.performance_warning_title'),
+        t('hook.ux.performance_warning_desc', {
+          time: renderTime.toFixed(2),
+        })
       );
     }
-  }, [finalConfig.enablePerformanceMonitoring, showWarning]);
+  }, [finalConfig.enablePerformanceMonitoring, showWarning, t]);
 
   // 智能建议系统
   const getSmartSuggestions = useCallback(
@@ -326,8 +362,10 @@ export const useUXOptimization = (
 
         suggestions.push({
           type: 'pattern',
-          title: '基于历史操作',
-          description: `您经常使用"${frequentAction}"，是否需要快捷方式？`,
+          title: t('hook.ux.suggestion_pattern_title'),
+          description: t('hook.ux.suggestion_pattern_desc', {
+            action: frequentAction,
+          }),
           action: 'create_shortcut',
           data: { action: frequentAction },
         });
@@ -337,8 +375,8 @@ export const useUXOptimization = (
       if (performanceMetrics.renderTime > 50) {
         suggestions.push({
           type: 'performance',
-          title: '性能优化建议',
-          description: '检测到页面渲染较慢，建议开启性能模式',
+          title: t('hook.ux.suggestion_performance_title'),
+          description: t('hook.ux.suggestion_performance_desc'),
           action: 'enable_performance_mode',
           data: {},
         });
@@ -348,8 +386,8 @@ export const useUXOptimization = (
       if (performanceMetrics.errorCount > 3) {
         suggestions.push({
           type: 'error',
-          title: '错误频率较高',
-          description: '建议查看操作指南或联系支持',
+          title: t('hook.ux.suggestion_error_title'),
+          description: t('hook.ux.suggestion_error_desc'),
           action: 'show_help',
           data: {},
         });
@@ -357,7 +395,12 @@ export const useUXOptimization = (
 
       return suggestions;
     },
-    [finalConfig.enableSmartSuggestions, operationHistory, performanceMetrics]
+    [
+      finalConfig.enableSmartSuggestions,
+      operationHistory,
+      performanceMetrics,
+      t,
+    ]
   );
 
   // 自动保存定时器

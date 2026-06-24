@@ -14,9 +14,11 @@ import { useAutoProcessDayVote } from '@/hooks/useAutoProcessDayVote';
 import { useEveningRefresh } from '@/hooks/useEveningRefresh';
 import { useRoomTransition } from '@/hooks/useRoomTransition';
 import { useAutoDyingStatusProcessor } from '@/hooks/useAutoDyingStatusProcessor';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const JudgePage = () => {
   const { id: roomId } = useParams();
+  const { t } = useLanguage();
   const { currentUser, requireAuth } = useAuth();
   const {
     isJudge,
@@ -37,7 +39,7 @@ const JudgePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>请先登录以访问法官页面</p>
+            <p className='text-gray-400 mb-4'>{t('page.judge.login_required')}</p>
           </div>
         </div>
       </PageLayout>
@@ -49,7 +51,7 @@ const JudgePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>房间ID不存在</p>
+            <p className='text-gray-400 mb-4'>{t('page.judge.room_id_missing')}</p>
           </div>
         </div>
       </PageLayout>
@@ -63,7 +65,7 @@ const JudgePage = () => {
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            <p className='text-gray-400 mb-4'>检查权限中...</p>
+            <p className='text-gray-400 mb-4'>{t('page.judge.checking_permissions')}</p>
           </div>
         </div>
       </PageLayout>
@@ -76,7 +78,7 @@ const JudgePage = () => {
       <PageLayout>
         <div className='container mx-auto py-6 px-4'>
           <div className='text-center'>
-            <p className='text-gray-400 mb-4'>您不是此房间的法官</p>
+            <p className='text-gray-400 mb-4'>{t('page.judge.not_judge')}</p>
           </div>
         </div>
       </PageLayout>
@@ -115,7 +117,7 @@ const JudgePage = () => {
                 roomId={roomId}
                 currentUser={currentUser}
                 isGameRoom={false}
-                title='法官聊天'
+                title={t('page.judge.chat_title')}
                 className='h-full'
                 height='100%'
               />

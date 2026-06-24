@@ -2,6 +2,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { monitoringService } from '@/services/monitoringService';
 import { analyticsService } from '@/services/analyticsService';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 export interface UsePerformanceMonitoringOptions {
   componentName: string;
@@ -20,6 +21,7 @@ export const usePerformanceMonitoring = (
     sampleRate = 1.0,
   } = options;
 
+  const { language } = useLanguage();
   const renderCountRef = useRef(0);
   const mountTimeRef = useRef(Date.now());
   const lastRenderTimeRef = useRef(Date.now());
@@ -39,16 +41,19 @@ export const usePerformanceMonitoring = (
     lastRenderTimeRef.current = now;
 
     if (renderCountRef.current > 1) {
-      monitoringService.recordMetric({
-        name: 'component_render',
-        value: renderTime,
-        unit: 'ms',
-        timestamp: now,
-        context: {
-          componentName,
-          renderCount: renderCountRef.current,
+      monitoringService.recordMetric(
+        {
+          name: 'component_render',
+          value: renderTime,
+          unit: 'ms',
+          timestamp: now,
+          context: {
+            componentName,
+            renderCount: renderCountRef.current,
+          },
         },
-      });
+        language
+      );
     }
   });
 
@@ -58,32 +63,38 @@ export const usePerformanceMonitoring = (
 
     const mountDuration = Date.now() - mountTimeRef.current;
 
-    monitoringService.recordMetric({
-      name: 'component_mount',
-      value: mountDuration,
-      unit: 'ms',
-      timestamp: Date.now(),
-      context: {
-        componentName,
+    monitoringService.recordMetric(
+      {
+        name: 'component_mount',
+        value: mountDuration,
+        unit: 'ms',
+        timestamp: Date.now(),
+        context: {
+          componentName,
+        },
       },
-    });
+      language
+    );
 
     // 组件卸载时的清理
     return () => {
       const lifeDuration = Date.now() - mountTimeRef.current;
 
-      monitoringService.recordMetric({
-        name: 'component_unmount',
-        value: lifeDuration,
-        unit: 'ms',
-        timestamp: Date.now(),
-        context: {
-          componentName,
-          totalRenders: renderCountRef.current,
+      monitoringService.recordMetric(
+        {
+          name: 'component_unmount',
+          value: lifeDuration,
+          unit: 'ms',
+          timestamp: Date.now(),
+          context: {
+            componentName,
+            totalRenders: renderCountRef.current,
+          },
         },
-      });
+        language
+      );
     };
-  }, [componentName, trackPerformance, shouldSample]);
+  }, [componentName, trackPerformance, shouldSample, language]);
 
   /**
    * 记录用户操作
@@ -123,39 +134,45 @@ export const usePerformanceMonitoring = (
         const result = await operation();
         const duration = Date.now() - startTime;
 
-        monitoringService.recordMetric({
-          name: 'operation_duration',
-          value: duration,
-          unit: 'ms',
-          timestamp: Date.now(),
-          context: {
-            componentName,
-            operationName,
-            success: true,
+        monitoringService.recordMetric(
+          {
+            name: 'operation_duration',
+            value: duration,
+            unit: 'ms',
+            timestamp: Date.now(),
+            context: {
+              componentName,
+              operationName,
+              success: true,
+            },
           },
-        });
+          language
+        );
 
         return result;
       } catch (error) {
         const duration = Date.now() - startTime;
 
-        monitoringService.recordMetric({
-          name: 'operation_duration',
-          value: duration,
-          unit: 'ms',
-          timestamp: Date.now(),
-          context: {
-            componentName,
-            operationName,
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
+        monitoringService.recordMetric(
+          {
+            name: 'operation_duration',
+            value: duration,
+            unit: 'ms',
+            timestamp: Date.now(),
+            context: {
+              componentName,
+              operationName,
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            },
           },
-        });
+          language
+        );
 
         throw error;
       }
     },
-    [componentName, trackPerformance, shouldSample]
+    [componentName, trackPerformance, shouldSample, language]
   );
 
   /**
@@ -165,20 +182,23 @@ export const usePerformanceMonitoring = (
     (error: Error, context?: Record<string, any>) => {
       if (!shouldSample()) return;
 
-      monitoringService.recordMetric({
-        name: 'error',
-        value: 1,
-        unit: 'count',
-        timestamp: Date.now(),
-        context: {
-          componentName,
-          errorMessage: error.message,
-          errorStack: error.stack,
-          ...context,
+      monitoringService.recordMetric(
+        {
+          name: 'error',
+          value: 1,
+          unit: 'count',
+          timestamp: Date.now(),
+          context: {
+            componentName,
+            errorMessage: error.message,
+            errorStack: error.stack,
+            ...context,
+          },
         },
-      });
+        language
+      );
     },
-    [componentName, shouldSample]
+    [componentName, shouldSample, language]
   );
 
   /**
@@ -188,20 +208,23 @@ export const usePerformanceMonitoring = (
     (url: string, duration: number, success: boolean, statusCode?: number) => {
       if (!trackPerformance || !shouldSample()) return;
 
-      monitoringService.recordMetric({
-        name: 'network_request',
-        value: duration,
-        unit: 'ms',
-        timestamp: Date.now(),
-        context: {
-          componentName,
-          url,
-          success,
-          statusCode,
+      monitoringService.recordMetric(
+        {
+          name: 'network_request',
+          value: duration,
+          unit: 'ms',
+          timestamp: Date.now(),
+          context: {
+            componentName,
+            url,
+            success,
+            statusCode,
+          },
         },
-      });
+        language
+      );
     },
-    [componentName, trackPerformance, shouldSample]
+    [componentName, trackPerformance, shouldSample, language]
   );
 
   return {

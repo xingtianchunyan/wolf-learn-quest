@@ -8,6 +8,7 @@ import PlayerStatusPanel from './PlayerStatusPanel';
 import { useGameState } from '@/hooks/useGameState';
 import { useToast } from '@/hooks/use-toast';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const logger = createLogger('PreparationPhaseDialog');
 
@@ -22,6 +23,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   onClose,
   roomId,
 }) => {
+  const { t } = useLanguage();
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -76,8 +78,8 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
   const handleStartGame = async () => {
     if (!allPlayersReady || players.length === 0) {
       toast({
-        title: '无法开始游戏',
-        description: '请确保所有玩家都已准备就绪',
+        title: t('judge.preparation.toast.cannotStart.title'),
+        description: t('judge.preparation.toast.cannotStart.description'),
         variant: 'destructive',
       });
       return;
@@ -89,22 +91,22 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
 
       if (success) {
         toast({
-          title: '游戏开始',
-          description: '游戏已成功开始，玩家将自动跳转到游戏页面',
+          title: t('judge.preparation.toast.started.title'),
+          description: t('judge.preparation.toast.started.description'),
         });
         onClose();
       } else {
         toast({
-          title: '开始游戏失败',
-          description: '请稍后重试',
+          title: t('judge.preparation.toast.startFailed.title'),
+          description: t('common.retry_later'),
           variant: 'destructive',
         });
       }
     } catch (error) {
       logger.error('Error starting game:', error);
       toast({
-        title: '开始游戏时发生错误',
-        description: '请稍后重试',
+        title: t('judge.preparation.toast.startError.title'),
+        description: t('common.retry_later'),
         variant: 'destructive',
       });
     } finally {
@@ -129,7 +131,7 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
       >
         <div className='dialog-header p-4 cursor-move border-b border-werewolf-purple/30'>
           <h2 className='text-werewolf-purple text-xl font-semibold leading-none tracking-tight'>
-            准备阶段管理
+            {t('judge.preparation.title')}
           </h2>
           <button
             onClick={onClose}
@@ -163,7 +165,9 @@ const PreparationPhaseDialog: React.FC<PreparationPhaseDialogProps> = ({
                 }`}
               >
                 <Play className='mr-2 h-5 w-5' />
-                {isStarting ? '正在开始游戏...' : '开始游戏'}
+                {isStarting
+                  ? t('judge.preparation.startingGame')
+                  : t('judge.preparation.startGame')}
               </Button>
             </div>
           </div>

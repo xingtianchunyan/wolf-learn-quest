@@ -36,6 +36,19 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   isReady,
 }) => {
   const { t } = useLanguage();
+
+  const getRoleDisplayName = (roleName: string) => {
+    const baseName = roleName.replace(/_\d+$/, '');
+    const keyMap: Record<string, string> = {
+      whitewolf: 'game.role.white_wolf',
+    };
+    const key = keyMap[baseName] || `game.role.${baseName}`;
+    const translated = t(key as never);
+    return translated !== key ? translated : roleName;
+  };
+
+  const getRoleSelectionToast = (key: string) =>
+    t(`gameComponent.room.roleSelection.${key}` as never);
   const { toast } = useToast();
   const {
     roleDesigns,
@@ -77,8 +90,11 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const handleRoleSelect = async (role: ExpandedRole) => {
     if (!canSelectRoles()) {
       toast({
-        title: '角色选择暂未开放',
-        description: `需要等待房间人数达到${maxPlayers}人才能选择角色`,
+        title: getRoleSelectionToast('roleSelectionNotOpen'),
+        description: t(
+          'gameComponent.room.roleSelection.waitForMaxPlayers',
+          { maxPlayers }
+        ),
         variant: 'destructive',
       });
       return;
@@ -86,8 +102,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
     if (isReady) {
       toast({
-        title: t('cannot_select_role'),
-        description: '请先取消准备状态才能选择角色',
+        title: getRoleSelectionToast('cannotSelectRole'),
+        description: getRoleSelectionToast('cancelReadyFirst'),
         variant: 'destructive',
       });
       return;
@@ -95,8 +111,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
 
     if (!role.roleDesignId) {
       toast({
-        title: t('error'),
-        description: '角色设计数据缺失，无法选择此角色',
+        title: t('common.error'),
+        description: getRoleSelectionToast('roleDesignMissing'),
         variant: 'destructive',
       });
       return;
@@ -107,8 +123,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       currentSelectedRoleId !== role.roleDesignId
     ) {
       toast({
-        title: t('role_already_selected'),
-        description: '该角色已被其他玩家选择',
+        title: getRoleSelectionToast('roleAlreadySelected'),
+        description: getRoleSelectionToast('roleAlreadySelected'),
         variant: 'destructive',
       });
       return;
@@ -119,13 +135,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       if (success) {
         onCharacterSelect(null);
         toast({
-          title: t('role_unselected'),
-          description: '已取消角色选择',
+          title: getRoleSelectionToast('roleUnselected'),
+          description: getRoleSelectionToast('roleUnselectedDesc'),
         });
       } else {
         toast({
-          title: t('error'),
-          description: '取消选择失败，请重试',
+          title: t('common.error'),
+          description: getRoleSelectionToast('unselectFailed'),
           variant: 'destructive',
         });
       }
@@ -136,13 +152,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     if (success) {
       onCharacterSelect(role.roleDesignId);
       toast({
-        title: t('role_selected'),
-        description: `已选择角色：${role.displayName}`,
+        title: getRoleSelectionToast('roleSelected'),
+        description: t('gameComponent.room.roleSelection.selectedRole', {
+          roleName: getRoleDisplayName(role.roleName),
+        }),
       });
     } else {
       toast({
-        title: t('error'),
-        description: '选择角色失败，请重试',
+        title: t('common.error'),
+        description: getRoleSelectionToast('selectRoleFailed'),
         variant: 'destructive',
       });
     }
@@ -184,16 +202,24 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             {t('roles')})
           </p>
           <p className='text-sm text-gray-400'>
-            当前玩家数: {currentPlayerCount} / {maxPlayers}
+            {t('gameComponent.room.roleSelection.currentPlayerCount', {
+              current: currentPlayerCount,
+              max: maxPlayers,
+            })}
           </p>
           {!canSelectRoles() && (
             <p className='text-sm text-yellow-400'>
-              等待房间人数达到{maxPlayers}人后开放角色选择
+              {t(
+                'gameComponent.room.roleSelection.waitingForRoleSelection',
+                { maxPlayers }
+              )}
             </p>
           )}
           {canSelectRoles() && currentSelection && (
             <p className='text-sm text-werewolf-purple'>
-              当前选择：{currentSelection.roleName}
+              {t('gameComponent.room.roleSelection.currentSelection', {
+                roleName: getRoleDisplayName(currentSelection.roleName),
+              })}
             </p>
           )}
         </div>

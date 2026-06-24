@@ -3,6 +3,7 @@ import type { DropResult } from 'react-beautiful-dnd';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useJudgePage } from '@/contexts/JudgePageContext';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type {
   Question,
   QuestionSource,
@@ -19,6 +20,7 @@ export const useQuestionBankDialog = ({
   isOpen,
   onClose,
 }: UseQuestionBankDialogOptions) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const { linkedQuestions, saveLinkedQuestions, isSystemLinked } =
     useJudgePage();
@@ -141,7 +143,8 @@ export const useQuestionBankDialog = ({
         correct_option: q.correct_option,
         explanation: q.explanation,
         difficulty: q.difficulty || 1,
-        source_file: q.generated_questions?.file_name || '手动编辑',
+        source_file:
+          q.generated_questions?.file_name || t('judge.questionBank.source.manual'),
         category:
           q.category || (q.generated_questions_id ? '生成题目' : '手动编辑'),
         generated_questions_id: q.generated_questions_id,
@@ -152,7 +155,7 @@ export const useQuestionBankDialog = ({
       const sourceMap = new Map<string, QuestionSource>();
       sourceMap.set('manual', {
         id: 'manual',
-        name: '手动编辑',
+        name: t('judge.questionBank.source.manual'),
         count: 0,
         type: 'manual',
       });
@@ -168,7 +171,7 @@ export const useQuestionBankDialog = ({
           } else {
             sourceMap.set(q.generated_questions_id, {
               id: q.generated_questions_id,
-              name: q.source_file || '未知文件',
+              name: q.source_file || t('common.unknown_file'),
               count: 1,
               type: 'file',
             });
@@ -180,8 +183,11 @@ export const useQuestionBankDialog = ({
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
-        title: '获取题目失败',
-        description: `无法加载题目数据: ${error instanceof Error ? error.message : '未知错误'}`,
+        title: t('judge.questionBank.toast.fetchError.title'),
+        description: t('judge.questionBank.toast.fetchError.description', {
+          message:
+            error instanceof Error ? error.message : t('common.unknown'),
+        }),
         variant: 'destructive',
       });
     } finally {
@@ -214,8 +220,8 @@ export const useQuestionBankDialog = ({
 
     if (newSelected.length > 18) {
       toast({
-        title: '选择题目过多',
-        description: '最多只能选择18道题目',
+        title: t('judge.questionBank.toast.tooMany.title'),
+        description: t('judge.questionBank.toast.tooMany.description'),
         variant: 'destructive',
       });
       return;
@@ -244,8 +250,8 @@ export const useQuestionBankDialog = ({
     } else {
       if (selectedQuestions.length >= 18) {
         toast({
-          title: '选择题目过多',
-          description: '最多只能选择18道题目',
+          title: t('judge.questionBank.toast.tooMany.title'),
+          description: t('judge.questionBank.toast.tooMany.description'),
           variant: 'destructive',
         });
         return;
@@ -261,8 +267,8 @@ export const useQuestionBankDialog = ({
       !manualQuestion.option_b.trim()
     ) {
       toast({
-        title: '题目信息不完整',
-        description: '请至少填写题干和两个选项',
+        title: t('judge.questionBank.toast.incomplete.title'),
+        description: t('judge.questionBank.toast.incomplete.description'),
         variant: 'destructive',
       });
       return;
@@ -301,16 +307,19 @@ export const useQuestionBankDialog = ({
       await fetchGeneratedQuestions();
 
       toast({
-        title: '题目添加成功',
-        description: '手动编辑的题目已添加到题库中',
+        title: t('judge.questionBank.toast.addSuccess.title'),
+        description: t('judge.questionBank.toast.addSuccess.description'),
       });
 
       setActiveTab('generated');
     } catch (error) {
       console.error('Error adding manual question:', error);
       toast({
-        title: '添加题目失败',
-        description: `无法保存手动编辑的题目: ${error instanceof Error ? error.message : '未知错误'}`,
+        title: t('judge.questionBank.toast.addError.title'),
+        description: t('judge.questionBank.toast.addError.description', {
+          message:
+            error instanceof Error ? error.message : t('common.unknown'),
+        }),
         variant: 'destructive',
       });
     }

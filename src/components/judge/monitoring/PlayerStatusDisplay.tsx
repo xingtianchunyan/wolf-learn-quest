@@ -7,6 +7,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useRoleStates } from '@/hooks/useRoleStates';
 import { supabase } from '@/integrations/supabase/client';
 import PlayerStatusManager from '@/components/game/panels/PlayerStatusManager';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoomPlayersRow {
   user_id: string;
@@ -33,6 +34,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
   roomId,
   maxPlayers,
 }) => {
+  const { t } = useLanguage();
   const { currentUser } = useAuth();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const { getSelectedRoleByUser } = useRoleSelection(
@@ -134,7 +136,8 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
           const selectedRole = player.userId
             ? getSelectedRoleByUser(player.userId)
             : null;
-          const roleName = selectedRole?.roleName || '未分配角色';
+          const roleName =
+            selectedRole?.roleName || t('judge.playerDisplay.noRole');
           const roleImageUrl = selectedRole?.roleDesign
             ? getLocalImageByDesignId(selectedRole.roleDesign.id)
             : null;

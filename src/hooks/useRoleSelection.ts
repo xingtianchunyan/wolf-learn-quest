@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoleSelection {
   id: string;
@@ -32,6 +33,7 @@ export const useRoleSelection = (
 ) => {
   const [roleSelections, setRoleSelections] = useState<RoleSelection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
   const { roleDesigns } = useRoleDesigns();
 
   useEffect(() => {
@@ -167,7 +169,7 @@ export const useRoleSelection = (
     return selection
       ? {
           roleId: selection.role_id,
-          roleName: selection.role_design?.role_name || '未知角色',
+          roleName: selection.role_design?.role_name || t('common.unknown_role'),
           roleDesign: selection.role_design,
         }
       : null;

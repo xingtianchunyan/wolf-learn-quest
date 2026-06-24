@@ -11,6 +11,7 @@ import {
 } from 'react-beautiful-dnd';
 import { Question } from '../types/questionBank';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface QuestionOrderEditorProps {
   selectedQuestions: Question[];
@@ -25,10 +26,14 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
   onLinkSystem,
   isSystemLinked,
 }) => {
+  const { t } = useLanguage();
   const getPhaseLabel = (index: number) => {
     const round = Math.floor(index / 2) + 1;
-    const phase = index % 2 === 0 ? '傍晚' : '黎明';
-    return `第${round}轮 ${phase}阶段`;
+    const phase =
+      index % 2 === 0
+        ? t('game.phase.evening_quiz')
+        : t('game.phase.dawn_quiz');
+    return t('judge.answerRecord.roundPhase', { round, phase });
   };
 
   const getDifficultyColor = (difficulty: number) => {
@@ -51,17 +56,17 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
   const getDifficultyLabel = (difficulty: number) => {
     switch (difficulty) {
       case 1:
-        return '简单';
+        return t('game.difficulty.very_easy');
       case 2:
-        return '容易';
+        return t('game.difficulty.easy');
       case 3:
-        return '中等';
+        return t('game.difficulty.medium');
       case 4:
-        return '困难';
+        return t('game.difficulty.hard');
       case 5:
-        return '极难';
+        return t('game.difficulty.very_hard');
       default:
-        return '未知';
+        return t('game.difficulty.unknown');
     }
   };
 
@@ -69,24 +74,32 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
     <Card className='bg-werewolf-dark/40 border-werewolf-purple/30 h-full'>
       <CardHeader className='pb-3'>
         <div className='flex justify-between items-center'>
-          <CardTitle className='text-werewolf-purple'>已选择题目顺序</CardTitle>
+          <CardTitle className='text-werewolf-purple'>
+            {t('judge.questionBank.order.title')}
+          </CardTitle>
           <Button
             onClick={onLinkSystem}
             disabled={selectedQuestions.length === 0}
             size='sm'
             className='bg-werewolf-purple hover:bg-werewolf-light text-white'
           >
-            {isSystemLinked ? '更新教师系统' : '链接教师系统'}
+            {isSystemLinked
+              ? t('judge.questionBank.order.updateSystem')
+              : t('judge.questionBank.order.linkSystem')}
           </Button>
         </div>
         <p className='text-gray-400 text-sm'>
-          已选择 {selectedQuestions.length}/18 道题目 - 拖动题目可调整顺序
+          {t('judge.questionBank.order.selectedCount', {
+            count: selectedQuestions.length,
+          })}
         </p>
       </CardHeader>
       <CardContent className='h-[calc(100%-100px)]'>
         {selectedQuestions.length === 0 ? (
           <div className='flex items-center justify-center h-full'>
-            <p className='text-gray-400'>请先在"已生成题目"页面选择题目</p>
+            <p className='text-gray-400'>
+              {t('judge.questionBank.order.empty')}
+            </p>
           </div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
@@ -128,7 +141,10 @@ const QuestionOrderEditor: React.FC<QuestionOrderEditorProps> = ({
                                       {getPhaseLabel(index)}
                                     </span>
                                     <span className='text-gray-400 text-xs'>
-                                      题目 {index + 1}
+                                      {t(
+                                        'judge.questionBank.preview.questionLabel',
+                                        { index: index + 1 }
+                                      )}
                                     </span>
                                     <Badge
                                       className={`text-white ${getDifficultyColor(question.difficulty || 1)}`}

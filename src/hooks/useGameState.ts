@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/providers/AuthProvider';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { GameState, GameSettings } from '@/types/game';
 
 export type { GameState, GameSettings } from '@/types/game';
@@ -45,6 +46,7 @@ export const useGameState = (roomId: string) => {
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { requireAuth } = useAuth();
 
   // Fetch initial game state and settings
@@ -244,7 +246,7 @@ export const useGameState = (roomId: string) => {
         if (settingsError) {
           console.error('Error creating game settings:', settingsError);
           toast({
-            title: '初始化游戏设置失败',
+            title: t('hook.game.init_settings_failed'),
             description: settingsError.message,
             variant: 'destructive',
           });
@@ -291,7 +293,7 @@ export const useGameState = (roomId: string) => {
       if (gameStateError) {
         console.error('Error starting game:', gameStateError);
         toast({
-          title: '开始游戏失败',
+          title: t('hook.game.start_failed'),
           description: gameStateError.message,
           variant: 'destructive',
         });
@@ -327,14 +329,14 @@ export const useGameState = (roomId: string) => {
       }
 
       toast({
-        title: '游戏开始',
-        description: '游戏已成功开始，进入傍晚阶段',
+        title: t('hook.game.started_title'),
+        description: t('hook.game.started_desc'),
       });
       return true;
     } catch (error) {
       console.error('Error starting game:', error);
       toast({
-        title: '开始游戏时发生错误',
+        title: t('hook.game.start_failed'),
         variant: 'destructive',
       });
       return false;
@@ -353,7 +355,7 @@ export const useGameState = (roomId: string) => {
       if (error) {
         console.error('Error advancing phase:', error);
         toast({
-          title: '阶段切换失败',
+          title: t('hook.game.advance_phase_failed'),
           description: error.message,
           variant: 'destructive',
         });
@@ -379,7 +381,7 @@ export const useGameState = (roomId: string) => {
       if (error) {
         console.error('Error toggling pause:', error);
         toast({
-          title: '暂停/恢复失败',
+          title: t('hook.game.pause_failed'),
           description: error.message,
           variant: 'destructive',
         });
@@ -387,8 +389,10 @@ export const useGameState = (roomId: string) => {
       }
 
       toast({
-        title: data ? '游戏已暂停' : '游戏已恢复',
-        description: data ? '游戏已暂停，计时器停止' : '游戏已恢复，计时器继续',
+        title: data ? t('hook.game.paused_title') : t('hook.game.resumed_title'),
+        description: data
+          ? t('hook.game.paused_desc')
+          : t('hook.game.resumed_desc'),
       });
       return true;
     } catch (error) {
@@ -426,7 +430,7 @@ export const useGameState = (roomId: string) => {
       if (error) {
         console.error('Error updating game settings:', error);
         toast({
-          title: '设置更新失败',
+          title: t('hook.game.settings_update_failed'),
           description: error.message,
           variant: 'destructive',
         });
@@ -434,7 +438,7 @@ export const useGameState = (roomId: string) => {
       }
 
       toast({
-        title: '游戏设置已更新',
+        title: t('hook.game.settings_updated'),
       });
       return true;
     } catch (error) {
@@ -457,7 +461,7 @@ export const useGameState = (roomId: string) => {
       if (updateError) {
         console.error('Error ending game (updating state):', updateError);
         toast({
-          title: '结束游戏失败',
+          title: t('hook.game.end_failed'),
           description: updateError.message,
           variant: 'destructive',
         });
@@ -473,7 +477,7 @@ export const useGameState = (roomId: string) => {
       if (roomUpdateError) {
         console.error('Error ending game (updating room):', roomUpdateError);
         toast({
-          title: '结束游戏失败',
+          title: t('hook.game.end_failed'),
           description: roomUpdateError.message,
           variant: 'destructive',
         });
@@ -511,28 +515,30 @@ export const useGameState = (roomId: string) => {
           end_time: endTime.toISOString(),
           final_round: gameState.currentRound,
           total_duration_seconds: duration,
-          end_reason: '法官结束游戏',
+          end_reason: t('hook.game.end_reason_judge'),
         });
 
       if (sessionError) {
         console.error('Error creating game session archive:', sessionError);
         toast({
-          title: '游戏已结束',
-          description: `但归档时出错: ${sessionError.message}`,
+          title: t('hook.game.ended_title'),
+          description: t('hook.game.ended_with_archive_error', {
+            message: sessionError.message,
+          }),
           variant: 'destructive',
         });
         return true; // Game is ended anyway
       }
 
       toast({
-        title: '游戏结束',
-        description: '游戏已结束并成功归档。',
+        title: t('hook.game.ended_title'),
+        description: t('hook.game.ended_desc'),
       });
       return true;
     } catch (error) {
       console.error('Error ending game:', error);
       toast({
-        title: '结束游戏时发生未知错误',
+        title: t('hook.game.end_unknown_error'),
         variant: 'destructive',
       });
       return false;
@@ -546,13 +552,13 @@ export const useGameState = (roomId: string) => {
   };
 
   const getPhaseDisplayName = (phase: number) => {
-    const phaseNames = {
-      1: '白天',
-      2: '傍晚',
-      3: '夜晚',
-      4: '黎明',
+    const phaseNames: Record<number, string> = {
+      1: t('game.phase.day'),
+      2: t('game.phase.evening'),
+      3: t('game.phase.night'),
+      4: t('game.phase.dawn'),
     };
-    return phaseNames[phase as keyof typeof phaseNames] || '未知';
+    return phaseNames[phase] || t('common.unknown');
   };
 
   return {

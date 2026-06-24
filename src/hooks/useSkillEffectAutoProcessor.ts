@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createLogger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const logger = createLogger('skill-effect-auto-processor');
 
@@ -29,6 +30,7 @@ export const useSkillEffectAutoProcessor = (
 
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingRef = useRef(false);
 
@@ -67,7 +69,7 @@ export const useSkillEffectAutoProcessor = (
       }));
 
       if (processedCount > 0) {
-        logger.info(`成功处理 ${processedCount} 个技能效果`, {
+        logger.info(`Processed ${processedCount} skill effects`, {
           gameStateId,
           processingTime,
           processedCount,
@@ -76,15 +78,17 @@ export const useSkillEffectAutoProcessor = (
         // 显示成功通知
         if (isJudge) {
           toast({
-            title: '技能效果处理完成',
-            description: `成功处理了 ${processedCount} 个技能效果`,
+            title: t('hook.skill_effect.process_success_title'),
+            description: t('hook.skill_effect.process_success_desc', {
+              count: processedCount,
+            }),
           });
         }
       }
 
       return processedCount;
     } catch (error: any) {
-      logger.error('技能效果处理失败', error, { gameStateId });
+      logger.error('Skill effect processing failed', error, { gameStateId });
 
       setStats(prev => ({
         ...prev,
@@ -95,8 +99,8 @@ export const useSkillEffectAutoProcessor = (
       // 显示错误通知
       if (isJudge) {
         toast({
-          title: '技能效果处理失败',
-          description: error.message || '系统错误，请重试',
+          title: t('hook.skill_effect.process_failed_title'),
+          description: error.message || t('common.system_error'),
           variant: 'destructive',
         });
       }
@@ -106,7 +110,7 @@ export const useSkillEffectAutoProcessor = (
       processingRef.current = false;
       setIsProcessing(false);
     }
-  }, [gameStateId, isJudge, toast]);
+  }, [gameStateId, isJudge, toast, t]);
 
   // 清理过期效果
   const cleanupExpiredEffects = useCallback(async (): Promise<void> => {
@@ -133,20 +137,22 @@ export const useSkillEffectAutoProcessor = (
       const processed = await processSkillEffects();
 
       toast({
-        title: '手动处理完成',
-        description: `处理了 ${processed} 个技能效果`,
+        title: t('hook.skill_effect.manual_success_title'),
+        description: t('hook.skill_effect.manual_success_desc', {
+          count: processed,
+        }),
       });
 
       return processed;
     } catch (error: any) {
       toast({
-        title: '手动处理失败',
+        title: t('hook.skill_effect.manual_failed_title'),
         description: error.message,
         variant: 'destructive',
       });
       return 0;
     }
-  }, [processSkillEffects, toast]);
+  }, [processSkillEffects, toast, t]);
 
   // 启动自动处理
   const startAutoProcess = useCallback(() => {

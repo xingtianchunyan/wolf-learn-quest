@@ -1,6 +1,7 @@
 // 技能验证和使用逻辑
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import { createLogger } from '@/lib/logger';
 import {
   EnhancedSkillService,
@@ -25,6 +26,7 @@ export const useSkillValidation = (
   roomId?: string
 ) => {
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   // 前端技能验证 - 避免发送无效请求到后端
   const validateSkillFrontend = useCallback(
@@ -37,7 +39,10 @@ export const useSkillValidation = (
       currentRound?: number
     ): Promise<{ canUse: boolean; reason?: string; suggestion?: string }> => {
       if (!gameStateId || !userId) {
-        return { canUse: false, reason: '缺少必要的游戏状态或用户信息' };
+        return {
+          canUse: false,
+          reason: t('hook.skill_validation.missing_context'),
+        };
       }
 
       // 检查缓存
@@ -66,8 +71,10 @@ export const useSkillValidation = (
       };
 
       try {
-        const validation =
-          await EnhancedSkillService.validateSkillUsage(context);
+        const validation = await EnhancedSkillService.validateSkillUsage(
+          context,
+          language
+        );
         const result = {
           canUse: validation.isValid,
           reason: validation.reason,
@@ -86,8 +93,11 @@ export const useSkillValidation = (
 
         return result;
       } catch (error) {
-        logger.error('技能验证失败', error);
-        return { canUse: false, reason: '验证失败，请重试' };
+        logger.error('Skill validation failed', error);
+        return {
+          canUse: false,
+          reason: t('hook.skill_validation.validation_failed'),
+        };
       }
     },
     [gameStateId, userId, roomId]
@@ -120,7 +130,7 @@ export const useSkillValidation = (
 
       if (!frontendValidation.canUse) {
         // 不显示错误弹窗，只记录日志
-        logger.warn('技能使用被前端验证阻止', {
+        logger.warn('Skill use blocked by frontend validation', {
           skillName,
           reason: frontendValidation.reason,
           suggestion: frontendValidation.suggestion,
@@ -142,20 +152,22 @@ export const useSkillValidation = (
         };
 
         // 直接调用技能服务
-        await EnhancedSkillService.useSkillEnhanced(context);
+        await EnhancedSkillService.useSkillEnhanced(context, language);
 
         // 清除相关缓存
         skillCache.clearUserCache(userId);
         skillCache.clearGameCache(gameStateId);
 
         toast({
-          title: '技能使用成功',
-          description: `成功使用技能: ${skillName}`,
+          title: t('hook.skill_validation.use_success_title'),
+          description: t('hook.skill_validation.use_success_desc', {
+            skillName,
+          }),
         });
 
         return { success: true };
       } catch (error) {
-        logger.error('技能使用失败', error);
+        logger.error('Skill use failed', error);
 
         const isGameRuleError =
           error &&
@@ -167,7 +179,7 @@ export const useSkillValidation = (
 
         if (isGameRuleError) {
           // 游戏规则相关错误，不显示弹窗，只记录日志
-          logger.warn('技能使用违反游戏规则', error);
+          logger.warn('Skill use violates game rules', error);
         } else {
           // 系统错误，显示错误弹窗
           const message =
@@ -176,9 +188,9 @@ export const useSkillValidation = (
             'message' in error &&
             typeof error.message === 'string'
               ? error.message
-              : '系统错误，请重试';
+              : t('common.system_error');
           toast({
-            title: '技能使用失败',
+            title: t('hook.skill_validation.use_failed_title'),
             description: message,
             variant: 'destructive',
           });
@@ -186,7 +198,7 @@ export const useSkillValidation = (
         return null;
       }
     },
-    [gameStateId, userId, roomId, toast, validateSkillFrontend]
+    [gameStateId, userId, roomId, language, toast, t, validateSkillFrontend]
   );
 
   // 获取技能使用建议
@@ -201,9 +213,9 @@ export const useSkillValidation = (
       if (!gameStateId || !userId) {
         return {
           canUse: false,
-          suggestion: '缺少游戏状态信息',
+          suggestion: t('hook.skill_validation.missing_game_state'),
           priority: 'low',
-          timing: '无法获取',
+          timing: t('hook.skill_validation.unavailable'),
         };
       }
 
@@ -218,9 +230,12 @@ export const useSkillValidation = (
         targetUserId,
       };
 
-      return await EnhancedSkillService.getSkillUsageSuggestion(context);
+      return await EnhancedSkillService.getSkillUsageSuggestion(
+        context,
+        language
+      );
     },
-    [gameStateId, userId, roomId]
+    [gameStateId, userId, roomId, language, t]
   );
 
   // 检查技能可用性
@@ -246,10 +261,13 @@ export const useSkillValidation = (
         targetUserId,
       };
 
-      const validation = await EnhancedSkillService.validateSkillUsage(context);
+      const validation = await EnhancedSkillService.validateSkillUsage(
+        context,
+        language
+      );
       return validation.isValid;
     },
-    [gameStateId, userId, roomId]
+    [gameStateId, userId, roomId, language]
   );
 
   return {

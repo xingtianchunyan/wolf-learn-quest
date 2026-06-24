@@ -15,6 +15,7 @@ import {
   Sunrise,
 } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface GameStateDisplayProps {
   roomId: string;
@@ -25,6 +26,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
   roomId,
   isJudge,
 }) => {
+  const { t } = useLanguage();
   const {
     gameState,
     gameSettings,
@@ -35,8 +37,17 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
     togglePause,
     endGame,
     formatTime,
-    getPhaseDisplayName,
   } = useGameState(roomId);
+
+  const phaseKeyMap: Record<number, string> = {
+    1: 'game.phase.day',
+    2: 'game.phase.evening',
+    3: 'game.phase.night',
+    4: 'game.phase.dawn',
+  };
+
+  const getPhaseDisplayName = (phase: number) =>
+    t((phaseKeyMap[phase] as never) ?? 'common.unknown');
 
   if (loading) {
     return (
@@ -44,7 +55,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
         <CardContent className='p-4'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto mb-2'></div>
-            <p className='text-sm text-gray-400'>加载游戏状态...</p>
+            <p className='text-sm text-gray-400'>
+              {t('gameComponent.state.loading')}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -100,15 +113,19 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
       <Card className='bg-werewolf-card border-werewolf-purple/30'>
         <CardContent className='p-4'>
           <div className='text-center space-y-4'>
-            <h3 className='font-bold text-werewolf-purple'>游戏准备中</h3>
-            <p className='text-sm text-gray-400'>等待开始游戏</p>
+            <h3 className='font-bold text-werewolf-purple'>
+              {t('gameComponent.state.preparing')}
+            </h3>
+            <p className='text-sm text-gray-400'>
+              {t('gameComponent.state.waitingStart')}
+            </p>
             {isJudge && (
               <Button
                 onClick={startGame}
                 className='bg-werewolf-purple hover:bg-werewolf-light'
               >
                 <Play className='h-4 w-4 mr-2' />
-                开始游戏
+                {t('gameComponent.state.startGame')}
               </Button>
             )}
           </div>
@@ -134,7 +151,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                 </span>
               </Badge>
               <Badge variant='outline' className='border-werewolf-purple/50'>
-                第 {gameState.currentRound} 轮
+                {t('gameComponent.state.round', {
+                  round: gameState.currentRound,
+                })}
               </Badge>
             </div>
 
@@ -144,7 +163,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                   variant='outline'
                   className='border-yellow-500 text-yellow-200'
                 >
-                  已暂停
+                  {t('gameComponent.state.paused')}
                 </Badge>
               )}
               <Badge
@@ -155,7 +174,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                     : 'border-gray-500 text-gray-200'
                 }
               >
-                {gameState.status === 'active' ? '进行中' : '等待中'}
+                {gameState.status === 'active'
+                  ? t('gameComponent.state.inProgress')
+                  : t('gameComponent.state.waiting')}
               </Badge>
             </div>
           </div>
@@ -165,7 +186,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
             <div className='text-center'>
               <div className='flex items-center justify-center space-x-2 mb-2'>
                 <Clock className='h-4 w-4 text-gray-400' />
-                <span className='text-sm text-gray-400'>剩余时间</span>
+                <span className='text-sm text-gray-400'>
+                  {t('gameComponent.state.timeRemaining')}
+                </span>
               </div>
               <div
                 className={`text-3xl font-bold ${
@@ -176,7 +199,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                       : 'text-werewolf-purple'
                 }`}
               >
-                {gameState.isPaused ? '已暂停' : formatTime(timeRemaining)}
+                {gameState.isPaused
+                  ? t('gameComponent.state.paused')
+                  : formatTime(timeRemaining)}
               </div>
             </div>
           )}
@@ -185,11 +210,13 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
           <div className='text-center p-3 bg-werewolf-dark/40 rounded-md'>
             <p className='text-sm text-gray-300'>
               {gameState.currentPhase === 1 &&
-                '讨论投票阶段 - 玩家可以自由讨论并投票'}
-              {gameState.currentPhase === 2 && '答题阶段 - 请准备回答问题'}
+                t('gameComponent.state.phaseDesc.day')}
+              {gameState.currentPhase === 2 &&
+                t('gameComponent.state.phaseDesc.evening')}
               {gameState.currentPhase === 3 &&
-                '技能使用阶段 - 特殊角色可以使用技能'}
-              {gameState.currentPhase === 4 && '答题阶段 - 请准备回答问题'}
+                t('gameComponent.state.phaseDesc.night')}
+              {gameState.currentPhase === 4 &&
+                t('gameComponent.state.phaseDesc.dawn')}
             </p>
           </div>
 
@@ -198,7 +225,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
             <div className='space-y-3 pt-3 border-t border-werewolf-purple/30'>
               <h4 className='text-sm font-semibold text-werewolf-purple flex items-center'>
                 <Settings className='h-4 w-4 mr-2' />
-                法官控制
+                {t('gameComponent.state.judgeControls')}
               </h4>
 
               <div className='grid grid-cols-2 gap-2'>
@@ -211,12 +238,12 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                   {gameState.isPaused ? (
                     <>
                       <Play className='h-4 w-4 mr-2' />
-                      恢复
+                      {t('gameComponent.state.resume')}
                     </>
                   ) : (
                     <>
                       <Pause className='h-4 w-4 mr-2' />
-                      暂停
+                      {t('gameComponent.state.pause')}
                     </>
                   )}
                 </Button>
@@ -229,7 +256,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                   className='border-werewolf-purple/50 hover:bg-werewolf-purple/20 disabled:opacity-50'
                 >
                   <SkipForward className='h-4 w-4 mr-2' />
-                  下一阶段
+                  {t('gameComponent.state.nextPhase')}
                 </Button>
               </div>
 
@@ -240,7 +267,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                 className='w-full'
               >
                 <Square className='h-4 w-4 mr-2' />
-                结束游戏
+                {t('gameComponent.state.endGame')}
               </Button>
             </div>
           )}
@@ -249,7 +276,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
           {gameSettings && (
             <div className='pt-3 border-t border-werewolf-purple/30'>
               <div className='flex items-center justify-between text-xs text-gray-400'>
-                <span>游戏模式:</span>
+                <span>{t('gameComponent.state.gameMode')}</span>
                 <span
                   className={
                     gameSettings.isAutoAdvance
@@ -257,12 +284,14 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                       : 'text-yellow-400'
                   }
                 >
-                  {gameSettings.isAutoAdvance ? '自动切换' : '半自动切换'}
+                  {gameSettings.isAutoAdvance
+                    ? t('gameComponent.state.autoAdvance')
+                    : t('gameComponent.state.manualAdvance')}
                 </span>
               </div>
               {!gameSettings.isAutoAdvance && (
                 <p className='text-xs text-gray-500 mt-1'>
-                  白天/夜晚阶段需要法官手动切换
+                  {t('gameComponent.state.manualNote')}
                 </p>
               )}
             </div>

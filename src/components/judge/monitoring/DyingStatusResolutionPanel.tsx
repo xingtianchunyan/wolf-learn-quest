@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Shield, CheckCircle, XCircle, Heart, Clock } from 'lucide-react';
 import { useDyingStatusManager } from '@/hooks/useDyingStatusManager';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
-import { getRoleStatusName } from '@/utils/roleStateHelpers';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface DyingStatusResolutionPanelProps {
   roomId: string;
@@ -24,6 +24,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
   gameStateId,
   className = '',
 }) => {
+  const { t } = useLanguage();
   const { players } = usePlayersRealtime(roomId);
   const {
     dyingPlayers,
@@ -40,7 +41,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
 
   const getPlayerName = (userId: string): string => {
     const player = players.find(p => p.userId === userId);
-    return player?.name || '未知玩家';
+    return player?.name || t('common.unknown_player');
   };
 
   const getPlayerAvatar = (userId: string): string | undefined => {
@@ -51,11 +52,31 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
   const getDyingReasonText = (reason?: string): string => {
     switch (reason) {
       case 'vote_elimination':
-        return '投票濒死';
+        return t('judge.dying.reason.vote');
       case 'night_attack':
-        return '夜晚攻击';
+        return t('judge.dying.reason.attack');
       default:
-        return '未知原因';
+        return t('judge.dying.reason.unknown');
+    }
+  };
+
+  const getPhaseName = (phase?: string) => {
+    if (!phase) return '';
+    switch (phase.toLowerCase()) {
+      case 'day':
+      case 'day_discussion':
+        return t('game.phase.day_discussion');
+      case 'evening':
+      case 'evening_quiz':
+        return t('game.phase.evening_quiz');
+      case 'night':
+      case 'night_action':
+        return t('game.phase.night_action');
+      case 'dawn':
+      case 'dawn_quiz':
+        return t('game.phase.dawn_quiz');
+      default:
+        return phase;
     }
   };
 
@@ -64,9 +85,9 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
       <CardHeader>
         <CardTitle className='text-werewolf-purple flex items-center gap-2'>
           <Heart className='h-5 w-5 text-red-400' />
-          濒死状态管理
+          {t('judge.dying.title')}
           <Badge variant='outline' className='text-red-400 border-red-400'>
-            {dyingPlayers.length} 人濒死
+            {t('judge.dying.dyingCount', { count: dyingPlayers.length })}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -107,8 +128,10 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                         {getDyingReasonText(dyingPlayer.dyingReason)}
                         {dyingPlayer.dyingRound && (
                           <span className='ml-2'>
-                            第{dyingPlayer.dyingRound}轮{' '}
-                            {dyingPlayer.dyingPhase}阶段
+                            {t('judge.dying.roundPhase', {
+                              round: dyingPlayer.dyingRound,
+                              phase: getPhaseName(dyingPlayer.dyingPhase),
+                            })}
                           </span>
                         )}
                       </div>
@@ -120,7 +143,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                     className='text-red-400 border-red-400'
                   >
                     <Clock className='h-3 w-3 mr-1' />
-                    {getRoleStatusName(2)}
+                    {t('game.status.dying')}
                   </Badge>
                 </div>
 
@@ -129,7 +152,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                 {/* 操作按钮 */}
                 <div className='space-y-3'>
                   <div className='text-sm text-gray-300 mb-2'>
-                    选择解除方式：
+                    {t('judge.dying.resolve.title')}
                   </div>
 
                   <div className='grid grid-cols-1 gap-2'>
@@ -144,7 +167,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                       className='border-green-400/50 text-green-400 hover:bg-green-400/10'
                     >
                       <Shield className='h-4 w-4 mr-2' />
-                      获得保护 (恢复正常)
+                      {t('judge.dying.resolve.protection')}
                     </Button>
 
                     {/* 答题结果 */}
@@ -159,7 +182,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                         className='border-yellow-400/50 text-yellow-400 hover:bg-yellow-400/10 flex-1'
                       >
                         <CheckCircle className='h-4 w-4 mr-2' />
-                        答题正确 (虚弱)
+                        {t('judge.dying.resolve.correct')}
                       </Button>
 
                       <Button
@@ -172,7 +195,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                         className='border-red-400/50 text-red-400 hover:bg-red-400/10 flex-1'
                       >
                         <XCircle className='h-4 w-4 mr-2' />
-                        答题错误 (淘汰)
+                        {t('judge.dying.resolve.wrong')}
                       </Button>
                     </div>
                   </div>
@@ -181,7 +204,7 @@ const DyingStatusResolutionPanel: React.FC<DyingStatusResolutionPanelProps> = ({
                     <div className='text-center'>
                       <div className='inline-flex items-center gap-2 text-sm text-gray-400'>
                         <div className='animate-spin rounded-full h-3 w-3 border-b-2 border-werewolf-purple' />
-                        处理中...
+                        {t('common.processing')}
                       </div>
                     </div>
                   )}

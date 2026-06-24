@@ -8,6 +8,7 @@ import {
   getSkillTargetTypes,
   hasSpecialAbility,
 } from '@/utils/skillSystemHelpers';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoleSkillInfoProps {
   roleName: string;
@@ -22,6 +23,18 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
   roleAttributes,
   className = '',
 }) => {
+  const { t } = useLanguage();
+
+  const getRoleDisplayName = (name: string) => {
+    const baseName = name.replace(/_\d+$/, '');
+    const keyMap: Record<string, string> = {
+      whitewolf: 'game.role.white_wolf',
+    };
+    const key = keyMap[baseName] || `game.role.${baseName}`;
+    const translated = t(key as never);
+    return translated !== key ? translated : name;
+  };
+
   const getSkillIcon = (effectType: string) => {
     switch (effectType) {
       case 'attack':
@@ -57,13 +70,13 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
       .map(type => {
         switch (type) {
           case 'single':
-            return '单个目标';
+            return t('gameComponent.skillInfo.targetTypes.single');
           case 'self':
-            return '自己';
+            return t('gameComponent.skillInfo.targetTypes.self');
           case 'multiple':
-            return '多个目标';
+            return t('gameComponent.skillInfo.targetTypes.multiple');
           case 'all':
-            return '所有人';
+            return t('gameComponent.skillInfo.targetTypes.all');
           default:
             return type;
         }
@@ -76,13 +89,13 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
       .map(phase => {
         switch (phase) {
           case 'day':
-            return '白天';
+            return t('game.phase.day');
           case 'evening':
-            return '傍晚';
+            return t('game.phase.evening');
           case 'night':
-            return '夜晚';
+            return t('game.phase.night');
           case 'dawn':
-            return '黎明';
+            return t('game.phase.dawn');
           default:
             return phase;
         }
@@ -92,6 +105,11 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
 
   const getFactionColor = (isWolfFaction: boolean) => {
     return isWolfFaction ? 'text-red-400' : 'text-blue-400';
+  };
+
+  const isWolfFaction = (victoryCondition: string) => {
+    const lower = victoryCondition.toLowerCase();
+    return lower.includes('werewolf') || lower.includes('狼人');
   };
 
   if (!skillEffects && !roleAttributes) {
@@ -104,17 +122,21 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
     >
       <CardHeader className='pb-2'>
         <CardTitle className='text-sm text-werewolf-purple flex items-center justify-between'>
-          <span>{roleName} 技能信息</span>
+          <span>
+            {t('gameComponent.skillInfo.title', {
+              role: getRoleDisplayName(roleName),
+            })}
+          </span>
           {roleAttributes && (
             <Badge
               variant='outline'
               className={getFactionColor(
-                roleAttributes.victory_condition.includes('狼人')
+                isWolfFaction(roleAttributes.victory_condition)
               )}
             >
-              {roleAttributes.victory_condition.includes('狼人')
-                ? '狼人阵营'
-                : '好人阵营'}
+              {isWolfFaction(roleAttributes.victory_condition)
+                ? t('game.faction.werewolf_camp')
+                : t('game.faction.good_guys_camp')}
             </Badge>
           )}
         </CardTitle>
@@ -132,13 +154,13 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
                   {getSkillIcon(effectType)}
                   <span className='ml-1'>
                     {effectType === 'attack'
-                      ? '攻击'
+                      ? t('gameComponent.skillInfo.effect.attack')
                       : effectType === 'protect'
-                        ? '保护'
+                        ? t('gameComponent.skillInfo.effect.protect')
                         : effectType === 'check'
-                          ? '查看'
+                          ? t('gameComponent.skillInfo.effect.check')
                           : effectType === 'none'
-                            ? '无技能'
+                            ? t('gameComponent.skillInfo.effect.none')
                             : effectType}
                   </span>
                 </Badge>
@@ -147,10 +169,16 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
 
             <div className='text-xs text-gray-400 space-y-1'>
               <div>
-                目标类型: {getTargetTypeText(getSkillTargetTypes(skillEffects))}
+                {t('gameComponent.skillInfo.targetType')}:{' '}
+                {getTargetTypeText(getSkillTargetTypes(skillEffects))}
               </div>
-              <div>发动阶段: {getPhaseText(skillEffects.active_phases)}</div>
-              <div>优先级: {skillEffects.priority}</div>
+              <div>
+                {t('gameComponent.skillInfo.activePhases')}:{' '}
+                {getPhaseText(skillEffects.active_phases)}
+              </div>
+              <div>
+                {t('gameComponent.skillInfo.priority')}: {skillEffects.priority}
+              </div>
             </div>
           </div>
         )}
@@ -158,7 +186,7 @@ const RoleSkillInfo: React.FC<RoleSkillInfoProps> = ({
         {roleAttributes && roleAttributes.special_abilities.length > 0 && (
           <div className='space-y-1'>
             <div className='text-xs font-medium text-werewolf-purple'>
-              特殊能力:
+              {t('gameComponent.skillInfo.specialAbilities')}
             </div>
             {roleAttributes.special_abilities.map((ability, index) => (
               <Badge

@@ -6,6 +6,7 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import {
   DyingStatusService,
   DyingResolutionType,
@@ -43,6 +44,7 @@ export const useAutoDyingStatusProcessor = (
   config: Partial<AutoProcessingConfig> = {}
 ) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const processingRef = useRef<Set<string>>(new Set());
   const timeoutsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(
     new Map()
@@ -93,8 +95,8 @@ export const useAutoDyingStatusProcessor = (
 
         if (success) {
           toast({
-            title: '自动保护生效',
-            description: '玩家获得保护，濒死状态已自动解除',
+            title: t('hook.auto_dying.protection_title'),
+            description: t('hook.auto_dying.protection_desc'),
           });
         }
       }
@@ -132,10 +134,14 @@ export const useAutoDyingStatusProcessor = (
         });
 
         if (success) {
-          const statusText = answerResult ? '转为虚弱状态' : '被淘汰';
+          const statusText = answerResult
+            ? t('game.status.weakened')
+            : t('game.status.eliminated');
           toast({
-            title: '自动答题判定',
-            description: `基于答题结果，玩家${statusText}`,
+            title: t('hook.auto_dying.answer_title'),
+            description: t('hook.auto_dying.answer_status_desc', {
+              status: statusText,
+            }),
           });
         }
       }

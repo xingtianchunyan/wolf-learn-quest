@@ -20,7 +20,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [playerData, setPlayerData] = useState({
     id: '',
-    name: 'Player',
+    name: t('page.playerInfo.default_name'),
     playerId: '',
     level: 1,
     experience: 0,
@@ -37,7 +37,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
       if (!currentUser) {
         setPlayerData({
           id: '',
-          name: 'Player',
+          name: t('page.playerInfo.default_name'),
           playerId: '',
           level: 1,
           experience: 0,
@@ -66,7 +66,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ className, currentUser }) => {
           currentUser.user_metadata?.display_name ||
           currentUser.user_metadata?.player_name ||
           currentUser.email?.split('@')[0] ||
-          'Player';
+          t('page.playerInfo.default_name');
 
         setPlayerData({
           id: currentUser.id,

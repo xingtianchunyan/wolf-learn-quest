@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlayersRealtime } from '@/hooks/usePlayersRealtime';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoomInfoCardProps {
   roomId: string;
@@ -29,6 +30,7 @@ interface RoomInfo {
 }
 
 const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
+  const { t } = useLanguage();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -71,8 +73,8 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
         if (roomError) {
           console.error('Error fetching room data:', roomError);
           toast({
-            title: '错误',
-            description: '获取房间信息失败',
+            title: t('common.error'),
+            description: t('gameComponent.room.roomInfoCard.fetchFailed'),
             variant: 'destructive',
           });
           return;
@@ -102,8 +104,8 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
       } catch (error) {
         console.error('Error fetching room info:', error);
         toast({
-          title: '错误',
-          description: '获取房间信息失败',
+          title: t('common.error'),
+          description: t('gameComponent.room.roomInfoCard.fetchFailed'),
           variant: 'destructive',
         });
       } finally {
@@ -120,12 +122,14 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
     return (
       <Card className='bg-werewolf-card border-werewolf-purple/30'>
         <CardHeader>
-          <CardTitle className='text-werewolf-purple'>房间信息</CardTitle>
+          <CardTitle className='text-werewolf-purple'>
+            {t('gameComponent.room.roomInfoCard.title')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center text-gray-400 py-4'>
             <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-werewolf-purple mx-auto'></div>
-            <p className='mt-2'>加载中...</p>
+            <p className='mt-2'>{t('common.loading')}</p>
           </div>
         </CardContent>
       </Card>
@@ -136,11 +140,13 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
     return (
       <Card className='bg-werewolf-card border-werewolf-purple/30'>
         <CardHeader>
-          <CardTitle className='text-werewolf-purple'>房间信息</CardTitle>
+          <CardTitle className='text-werewolf-purple'>
+            {t('gameComponent.room.roomInfoCard.title')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center text-gray-400 py-4'>
-            <p>无法获取房间信息</p>
+            <p>{t('gameComponent.room.roomInfoCard.fetchFailed')}</p>
           </div>
         </CardContent>
       </Card>
@@ -150,20 +156,28 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
   return (
     <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader>
-        <CardTitle className='text-werewolf-purple'>房间信息</CardTitle>
+        <CardTitle className='text-werewolf-purple'>
+          {t('gameComponent.room.roomInfoCard.title')}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
           <div>
-            <p className='text-sm text-gray-400'>房间ID</p>
+            <p className='text-sm text-gray-400'>
+              {t('gameComponent.room.roomInfoCard.roomId')}
+            </p>
             <p className='font-bold'>{roomInfo.roomId}</p>
           </div>
           <div>
-            <p className='text-sm text-gray-400'>房主ID</p>
+            <p className='text-sm text-gray-400'>
+              {t('gameComponent.room.roomInfoCard.hostId')}
+            </p>
             <p>{roomInfo.hostPlayerId}</p>
           </div>
           <div>
-            <p className='text-sm text-gray-400'>房间人数</p>
+            <p className='text-sm text-gray-400'>
+              {t('gameComponent.room.roomInfoCard.playerCount')}
+            </p>
             <p>
               {roomInfo.currentPlayers} / {roomInfo.maxPlayers}
             </p>
@@ -171,7 +185,7 @@ const RoomInfoCard: React.FC<RoomInfoCardProps> = ({ roomId }) => {
 
           <div className='mt-4 p-3 bg-werewolf-dark/20 rounded-md'>
             <p className='text-xs text-gray-400 text-center'>
-              游戏开始后将玩家拉入对应游戏页面
+              {t('gameComponent.room.roomInfoCard.startNote')}
             </p>
           </div>
         </div>

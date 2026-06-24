@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, Zap, Users, Target, AlertCircle } from 'lucide-react';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { formatVoteTime } from '@/utils/votingSystemHelpers';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface SkillEffectsDisplayProps {
   roomId: string;
@@ -17,11 +18,24 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   gameStateId,
   players,
 }) => {
+  const { t } = useLanguage();
   const {
     skillEffectsQueue,
     skillTargets,
     loading: _loading,
   } = useEnhancedSkillSystem(roomId, gameStateId);
+
+  const getEffectTypeLabel = (effectType: string) => {
+    const key = `gameComponent.effects.effectTypes.${effectType}` as never;
+    const translated = t(key);
+    return translated !== key ? translated : effectType;
+  };
+
+  const getStatusLabel = (status: string) => {
+    const key = `gameComponent.effects.statuses.${status}` as never;
+    const translated = t(key);
+    return translated !== key ? translated : status;
+  };
 
   // 获取活跃的技能效果
   const _activeEffects = skillTargets.filter(target => target.is_active);
@@ -47,7 +61,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
   );
 
   const _getPlayerName = (userId: string) => {
-    return players.find(p => p.userId === userId)?.name || '未知玩家';
+    return players.find(p => p.userId === userId)?.name || t('common.unknown_player');
   };
 
   const _getEffectColor = (effectType: string) => {
@@ -87,7 +101,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
     const end = new Date(endTime).getTime();
     const remaining = Math.max(0, end - now);
 
-    if (remaining === 0) return '已过期';
+    if (remaining === 0) return t('gameComponent.effects.expired');
 
     const minutes = Math.floor(remaining / (1000 * 60));
     const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
@@ -115,7 +129,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <Clock className='w-4 h-4' />
-            技能效果队列
+            {t('gameComponent.effects.queueTitle')}
             {queuedEffects.length > 0 && (
               <Badge variant='secondary'>{queuedEffects.length}</Badge>
             )}
@@ -135,10 +149,12 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
                       <div className='flex items-center gap-2'>
                         <Zap className='w-4 h-4' />
                         <span className='font-medium'>
-                          {effect.effect_type}
+                          {getEffectTypeLabel(effect.effect_type)}
                         </span>
                       </div>
-                      <Badge variant='outline'>优先级 {effect.priority}</Badge>
+                      <Badge variant='outline'>
+                        {t('gameComponent.effects.priority')} {effect.priority}
+                      </Badge>
                     </div>
                     <div className='flex items-center gap-2'>
                       {effect.trigger_time && (
@@ -147,7 +163,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
                         </span>
                       )}
                       <Badge className={getStatusColor(effect.status)}>
-                        {effect.status}
+                        {getStatusLabel(effect.status)}
                       </Badge>
                     </div>
                   </div>
@@ -155,7 +171,7 @@ const SkillEffectsDisplay: React.FC<SkillEffectsDisplayProps> = ({
             </div>
           ) : (
             <p className='text-sm text-muted-foreground'>
-              当前没有排队的技能效果
+              {t('gameComponent.effects.noQueuedEffects')}
             </p>
           )}
         </CardContent>

@@ -118,6 +118,21 @@
 
 - monitoring-observability — Sentry + 性能监控
 
+## i18n / 国际化开发规范
+
+- 所有面向用户的文本必须通过 `useLanguage().t(key, vars?)` 或 `createTranslator(language)` 获取，禁止在组件/Hook/Service 中硬编码用户可见字符串。
+- 翻译文件按领域分组存放：
+  - `src/lib/translations/en/` 与 `src/lib/translations/zh/`
+  - 命名空间：`common`、`game`、`gameComponent`、`hook`、`judge`、`meta`、`page`、`voting`
+  - 新增 key 必须同时写入英文和中文文件。
+- key 规范：
+  - 通用术语使用 `common.*` / `game.*`（如 `common.loading`、`game.phase.day`）。
+  - 页面级文本使用 `page.*`，游戏组件使用 `gameComponent.*`，法官面板使用 `judge.*`，投票使用 `voting.*`，Hook/Service 使用 `hook.*`。
+  - 优先使用嵌套 key（如 `gameComponent.state.title`），保持旧版扁平 key 兼容。
+- 模板变量使用 `{var}` 语法，调用时传入 `vars` 对象：`t('game.phase.round_phase', { round: 1, phase: 'day' })`。
+- 语言切换时 `document.title`、`html.lang`、`<meta name="description">` 与 `og:locale` 会自动同步。
+- 新增功能必须通过 `npm run type-check` 与 `npm run test:run` 回归验证。
+
 ### SEO
 
 - nextjs-seo-optimizer — SEO 全套方案

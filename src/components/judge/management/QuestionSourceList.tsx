@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Database, Shuffle, X } from 'lucide-react';
 import { QuestionSource } from '../types/questionBank';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface QuestionSourceListProps {
   questionSources: QuestionSource[];
@@ -23,13 +24,14 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
   onRandomSelectAll,
   onClearAllSelections,
 }) => {
+  const { t } = useLanguage();
   return (
     <Card className='bg-werewolf-card border-werewolf-purple/30 h-full flex flex-col'>
       <CardHeader className='flex-shrink-0 pb-3'>
         <CardTitle className='text-werewolf-purple flex items-center justify-between text-lg'>
           <div className='flex items-center'>
             <Database className='mr-2 h-5 w-5' />
-            题目源
+            {t('judge.questionBank.source.title')}
           </div>
           <div className='flex gap-2'>
             <Button
@@ -39,7 +41,7 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
               className='border-werewolf-purple/50 hover:bg-werewolf-purple/20 text-xs'
             >
               <Shuffle className='h-3 w-3 mr-1' />
-              随机全选
+              {t('judge.questionBank.source.randomSelectAll')}
             </Button>
             <Button
               onClick={onClearAllSelections}
@@ -48,7 +50,7 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
               className='border-red-500/50 hover:bg-red-500/20 text-red-400 text-xs'
             >
               <X className='h-3 w-3 mr-1' />
-              取消全选
+              {t('judge.questionBank.source.clearAll')}
             </Button>
           </div>
         </CardTitle>
@@ -78,7 +80,7 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
                     </label>
                   </div>
                   <span className='text-xs text-gray-400'>
-                    {source.count} 题
+                    {t('judge.questionBank.source.count', { count: source.count })}
                   </span>
                 </div>
                 <Button
@@ -87,13 +89,15 @@ const QuestionSourceList: React.FC<QuestionSourceListProps> = ({
                   size='sm'
                   className='w-full text-xs text-werewolf-purple hover:bg-werewolf-purple/20'
                 >
-                  全选此源
+                  {t('judge.questionBank.source.selectAllSource')}
                 </Button>
               </div>
             ))}
 
             {questionSources.length === 0 && (
-              <div className='text-center text-gray-400 py-8'>暂无题目源</div>
+              <div className='text-center text-gray-400 py-8'>
+                {t('judge.questionBank.source.empty')}
+              </div>
             )}
           </div>
         </ScrollArea>

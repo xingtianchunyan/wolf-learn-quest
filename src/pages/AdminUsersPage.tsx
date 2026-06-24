@@ -70,8 +70,8 @@ const AdminUsersPage: React.FC = () => {
       } = await supabase.auth.getSession();
       if (!session) {
         toast({
-          title: 'Unauthorized',
-          description: 'Please sign in as admin',
+          title: t('page.admin.unauthorized'),
+          description: t('page.admin.please_sign_in_as_admin'),
           variant: 'destructive',
         });
         return;
@@ -88,15 +88,15 @@ const AdminUsersPage: React.FC = () => {
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.error || 'Failed to load users');
+        throw new Error(result.error || t('failed_to_load_users'));
       }
 
       setUsers(result.users);
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('error'),
         description:
-          error instanceof Error ? error.message : 'Failed to load users',
+          error instanceof Error ? error.message : t('failed_to_load_users'),
         variant: 'destructive',
       });
     } finally {
@@ -119,7 +119,7 @@ const AdminUsersPage: React.FC = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session) throw new Error(t('page.admin.unauthorized'));
 
       const response = await fetch(functionUrl, {
         method: 'POST',
@@ -136,21 +136,23 @@ const AdminUsersPage: React.FC = () => {
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.error || 'Failed to update password');
+        throw new Error(result.error || t('failed_to_update_password'));
       }
 
       toast({
-        title: 'Password updated',
-        description: `Password for ${selectedUser.email || selectedUser.id} has been updated.`,
+        title: t('password_updated'),
+        description: t('password_updated_desc'),
       });
       setPasswordDialogOpen(false);
       setNewPassword('');
       setSelectedUser(null);
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('error'),
         description:
-          error instanceof Error ? error.message : 'Failed to update password',
+          error instanceof Error
+            ? error.message
+            : t('failed_to_update_password'),
         variant: 'destructive',
       });
     } finally {
@@ -164,7 +166,7 @@ const AdminUsersPage: React.FC = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session) throw new Error(t('page.admin.unauthorized'));
 
       const response = await fetch(functionUrl, {
         method: 'POST',
@@ -181,12 +183,14 @@ const AdminUsersPage: React.FC = () => {
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.error || 'Failed to update confirmation status');
+        throw new Error(
+          result.error || t('failed_to_update_confirmation_status')
+        );
       }
 
       toast({
-        title: 'Email confirmation updated',
-        description: `Email confirmation for ${user.email || user.id} has been updated.`,
+        title: t('email_confirmation_updated'),
+        description: t('email_confirmation_updated_desc'),
       });
 
       setUsers(prev =>
@@ -196,11 +200,11 @@ const AdminUsersPage: React.FC = () => {
       );
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to update confirmation status',
+            : t('failed_to_update_confirmation_status'),
         variant: 'destructive',
       });
     } finally {
@@ -227,16 +231,12 @@ const AdminUsersPage: React.FC = () => {
         <div className='container mx-auto py-6 px-4'>
           <div className='max-w-md mx-auto bg-werewolf-dark/60 border border-werewolf-purple/30 rounded-lg p-6 text-center'>
             <h1 className='text-2xl font-bold text-werewolf-gold mb-4'>
-              Admin Access Required
+              {t('admin_access_required')}
             </h1>
             <p className='text-gray-300 mb-4'>
-              This page is restricted to administrators.
+              {t('admin_access_required_desc')}
             </p>
-            <p className='text-sm text-gray-400'>
-              To grant admin access, set{' '}
-              <code className='bg-werewolf-dark px-1 rounded'>role: admin</code>{' '}
-              in the user metadata of your account via Supabase Dashboard.
-            </p>
+            <p className='text-sm text-gray-400'>{t('admin_access_hint')}</p>
           </div>
         </div>
       </PageLayout>
@@ -248,7 +248,7 @@ const AdminUsersPage: React.FC = () => {
       <div className='container mx-auto py-6 px-4'>
         <div className='flex items-center justify-between mb-6'>
           <h1 className='text-2xl font-bold text-werewolf-gold'>
-            User Management
+            {t('user_management')}
           </h1>
           <Button
             variant='outline'
@@ -261,7 +261,7 @@ const AdminUsersPage: React.FC = () => {
             ) : (
               <RefreshCw className='h-4 w-4 mr-2' />
             )}
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
 
@@ -269,17 +269,23 @@ const AdminUsersPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className='border-werewolf-purple/30 hover:bg-transparent'>
-                <TableHead className='text-werewolf-gold'>Email</TableHead>
-                <TableHead className='text-werewolf-gold'>Password</TableHead>
                 <TableHead className='text-werewolf-gold'>
-                  Email Confirmed
+                  {t('email')}
                 </TableHead>
-                <TableHead className='text-werewolf-gold'>Created At</TableHead>
                 <TableHead className='text-werewolf-gold'>
-                  Last Sign In
+                  {t('password')}
+                </TableHead>
+                <TableHead className='text-werewolf-gold'>
+                  {t('page.admin.email_confirmed')}
+                </TableHead>
+                <TableHead className='text-werewolf-gold'>
+                  {t('created_at')}
+                </TableHead>
+                <TableHead className='text-werewolf-gold'>
+                  {t('last_sign_in')}
                 </TableHead>
                 <TableHead className='text-werewolf-gold text-right'>
-                  Actions
+                  {t('actions')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -290,7 +296,7 @@ const AdminUsersPage: React.FC = () => {
                     colSpan={6}
                     className='text-center text-gray-400 py-8'
                   >
-                    No users found
+                    {t('no_users_found')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -319,7 +325,9 @@ const AdminUsersPage: React.FC = () => {
                               : 'bg-gray-600 hover:bg-gray-700'
                           }
                         >
-                          {user.email_confirmed ? 'Confirmed' : 'Unconfirmed'}
+                          {user.email_confirmed
+                            ? t('page.admin.confirmed')
+                            : t('page.admin.unconfirmed')}
                         </Badge>
                       </div>
                     </TableCell>
@@ -329,7 +337,7 @@ const AdminUsersPage: React.FC = () => {
                     <TableCell className='text-gray-400 text-sm'>
                       {user.last_sign_in_at
                         ? new Date(user.last_sign_in_at).toLocaleString()
-                        : 'Never'}
+                        : t('never')}
                     </TableCell>
                     <TableCell className='text-right'>
                       <Button
@@ -342,7 +350,7 @@ const AdminUsersPage: React.FC = () => {
                         }}
                       >
                         <Lock className='h-3 w-3 mr-1' />
-                        Reset Password
+                        {t('reset_password')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -358,10 +366,10 @@ const AdminUsersPage: React.FC = () => {
         <DialogContent className='bg-werewolf-dark border-werewolf-purple/30 text-werewolf-ivory'>
           <DialogHeader>
             <DialogTitle className='text-werewolf-gold'>
-              Reset Password
+              {t('reset_password')}
             </DialogTitle>
             <DialogDescription className='text-gray-400'>
-              Set a new password for{' '}
+              {t('reset_password_for')}{' '}
               <strong className='text-gray-200'>
                 {selectedUser?.email || selectedUser?.id}
               </strong>
@@ -370,7 +378,7 @@ const AdminUsersPage: React.FC = () => {
           <form onSubmit={handleUpdatePassword}>
             <div className='space-y-4 py-4'>
               <div className='space-y-2'>
-                <Label htmlFor='new-password'>New Password</Label>
+                <Label htmlFor='new-password'>{t('new_password')}</Label>
                 <Input
                   id='new-password'
                   type='password'
@@ -389,7 +397,7 @@ const AdminUsersPage: React.FC = () => {
                 onClick={() => setPasswordDialogOpen(false)}
                 className='border-werewolf-purple/30 bg-werewolf-dark/40'
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 type='submit'
@@ -399,7 +407,7 @@ const AdminUsersPage: React.FC = () => {
                 {loading ? (
                   <Loader2 className='h-4 w-4 animate-spin mr-2' />
                 ) : null}
-                Update Password
+                {t('update_password')}
               </Button>
             </DialogFooter>
           </form>
@@ -414,18 +422,17 @@ const AdminUsersPage: React.FC = () => {
         <DialogContent className='bg-werewolf-dark border-werewolf-purple/30 text-werewolf-ivory'>
           <DialogHeader>
             <DialogTitle className='text-werewolf-gold'>
-              Confirm Email Status Change
+              {t('confirm_email_status_change')}
             </DialogTitle>
             <DialogDescription className='text-gray-400'>
-              Are you sure you want to mark{' '}
+              {t('confirm_email_status_change_desc')}{' '}
               <strong className='text-gray-200'>
                 {confirmToggleUser?.email || confirmToggleUser?.id}
               </strong>{' '}
-              as{' '}
               <strong className='text-gray-200'>
                 {confirmToggleUser?.email_confirmed
-                  ? 'unconfirmed'
-                  : 'confirmed'}
+                  ? t('mark_as_unconfirmed')
+                  : t('mark_as_confirmed')}
               </strong>
               ?
             </DialogDescription>
@@ -436,7 +443,7 @@ const AdminUsersPage: React.FC = () => {
               onClick={() => setConfirmToggleUser(null)}
               className='border-werewolf-purple/30 bg-werewolf-dark/40'
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               onClick={() =>
@@ -449,7 +456,7 @@ const AdminUsersPage: React.FC = () => {
               {loading ? (
                 <Loader2 className='h-4 w-4 animate-spin mr-2' />
               ) : null}
-              Confirm
+              {t('confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

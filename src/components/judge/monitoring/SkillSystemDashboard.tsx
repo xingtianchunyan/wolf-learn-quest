@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSkillSystemCache } from '@/utils/skillSystemCache';
 import { useEnhancedSkillSystem } from '@/hooks/useEnhancedSkillSystem';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import {
   Activity,
   Database,
@@ -43,6 +44,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
   isJudge = false,
   userId,
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
 
@@ -79,14 +81,16 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
       await fetchAllSkillData();
       cleanupCache();
       toast({
-        title: '数据刷新成功',
-        description: '已获取最新的技能系统数据',
+        title: t('judge.skillDashboard.toast.refreshSuccess.title'),
+        description: t('judge.skillDashboard.toast.refreshSuccess.description'),
       });
     } catch (error) {
       toast({
-        title: '数据刷新失败',
-        description:
-          error instanceof Error ? error.message : '刷新失败，请重试',
+        title: t('judge.skillDashboard.toast.refreshFailed.title'),
+        description: t('judge.skillDashboard.toast.refreshFailed.description', {
+          message:
+            error instanceof Error ? error.message : t('common.retry_later'),
+        }),
         variant: 'destructive',
       });
     }
@@ -95,13 +99,13 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
   const handleClearCache = () => {
     clearCache();
     toast({
-      title: '缓存已清理',
-      description: '所有缓存数据已被清除',
+      title: t('judge.skillDashboard.toast.cacheCleared.title'),
+      description: t('judge.skillDashboard.toast.cacheCleared.description'),
     });
   };
 
   const getSystemStatus = () => {
-    if (loading) return { status: 'loading', message: '加载中...' };
+    if (loading) return { status: 'loading', message: t('common.loading') };
 
     const errorRate =
       stats.totalUses > 0
@@ -109,11 +113,20 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
         : 0;
 
     if (errorRate > 20) {
-      return { status: 'error', message: '系统异常，错误率过高' };
+      return {
+        status: 'error',
+        message: t('judge.skillDashboard.status.error'),
+      };
     } else if (stats.queuedEffects > 20) {
-      return { status: 'warning', message: '队列积压，需要处理' };
+      return {
+        status: 'warning',
+        message: t('judge.skillDashboard.status.warning'),
+      };
     } else {
-      return { status: 'healthy', message: '系统运行正常' };
+      return {
+        status: 'healthy',
+        message: t('judge.skillDashboard.status.healthy'),
+      };
     }
   };
 
@@ -124,7 +137,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
       <Alert>
         <AlertTriangle className='h-4 w-4' />
         <AlertDescription>
-          请选择游戏状态以使用技能系统管理面板
+          {t('judge.skillDashboard.chooseGameState')}
         </AlertDescription>
       </Alert>
     );
@@ -136,7 +149,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <Activity className='h-5 w-5' />
-            技能系统管理面板
+            {t('judge.skillDashboard.title')}
             <Badge
               variant={
                 systemStatus.status === 'healthy'
@@ -149,7 +162,7 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               {systemStatus.message}
             </Badge>
           </CardTitle>
-          <CardDescription>综合管理和监控技能系统的所有功能</CardDescription>
+          <CardDescription>{t('judge.skillDashboard.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
@@ -157,7 +170,9 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               <Zap className='h-8 w-8 text-blue-600' />
               <div>
                 <div className='text-2xl font-bold'>{stats.totalUses}</div>
-                <div className='text-sm text-gray-600'>技能使用总数</div>
+                <div className='text-sm text-gray-600'>
+                  {t('judge.skillDashboard.stats.totalUses')}
+                </div>
               </div>
             </div>
 
@@ -165,7 +180,9 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               <Activity className='h-8 w-8 text-green-600' />
               <div>
                 <div className='text-2xl font-bold'>{stats.activeEffects}</div>
-                <div className='text-sm text-gray-600'>活跃效果</div>
+                <div className='text-sm text-gray-600'>
+                  {t('judge.skillDashboard.stats.activeEffects')}
+                </div>
               </div>
             </div>
 
@@ -173,7 +190,9 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
               <Database className='h-8 w-8 text-purple-600' />
               <div>
                 <div className='text-2xl font-bold'>{cacheStats.totalSize}</div>
-                <div className='text-sm text-gray-600'>缓存条目</div>
+                <div className='text-sm text-gray-600'>
+                  {t('judge.skillDashboard.stats.cacheEntries')}
+                </div>
               </div>
             </div>
 
@@ -183,7 +202,9 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
                 <div className='text-2xl font-bold'>
                   {cacheStats.hitRate.toFixed(1)}%
                 </div>
-                <div className='text-sm text-gray-600'>缓存命中率</div>
+                <div className='text-sm text-gray-600'>
+                  {t('judge.skillDashboard.stats.hitRate')}
+                </div>
               </div>
             </div>
           </div>
@@ -192,10 +213,18 @@ export const SkillSystemDashboard: React.FC<SkillSystemDashboardProps> = ({
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
         <TabsList className='grid w-full grid-cols-4'>
-          <TabsTrigger value='overview'>系统概览</TabsTrigger>
-          <TabsTrigger value='monitor'>性能监控</TabsTrigger>
-          <TabsTrigger value='progress'>执行进度</TabsTrigger>
-          <TabsTrigger value='admin'>系统管理</TabsTrigger>
+          <TabsTrigger value='overview'>
+            {t('judge.skillDashboard.tabs.overview')}
+          </TabsTrigger>
+          <TabsTrigger value='monitor'>
+            {t('judge.skillDashboard.tabs.monitor')}
+          </TabsTrigger>
+          <TabsTrigger value='progress'>
+            {t('judge.skillDashboard.tabs.progress')}
+          </TabsTrigger>
+          <TabsTrigger value='admin'>
+            {t('judge.skillDashboard.tabs.admin')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value='overview'>

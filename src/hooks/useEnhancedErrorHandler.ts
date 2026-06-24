@@ -11,6 +11,7 @@ import {
   ErrorHandlingOptions,
 } from '@/utils/unifiedErrorHandler';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 const logger = createLogger('enhanced-error-handler');
 
@@ -39,6 +40,7 @@ export interface EnhancedErrorOptions extends ErrorHandlingOptions {
  */
 export const useEnhancedErrorHandler = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const retryCountRef = useRef<Map<string, number>>(new Map());
 
   /**
@@ -95,14 +97,14 @@ export const useEnhancedErrorHandler = () => {
         // 显示通用错误提示
         if (!silent) {
           toast({
-            title: '系统错误',
-            description: '处理错误时发生异常，请刷新页面重试',
+            title: t('hook.enhanced.system_error_title'),
+            description: t('hook.enhanced.system_error_desc'),
             variant: 'destructive',
           });
         }
       }
     },
-    [toast]
+    [toast, t]
   );
 
   /**
@@ -110,8 +112,8 @@ export const useEnhancedErrorHandler = () => {
    */
   const showErrorToast = useCallback(
     (error: unknown, customMessage?: string) => {
-      let title = '操作失败';
-      let description = customMessage || '发生了未知错误，请稍后重试';
+      let title = t('common.operation_failed');
+      let description = customMessage || t('common.unexpected_error');
 
       // 根据错误类型自定义消息
       if (
@@ -122,20 +124,20 @@ export const useEnhancedErrorHandler = () => {
       ) {
         switch (error.type) {
           case UnifiedErrorType.NETWORK:
-            title = '网络错误';
-            description = customMessage || '网络连接异常，请检查网络设置';
+            title = t('hook.enhanced.network_error_title');
+            description = customMessage || t('hook.enhanced.network_error_desc');
             break;
           case UnifiedErrorType.PERMISSION:
-            title = '权限不足';
-            description = customMessage || '您没有执行此操作的权限';
+            title = t('hook.enhanced.permission_denied_title');
+            description = customMessage || t('hook.enhanced.permission_denied_desc');
             break;
           case UnifiedErrorType.VALIDATION:
-            title = '输入错误';
-            description = customMessage || '输入的数据格式不正确';
+            title = t('hook.enhanced.validation_error_title');
+            description = customMessage || t('hook.enhanced.validation_error_desc');
             break;
           case UnifiedErrorType.SKILL:
-            title = '技能使用失败';
-            description = customMessage || '技能使用条件不满足或执行失败';
+            title = t('hook.enhanced.skill_error_title');
+            description = customMessage || t('hook.enhanced.skill_error_desc');
             break;
         }
       }
@@ -147,7 +149,7 @@ export const useEnhancedErrorHandler = () => {
         variant: 'destructive',
       });
     },
-    [toast]
+    [toast, t]
   );
 
   /**
@@ -185,8 +187,8 @@ export const useEnhancedErrorHandler = () => {
           retryCountRef.current.delete(retryKey);
 
           toast({
-            title: '操作成功',
-            description: '重试成功，操作已完成',
+            title: t('hook.enhanced.retry_success_title'),
+            description: t('hook.enhanced.retry_success_desc'),
             variant: 'default',
           });
 
@@ -199,8 +201,8 @@ export const useEnhancedErrorHandler = () => {
           await recovery.fallbackAction();
 
           toast({
-            title: '已切换到备用方案',
-            description: '使用备用方案继续操作',
+            title: t('hook.enhanced.fallback_title'),
+            description: t('hook.enhanced.fallback_desc'),
             variant: 'default',
           });
 
@@ -213,8 +215,8 @@ export const useEnhancedErrorHandler = () => {
           await recovery.refreshAction();
 
           toast({
-            title: '数据已刷新',
-            description: '已重新加载最新数据',
+            title: t('hook.enhanced.refresh_title'),
+            description: t('hook.enhanced.refresh_desc'),
             variant: 'default',
           });
         }
@@ -226,13 +228,13 @@ export const useEnhancedErrorHandler = () => {
         });
 
         toast({
-          title: '恢复失败',
-          description: '自动恢复失败，请手动刷新页面',
+          title: t('hook.enhanced.recovery_failed_title'),
+          description: t('hook.enhanced.recovery_failed_desc'),
           variant: 'destructive',
         });
       }
     },
-    [toast]
+    [toast, t]
   );
 
   /**
@@ -321,7 +323,7 @@ export const useEnhancedErrorHandler = () => {
         // 所有重试都失败了
         await handleErrorEnhanced(lastError, {
           category,
-          customMessage: `操作失败，已重试 ${maxRetries} 次`,
+          customMessage: t('hook.enhanced.retry_exhausted', { count: maxRetries }),
         });
 
         return null;
@@ -374,18 +376,19 @@ export const useEnhancedErrorHandler = () => {
  */
 export const useErrorBoundary = () => {
   const { handleError } = useEnhancedErrorHandler();
+  const { t } = useLanguage();
 
   const captureError = useCallback(
     (error: Error, errorInfo?: unknown) => {
       handleError(error, {
         category: 'error-boundary',
-        customMessage: '组件渲染出现错误',
+        customMessage: t('hook.enhanced.component_render_error'),
         recovery: {
           refreshAction: () => window.location.reload(),
         },
       });
     },
-    [handleError]
+    [handleError, t]
   );
 
   return { captureError };

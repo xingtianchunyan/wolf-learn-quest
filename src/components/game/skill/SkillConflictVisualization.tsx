@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface SkillConflict {
   id: string;
@@ -59,6 +60,7 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
   gamePhase,
   isJudge,
 }) => {
+  const { t } = useLanguage();
   const [resolutionProgress, setResolutionProgress] = useState<
     Record<string, number>
   >({});
@@ -103,30 +105,38 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
       const [skill1, skill2] = skills;
 
       if (skill1.skillName === 'vigil' && skill2.skillName === 'night_attack') {
-        return `守卫保护与狼人攻击发生冲突：${skill1.userName}试图保护${skill1.targetUserName}，但${skill2.userName}同时攻击了该目标`;
+        return t('gameComponent.conflictVisualization.guardVsWerewolf', {
+          guard: skill1.userName,
+          target: skill1.targetUserName || '',
+          attacker: skill2.userName,
+        });
       }
 
       if (
         skill1.skillName === 'magic_potion' &&
         skill2.skillName === 'night_attack'
       ) {
-        return `女巫解药与狼人攻击发生冲突：${skill1.userName}试图拯救${skill1.targetUserName}，但${skill2.userName}同时攻击了该目标`;
+        return t('gameComponent.conflictVisualization.witchVsWerewolf', {
+          witch: skill1.userName,
+          target: skill1.targetUserName || '',
+          attacker: skill2.userName,
+        });
       }
     }
 
-    return `多个技能发生冲突，需要根据优先级进行解决`;
+    return t('gameComponent.conflictVisualization.defaultConflict');
   };
 
   const getResolutionExplanation = (conflict: SkillConflict) => {
     switch (conflict.resolutionRule) {
       case 'priority':
-        return '根据技能优先级解决：优先级高的技能生效';
+        return t('gameComponent.conflictVisualization.priorityRule');
       case 'cancel_all':
-        return '所有冲突技能均被取消';
+        return t('gameComponent.conflictVisualization.cancelAllRule');
       case 'first_wins':
-        return '首个使用的技能生效';
+        return t('gameComponent.conflictVisualization.firstWinsRule');
       default:
-        return '按照默认规则解决冲突';
+        return t('gameComponent.conflictVisualization.defaultRule');
     }
   };
 
@@ -138,8 +148,14 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
     <div className='space-y-4'>
       <div className='flex items-center gap-2 mb-4'>
         <AlertTriangle className='w-5 h-5 text-warning' />
-        <h3 className='text-lg font-semibold'>技能冲突检测</h3>
-        <Badge variant='secondary'>{conflicts.length} 个冲突</Badge>
+        <h3 className='text-lg font-semibold'>
+          {t('gameComponent.conflictVisualization.title')}
+        </h3>
+        <Badge variant='secondary'>
+          {t('gameComponent.conflictVisualization.count', {
+            count: conflicts.length,
+          })}
+        </Badge>
       </div>
 
       <AnimatePresence>
@@ -157,8 +173,11 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
               <CardHeader className='pb-3'>
                 <div className='flex items-center justify-between'>
                   <CardTitle className='text-base flex items-center gap-2'>
-                    <AlertTriangle className='w-4 h-4' />第
-                    {conflict.roundNumber}回合 - {conflict.phase}阶段冲突
+                    <AlertTriangle className='w-4 h-4' />
+                    {t('gameComponent.conflictVisualization.roundPhase', {
+                      round: conflict.roundNumber,
+                      phase: t(`game.phase.${conflict.phase}` as never),
+                    })}
                   </CardTitle>
                   <Badge
                     variant={
@@ -170,10 +189,10 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                     }
                   >
                     {conflict.status === 'pending'
-                      ? '待解决'
+                      ? t('gameComponent.conflictVisualization.pending')
                       : conflict.status === 'resolving'
-                        ? '解决中'
-                        : '已解决'}
+                        ? t('gameComponent.conflictVisualization.resolving')
+                        : t('gameComponent.conflictVisualization.resolved')}
                   </Badge>
                 </div>
               </CardHeader>
@@ -181,7 +200,9 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
               <CardContent className='space-y-4'>
                 {/* 冲突技能展示 */}
                 <div className='space-y-3'>
-                  <h4 className='font-medium text-sm'>冲突技能：</h4>
+                  <h4 className='font-medium text-sm'>
+                    {t('gameComponent.conflictVisualization.conflictingSkillsTitle')}
+                  </h4>
                   <div className='grid gap-2'>
                     {conflict.conflictingSkills.map((skill, index) => (
                       <motion.div
@@ -200,7 +221,9 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                               {skill.skillName}
                             </span>
                             <Badge variant='outline'>
-                              优先级: {skill.priority}
+                              {t('gameComponent.conflictVisualization.priority', {
+                                priority: skill.priority,
+                              })}
                             </Badge>
                           </div>
                           <div className='text-sm text-muted-foreground truncate'>
@@ -222,7 +245,9 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
 
                 {/* 解决规则说明 */}
                 <div className='p-3 bg-info/10 rounded-lg border border-info/20'>
-                  <p className='text-sm font-medium mb-1'>解决方案：</p>
+                  <p className='text-sm font-medium mb-1'>
+                    {t('gameComponent.conflictVisualization.solutionTitle')}
+                  </p>
                   <p className='text-sm'>
                     {getResolutionExplanation(conflict)}
                   </p>
@@ -232,9 +257,13 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                 {conflict.status === 'resolving' && (
                   <div className='space-y-2'>
                     <div className='flex items-center justify-between'>
-                      <span className='text-sm font-medium'>解决进度</span>
+                      <span className='text-sm font-medium'>
+                        {t('gameComponent.conflictVisualization.progressTitle')}
+                      </span>
                       <span className='text-sm text-muted-foreground'>
-                        {resolutionProgress[conflict.id] || 0}%
+                        {t('gameComponent.conflictVisualization.progressPercent', {
+                          progress: resolutionProgress[conflict.id] || 0,
+                        })}
                       </span>
                     </div>
                     <Progress
@@ -253,7 +282,7 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                         onResolveConflict(conflict.id, { action: 'priority' })
                       }
                     >
-                      按优先级解决
+                      {t('gameComponent.conflictVisualization.resolveByPriority')}
                     </Button>
                     <Button
                       size='sm'
@@ -262,7 +291,7 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                         onResolveConflict(conflict.id, { action: 'cancel_all' })
                       }
                     >
-                      取消所有冲突技能
+                      {t('gameComponent.conflictVisualization.cancelAll')}
                     </Button>
                   </div>
                 )}
@@ -278,7 +307,10 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                     )
                   }
                 >
-                  {selectedConflict === conflict.id ? '隐藏' : '显示'}详细信息
+                  {selectedConflict === conflict.id
+                    ? t('gameComponent.conflictVisualization.hideDetails')
+                    : t('gameComponent.conflictVisualization.showDetails')}
+                  {t('gameComponent.conflictVisualization.details')}
                 </Button>
 
                 {/* 详细信息展开 */}
@@ -290,11 +322,20 @@ const SkillConflictVisualization: React.FC<SkillConflictVisualizationProps> = ({
                       exit={{ height: 0, opacity: 0 }}
                       className='space-y-2 text-sm text-muted-foreground'
                     >
-                      <div>冲突ID: {conflict.id}</div>
-                      <div>检测时间: {new Date().toLocaleTimeString()}</div>
-                      <div>游戏阶段: {gamePhase}</div>
                       <div>
-                        技能详情:{' '}
+                        {t('gameComponent.conflictVisualization.conflictIdLabel')}:{' '}
+                        {conflict.id}
+                      </div>
+                      <div>
+                        {t('gameComponent.conflictVisualization.detectTime')}:{' '}
+                        {new Date().toLocaleTimeString()}
+                      </div>
+                      <div>
+                        {t('gameComponent.conflictVisualization.gamePhaseLabel')}:{' '}
+                        {gamePhase}
+                      </div>
+                      <div>
+                        {t('gameComponent.conflictVisualization.skillDetails')}:{' '}
                         {conflict.conflictingSkills
                           .map(skill => `${skill.skillName}(${skill.priority})`)
                           .join(', ')}

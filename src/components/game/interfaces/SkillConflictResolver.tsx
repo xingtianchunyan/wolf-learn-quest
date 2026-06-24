@@ -8,6 +8,7 @@ import { AlertTriangle, Zap, Shield, Target, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toPhaseName } from '@/utils/phaseUtils';
 import { createLogger } from '@/lib/logger';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 import type { SkillConflictData, ConflictingSkill } from '@/types/skill.types';
 
 const logger = createLogger('skill-conflict-resolver');
@@ -30,6 +31,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   isJudge,
   onConflictResolved,
 }) => {
+  const { t } = useLanguage();
   const [conflicts, setConflicts] = useState<SkillConflict[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingConflictId, setProcessingConflictId] = useState<
@@ -147,13 +149,13 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
   const getResolutionRuleText = (rule: string) => {
     switch (rule) {
       case 'priority':
-        return '按优先级解决';
+        return t('gameComponent.conflict.resolutionRulePriority');
       case 'manual':
-        return '手动解决';
+        return t('gameComponent.conflict.resolutionRuleManual');
       case 'random':
-        return '随机解决';
+        return t('gameComponent.conflict.resolutionRuleRandom');
       default:
-        return '未知规则';
+        return t('gameComponent.conflict.resolutionRuleUnknown');
     }
   };
 
@@ -163,13 +165,16 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
       c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
   );
 
+  const currentPhaseName = toPhaseName(currentPhase as 1 | 2 | 3 | 4);
+  const currentPhaseDisplayName = t(`game.phase.${currentPhaseName}` as never);
+
   return (
     <Card className='bg-werewolf-card border-werewolf-purple/30'>
       <CardHeader>
         <CardTitle className='flex items-center justify-between text-werewolf-purple'>
           <div className='flex items-center gap-2'>
             <AlertTriangle className='w-5 h-5' />
-            技能冲突解决
+            {t('gameComponent.conflict.title')}
           </div>
           {isJudge && (
             <Button
@@ -182,12 +187,12 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
               {loading ? (
                 <>
                   <Clock className='w-4 h-4 mr-2 animate-spin' />
-                  检测中...
+                  {t('gameComponent.conflict.detecting')}
                 </>
               ) : (
                 <>
                   <Zap className='w-4 h-4 mr-2' />
-                  检测冲突
+                  {t('gameComponent.conflict.detectConflicts')}
                 </>
               )}
             </Button>
@@ -200,8 +205,12 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
           <div className='space-y-3'>
             <h4 className='text-sm font-medium text-yellow-400 flex items-center gap-2'>
               <AlertTriangle className='w-4 h-4' />
-              当前回合冲突 (第{currentRound}轮 -{' '}
-              {toPhaseName(currentPhase as 1 | 2 | 3 | 4)})
+              {t('gameComponent.conflict.currentConflicts')} (
+              {t('gameComponent.conflict.roundPhase', {
+                round: currentRound,
+                phase: currentPhaseDisplayName,
+              })}
+              )
             </h4>
 
             {currentPhaseConflicts.map(conflict => (
@@ -215,7 +224,9 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                       variant='outline'
                       className='border-yellow-500 text-yellow-400'
                     >
-                      冲突 #{conflict.id.slice(-8)}
+                      {t('gameComponent.conflict.conflictId', {
+                        id: conflict.id.slice(-8),
+                      })}
                     </Badge>
                     <Badge variant='secondary'>
                       {getResolutionRuleText(conflict.resolution_rule)}
@@ -225,7 +236,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                   {/* 冲突技能列表 */}
                   <div className='space-y-2'>
                     <h5 className='text-xs font-medium text-gray-300'>
-                      冲突技能:
+                      {t('gameComponent.conflict.conflictingSkills')}
                     </h5>
                     <ScrollArea className='h-32'>
                       <div className='space-y-2'>
@@ -252,12 +263,14 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                                 <span
                                   className={`text-xs ${getPriorityColor(skill.priority)}`}
                                 >
-                                  优先级: {skill.priority}
+                                  {t('gameComponent.conflict.priority', {
+                                    priority: skill.priority,
+                                  })}
                                 </span>
                                 {skill.skill_use_id ===
                                   conflict.resolved_skill_id && (
                                   <Badge variant='default' className='text-xs'>
-                                    已选中
+                                    {t('gameComponent.conflict.selected')}
                                   </Badge>
                                 )}
                               </div>
@@ -277,8 +290,8 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                                 className='mt-2 w-full text-xs'
                               >
                                 {processingConflictId === conflict.id
-                                  ? '处理中...'
-                                  : '选择此技能'}
+                                  ? t('gameComponent.conflict.processing')
+                                  : t('gameComponent.conflict.selectThisSkill')}
                               </Button>
                             )}
                           </div>
@@ -290,7 +303,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                   {conflict.resolved_skill_id && (
                     <div className='flex items-center gap-2 text-green-400 text-xs'>
                       <Shield className='w-3 h-3' />
-                      冲突已解决
+                      {t('gameComponent.conflict.resolved')}
                     </div>
                   )}
                 </CardContent>
@@ -300,7 +313,9 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
         ) : (
           <div className='text-center py-4'>
             <Shield className='w-8 h-8 mx-auto mb-2 text-green-400' />
-            <p className='text-sm text-green-400'>当前回合无技能冲突</p>
+            <p className='text-sm text-green-400'>
+              {t('gameComponent.conflict.noConflict')}
+            </p>
           </div>
         )}
 
@@ -309,7 +324,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
         {/* 历史冲突 */}
         <div className='space-y-2'>
           <h4 className='text-sm font-medium text-werewolf-purple'>
-            历史冲突记录
+            {t('gameComponent.conflict.historyTitle')}
           </h4>
           <ScrollArea className='h-32'>
             <div className='space-y-1'>
@@ -317,7 +332,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                 c =>
                   !(
                     c.round_number === currentRound &&
-                    c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+                    c.phase === currentPhaseName
                   )
               ).length > 0 ? (
                 conflicts
@@ -325,7 +340,7 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                     c =>
                       !(
                         c.round_number === currentRound &&
-                        c.phase === toPhaseName(currentPhase as 1 | 2 | 3 | 4)
+                        c.phase === currentPhaseName
                       )
                   )
                   .slice(0, 5)
@@ -335,14 +350,18 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                       className='flex items-center justify-between p-2 bg-werewolf-dark/30 rounded text-xs'
                     >
                       <span className='text-gray-300'>
-                        第{conflict.round_number}轮 - {conflict.phase}
+                        {t('gameComponent.conflict.historyEntry', {
+                          round: conflict.round_number,
+                          phase: t(`game.phase.${conflict.phase}` as never),
+                        })}
                       </span>
                       <div className='flex items-center gap-2'>
                         <Badge variant='outline' className='text-xs'>
-                          {Array.isArray(conflict.conflicting_skills)
-                            ? conflict.conflicting_skills.length
-                            : 0}{' '}
-                          个冲突
+                          {t('gameComponent.conflict.conflictCount', {
+                            count: Array.isArray(conflict.conflicting_skills)
+                              ? conflict.conflicting_skills.length
+                              : 0,
+                          })}
                         </Badge>
                         <Badge
                           variant={
@@ -350,14 +369,16 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
                           }
                           className='text-xs'
                         >
-                          {conflict.resolved_skill_id ? '已解决' : '未解决'}
+                          {conflict.resolved_skill_id
+                            ? t('gameComponent.conflict.resolvedBadge')
+                            : t('gameComponent.conflict.unresolvedBadge')}
                         </Badge>
                       </div>
                     </div>
                   ))
               ) : (
                 <p className='text-xs text-gray-400 text-center py-2'>
-                  暂无历史冲突记录
+                  {t('gameComponent.conflict.noHistory')}
                 </p>
               )}
             </div>
@@ -367,12 +388,12 @@ export const SkillConflictResolver: React.FC<SkillConflictResolverProps> = ({
         {/* 冲突解决说明 */}
         <div className='bg-werewolf-dark/30 p-3 rounded-lg'>
           <h5 className='text-xs font-medium text-werewolf-purple mb-2'>
-            冲突解决规则
+            {t('gameComponent.conflict.rulesTitle')}
           </h5>
           <div className='text-xs text-gray-400 space-y-1'>
-            <p>• 优先级低的技能优先执行（数字越小优先级越高）</p>
-            <p>• 相同优先级时按技能类型解决冲突</p>
-            <p>• 法官可以手动选择执行的技能</p>
+            <p>• {t('gameComponent.conflict.rule1')}</p>
+            <p>• {t('gameComponent.conflict.rule2')}</p>
+            <p>• {t('gameComponent.conflict.rule3')}</p>
           </div>
         </div>
       </CardContent>

@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Toast } from '@/components/ui/toast';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 export interface FeedbackMessage {
   id: string;
@@ -63,6 +64,7 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
   onDismiss,
   position = 'top-right',
 }) => {
+  const { t } = useLanguage();
   const [visibleMessages, setVisibleMessages] =
     useState<FeedbackMessage[]>(messages);
 
@@ -151,7 +153,7 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
                   onDismiss(message.id);
                 }}
                 className='text-current opacity-50 hover:opacity-100 transition-opacity'
-                aria-label='关闭'
+                aria-label={t('gameComponent.feedback.close')}
               >
                 ×
               </button>
@@ -190,6 +192,7 @@ const OperationFeedback: React.FC<OperationFeedbackProps> = ({
 
 // Hook for easy usage
 export const useOperationFeedback = () => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<FeedbackMessage[]>([]);
 
   const addMessage = (message: Omit<FeedbackMessage, 'id'>) => {
@@ -275,26 +278,33 @@ export const useOperationFeedback = () => {
 
   // 技能相关的预设反馈
   const showSkillSuccess = (skillName: string, targetName?: string) => {
-    const actionText = targetName ? `对 ${targetName} 使用` : '使用';
     return showSuccess(
-      '技能使用成功',
-      `${actionText} ${skillName} 技能成功`,
+      t('gameComponent.feedback.skillSuccessTitle'),
+      targetName
+        ? t('gameComponent.feedback.skillSuccessDescWithTarget', {
+            target: targetName,
+            skillName,
+          })
+        : t('gameComponent.feedback.skillSuccessDescNoTarget', { skillName }),
       skillName
     );
   };
 
   const showSkillError = (skillName: string, reason: string) => {
     return showError(
-      '技能使用失败',
-      `${skillName} 技能使用失败：${reason}`,
+      t('gameComponent.feedback.skillErrorTitle'),
+      t('gameComponent.feedback.skillErrorDesc', { skillName, reason }),
       skillName
     );
   };
 
   const showSkillConflict = (skillName: string, conflictReason: string) => {
     return showWarning(
-      '技能冲突',
-      `${skillName} 与其他技能发生冲突：${conflictReason}`
+      t('gameComponent.feedback.skillConflictTitle'),
+      t('gameComponent.feedback.skillConflictDesc', {
+        skillName,
+        conflictReason,
+      })
     );
   };
 
