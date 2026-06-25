@@ -94,11 +94,11 @@ const JudgePage = () => {
   return (
     <JudgePageProvider roomId={roomId}>
       <PageLayout>
-        <div className='container mx-auto py-4 px-4 h-screen'>
-          {/* Main Content Grid - 固定高度，避免内容溢出 */}
-          <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 h-full'>
+        <div className='container mx-auto py-4 px-4 min-h-screen'>
+          {/* Main Content Grid - 最小高度保证内容可滚动 */}
+          <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-8rem)]'>
             {/* Left Column - Teacher System and Answer Records */}
-            <div className='lg:col-span-3 flex flex-col gap-4 h-full'>
+            <div className='lg:col-span-3 flex flex-col gap-4 h-full min-h-0'>
               <div className='h-1/2 min-h-0'>
                 <TeacherSystemPanel roomId={roomId} />
               </div>
@@ -108,7 +108,7 @@ const JudgePage = () => {
             </div>
 
             {/* Center Column - Game State and Judge Actions */}
-            <div className='lg:col-span-6 flex flex-col gap-4 h-full'>
+            <div className='lg:col-span-6 flex flex-col gap-4 h-full min-h-0'>
               <div className='h-1/2 min-h-0'>
                 <EnhancedGameStateDisplay roomId={roomId} />
               </div>

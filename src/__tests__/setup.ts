@@ -69,9 +69,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock toast notifications - 修复返回对象结构
+const toastMock = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({
   useToast: vi.fn(() => ({
-    toast: vi.fn(),
+    toast: toastMock,
   })),
 }));
 
@@ -85,13 +86,14 @@ vi.mock('@/hooks/useAuth', () => ({
 }));
 
 // Mock logger
+const loggerMock = {
+  info: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn(),
+};
 vi.mock('@/lib/logger', () => ({
-  createLogger: vi.fn(() => ({
-    info: vi.fn(),
-    error: vi.fn(),
-    warn: vi.fn(),
-    debug: vi.fn(),
-  })),
+  createLogger: vi.fn(() => loggerMock),
 }));
 
 // Mock react-router-dom
