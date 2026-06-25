@@ -237,20 +237,6 @@ const PlayersList: React.FC<PlayersListProps> = ({
                       </div>
                     </div>
                     <div className='flex items-center space-x-2'>
-                      {isHost && player.isAI && (
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          onClick={onRemoveAIPlayer}
-                          data-testid='remove-ai-player'
-                          className='h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/30'
-                          title={t(
-                            'gameComponent.room.playersList.removeAiPlayer'
-                          )}
-                        >
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
-                      )}
                       {player.isReady ? (
                         <Badge
                           variant='secondary'
@@ -275,8 +261,8 @@ const PlayersList: React.FC<PlayersListProps> = ({
             </div>
           </ScrollArea>
 
-          {/* 添加AI玩家按钮 */}
-          {players.length < maxPlayers && (
+          {/* 添加/删除 AI 玩家按钮：未满员时显示添加，满员且有 AI 玩家时房主显示删除 */}
+          {players.length < maxPlayers ? (
             <Button
               onClick={onAddAIPlayer}
               variant='outline'
@@ -286,6 +272,19 @@ const PlayersList: React.FC<PlayersListProps> = ({
               <Plus className='mr-2 h-4 w-4' />
               {t('gameComponent.room.playersList.addAiPlayer')}
             </Button>
+          ) : (
+            isHost &&
+            players.some(p => p.isAI) && (
+              <Button
+                onClick={onRemoveAIPlayer}
+                variant='outline'
+                data-testid='remove-ai-player'
+                className='w-full border-red-500/50 text-red-400 hover:bg-red-900/30 hover:text-red-300'
+              >
+                <Trash2 className='mr-2 h-4 w-4' />
+                {t('gameComponent.room.playersList.removeAiPlayer')}
+              </Button>
+            )
           )}
 
           {/* 准备按钮：抽卡模式下由选角自动触发，隐藏手动准备按钮 */}
