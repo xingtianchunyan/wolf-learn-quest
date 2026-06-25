@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
 interface RoleCardFogOverlayProps {
@@ -94,9 +93,8 @@ export const RoleCardFogOverlay: React.FC<RoleCardFogOverlayProps> = ({
         }}
       />
 
-      {/* 迷雾表面的提示图标与文字 */}
+      {/* 迷雾表面的提示文字 */}
       <div className='absolute inset-0 flex flex-col items-center justify-center z-10'>
-        <HelpCircle className='w-14 h-14 text-gray-500 mb-3' />
         <p className='text-gray-400 text-sm font-medium text-center px-4'>
           {isBreathing
             ? t('gameComponent.room.roleCard.takenByOther')

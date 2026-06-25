@@ -77,6 +77,7 @@ const GameRoom = () => {
     loading: playersLoading,
     updatePlayerReady,
     addAIPlayer,
+    removeAIPlayer,
     setAIPlayersReady,
   } = usePlayersRealtime(roomData?.id);
   const { gameState } = useGameState(roomData?.id || '');
@@ -268,6 +269,29 @@ const GameRoom = () => {
       toast({
         title: t('error'),
         description: t('failed_to_add_ai'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRemoveAIPlayer = async () => {
+    try {
+      const success = await removeAIPlayer();
+
+      if (success) {
+        toast({
+          title: t('gameComponent.room.playersList.aiPlayerRemoved'),
+        });
+      } else {
+        toast({
+          title: t('gameComponent.room.playersList.noAiPlayerToRemove'),
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error removing AI player:', error);
+      toast({
+        title: t('gameComponent.room.playersList.removeAiFailed'),
         variant: 'destructive',
       });
     }
@@ -472,6 +496,7 @@ const GameRoom = () => {
               onLeaveRoom={handleLeaveRoom}
               onStartGame={handleStartGame}
               onAddAIPlayer={handleAddAIPlayer}
+              onRemoveAIPlayer={handleRemoveAIPlayer}
               onMaxPlayersChange={handleMaxPlayersChange}
             />
           </div>

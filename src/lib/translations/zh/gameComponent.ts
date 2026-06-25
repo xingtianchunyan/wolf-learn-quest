@@ -543,6 +543,10 @@ export const gameComponent = {
       waitingAllSelected: '等待所有玩家选择角色',
       selectRoleFirst: '请先选择角色',
       addAiPlayer: '添加 AI 玩家',
+      removeAiPlayer: '删除 AI 玩家',
+      aiPlayerRemoved: '已删除 AI 玩家',
+      noAiPlayerToRemove: '没有可删除的 AI 玩家',
+      removeAiFailed: '删除 AI 玩家失败',
     },
     sidebar: {
       judgeStatus: '法官状态',

@@ -154,8 +154,6 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
     const success = await selectRole(role.roleDesignId);
     if (success) {
       onCharacterSelect(role.roleDesignId);
-      // 选角成功后自动翻面，让玩家直接看到角色详情
-      setFlippedCards(prev => new Set([...prev, role.instanceId]));
       toast({
         title: getRoleSelectionToast('cardRevealed'),
         description: t('gameComponent.room.roleSelection.selectedRole', {
