@@ -10,7 +10,8 @@ import { useLanguage } from '@/components/layout/LanguageSwitcher';
 interface RoleSelection {
   id: string;
   room_id: string;
-  user_id: string;
+  user_id: string | null;
+  ai_player_id: string | null;
   role_id: string; // 现在是 uuid 类型，关联到 role_design.id
   selected_at: string;
   // 添加角色设计信息
@@ -176,6 +177,20 @@ export const useRoleSelection = (
       : null;
   };
 
+  const getSelectedRoleByAIPlayer = (aiPlayerId: string) => {
+    const selection = roleSelections.find(
+      selection => selection.ai_player_id === aiPlayerId
+    );
+    return selection
+      ? {
+          roleId: selection.role_id,
+          roleName:
+            selection.role_design?.role_name || t('common.unknown_role'),
+          roleDesign: selection.role_design,
+        }
+      : null;
+  };
+
   const isRoleSelected = (roleDesignId: string) => {
     return roleSelections.some(selection => selection.role_id === roleDesignId);
   };
@@ -201,6 +216,7 @@ export const useRoleSelection = (
     selectRole,
     unselectRole,
     getSelectedRoleByUser,
+    getSelectedRoleByAIPlayer,
     isRoleSelected,
     getCurrentPlayerSelection,
     canSelectRoles,
