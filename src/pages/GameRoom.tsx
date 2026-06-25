@@ -494,6 +494,7 @@ const GameRoom = () => {
               canSelectRoles={canSelectRoles()}
               currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
               hideReadyButton={true}
+              currentUserId={currentUserId}
               t={t}
               onReadyToggle={handleReadyToggle}
               onLeaveRoom={handleLeaveRoom}

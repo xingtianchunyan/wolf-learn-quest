@@ -21,6 +21,7 @@ interface GameRoomSidebarProps {
   canSelectRoles: boolean;
   currentPlayerHasSelectedRole: boolean;
   hideReadyButton?: boolean;
+  currentUserId?: string;
   t: (key: string) => string;
   onReadyToggle: () => void;
   onLeaveRoom: () => void;
@@ -44,6 +45,7 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
   canSelectRoles,
   currentPlayerHasSelectedRole,
   hideReadyButton = false,
+  currentUserId,
   t,
   onReadyToggle,
   onLeaveRoom,
@@ -112,6 +114,7 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
         canSelectRoles={canSelectRoles}
         currentPlayerHasSelectedRole={currentPlayerHasSelectedRole}
         hideReadyButton={hideReadyButton}
+        currentUserId={currentUserId}
       />
     </div>
   );

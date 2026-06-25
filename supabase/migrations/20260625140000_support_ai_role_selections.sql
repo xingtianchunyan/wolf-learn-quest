@@ -1,5 +1,9 @@
 -- 支持 AI 玩家通过 role_selections 记录角色选择，使房间页和法官页都能统一读取
 
+-- 先删除依赖该唯一约束的外键，否则无法删除约束 
+ALTER TABLE public.role_states 
+  DROP CONSTRAINT IF EXISTS fk_role_states_role_selection;
+
 -- 1. 调整 role_selections 表结构
 ALTER TABLE public.role_selections
   ALTER COLUMN user_id DROP NOT NULL;
@@ -31,6 +35,9 @@ ALTER TABLE public.role_selections
 ALTER TABLE public.role_selections
   ADD CONSTRAINT role_selections_human_or_ai_check
   CHECK ((user_id IS NOT NULL) OR (ai_player_id IS NOT NULL));
+
+ALTER TABLE public.role_selections
+  ADD CONSTRAINT unique_role_selection_per_room UNIQUE (room_id, user_id, role_id);
 
 -- 5. 为 AI 选角添加 RLS 策略：房主或法官可以管理 AI 选角
 DROP POLICY IF EXISTS "Host or judge can manage AI role selections" ON public.role_selections;
@@ -185,7 +192,7 @@ BEGIN
   INTO human_count
   FROM public.room_players
   WHERE room_id = p_room_id
-    AND is_ai = false;
+    AND (is_ai = false OR is_ai IS NULL);
 
   SELECT COUNT(*)
   INTO selected_human_count
@@ -194,7 +201,7 @@ BEGIN
     ON rp.room_id = rs.room_id
    AND rp.user_id = rs.user_id
   WHERE rs.room_id = p_room_id
-    AND rp.is_ai = false;
+    AND (rp.is_ai = false OR rp.is_ai IS NULL);
 
   IF selected_human_count < human_count THEN
     RETURN false;
@@ -223,21 +230,60 @@ BEGIN
 
   selected_role_ids := COALESCE(selected_role_ids, ARRAY[]::uuid[]);
 
-  SELECT ARRAY_AGG(design_id)
-  INTO available_role_ids
-  FROM (
-    SELECT
-      (
-        SELECT rd.id
-        FROM public.role_design rd
-        WHERE rd.role_name = cfg.role
-        LIMIT 1
-      ) AS design_id
-    FROM jsonb_to_recordset(role_configs) AS cfg(role text, count int)
-    CROSS JOIN LATERAL generate_series(1, cfg.count) AS n
-  ) sub
-  WHERE design_id IS NOT NULL
-    AND NOT (design_id = ANY(selected_role_ids));
+  -- 根据房间配置和 role_design 表展开所需角色设计 ID，确保每个实例尽量使用不同的设计
+  DECLARE
+    cfg_record RECORD;
+    instance_idx integer;
+    matched_role_id uuid;
+    required_role_ids uuid[] := ARRAY[]::uuid[];
+  BEGIN
+    FOR cfg_record IN
+      SELECT role, count
+      FROM jsonb_to_recordset(role_configs) AS cfg(role text, count int)
+    LOOP
+      FOR instance_idx IN 1..cfg_record.count LOOP
+        -- 优先匹配实例名，如 villager_1、werewolf_2
+        SELECT id INTO matched_role_id
+        FROM public.role_design
+        WHERE role_name = cfg_record.role || '_' || instance_idx
+        LIMIT 1;
+
+        -- 回退到同基础名下的第 instance_idx 个设计
+        IF matched_role_id IS NULL THEN
+          SELECT id INTO matched_role_id
+          FROM (
+            SELECT rd.id,
+                   COALESCE((regexp_match(rd.role_name, '_(\d+)$'))[1]::int, 0) AS instance_num
+            FROM public.role_design rd
+            WHERE rd.role_name = cfg_record.role
+               OR rd.role_name LIKE cfg_record.role || '_%'
+            ORDER BY instance_num
+            LIMIT 1 OFFSET instance_idx - 1
+          ) sub;
+        END IF;
+
+        -- 最终回退到基础名
+        IF matched_role_id IS NULL THEN
+          SELECT id INTO matched_role_id
+          FROM public.role_design
+          WHERE role_name = cfg_record.role
+          LIMIT 1;
+        END IF;
+
+        IF matched_role_id IS NOT NULL THEN
+          required_role_ids := array_append(required_role_ids, matched_role_id);
+        END IF;
+      END LOOP;
+    END LOOP;
+
+    SELECT ARRAY_AGG(id)
+    INTO available_role_ids
+    FROM (
+      SELECT DISTINCT id
+      FROM unnest(required_role_ids) AS id
+      WHERE NOT (id = ANY(selected_role_ids))
+    ) sub;
+  END;
 
   available_role_ids := COALESCE(available_role_ids, ARRAY[]::uuid[]);
 
@@ -311,6 +357,14 @@ BEGIN
   RETURN public.assign_ai_roles_internal(p_room_id);
 END;
 $$;
+
+-- [新增] 重新创建 role_states 外键
+ALTER TABLE public.role_states
+  ADD CONSTRAINT fk_role_states_role_selection
+  FOREIGN KEY (room_id, user_id, role_id)
+  REFERENCES public.role_selections(room_id, user_id, role_id)
+  ON DELETE CASCADE;
+
 
 REVOKE ALL ON FUNCTION public.assign_ai_roles(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.assign_ai_roles(uuid) TO authenticated;
