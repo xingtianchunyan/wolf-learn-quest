@@ -7,11 +7,15 @@ import { useLanguage } from '@/components/layout/LanguageSwitcher';
 const MAX_FETCH_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
-const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) =>
+  new Promise<void>(resolve => setTimeout(resolve, ms));
 
 const isNetworkError = (error: unknown): boolean => {
   if (error instanceof TypeError) return true;
-  if (error instanceof Error && /fetch|network|abort|timeout/i.test(error.message)) {
+  if (
+    error instanceof Error &&
+    /fetch|network|abort|timeout/i.test(error.message)
+  ) {
     return true;
   }
   return false;
@@ -33,7 +37,10 @@ const fetchWithRetry = async <T>(
 
       if (!isNetworkError(error) || attempt === maxRetries) {
         if (attempt > 0) {
-          logger.warn(`${operationName} failed after ${attempt + 1} attempts:`, error);
+          logger.warn(
+            `${operationName} failed after ${attempt + 1} attempts:`,
+            error
+          );
         }
         throw error;
       }
@@ -184,7 +191,12 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
                   .select('original_file_path'),
               ]);
 
-            return { uploadedData, preprocessedData, generatedData, uploadedError: null };
+            return {
+              uploadedData,
+              preprocessedData,
+              generatedData,
+              uploadedError: null,
+            };
           },
           'fetchUploadedFiles',
           logger
@@ -273,7 +285,9 @@ export const useQuestionBank = (roomId?: string): UseQuestionBankReturn => {
       setLoadedFlags(prev => ({ ...prev, preprocessed: true }));
     } catch (error) {
       logger.error('Error fetching preprocessed files:', error);
-      setError(tRef.current('judge.questionBank.errors.fetchPreprocessedGeneric'));
+      setError(
+        tRef.current('judge.questionBank.errors.fetchPreprocessedGeneric')
+      );
     } finally {
       fetchingCountRef.current -= 1;
       updateFetchingState();

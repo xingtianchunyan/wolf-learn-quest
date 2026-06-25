@@ -51,11 +51,13 @@ const createRecordingBuilder = (selectData: any[] = []) => {
   return { builder, insertMock };
 };
 
-const createMockFrom = (options: {
-  uploadedFiles?: any[];
-  preprocessedFiles?: any[];
-  generatedQuestions?: any[];
-} = {}) => {
+const createMockFrom = (
+  options: {
+    uploadedFiles?: any[];
+    preprocessedFiles?: any[];
+    generatedQuestions?: any[];
+  } = {}
+) => {
   const {
     uploadedFiles = [],
     preprocessedFiles = [],
