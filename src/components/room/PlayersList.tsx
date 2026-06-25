@@ -68,9 +68,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
   hideReadyButton = false,
   currentUserId,
 }) => {
-  const isHost = players.some(
-    p => p.userId === currentUserId && p.isHost
-  );
+  const isHost = players.some(p => p.userId === currentUserId && p.isHost);
   const aiPlayerCount = players.filter(p => p.isAI).length;
   const { t } = useLanguage();
 
