@@ -19,6 +19,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRoleDesigns } from '@/hooks/useRoleDesigns';
 import { RoleCard } from './RoleCard';
 import { shuffleWithSeed } from '@/lib/utils';
+import type { Player } from '@/hooks/usePlayersRealtime';
 
 interface RoleSelectionProps {
   maxPlayers: number;
@@ -29,6 +30,7 @@ interface RoleSelectionProps {
   roomId: string;
   currentPlayerId: string | null;
   isReady: boolean;
+  players?: Player[];
 }
 
 const RoleSelection: React.FC<RoleSelectionProps> = ({
@@ -40,6 +42,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   roomId,
   currentPlayerId,
   isReady,
+  players = [],
 }) => {
   const { t } = useLanguage();
 
@@ -88,6 +91,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   const currentSelection = getCurrentPlayerSelection();
   const currentSelectedRoleId = currentSelection?.roleId || null;
   const playerHasSelected = !!currentSelectedRoleId;
+
+  // 收集 AI 玩家已被分配的角色设计 ID（存储在 room_players.role 中）
+  const aiAssignedRoleIds = useMemo(() => {
+    return new Set(
+      players
+        .filter(player => player.isAI && player.role)
+        .map(player => player.role as string)
+    );
+  }, [players]);
 
   const handleCardFlip = (roleInstanceId: string) => {
     setFlippedCards(prev => {
@@ -236,7 +248,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             {shuffledRoles.map(role => {
               const roleDesign = getRoleDesignById(role.roleDesignId);
               const selection = getSelectionByRoleId(role.roleDesignId);
-              const isSelected = !!selection;
+              const isTakenByAI =
+                !!role.roleDesignId && aiAssignedRoleIds.has(role.roleDesignId);
+              const isSelected = !!selection || isTakenByAI;
               const isCurrentSelection = selection?.user_id === currentPlayerId;
               const isTakenByOther = isSelected && !isCurrentSelection;
               const isRevealed = isCurrentSelection;

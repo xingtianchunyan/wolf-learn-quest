@@ -223,6 +223,24 @@ export const usePlayersRealtime = (roomId: string) => {
     }
   };
 
+  const assignAIRoles = async () => {
+    try {
+      const { error } = await supabase.rpc('assign_ai_roles', {
+        p_room_id: roomId,
+      });
+
+      if (error) {
+        console.error('Error assigning AI roles:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error assigning AI roles:', error);
+      return false;
+    }
+  };
+
   return {
     players,
     loading,
@@ -230,5 +248,6 @@ export const usePlayersRealtime = (roomId: string) => {
     addAIPlayer,
     removeAIPlayer,
     setAIPlayersReady,
+    assignAIRoles,
   };
 };

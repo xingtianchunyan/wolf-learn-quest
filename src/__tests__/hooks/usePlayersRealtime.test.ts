@@ -112,4 +112,35 @@ describe('usePlayersRealtime', () => {
       p_room_id: roomId,
     });
   });
+
+  it('calls assign_ai_roles RPC when assignAIRoles is invoked', async () => {
+    const { result } = renderHook(() => usePlayersRealtime(roomId));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const success = await result.current.assignAIRoles();
+
+    expect(success).toBe(true);
+    expect(supabase.rpc).toHaveBeenCalledWith('assign_ai_roles', {
+      p_room_id: roomId,
+    });
+  });
+
+  it('returns false when assignAIRoles RPC fails', async () => {
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { message: 'not all humans selected' },
+    } as any);
+
+    const { result } = renderHook(() => usePlayersRealtime(roomId));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const success = await result.current.assignAIRoles();
+
+    expect(success).toBe(false);
+    expect(supabase.rpc).toHaveBeenCalledWith('assign_ai_roles', {
+      p_room_id: roomId,
+    });
+  });
 });

@@ -136,6 +136,9 @@ const GameRoom = () => {
   const allReady =
     humanPlayers.length > 0 && humanPlayers.every(player => player.isReady);
 
+  // AI 角色自动分配由数据库触发器处理：当房间满员且所有人类玩家完成选角后，
+  // 触发器会自动为未分配角色的 AI 玩家随机分配剩余角色，并写入 room_players.role。
+
   // Add room cleanup functionality
   useRoomCleanup();
 
@@ -512,6 +515,7 @@ const GameRoom = () => {
               roomId={roomData?.id || ''}
               currentPlayerId={currentUserId}
               isReady={isReady}
+              players={players}
             />
           </div>
 

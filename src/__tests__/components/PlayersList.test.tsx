@@ -59,11 +59,46 @@ describe('PlayersList', () => {
         {...defaultProps}
         players={[
           ...defaultProps.players,
-          { id: 'ai1', name: 'AI-Player-ai1', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai2', name: 'AI-Player-ai2', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai3', name: 'AI-Player-ai3', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai4', name: 'AI-Player-ai4', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai5', name: 'AI-Player-ai5', avatar: '', isReady: false, isHost: false, isAI: true },
+          {
+            id: 'ai1',
+            name: 'AI-Player-ai1',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai2',
+            name: 'AI-Player-ai2',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai3',
+            name: 'AI-Player-ai3',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai4',
+            name: 'AI-Player-ai4',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai5',
+            name: 'AI-Player-ai5',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
         ]}
         maxPlayers={6}
       />
@@ -79,11 +114,46 @@ describe('PlayersList', () => {
         {...defaultProps}
         players={[
           { ...defaultProps.players[0], isHost: false },
-          { id: 'ai1', name: 'AI-Player-ai1', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai2', name: 'AI-Player-ai2', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai3', name: 'AI-Player-ai3', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai4', name: 'AI-Player-ai4', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai5', name: 'AI-Player-ai5', avatar: '', isReady: false, isHost: false, isAI: true },
+          {
+            id: 'ai1',
+            name: 'AI-Player-ai1',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai2',
+            name: 'AI-Player-ai2',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai3',
+            name: 'AI-Player-ai3',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai4',
+            name: 'AI-Player-ai4',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai5',
+            name: 'AI-Player-ai5',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
         ]}
         maxPlayers={6}
       />
@@ -99,11 +169,51 @@ describe('PlayersList', () => {
         {...defaultProps}
         players={[
           defaultProps.players[0],
-          { id: 'p2', name: 'Player2', avatar: '', isReady: false, isHost: false, isAI: false, userId: 'user-2' },
-          { id: 'p3', name: 'Player3', avatar: '', isReady: false, isHost: false, isAI: false, userId: 'user-3' },
-          { id: 'p4', name: 'Player4', avatar: '', isReady: false, isHost: false, isAI: false, userId: 'user-4' },
-          { id: 'p5', name: 'Player5', avatar: '', isReady: false, isHost: false, isAI: false, userId: 'user-5' },
-          { id: 'p6', name: 'Player6', avatar: '', isReady: false, isHost: false, isAI: false, userId: 'user-6' },
+          {
+            id: 'p2',
+            name: 'Player2',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: false,
+            userId: 'user-2',
+          },
+          {
+            id: 'p3',
+            name: 'Player3',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: false,
+            userId: 'user-3',
+          },
+          {
+            id: 'p4',
+            name: 'Player4',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: false,
+            userId: 'user-4',
+          },
+          {
+            id: 'p5',
+            name: 'Player5',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: false,
+            userId: 'user-5',
+          },
+          {
+            id: 'p6',
+            name: 'Player6',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: false,
+            userId: 'user-6',
+          },
         ]}
         maxPlayers={6}
       />
@@ -121,11 +231,46 @@ describe('PlayersList', () => {
         onRemoveAIPlayer={onRemoveAIPlayer}
         players={[
           ...defaultProps.players,
-          { id: 'ai1', name: 'AI-Player-ai1', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai2', name: 'AI-Player-ai2', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai3', name: 'AI-Player-ai3', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai4', name: 'AI-Player-ai4', avatar: '', isReady: false, isHost: false, isAI: true },
-          { id: 'ai5', name: 'AI-Player-ai5', avatar: '', isReady: false, isHost: false, isAI: true },
+          {
+            id: 'ai1',
+            name: 'AI-Player-ai1',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai2',
+            name: 'AI-Player-ai2',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai3',
+            name: 'AI-Player-ai3',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai4',
+            name: 'AI-Player-ai4',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
+          {
+            id: 'ai5',
+            name: 'AI-Player-ai5',
+            avatar: '',
+            isReady: false,
+            isHost: false,
+            isAI: true,
+          },
         ]}
         maxPlayers={6}
       />
