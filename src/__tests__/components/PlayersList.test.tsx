@@ -39,6 +39,7 @@ const defaultProps = {
   canSelectRoles: false,
   currentPlayerHasSelectedRole: false,
   hideReadyButton: true,
+  currentUserId: 'user-1',
 };
 
 describe('PlayersList', () => {

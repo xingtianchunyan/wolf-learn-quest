@@ -45,6 +45,7 @@ interface PlayersListProps {
   canSelectRoles: boolean;
   currentPlayerHasSelectedRole?: boolean;
   hideReadyButton?: boolean;
+  currentUserId?: string;
 }
 
 const PlayersList: React.FC<PlayersListProps> = ({
@@ -65,8 +66,11 @@ const PlayersList: React.FC<PlayersListProps> = ({
   canSelectRoles,
   currentPlayerHasSelectedRole = false,
   hideReadyButton = false,
+  currentUserId,
 }) => {
-  const isHost = players.find(p => p.name === 'You')?.isHost || false;
+  const isHost = players.some(
+    p => p.userId === currentUserId && p.isHost
+  );
   const aiPlayerCount = players.filter(p => p.isAI).length;
   const { t } = useLanguage();
 
@@ -305,7 +309,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
           )}
 
           {/* 开始游戏按钮 - 只有房主可见 */}
-          {players.find(p => p.name === 'You')?.isHost && (
+          {isHost && (
             <Button
               onClick={onStartGame}
               disabled={!allReady}
