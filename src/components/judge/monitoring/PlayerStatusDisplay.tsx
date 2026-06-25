@@ -20,6 +20,7 @@ interface Player {
   role: string;
   status: 'normal' | 'waiting';
   avatar: string;
+  isAI?: boolean;
   userId?: string;
 }
 
@@ -37,7 +38,7 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
   const { t } = useLanguage();
   const { currentUser } = useAuth();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
-  const { getSelectedRoleByUser } = useRoleSelection(
+  const { getSelectedRoleByUser, getSelectedRoleByAIPlayer } = useRoleSelection(
     roomId,
     currentUser?.id || null,
     players.length,
@@ -133,9 +134,11 @@ const PlayerStatusDisplay: React.FC<PlayerStatusDisplayProps> = ({
 
       <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'>
         {players.map(player => {
-          const selectedRole = player.userId
-            ? getSelectedRoleByUser(player.userId)
-            : null;
+          const selectedRole = player.isAI
+            ? getSelectedRoleByAIPlayer(player.id)
+            : player.userId
+              ? getSelectedRoleByUser(player.userId)
+              : null;
           const roleName =
             selectedRole?.roleName || t('judge.playerDisplay.noRole');
           const roleImageUrl = selectedRole?.roleDesign

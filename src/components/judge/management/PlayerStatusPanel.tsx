@@ -79,13 +79,16 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
     fetchRoomData();
   }, [roomId]);
 
-  const { getSelectedRoleByUser, loading: roleSelectionLoading } =
-    useRoleSelection(
-      roomId,
-      currentUser?.id || null,
-      players.length,
-      maxPlayers
-    );
+  const {
+    getSelectedRoleByUser,
+    getSelectedRoleByAIPlayer,
+    loading: roleSelectionLoading,
+  } = useRoleSelection(
+    roomId,
+    currentUser?.id || null,
+    players.length,
+    maxPlayers
+  );
 
   const { roleStates } = useRoleStates(roomId);
 
@@ -202,9 +205,11 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
                 ) : (
                   players.map(player => {
                     const playerOnline = isPlayerOnline(player);
-                    const selectedRole = player.userId
-                      ? getSelectedRoleByUser(player.userId)
-                      : null;
+                    const selectedRole = player.isAI
+                      ? getSelectedRoleByAIPlayer(player.id)
+                      : player.userId
+                        ? getSelectedRoleByUser(player.userId)
+                        : null;
                     const roleName =
                       selectedRole?.roleName || t('judge.playerStatus.noRole');
                     const statusNum = getPlayerRoleStatus(player.userId);

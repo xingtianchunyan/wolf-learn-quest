@@ -515,7 +515,6 @@ const GameRoom = () => {
               roomId={roomData?.id || ''}
               currentPlayerId={currentUserId}
               isReady={isReady}
-              players={players}
             />
           </div>
 

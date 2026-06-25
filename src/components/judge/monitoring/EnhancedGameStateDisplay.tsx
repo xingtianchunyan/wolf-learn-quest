@@ -56,7 +56,7 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
     }
   }, [roomId]);
 
-  const { getSelectedRoleByUser } = useRoleSelection(
+  const { getSelectedRoleByUser, getSelectedRoleByAIPlayer } = useRoleSelection(
     roomId,
     currentUser?.id || null,
     realPlayers.length,
@@ -66,9 +66,11 @@ const EnhancedGameStateDisplay: React.FC<EnhancedGameStateDisplayProps> = ({
   const displayPlayers = Array.from({ length: maxPlayers }, (_, i) => {
     if (i < realPlayers.length) {
       const player = realPlayers[i];
-      const selectedRole = player.userId
-        ? getSelectedRoleByUser(player.userId)
-        : null;
+      const selectedRole = player.isAI
+        ? getSelectedRoleByAIPlayer(player.id)
+        : player.userId
+          ? getSelectedRoleByUser(player.userId)
+          : null;
       const roleName = selectedRole?.roleName || '';
       const roleImageUrl = selectedRole?.roleDesign?.role_name
         ? getRoleImageUrl(selectedRole.roleDesign.role_name)
