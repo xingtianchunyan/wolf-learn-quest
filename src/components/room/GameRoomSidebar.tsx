@@ -26,6 +26,7 @@ interface GameRoomSidebarProps {
   onLeaveRoom: () => void;
   onStartGame: () => void;
   onAddAIPlayer: () => void;
+  onRemoveAIPlayer: () => void;
   onMaxPlayersChange: (increment: number) => void;
 }
 
@@ -48,6 +49,7 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
   onLeaveRoom,
   onStartGame,
   onAddAIPlayer,
+  onRemoveAIPlayer,
   onMaxPlayersChange,
 }) => {
   return (
@@ -103,6 +105,7 @@ export const GameRoomSidebar: React.FC<GameRoomSidebarProps> = ({
         onLeaveRoom={onLeaveRoom}
         onStartGame={onStartGame}
         onAddAIPlayer={onAddAIPlayer}
+        onRemoveAIPlayer={onRemoveAIPlayer}
         onMaxPlayersChange={onMaxPlayersChange}
         onlinePlayers={onlinePlayers}
         allPlayersSelectedRoles={allPlayersSelectedRoles}

@@ -186,6 +186,24 @@ export const usePlayersRealtime = (roomId: string) => {
     }
   };
 
+  const removeAIPlayer = async () => {
+    try {
+      const { error } = await supabase.rpc('remove_ai_player', {
+        p_room_id: roomId,
+      });
+
+      if (error) {
+        console.error('Error removing AI player:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error removing AI player:', error);
+      return false;
+    }
+  };
+
   const setAIPlayersReady = async (isReady: boolean) => {
     try {
       const { error } = await supabase.rpc('set_ai_players_ready', {
@@ -210,6 +228,7 @@ export const usePlayersRealtime = (roomId: string) => {
     loading,
     updatePlayerReady,
     addAIPlayer,
+    removeAIPlayer,
     setAIPlayersReady,
   };
 };

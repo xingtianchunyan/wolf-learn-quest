@@ -13,6 +13,7 @@ import {
   UserX,
   Wifi,
   WifiOff,
+  Trash2,
 } from 'lucide-react';
 import { useLanguage } from '@/components/layout/LanguageSwitcher';
 
@@ -37,6 +38,7 @@ interface PlayersListProps {
   onLeaveRoom: () => void;
   onStartGame: () => void;
   onAddAIPlayer: () => void;
+  onRemoveAIPlayer: () => void;
   onMaxPlayersChange: (increment: number) => void;
   onlinePlayers: string[];
   allPlayersSelectedRoles: boolean;
@@ -56,6 +58,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
   onLeaveRoom,
   onStartGame,
   onAddAIPlayer,
+  onRemoveAIPlayer,
   onMaxPlayersChange,
   onlinePlayers,
   allPlayersSelectedRoles,
@@ -63,6 +66,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
   currentPlayerHasSelectedRole = false,
   hideReadyButton = false,
 }) => {
+  const isHost = players.find(p => p.name === 'You')?.isHost || false;
   const { t } = useLanguage();
 
   // 检查是否可以点击准备按钮
@@ -233,6 +237,20 @@ const PlayersList: React.FC<PlayersListProps> = ({
                       </div>
                     </div>
                     <div className='flex items-center space-x-2'>
+                      {isHost && player.isAI && (
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={onRemoveAIPlayer}
+                          data-testid='remove-ai-player'
+                          className='h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/30'
+                          title={t(
+                            'gameComponent.room.playersList.removeAiPlayer'
+                          )}
+                        >
+                          <Trash2 className='h-4 w-4' />
+                        </Button>
+                      )}
                       {player.isReady ? (
                         <Badge
                           variant='secondary'

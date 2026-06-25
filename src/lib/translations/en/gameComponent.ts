@@ -564,6 +564,10 @@ export const gameComponent = {
       waitingAllSelected: 'Waiting for all players to select roles',
       selectRoleFirst: 'Please select a role first',
       addAiPlayer: 'Add AI Player',
+      removeAiPlayer: 'Remove AI Player',
+      aiPlayerRemoved: 'AI player removed',
+      noAiPlayerToRemove: 'No AI player to remove',
+      removeAiFailed: 'Failed to remove AI player',
     },
     sidebar: {
       judgeStatus: 'Judge Status',
