@@ -121,9 +121,13 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
     setIsLeavingJudge(true);
     try {
       // 将所有等待中的房间里的 judge_user_id 清空，避免回到大厅后再次被认定为法官
+      // 同时更新 last_human_activity，防止房间因无人类玩家而被立即清理
       const { error } = await supabase
         .from('rooms')
-        .update({ judge_user_id: null })
+        .update({
+          judge_user_id: null,
+          last_human_activity: new Date().toISOString(),
+        })
         .eq('judge_user_id', currentUser.id)
         .eq('status', 'waiting');
 
@@ -136,8 +140,12 @@ const JudgeActionPanel: React.FC<JudgeActionPanelProps> = ({ roomId }) => {
         setIsLeavingJudge(false);
         return;
       }
-      // 返回大厅
-      navigate('/lobby');
+
+      // 如果当前用户同时是该房间玩家，优先回到房间页面；否则返回大厅
+      const isRoomPlayer = players.some(
+        player => player.userId === currentUser.id
+      );
+      navigate(isRoomPlayer ? `/room/${roomId}` : '/lobby');
     } catch (err) {
       toast({
         title: t('judge.actionPanel.toast.quitErrorGeneric.title'),
