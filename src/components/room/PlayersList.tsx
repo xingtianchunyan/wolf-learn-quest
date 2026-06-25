@@ -265,7 +265,7 @@ const PlayersList: React.FC<PlayersListProps> = ({
           </ScrollArea>
 
           {/* 添加/删除 AI 玩家按钮：未满员时显示添加，满员且有 AI 玩家时房主显示删除 */}
-          {players.length < maxPlayers && (
+          {players.length < maxPlayers && isHost && (
             <Button
               onClick={onAddAIPlayer}
               variant='outline'
