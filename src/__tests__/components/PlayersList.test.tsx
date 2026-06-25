@@ -47,10 +47,23 @@ describe('PlayersList', () => {
     vi.clearAllMocks();
   });
 
-  it('shows add AI player button when room is not full', () => {
+  it('shows add AI player button when room is not full (host only)', () => {
     render(<PlayersList {...defaultProps} />);
 
     expect(screen.getByTestId('add-ai-player')).toBeInTheDocument();
+    expect(screen.queryByTestId('remove-ai-player')).not.toBeInTheDocument();
+  });
+
+  it('does not show add AI player button for non-host players', () => {
+    render(
+      <PlayersList
+        {...defaultProps}
+        players={[{ ...defaultProps.players[0], isHost: false }]}
+        currentUserId='user-1'
+      />
+    );
+
+    expect(screen.queryByTestId('add-ai-player')).not.toBeInTheDocument();
     expect(screen.queryByTestId('remove-ai-player')).not.toBeInTheDocument();
   });
 
